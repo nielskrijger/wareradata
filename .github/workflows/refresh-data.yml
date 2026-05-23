@@ -1,0 +1,20 @@
+name: refresh-data
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Hit /api/refresh
+        run: |
+          curl -fSsL --max-time 320 -X POST \
+            -H "x-refresh-secret: ${{ secrets.REFRESH_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/refresh"

@@ -127,4 +127,9 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind v4 reset uses `cursor: default` on buttons; restore the conventional pointer. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 }

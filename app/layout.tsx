@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+
+import { SiteNav } from '@/components/site-nav'
+
+import 'flag-icons/css/flag-icons.min.css'
 import './globals.css'
 
 const geistSans = Geist({
@@ -13,11 +17,27 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://wareradata.com'),
   title: {
     default: 'WareraData',
     template: '%s — WareraData',
   },
   description: 'Sortable, filterable datatables of War Era game data.',
+  openGraph: {
+    type: 'website',
+    siteName: 'WareraData',
+    url: 'https://wareradata.com',
+    title: 'WareraData',
+    description: 'Sortable, filterable datatables of War Era game data.',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'WareraData',
+    description: 'Sortable, filterable datatables of War Era game data.',
+  },
+  alternates: {
+    canonical: '/',
+  },
 }
 
 export default function RootLayout({
@@ -28,19 +48,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <div className="flex-1">{children}</div>
-        <footer className="text-muted-foreground border-t px-4 py-4 text-center text-xs">
-          Data via the{' '}
-          <a
-            href="https://warerastats.io/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-2"
-          >
-            warerastats.io
-          </a>{' '}
-          Gateway.
-        </footer>
+        <SiteNav />
+        {children}
       </body>
     </html>
   )

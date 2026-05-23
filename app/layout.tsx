@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Bebas_Neue, Geist, Geist_Mono } from 'next/font/google'
 
 import { SiteNav } from '@/components/site-nav'
 
@@ -16,23 +16,29 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+const bebasNeue = Bebas_Neue({
+  variable: '--font-brand',
+  subsets: ['latin'],
+  weight: '400',
+})
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://wareradata.com'),
   title: {
-    default: 'WareraData',
-    template: '%s — WareraData',
+    default: 'Warera Data',
+    template: '%s — Warera Data',
   },
   description: 'Sortable, filterable datatables of War Era game data.',
   openGraph: {
     type: 'website',
-    siteName: 'WareraData',
+    siteName: 'Warera Data',
     url: 'https://wareradata.com',
-    title: 'WareraData',
+    title: 'Warera Data',
     description: 'Sortable, filterable datatables of War Era game data.',
   },
   twitter: {
     card: 'summary',
-    title: 'WareraData',
+    title: 'Warera Data',
     description: 'Sortable, filterable datatables of War Era game data.',
   },
   alternates: {
@@ -40,13 +46,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+interface Props {
   children: React.ReactNode
-}>) {
+}
+
+export default function RootLayout({ children }: Props) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <SiteNav />
         {children}

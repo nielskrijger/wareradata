@@ -4,8 +4,10 @@ const BASE_URL = process.env.WARERA_BASE_URL ?? 'https://api2.warera.io/trpc'
 const API_KEY = process.env.WARERA_API_KEY
 
 const DEFAULT_REVALIDATE_SECONDS = 300
-const MAX_RATE_LIMIT_RETRIES = 5
+const MAX_RETRIES = 5
 const FALLBACK_RETRY_SECONDS = 30
+const TRANSIENT_BACKOFF_SECONDS = 5
+const TRANSIENT_STATUSES = new Set([500, 502, 503, 504])
 
 // Stay under Warera's 500 req/min limit with headroom (~7.5 req/s = 450/min).
 const MIN_REQUEST_INTERVAL_MS = 134
@@ -67,21 +69,41 @@ async function awaitPacer() {
 }
 
 /**
- * Fetches with automatic 429 backoff, honoring `Retry-After` when present.
- * Falls back to FALLBACK_RETRY_SECONDS if the header is missing.
+ * Fetches with automatic retry on transient failures: 429 (rate limit), 5xx
+ * upstream errors, and network throws. 4xx other than 429 fall through.
  */
 async function fetchWithRetry(url: URL, init: RequestInit, label: string): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     await awaitPacer()
-    const res = await fetch(url, init)
-    if (res.status !== 429 || attempt >= MAX_RATE_LIMIT_RETRIES) {
-      return res
+    let res: Response
+    try {
+      res = await fetch(url, init)
+    } catch (err) {
+      if (attempt >= MAX_RETRIES) {
+        throw err
+      }
+      console.warn(`[warera] network error on ${label} (attempt ${attempt + 1}); retrying in ${TRANSIENT_BACKOFF_SECONDS}s`)
+      await sleep(TRANSIENT_BACKOFF_SECONDS * 1000)
+      continue
     }
 
-    const retryAfter = Number(res.headers.get('retry-after')) || FALLBACK_RETRY_SECONDS
+    if (res.status === 429) {
+      if (attempt >= MAX_RETRIES) {
+        return res
+      }
+      const retryAfter = Number(res.headers.get('retry-after')) || FALLBACK_RETRY_SECONDS
+      console.warn(`[warera] 429 on ${label} (attempt ${attempt + 1}); waiting ${retryAfter}s`)
+      await sleep(retryAfter * 1000)
+      continue
+    }
 
-    console.warn(`[warera] 429 on ${label} (attempt ${attempt + 1}); waiting ${retryAfter}s`)
-    await sleep(retryAfter * 1000)
+    if (TRANSIENT_STATUSES.has(res.status) && attempt < MAX_RETRIES) {
+      console.warn(`[warera] ${res.status} on ${label} (attempt ${attempt + 1}); retrying in ${TRANSIENT_BACKOFF_SECONDS}s`)
+      await sleep(TRANSIENT_BACKOFF_SECONDS * 1000)
+      continue
+    }
+
+    return res
   }
 }
 

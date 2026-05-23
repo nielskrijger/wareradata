@@ -35,7 +35,7 @@ export function UsersTable({ initial }: Props) {
     <DataTable
       columns={userColumns}
       initialData={initial}
-      initialSort={{ id: 'levelRank', desc: false }}
+      initialSort={{ id: 'points', desc: true }}
       fetchPage={fetchUsers}
       searchPlaceholder="Filter by username, country, or MU…"
     />

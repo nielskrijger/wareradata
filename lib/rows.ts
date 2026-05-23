@@ -22,6 +22,7 @@ export interface UserRow {
   muName: string | null
   lastConnectionAt: string | null
   isBanned: boolean
+  points: number
 }
 
 /**

@@ -1,6 +1,7 @@
 import type { CountryRow, UserRow } from '@/lib/rows'
 
 import type { RankingTier } from '@/lib/warera/schemas'
+import { computePoints } from '@/lib/scoring'
 import { RANKING_TIERS } from '@/lib/warera/schemas'
 
 import { readAllUsers, readSnapshot } from './snapshot'
@@ -58,23 +59,27 @@ async function loadFromRedis(): Promise<Snapshot> {
       // `u.infos.isBanned` is set on banned accounts; absent or false otherwise.
       const infos = (u as { infos?: { isBanned?: boolean } }).infos
       const dates = (u as { dates?: { lastConnectionAt?: string } }).dates
+      const levelValue = u.leveling?.level ?? null
+      const damageValue = damage?.value ?? null
+      const wealthValue = wealth?.value ?? null
       return {
         id: u._id,
         username: u.username,
         countryId: country ? u.country : null,
         countryCode: country?.code ?? null,
         countryName: country?.name ?? null,
-        level: u.leveling?.level ?? null,
+        level: levelValue,
         levelRank: level?.rank ?? null,
         levelTier: toTier(level?.tier),
         damageRank: damage?.rank ?? null,
-        damageValue: damage?.value ?? null,
+        damageValue,
         wealthRank: wealth?.rank ?? null,
-        wealthValue: wealth?.value ?? null,
+        wealthValue,
         militaryRank: u.militaryRank ?? null,
         muName: u.mu ? (muLookup.get(u.mu) ?? null) : null,
         lastConnectionAt: dates?.lastConnectionAt ?? null,
         isBanned: infos?.isBanned === true,
+        points: computePoints({ level: levelValue, damageValue, wealthValue }),
       }
     })
     .filter(r => r.levelRank !== null)

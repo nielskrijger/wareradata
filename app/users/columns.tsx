@@ -107,4 +107,11 @@ export const userColumns: ColumnDef<UserRow>[] = [
     ),
     sortDescFirst: true,
   },
+  {
+    accessorKey: 'points',
+    header: 'Points',
+    cell: ({ row }) => row.original.points.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right' },
+  },
 ]

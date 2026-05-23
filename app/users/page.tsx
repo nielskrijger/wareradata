@@ -25,9 +25,9 @@ export default async function UsersPage() {
   // subsequent paging/sorting/filtering via /api/users.
   const initial = applyQuery(
     users,
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'levelRank', dir: 'asc', filter: '' },
+    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'points', dir: 'desc', filter: '' },
     () => '',
-    row => row.levelRank,
+    row => row.points,
   )
 
   return (

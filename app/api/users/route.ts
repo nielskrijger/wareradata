@@ -39,6 +39,7 @@ function userSortValue(row: UserRow, sort: string): number | string | null {
     case 'muName': return row.muName?.toLowerCase() ?? null
     case 'lastConnectionAt': return row.lastConnectionAt
     case 'isBanned': return row.isBanned ? 1 : 0
+    case 'points': return row.points
     default: return row.levelRank
   }
 }

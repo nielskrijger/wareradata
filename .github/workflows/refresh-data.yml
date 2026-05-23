@@ -17,4 +17,4 @@ jobs:
         run: |
           curl -fSsL --max-time 320 -X POST \
             -H "x-refresh-secret: ${{ secrets.REFRESH_SECRET }}" \
-            "${{ secrets.APP_URL }}/api/refresh"
+            "https://wareradata.vercel.app/api/refresh"

@@ -1,7 +1,7 @@
 import type { userLite } from '@/lib/warera/schemas'
 
 import { z } from 'zod'
-import { countriesList, musList, region, snapshotMeta, usersList } from '@/lib/warera/schemas'
+import { countriesList, musList, partiesList, region, snapshotMeta, usersList } from '@/lib/warera/schemas'
 
 import { redis } from './redis'
 
@@ -12,6 +12,7 @@ const KEY_PREFIX = 'wareradata:snapshot'
 const schemas = {
   countries: countriesList,
   mus: musList,
+  parties: partiesList,
   regions: z.array(region),
   meta: snapshotMeta,
 } as const
@@ -77,7 +78,7 @@ export async function writeUsersSharded(byCountry: Record<string, z.infer<typeof
 // Upstash caps both request and response payloads at 10 MB. A full MGET of
 // all shards can easily exceed that (some single-country shards are ~5 MB),
 // so we fetch in chunks.
-const READ_SHARD_CHUNK = 10
+const READ_SHARD_CHUNK = 5
 
 /**
  * Reads every user shard and returns the flat list, in no particular order.

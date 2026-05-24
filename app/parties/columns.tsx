@@ -7,6 +7,7 @@ import type { PartyRow } from '@/lib/rows'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
+import { ScaleBadge } from '@/components/scale-badge'
 import { TruncatedCell } from '@/components/truncated-cell'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -17,10 +18,6 @@ function formatCreated(iso: string | null): string {
     return '—'
   }
   return iso.slice(0, 10)
-}
-
-function formatEthic(value: number | null): string {
-  return value === null ? '—' : value.toFixed(0)
 }
 
 export const partyColumns: ColumnDef<PartyRow>[] = [
@@ -87,28 +84,28 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
   {
     accessorKey: 'militarism',
     header: 'Militarism',
-    cell: ({ row }) => formatEthic(row.original.militarism),
+    cell: ({ row }) => <ScaleBadge value={row.original.militarism} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 110 },
   },
   {
     accessorKey: 'isolationism',
     header: 'Isolationism',
-    cell: ({ row }) => formatEthic(row.original.isolationism),
+    cell: ({ row }) => <ScaleBadge value={row.original.isolationism} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 120 },
   },
   {
     accessorKey: 'imperialism',
     header: 'Imperialism',
-    cell: ({ row }) => formatEthic(row.original.imperialism),
+    cell: ({ row }) => <ScaleBadge value={row.original.imperialism} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 120 },
   },
   {
     accessorKey: 'industrialism',
     header: 'Industrialism',
-    cell: ({ row }) => formatEthic(row.original.industrialism),
+    cell: ({ row }) => <ScaleBadge value={row.original.industrialism} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 130 },
   },

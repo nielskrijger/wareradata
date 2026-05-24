@@ -6,9 +6,11 @@ import type { MURow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
+import { ExternalLink } from '@/components/external-link'
 import { MUCell } from '@/components/mu-cell'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
+import { wareraUrl } from '@/lib/warera/urls'
 
 export type { MURow }
 
@@ -17,7 +19,7 @@ export const muColumns: ColumnDef<MURow>[] = [
     accessorKey: 'name',
     header: 'MU',
     cell: ({ row }) => (
-      <MUCell muId={row.original.id} muName={row.original.name} />
+      <MUCell muName={row.original.name} bold />
     ),
     meta: { minWidth: 220 },
   },
@@ -47,7 +49,6 @@ export const muColumns: ColumnDef<MURow>[] = [
     header: 'Country',
     cell: ({ row }) => (
       <CountryCell
-        countryId={row.original.countryId}
         countryCode={row.original.countryCode}
         countryName={row.original.countryName}
       />
@@ -157,5 +158,17 @@ export const muColumns: ColumnDef<MURow>[] = [
     cell: ({ row }) => row.original.headquartersLevel ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 70 },
+  },
+  {
+    id: 'warera',
+    header: '',
+    enableSorting: false,
+    enableHiding: false,
+    cell: ({ row }) => (
+      <ExternalLink href={wareraUrl('mu', row.original.id)}>
+        WarEra.io
+      </ExternalLink>
+    ),
+    meta: { minWidth: 110 },
   },
 ]

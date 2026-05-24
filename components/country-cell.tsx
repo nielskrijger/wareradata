@@ -1,10 +1,7 @@
-import { ExternalLink } from '@/components/external-link'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/internal-link'
-import { wareraUrl } from '@/lib/warera/urls'
 
 interface Props {
-  countryId: string | null
   countryCode: string | null
   countryName: string | null
 }
@@ -13,10 +10,10 @@ interface Props {
  * Country cell shared by /users, /countries, and /mus.
  *
  * The country name is an internal link to /users prefiltered to that
- * country (`?q=country:<code>`). A small icon next to it opens the
- * country page on app.warera.io in a new tab.
+ * country (`?q=country:<code>`). For the warera.io link, use the
+ * dedicated trailing "WarEra" column on each table.
  */
-export function CountryCell({ countryId, countryCode, countryName }: Props) {
+export function CountryCell({ countryCode, countryName }: Props) {
   if (!countryCode && !countryName) {
     return '—'
   }
@@ -27,12 +24,6 @@ export function CountryCell({ countryId, countryCode, countryName }: Props) {
       <InternalLink href={`/users?q=${encodeURIComponent(`country:${countryCode}`)}`}>
         {label}
       </InternalLink>
-      {countryId && (
-        <ExternalLink
-          href={wareraUrl('country', countryId)}
-          label={`Open ${label} on warera.io`}
-        />
-      )}
     </div>
   )
 }

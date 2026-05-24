@@ -23,10 +23,6 @@ export const userColumns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <span className="font-medium">{row.original.username}</span>
-        <ExternalLink
-          href={wareraUrl('user', row.original.id)}
-          label={`Open ${row.original.username} on warera.io`}
-        />
         {row.original.isBanned && <Badge className="bg-red-500/15 text-red-900">banned</Badge>}
       </div>
     ),
@@ -51,7 +47,6 @@ export const userColumns: ColumnDef<UserRow>[] = [
     header: 'Country',
     cell: ({ row }) => (
       <CountryCell
-        countryId={row.original.countryId}
         countryCode={row.original.countryCode}
         countryName={row.original.countryName}
       />
@@ -122,7 +117,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
     accessorKey: 'muName',
     header: 'MU',
     cell: ({ row }) => (
-      <MUCell muId={row.original.muId} muName={row.original.muName} />
+      <MUCell muName={row.original.muName} />
     ),
     meta: { minWidth: 160 },
   },
@@ -183,5 +178,17 @@ export const userColumns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => row.original.gemsPurchasedValue?.toLocaleString() ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 130 },
+  },
+  {
+    id: 'warera',
+    header: '',
+    enableSorting: false,
+    enableHiding: false,
+    cell: ({ row }) => (
+      <ExternalLink href={wareraUrl('user', row.original.id)}>
+        WarEra.io
+      </ExternalLink>
+    ),
+    meta: { minWidth: 110 },
   },
 ]

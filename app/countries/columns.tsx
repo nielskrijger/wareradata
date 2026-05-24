@@ -6,9 +6,11 @@ import type { CountryRow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
+import { ExternalLink } from '@/components/external-link'
 import { InternalLink } from '@/components/internal-link'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
+import { wareraUrl } from '@/lib/warera/urls'
 
 export type { CountryRow }
 
@@ -18,7 +20,6 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     header: 'Country',
     cell: ({ row }) => (
       <CountryCell
-        countryId={row.original.id}
         countryCode={row.original.code}
         countryName={row.original.name}
       />
@@ -196,5 +197,17 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     header: 'Specialty',
     cell: ({ row }) => row.original.specializedItem ?? '—',
     meta: { minWidth: 120 },
+  },
+  {
+    id: 'warera',
+    header: '',
+    enableSorting: false,
+    enableHiding: false,
+    cell: ({ row }) => (
+      <ExternalLink href={wareraUrl('country', row.original.id)}>
+        WarEra.io
+      </ExternalLink>
+    ),
+    meta: { minWidth: 110 },
   },
 ]

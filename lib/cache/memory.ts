@@ -85,20 +85,33 @@ async function loadFromRedis(): Promise<Snapshot> {
     .filter(r => r.levelRank !== null)
     .sort((a, b) => (a.levelRank ?? Infinity) - (b.levelRank ?? Infinity))
 
+  const pointsByCountry = new Map<string, { total: number, count: number }>()
+  for (const u of userRows) {
+    const entry = pointsByCountry.get(u.countryId) ?? { total: 0, count: 0 }
+    entry.total += u.points
+    entry.count += 1
+    pointsByCountry.set(u.countryId, entry)
+  }
+
   const countryRows: CountryRow[] = countries
-    .map(c => ({
-      id: c._id,
-      name: c.name,
-      code: c.code,
-      damageRank: c.rankings?.countryDamages?.rank ?? null,
-      damageValue: c.rankings?.countryDamages?.value ?? null,
-      damageTier: c.rankings?.countryDamages?.tier ?? null,
-      weeklyDamageValue: c.rankings?.weeklyCountryDamages?.value ?? null,
-      wealthRank: c.rankings?.countryWealth?.rank ?? null,
-      wealthValue: c.rankings?.countryWealth?.value ?? null,
-      development: c.development ?? null,
-      activePopulation: c.rankings?.countryActivePopulation?.value ?? null,
-    }))
+    .map((c) => {
+      const agg = pointsByCountry.get(c._id)
+      return {
+        id: c._id,
+        name: c.name,
+        code: c.code,
+        damageRank: c.rankings?.countryDamages?.rank ?? null,
+        damageValue: c.rankings?.countryDamages?.value ?? null,
+        damageTier: c.rankings?.countryDamages?.tier ?? null,
+        weeklyDamageValue: c.rankings?.weeklyCountryDamages?.value ?? null,
+        wealthRank: c.rankings?.countryWealth?.rank ?? null,
+        wealthValue: c.rankings?.countryWealth?.value ?? null,
+        development: c.development ?? null,
+        activePopulation: c.rankings?.countryActivePopulation?.value ?? null,
+        totalPoints: agg?.total ?? 0,
+        avgPoints: agg ? Math.round(agg.total / agg.count) : null,
+      }
+    })
     .sort((a, b) => {
       if (a.damageRank === null) {
         return 1

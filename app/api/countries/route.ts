@@ -36,6 +36,8 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'wealthValue': return row.wealthValue
     case 'development': return row.development
     case 'activePopulation': return row.activePopulation
+    case 'totalPoints': return row.totalPoints
+    case 'avgPoints': return row.avgPoints
     default: return row.damageRank
   }
 }

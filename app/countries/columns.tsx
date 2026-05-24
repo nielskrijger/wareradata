@@ -32,6 +32,20 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     meta: { minWidth: 200 },
   },
   {
+    accessorKey: 'totalPoints',
+    header: 'Total Points',
+    cell: ({ row }) => row.original.totalPoints.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 110 },
+  },
+  {
+    accessorKey: 'avgPoints',
+    header: 'Avg Points',
+    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 100 },
+  },
+  {
     accessorKey: 'damageTier',
     header: 'Tier',
     cell: ({ row }) => <TierBadge tier={row.original.damageTier} />,

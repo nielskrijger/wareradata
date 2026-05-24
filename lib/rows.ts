@@ -40,4 +40,6 @@ export interface CountryRow {
   wealthValue: number | null
   development: number | null
   activePopulation: number | null
+  totalPoints: number
+  avgPoints: number | null
 }

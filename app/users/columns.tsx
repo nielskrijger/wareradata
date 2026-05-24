@@ -138,6 +138,13 @@ export const userColumns: ColumnDef<UserRow>[] = [
     meta: { width: 110 },
   },
   {
+    accessorKey: 'createdAt',
+    header: 'Joined',
+    cell: ({ row }) => row.original.createdAt?.slice(0, 10) ?? '—',
+    sortDescFirst: true,
+    meta: { width: 110 },
+  },
+  {
     accessorKey: 'bountyValue',
     header: 'Bounty',
     cell: ({ row }) => <CompactNumber value={row.original.bountyValue} />,

@@ -50,7 +50,7 @@ export function UsersTable({ initial }: Props) {
             { q: 'rank:[1 TO 100]', desc: 'Numeric range' },
             { q: 'level:>30', desc: 'Comparators' },
           ]}
-          fieldsList="username, country, mu, party, level, rank, damage, wealth, weeklyDamage, lastSeen, militaryRank, and more."
+          fieldsList="username, country, mu, party, level, rank, damage, wealth, weeklyDamage, militaryRank, and more."
         />
       )}
     />

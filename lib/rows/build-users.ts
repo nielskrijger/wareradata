@@ -28,6 +28,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         countryCode: country?.code ?? null,
         countryId: u.country,
         countryName: country?.name ?? null,
+        createdAt: u.createdAt ?? null,
         damagePoints: pts.damage,
         damageRank: damage?.rank ?? null,
         damageValue,

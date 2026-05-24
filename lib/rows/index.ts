@@ -11,6 +11,7 @@ export interface UserRow {
   countryCode: string | null
   countryId: string
   countryName: string | null
+  createdAt: string | null
   damageRank: number | null
   damageValue: number | null
   damagePoints: number
@@ -58,6 +59,7 @@ export interface CountryRow {
   money: number | null
   musCount: number
   name: string
+  partyCount: number
   productionBonusValue: number | null
   specializedItem: string | null
   taxIncome: number | null

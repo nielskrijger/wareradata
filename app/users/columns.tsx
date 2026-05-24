@@ -25,7 +25,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <span className="font-medium">{row.original.username}</span>
-        {row.original.isBanned && <Badge className="bg-red-500/15 text-red-900">banned</Badge>}
+        {row.original.isBanned && <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
       </div>
     ),
     meta: { width: 170 },

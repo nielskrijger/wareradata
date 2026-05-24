@@ -5,6 +5,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { SiteFooter } from '@/components/site-footer'
 import { SiteNav } from '@/components/site-nav'
+import { ThemeProvider } from '@/components/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 import 'flag-icons/css/flag-icons.min.css'
@@ -56,15 +57,22 @@ interface Props {
 
 export default function RootLayout({ children }: Props) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <NuqsAdapter>
-          <TooltipProvider>
-            <SiteNav />
-            {children}
-            <SiteFooter />
-          </TooltipProvider>
-        </NuqsAdapter>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NuqsAdapter>
+            <TooltipProvider>
+              <SiteNav />
+              {children}
+              <SiteFooter />
+            </TooltipProvider>
+          </NuqsAdapter>
+        </ThemeProvider>
       </body>
     </html>
   )

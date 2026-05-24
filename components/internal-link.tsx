@@ -26,7 +26,7 @@ export function InternalLink({ href, children, bold, title, className }: Props) 
       href={href}
       title={title}
       className={cn(
-        'text-blue-600 hover:text-blue-800 hover:underline',
+        'text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300',
         bold && 'font-medium',
         className,
       )}

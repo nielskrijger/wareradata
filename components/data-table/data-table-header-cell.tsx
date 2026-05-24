@@ -18,14 +18,16 @@ export function DataTableHeaderCell<TData>({ header }: Props<TData>) {
   const canSort = header.column.getCanSort()
   const sorted = header.column.getIsSorted()
   const align = header.column.columnDef.meta?.align ?? 'left'
+  const minWidth = header.column.columnDef.meta?.minWidth
   const headClass = align === 'right' ? 'text-right' : undefined
+  const style = minWidth ? { minWidth: `${minWidth}px` } : undefined
   const rendered = flexRender(header.column.columnDef.header, header.getContext())
 
   if (!canSort) {
-    return <TableHead className={headClass}>{rendered}</TableHead>
+    return <TableHead className={headClass} style={style}>{rendered}</TableHead>
   }
   return (
-    <TableHead className={headClass}>
+    <TableHead className={headClass} style={style}>
       <button
         type="button"
         onClick={header.column.getToggleSortingHandler()}

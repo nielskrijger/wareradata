@@ -30,13 +30,18 @@ import { DataTableRow } from './data-table-row'
 
 /**
  * Extend TanStack's `columnDef.meta` so column defs can declare `meta:
- * { align: 'right' }` in a type-safe way. The generics match the library's
- * signature (required for declaration merging) but go unused here.
+ * { align: 'right', minWidth: 80 }` in a type-safe way. The generics match
+ * the library's signature (required for declaration merging) but go unused
+ * here.
  */
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line unused-imports/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     align?: 'left' | 'right'
+    /**
+     * Minimum column width in px. Header + cell both get min-width applied.
+     */
+    minWidth?: number
   }
 }
 

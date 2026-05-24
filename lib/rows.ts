@@ -8,7 +8,7 @@ import type { RankingTier } from '@/lib/warera/schemas'
 export interface UserRow {
   id: string
   username: string
-  countryId: string | null
+  countryId: string
   countryCode: string | null
   countryName: string | null
   level: number | null

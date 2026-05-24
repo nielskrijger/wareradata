@@ -65,7 +65,7 @@ async function loadFromRedis(): Promise<Snapshot> {
       return {
         id: u._id,
         username: u.username,
-        countryId: country ? u.country : null,
+        countryId: u.country,
         countryCode: country?.code ?? null,
         countryName: country?.name ?? null,
         level: levelValue,

@@ -76,7 +76,7 @@ const LOG_REQUESTS = process.env.WARERA_LOG_REQUESTS === '1'
  *
  * Set `WARERA_LOG_REQUESTS=1` to emit one line per request
  * (`[warera] <label> <status> <ms>`). The scrape workflow turns this on;
- * the Next.js app leaves it off to avoid spamming Vercel logs.
+ * the Next.js app leaves it off to keep request logs quiet.
  */
 async function fetchWithRetry(url: URL, init: RequestInit, label: string): Promise<Response> {
   for (let attempt = 0; ; attempt++) {

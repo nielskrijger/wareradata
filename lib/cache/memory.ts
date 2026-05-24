@@ -11,12 +11,12 @@ import { readAllUsers, readSnapshot } from './snapshot'
 import 'server-only'
 
 /**
- * In-process snapshot cache, scoped to a single Vercel function worker. Loads
- * the entire snapshot from Redis on first access, then serves all subsequent
- * reads from memory until the TTL expires. Each cold worker pays the load cost
- * once; warm workers serve sub-millisecond reads.
+ * In-process snapshot cache, scoped to a single Node process. Loads the
+ * entire snapshot from Redis on first access, then serves all subsequent
+ * reads from memory until the TTL expires. Each cold process pays the load
+ * cost once; warm processes serve sub-millisecond reads.
  *
- * Trade-off: warm workers may serve up to TTL_MS-old data after a scrape
+ * Trade-off: warm processes may serve up to TTL_MS-old data after a scrape
  * completes. Acceptable since scrapes run every 4 hours.
  */
 

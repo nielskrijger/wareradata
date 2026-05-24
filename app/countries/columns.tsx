@@ -68,23 +68,23 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     meta: { width: 90 },
   },
   {
-    accessorKey: 'damageValue',
+    accessorKey: 'damage',
     header: 'Total Damage',
-    cell: ({ row }) => <CompactNumber value={row.original.damageValue} />,
+    cell: ({ row }) => <CompactNumber value={row.original.damage} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 130 },
   },
   {
-    accessorKey: 'weeklyDamageValue',
+    accessorKey: 'weeklyDamage',
     header: 'Weekly Damage',
-    cell: ({ row }) => <CompactNumber value={row.original.weeklyDamageValue} />,
+    cell: ({ row }) => <CompactNumber value={row.original.weeklyDamage} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 140 },
   },
   {
-    accessorKey: 'weeklyDamagePerCitizenValue',
+    accessorKey: 'weeklyDamagePerCitizen',
     header: 'Weekly / Citizen',
-    cell: ({ row }) => <CompactNumber value={row.original.weeklyDamagePerCitizenValue} />,
+    cell: ({ row }) => <CompactNumber value={row.original.weeklyDamagePerCitizen} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 150 },
   },
@@ -95,9 +95,9 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     meta: { align: 'right', width: 120 },
   },
   {
-    accessorKey: 'wealthValue',
+    accessorKey: 'wealth',
     header: 'Wealth',
-    cell: ({ row }) => <CompactNumber value={row.original.wealthValue} />,
+    cell: ({ row }) => <CompactNumber value={row.original.wealth} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 100 },
   },
@@ -139,9 +139,9 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     meta: { align: 'right', width: 90 },
   },
   {
-    accessorKey: 'bountyValue',
+    accessorKey: 'bounty',
     header: 'Bounty',
-    cell: ({ row }) => <CompactNumber value={row.original.bountyValue} />,
+    cell: ({ row }) => <CompactNumber value={row.original.bounty} />,
     sortDescFirst: true,
     meta: { align: 'right', width: 90 },
   },
@@ -153,11 +153,11 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     meta: { align: 'right', width: 100 },
   },
   {
-    accessorKey: 'productionBonusValue',
+    accessorKey: 'productionBonus',
     header: 'Prod. Bonus',
     cell: ({ row }) =>
-      row.original.productionBonusValue !== null
-        ? `${row.original.productionBonusValue}%`
+      row.original.productionBonus !== null
+        ? `${row.original.productionBonus}%`
         : '—',
     sortDescFirst: true,
     meta: { align: 'right', width: 120 },

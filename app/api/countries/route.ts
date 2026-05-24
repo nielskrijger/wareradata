@@ -21,21 +21,16 @@ export const dynamic = 'force-dynamic'
  */
 const countryFieldAliases: FieldAliases = {
   allies: 'alliesCount',
-  avgLevel: 'avgLevel',
-  damage: 'damageValue',
   gems: 'gemsPurchasedTotal',
   level: 'avgLevel',
   population: 'activePopulation',
   premiumGifts: 'premiumGiftsTotal',
   premiumMonths: 'premiumMonthsTotal',
-  productionBonus: 'productionBonusValue',
   rank: 'damageRank',
   specialty: 'specializedItem',
   treasury: 'money',
   unrest: 'unrestPercent',
   wars: 'warsCount',
-  wealth: 'wealthValue',
-  weeklyDamage: 'weeklyDamageValue',
 }
 
 /**
@@ -47,11 +42,11 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'alliesCount': return row.alliesCount
     case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
-    case 'bountyValue': return row.bountyValue
+    case 'bounty': return row.bounty
     case 'code': return row.code
     case 'damageRank': return row.damageRank
     case 'damageTier': return row.damageTier ? tierIndex[row.damageTier] : null
-    case 'damageValue': return row.damageValue
+    case 'damage': return row.damage
     case 'development': return row.development
     case 'gemsPurchasedTotal': return row.gemsPurchasedTotal
     case 'money': return row.money
@@ -60,7 +55,7 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'partyCount': return row.partyCount
     case 'premiumGiftsTotal': return row.premiumGiftsTotal
     case 'premiumMonthsTotal': return row.premiumMonthsTotal
-    case 'productionBonusValue': return row.productionBonusValue
+    case 'productionBonus': return row.productionBonus
     case 'specializedItem': return row.specializedItem
     case 'taxIncome': return row.taxIncome
     case 'taxMarket': return row.taxMarket
@@ -69,9 +64,9 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'unrestPercent': return row.unrestPercent
     case 'warsCount': return row.warsCount
     case 'wealthRank': return row.wealthRank
-    case 'wealthValue': return row.wealthValue
-    case 'weeklyDamagePerCitizenValue': return row.weeklyDamagePerCitizenValue
-    case 'weeklyDamageValue': return row.weeklyDamageValue
+    case 'wealth': return row.wealth
+    case 'weeklyDamagePerCitizen': return row.weeklyDamagePerCitizen
+    case 'weeklyDamage': return row.weeklyDamage
     default: return row.damageRank
   }
 }

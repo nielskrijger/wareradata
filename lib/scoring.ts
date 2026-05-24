@@ -10,8 +10,8 @@ const WEALTH_DIVISOR = 1 // 1 pt per gold (100K wealth = 100,000 pts)
 
 interface PointsInput {
   level: number | null
-  damageValue: number | null
-  wealthValue: number | null
+  damage: number | null
+  wealth: number | null
 }
 
 export interface PointsBreakdown {
@@ -23,7 +23,7 @@ export interface PointsBreakdown {
 
 export function computePoints(u: PointsInput): PointsBreakdown {
   const level = Math.round((u.level ?? 0) * LEVEL_POINTS)
-  const damage = Math.round((u.damageValue ?? 0) / DAMAGE_DIVISOR)
-  const wealth = Math.round((u.wealthValue ?? 0) / WEALTH_DIVISOR)
+  const damage = Math.round((u.damage ?? 0) / DAMAGE_DIVISOR)
+  const wealth = Math.round((u.wealth ?? 0) / WEALTH_DIVISOR)
   return { level, damage, wealth, total: level + damage + wealth }
 }

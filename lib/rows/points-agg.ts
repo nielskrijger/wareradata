@@ -54,9 +54,9 @@ export function aggregatePoints(
     entry.damage += u.damagePoints
     entry.wealth += u.wealthPoints
     entry.count += 1
-    entry.gemsPurchasedTotal += u.gemsPurchasedValue ?? 0
-    entry.premiumMonthsTotal += u.premiumMonthsValue ?? 0
-    entry.premiumGiftsTotal += u.premiumGiftsValue ?? 0
+    entry.gemsPurchasedTotal += u.gemsPurchased ?? 0
+    entry.premiumMonthsTotal += u.premiumMonths ?? 0
+    entry.premiumGiftsTotal += u.premiumGifts ?? 0
     if (u.level !== null) {
       entry.levelSum += u.level
       entry.levelCount += 1

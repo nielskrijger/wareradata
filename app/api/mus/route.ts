@@ -23,10 +23,6 @@ const muFieldAliases: FieldAliases = {
   country: 'countryCode',
   region: 'regionName',
   members: 'memberCount',
-  damage: 'damageValue',
-  weeklyDamage: 'weeklyDamageValue',
-  wealth: 'wealthValue',
-  reputation: 'reputationValue',
   mercenary: 'mercenaryReputation',
   invested: 'investedMoney',
   dorms: 'dormitoriesLevel',
@@ -34,7 +30,6 @@ const muFieldAliases: FieldAliases = {
   gems: 'gemsPurchasedTotal',
   premiumMonths: 'premiumMonthsTotal',
   premiumGifts: 'premiumGiftsTotal',
-  avgLevel: 'avgLevel',
   level: 'avgLevel',
 }
 
@@ -45,11 +40,11 @@ function muSortValue(row: MURow, sort: string): number | string | null {
   switch (sort) {
     case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
-    case 'bountyValue': return row.bountyValue
+    case 'bounty': return row.bounty
     case 'countryName': return row.countryName?.toLowerCase() ?? null
     case 'damageRank': return row.damageRank
     case 'damageTier': return row.damageTier ? tierIndex[row.damageTier] : null
-    case 'damageValue': return row.damageValue
+    case 'damage': return row.damage
     case 'dormitoriesLevel': return row.dormitoriesLevel
     case 'gemsPurchasedTotal': return row.gemsPurchasedTotal
     case 'headquartersLevel': return row.headquartersLevel
@@ -60,12 +55,12 @@ function muSortValue(row: MURow, sort: string): number | string | null {
     case 'premiumGiftsTotal': return row.premiumGiftsTotal
     case 'premiumMonthsTotal': return row.premiumMonthsTotal
     case 'regionName': return row.regionName?.toLowerCase() ?? null
-    case 'reputationValue': return row.reputationValue
-    case 'terrainValue': return row.terrainValue
+    case 'reputation': return row.reputation
+    case 'terrain': return row.terrain
     case 'totalPoints': return row.totalPoints
     case 'wealthRank': return row.wealthRank
-    case 'wealthValue': return row.wealthValue
-    case 'weeklyDamageValue': return row.weeklyDamageValue
+    case 'wealth': return row.wealth
+    case 'weeklyDamage': return row.weeklyDamage
     default: return row.totalPoints
   }
 }

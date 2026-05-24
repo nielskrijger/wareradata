@@ -19,7 +19,6 @@ const partyFieldAliases: FieldAliases = {
   gems: 'gemsPurchasedTotal',
   premiumMonths: 'premiumMonthsTotal',
   premiumGifts: 'premiumGiftsTotal',
-  avgLevel: 'avgLevel',
   level: 'avgLevel',
 }
 

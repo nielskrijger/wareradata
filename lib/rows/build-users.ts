@@ -14,31 +14,31 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
     .map((u) => {
       const country = lookups.countryById.get(u.country)
       const level = u.rankings?.userLevel
-      const damage = u.rankings?.userDamages
-      const wealth = u.rankings?.userWealth
+      const damageRanking = u.rankings?.userDamages
+      const wealthRanking = u.rankings?.userWealth
       // `u.infos.isBanned` is set on banned accounts; absent or false otherwise.
       const infos = (u as { infos?: { isBanned?: boolean } }).infos
       const dates = (u as { dates?: { lastConnectionAt?: string } }).dates
       const levelValue = u.leveling?.level ?? null
-      const damageValue = damage?.value ?? null
-      const wealthValue = wealth?.value ?? null
+      const damage = damageRanking?.value ?? null
+      const wealth = wealthRanking?.value ?? null
       const r = u.rankings
-      const pts = computePoints({ level: levelValue, damageValue, wealthValue })
+      const pts = computePoints({ level: levelValue, damage, wealth })
       const party = lookups.partyByUser.get(u._id)
       const days = daysSinceJoin(u.createdAt, nowMs)
       const pointsPerDay = days === null ? null : Math.round(pts.total / days)
 
       return {
-        bountyValue: r?.userBounty?.value ?? null,
-        casesOpenedValue: r?.userCasesOpened?.value ?? null,
+        bounty: r?.userBounty?.value ?? null,
+        casesOpened: r?.userCasesOpened?.value ?? null,
         countryCode: country?.code ?? null,
         countryId: u.country,
         countryName: country?.name ?? null,
         createdAt: u.createdAt ?? null,
         damagePoints: pts.damage,
-        damageRank: damage?.rank ?? null,
-        damageValue,
-        gemsPurchasedValue: r?.userGemsPurchased?.value ?? null,
+        damageRank: damageRanking?.rank ?? null,
+        damage,
+        gemsPurchased: r?.userGemsPurchased?.value ?? null,
         id: u._id,
         isBanned: infos?.isBanned === true,
         lastConnectionAt: dates?.lastConnectionAt ?? null,
@@ -53,15 +53,15 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         partyName: party?.name ?? null,
         points: pts.total,
         pointsPerDay,
-        premiumGiftsValue: r?.userPremiumGifts?.value ?? null,
-        premiumMonthsValue: r?.userPremiumMonths?.value ?? null,
-        referralsValue: r?.userReferrals?.value ?? null,
-        terrainValue: r?.userTerrain?.value ?? null,
+        premiumGifts: r?.userPremiumGifts?.value ?? null,
+        premiumMonths: r?.userPremiumMonths?.value ?? null,
+        referrals: r?.userReferrals?.value ?? null,
+        terrain: r?.userTerrain?.value ?? null,
         username: u.username,
         wealthPoints: pts.wealth,
-        wealthRank: wealth?.rank ?? null,
-        wealthValue,
-        weeklyDamageValue: r?.weeklyUserDamages?.value ?? null,
+        wealthRank: wealthRanking?.rank ?? null,
+        wealth,
+        weeklyDamage: r?.weeklyUserDamages?.value ?? null,
       }
     })
     .filter(r => r.levelRank !== null)

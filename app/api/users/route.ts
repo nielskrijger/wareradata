@@ -15,12 +15,8 @@ const userFieldAliases: FieldAliases = {
   mu: 'muName',
   party: 'partyName',
   rank: 'levelRank',
-  damage: 'damageValue',
-  wealth: 'wealthValue',
-  weeklyDamage: 'weeklyDamageValue',
   lastSeen: 'lastConnectionAt',
   joined: 'createdAt',
-  pointsPerDay: 'pointsPerDay',
   ppd: 'pointsPerDay',
 }
 
@@ -45,17 +41,17 @@ function userSortValue(row: UserRow, sort: string): number | string | null {
     case 'levelRank': return row.levelRank
     case 'levelTier': return row.levelTier ? tierIndex[row.levelTier] : null
     case 'wealthRank': return row.wealthRank
-    case 'wealthValue': return row.wealthValue
+    case 'wealth': return row.wealth
     case 'damageRank': return row.damageRank
-    case 'damageValue': return row.damageValue
-    case 'weeklyDamageValue': return row.weeklyDamageValue
-    case 'bountyValue': return row.bountyValue
-    case 'terrainValue': return row.terrainValue
-    case 'referralsValue': return row.referralsValue
-    case 'premiumMonthsValue': return row.premiumMonthsValue
-    case 'premiumGiftsValue': return row.premiumGiftsValue
-    case 'casesOpenedValue': return row.casesOpenedValue
-    case 'gemsPurchasedValue': return row.gemsPurchasedValue
+    case 'damage': return row.damage
+    case 'weeklyDamage': return row.weeklyDamage
+    case 'bounty': return row.bounty
+    case 'terrain': return row.terrain
+    case 'referrals': return row.referrals
+    case 'premiumMonths': return row.premiumMonths
+    case 'premiumGifts': return row.premiumGifts
+    case 'casesOpened': return row.casesOpened
+    case 'gemsPurchased': return row.gemsPurchased
     case 'militaryRank': return row.militaryRank
     case 'muName': return row.muName?.toLowerCase() ?? null
     case 'partyName': return row.partyName?.toLowerCase() ?? null

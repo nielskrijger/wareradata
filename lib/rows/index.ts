@@ -6,16 +6,16 @@ import type { RankingTier } from '@/lib/warera/schemas'
  * payload stays small.
  */
 export interface UserRow {
-  bountyValue: number | null
-  casesOpenedValue: number | null
+  bounty: number | null
+  casesOpened: number | null
   countryCode: string | null
   countryId: string
   countryName: string | null
   createdAt: string | null
   damageRank: number | null
-  damageValue: number | null
+  damage: number | null
   damagePoints: number
-  gemsPurchasedValue: number | null
+  gemsPurchased: number | null
   id: string
   isBanned: boolean
   lastConnectionAt: string | null
@@ -30,15 +30,15 @@ export interface UserRow {
   partyName: string | null
   points: number
   pointsPerDay: number | null
-  premiumGiftsValue: number | null
-  premiumMonthsValue: number | null
-  referralsValue: number | null
-  terrainValue: number | null
+  premiumGifts: number | null
+  premiumMonths: number | null
+  referrals: number | null
+  terrain: number | null
   username: string
   wealthPoints: number
   wealthRank: number | null
-  wealthValue: number | null
-  weeklyDamageValue: number | null
+  wealth: number | null
+  weeklyDamage: number | null
 }
 
 /**
@@ -49,11 +49,11 @@ export interface CountryRow {
   alliesCount: number
   avgLevel: number | null
   avgPoints: number | null
-  bountyValue: number | null
+  bounty: number | null
   code: string
   damageRank: number | null
   damageTier: RankingTier | null
-  damageValue: number | null
+  damage: number | null
   damagePoints: number
   development: number | null
   gemsPurchasedTotal: number
@@ -65,7 +65,7 @@ export interface CountryRow {
   partyCount: number
   premiumGiftsTotal: number
   premiumMonthsTotal: number
-  productionBonusValue: number | null
+  productionBonus: number | null
   specializedItem: string | null
   taxIncome: number | null
   taxMarket: number | null
@@ -75,9 +75,9 @@ export interface CountryRow {
   warsCount: number
   wealthPoints: number
   wealthRank: number | null
-  wealthValue: number | null
-  weeklyDamagePerCitizenValue: number | null
-  weeklyDamageValue: number | null
+  wealth: number | null
+  weeklyDamagePerCitizen: number | null
+  weeklyDamage: number | null
 }
 
 /**
@@ -86,13 +86,13 @@ export interface CountryRow {
 export interface MURow {
   avgLevel: number | null
   avgPoints: number | null
-  bountyValue: number | null
+  bounty: number | null
   countryCode: string | null
   countryId: string | null
   countryName: string | null
   damageRank: number | null
   damageTier: RankingTier | null
-  damageValue: number | null
+  damage: number | null
   damagePoints: number
   dormitoriesLevel: number | null
   gemsPurchasedTotal: number
@@ -106,13 +106,13 @@ export interface MURow {
   premiumGiftsTotal: number
   premiumMonthsTotal: number
   regionName: string | null
-  reputationValue: number | null
-  terrainValue: number | null
+  reputation: number | null
+  terrain: number | null
   totalPoints: number
   wealthPoints: number
   wealthRank: number | null
-  wealthValue: number | null
-  weeklyDamageValue: number | null
+  wealth: number | null
+  weeklyDamage: number | null
 }
 
 /**

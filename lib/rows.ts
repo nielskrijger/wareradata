@@ -6,40 +6,59 @@ import type { RankingTier } from '@/lib/warera/schemas'
  * payload stays small.
  */
 export interface UserRow {
-  id: string
-  username: string
-  countryId: string
+  bountyValue: number | null
+  casesOpenedValue: number | null
   countryCode: string | null
+  countryId: string
   countryName: string | null
+  damageRank: number | null
+  damageValue: number | null
+  gemsPurchasedValue: number | null
+  id: string
+  isBanned: boolean
+  lastConnectionAt: string | null
   level: number | null
   levelRank: number | null
   levelTier: RankingTier | null
-  wealthRank: number | null
-  wealthValue: number | null
-  damageRank: number | null
-  damageValue: number | null
   militaryRank: number | null
   muName: string | null
-  lastConnectionAt: string | null
-  isBanned: boolean
   points: number
+  premiumGiftsValue: number | null
+  premiumMonthsValue: number | null
+  referralsValue: number | null
+  terrainValue: number | null
+  username: string
+  wealthRank: number | null
+  wealthValue: number | null
+  weeklyDamageValue: number | null
 }
 
 /**
  * Projected country row used by /countries and /api/countries.
  */
 export interface CountryRow {
-  id: string
-  name: string
+  activePopulation: number | null
+  alliesCount: number
+  avgPoints: number | null
+  bountyValue: number | null
   code: string
   damageRank: number | null
-  damageValue: number | null
   damageTier: RankingTier | null
-  weeklyDamageValue: number | null
+  damageValue: number | null
+  development: number | null
+  id: string
+  money: number | null
+  name: string
+  productionBonusValue: number | null
+  specializedItem: string | null
+  taxIncome: number | null
+  taxMarket: number | null
+  taxSelfWork: number | null
+  totalPoints: number
+  unrestPercent: number | null
+  warsCount: number
   wealthRank: number | null
   wealthValue: number | null
-  development: number | null
-  activePopulation: number | null
-  totalPoints: number
-  avgPoints: number | null
+  weeklyDamagePerCitizenValue: number | null
+  weeklyDamageValue: number | null
 }

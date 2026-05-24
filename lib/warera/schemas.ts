@@ -6,23 +6,40 @@ export type RankingTier = (typeof RANKING_TIERS)[number]
 
 const tier = z.enum(RANKING_TIERS).catch('bronze')
 
+const rankingValue = z.object({ value: z.number(), rank: z.number(), tier }).optional()
+
 const countryRankings = z
   .object({
-    countryDamages: z.object({ value: z.number(), rank: z.number(), tier }).optional(),
-    weeklyCountryDamages: z.object({ value: z.number(), rank: z.number(), tier }).optional(),
-    countryWealth: z.object({ value: z.number(), rank: z.number(), tier }).optional(),
-    countryDevelopment: z.object({ value: z.number(), rank: z.number(), tier }).optional(),
-    countryActivePopulation: z.object({ value: z.number(), rank: z.number(), tier }).optional(),
+    countryActivePopulation: rankingValue,
+    countryBounty: rankingValue,
+    countryDamages: rankingValue,
+    countryDevelopment: rankingValue,
+    countryProductionBonus: rankingValue,
+    countryWealth: rankingValue,
+    weeklyCountryDamages: rankingValue,
+    weeklyCountryDamagesPerCitizen: rankingValue,
   })
   .partial()
 
 export const country = z.looseObject({
   _id: z.string(),
-  name: z.string(),
+  allies: z.array(z.string()).optional(),
   code: z.string(),
-  money: z.number().optional(),
   development: z.number().optional(),
+  money: z.number().optional(),
+  name: z.string(),
   rankings: countryRankings.optional(),
+  specializedItem: z.string().optional(),
+  taxes: z.looseObject({
+    income: z.number().optional(),
+    market: z.number().optional(),
+    selfWork: z.number().optional(),
+  }).optional(),
+  unrest: z.looseObject({
+    bar: z.number().optional(),
+    barMax: z.number().optional(),
+  }).optional(),
+  warsWith: z.array(z.string()).optional(),
 })
 
 export type Country = z.infer<typeof country>
@@ -45,11 +62,11 @@ export type RankingType = (typeof RANKING_TYPES)[number]
 
 export const rankingItem = z.looseObject({
   country: z.string().optional(),
-  user: z.string().optional(),
   mu: z.string().optional(),
-  value: z.number(),
   rank: z.number(),
   tier,
+  user: z.string().optional(),
+  value: z.number(),
 })
 
 export const ranking = z.looseObject({
@@ -109,24 +126,24 @@ export const usersByCountryPage = z.looseObject({
 
 const muRankings = z
   .looseObject({
-    muWeeklyDamages: rankingEntry.optional(),
     muBounty: rankingEntry.optional(),
     muDamages: rankingEntry.optional(),
     muTerrain: rankingEntry.optional(),
     muWealth: rankingEntry.optional(),
+    muWeeklyDamages: rankingEntry.optional(),
   })
   .optional()
 
 export const mu = z.looseObject({
   _id: z.string(),
-  name: z.string(),
-  user: z.string().optional(),
-  region: z.string().optional(),
-  members: z.array(z.string()).optional(),
-  rankings: muRankings,
   avatarUrl: z.string().nullish(),
   createdAt: z.string().optional(),
+  members: z.array(z.string()).optional(),
+  name: z.string(),
+  rankings: muRankings,
+  region: z.string().optional(),
   updatedAt: z.string().optional(),
+  user: z.string().optional(),
 })
 
 export type MU = z.infer<typeof mu>
@@ -140,8 +157,8 @@ export const muPage = z.looseObject({
 // --- Snapshot meta --------------------------------------------------------
 
 export const snapshotMeta = z.looseObject({
-  scrapedAt: z.string().optional(),
   entityCounts: z.record(z.string(), z.number()).optional(),
+  scrapedAt: z.string().optional(),
   scrapeDurationMs: z.number().optional(),
 })
 

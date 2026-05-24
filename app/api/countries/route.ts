@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic'
  * Lowercased blob the global filter substring matches against.
  */
 function countryHaystack(row: CountryRow): string {
-  return `${row.name} ${row.code}`.toLowerCase()
+  return `${row.name} ${row.code} ${row.specializedItem ?? ''}`.toLowerCase()
 }
 
 /**
@@ -26,18 +26,29 @@ function countryHaystack(row: CountryRow): string {
  */
 function countrySortValue(row: CountryRow, sort: string): number | string | null {
   switch (sort) {
-    case 'name': return row.name.toLowerCase()
+    case 'activePopulation': return row.activePopulation
+    case 'alliesCount': return row.alliesCount
+    case 'avgPoints': return row.avgPoints
+    case 'bountyValue': return row.bountyValue
     case 'code': return row.code
     case 'damageRank': return row.damageRank
-    case 'damageValue': return row.damageValue
     case 'damageTier': return row.damageTier ? tierIndex[row.damageTier] : null
-    case 'weeklyDamageValue': return row.weeklyDamageValue
+    case 'damageValue': return row.damageValue
+    case 'development': return row.development
+    case 'money': return row.money
+    case 'name': return row.name.toLowerCase()
+    case 'productionBonusValue': return row.productionBonusValue
+    case 'specializedItem': return row.specializedItem
+    case 'taxIncome': return row.taxIncome
+    case 'taxMarket': return row.taxMarket
+    case 'taxSelfWork': return row.taxSelfWork
+    case 'totalPoints': return row.totalPoints
+    case 'unrestPercent': return row.unrestPercent
+    case 'warsCount': return row.warsCount
     case 'wealthRank': return row.wealthRank
     case 'wealthValue': return row.wealthValue
-    case 'development': return row.development
-    case 'activePopulation': return row.activePopulation
-    case 'totalPoints': return row.totalPoints
-    case 'avgPoints': return row.avgPoints
+    case 'weeklyDamagePerCitizenValue': return row.weeklyDamagePerCitizenValue
+    case 'weeklyDamageValue': return row.weeklyDamageValue
     default: return row.damageRank
   }
 }

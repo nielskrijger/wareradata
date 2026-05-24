@@ -53,10 +53,10 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   },
   {
     accessorKey: 'damageValue',
-    header: 'Damage',
+    header: 'Total Damage',
     cell: ({ row }) => <CompactNumber value={row.original.damageValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 100 },
+    meta: { align: 'right', minWidth: 120 },
   },
   {
     accessorKey: 'weeklyDamageValue',
@@ -64,6 +64,13 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) => <CompactNumber value={row.original.weeklyDamageValue} />,
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 130 },
+  },
+  {
+    accessorKey: 'weeklyDamagePerCitizenValue',
+    header: 'Weekly / Citizen',
+    cell: ({ row }) => <CompactNumber value={row.original.weeklyDamagePerCitizenValue} />,
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 140 },
   },
   {
     accessorKey: 'wealthRank',
@@ -92,5 +99,83 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) => row.original.activePopulation ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 100 },
+  },
+  {
+    accessorKey: 'bountyValue',
+    header: 'Bounty',
+    cell: ({ row }) => <CompactNumber value={row.original.bountyValue} />,
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 90 },
+  },
+  {
+    accessorKey: 'money',
+    header: 'Treasury',
+    cell: ({ row }) => <CompactNumber value={row.original.money} />,
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 100 },
+  },
+  {
+    accessorKey: 'productionBonusValue',
+    header: 'Prod. Bonus',
+    cell: ({ row }) =>
+      row.original.productionBonusValue !== null
+        ? `${row.original.productionBonusValue}%`
+        : '—',
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 110 },
+  },
+  {
+    accessorKey: 'unrestPercent',
+    header: 'Unrest',
+    cell: ({ row }) =>
+      row.original.unrestPercent !== null
+        ? `${row.original.unrestPercent.toFixed(1)}%`
+        : '—',
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 90 },
+  },
+  {
+    accessorKey: 'taxIncome',
+    header: 'Income Tax',
+    cell: ({ row }) =>
+      row.original.taxIncome !== null ? `${row.original.taxIncome}%` : '—',
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 100 },
+  },
+  {
+    accessorKey: 'taxMarket',
+    header: 'Market Tax',
+    cell: ({ row }) =>
+      row.original.taxMarket !== null ? `${row.original.taxMarket}%` : '—',
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 100 },
+  },
+  {
+    accessorKey: 'taxSelfWork',
+    header: 'Self-Work Tax',
+    cell: ({ row }) =>
+      row.original.taxSelfWork !== null ? `${row.original.taxSelfWork}%` : '—',
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 120 },
+  },
+  {
+    accessorKey: 'alliesCount',
+    header: 'Allies',
+    cell: ({ row }) => row.original.alliesCount.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 80 },
+  },
+  {
+    accessorKey: 'warsCount',
+    header: 'Wars',
+    cell: ({ row }) => row.original.warsCount.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 80 },
+  },
+  {
+    accessorKey: 'specializedItem',
+    header: 'Specialty',
+    cell: ({ row }) => row.original.specializedItem ?? '—',
+    meta: { minWidth: 120 },
   },
 ]

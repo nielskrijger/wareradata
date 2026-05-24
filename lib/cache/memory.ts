@@ -62,24 +62,33 @@ async function loadFromRedis(): Promise<Snapshot> {
       const levelValue = u.leveling?.level ?? null
       const damageValue = damage?.value ?? null
       const wealthValue = wealth?.value ?? null
+      const r = u.rankings
       return {
-        id: u._id,
-        username: u.username,
-        countryId: u.country,
+        bountyValue: r?.userBounty?.value ?? null,
+        casesOpenedValue: r?.userCasesOpened?.value ?? null,
         countryCode: country?.code ?? null,
+        countryId: u.country,
         countryName: country?.name ?? null,
+        damageRank: damage?.rank ?? null,
+        damageValue,
+        gemsPurchasedValue: r?.userGemsPurchased?.value ?? null,
+        id: u._id,
+        isBanned: infos?.isBanned === true,
+        lastConnectionAt: dates?.lastConnectionAt ?? null,
         level: levelValue,
         levelRank: level?.rank ?? null,
         levelTier: toTier(level?.tier),
-        damageRank: damage?.rank ?? null,
-        damageValue,
-        wealthRank: wealth?.rank ?? null,
-        wealthValue,
         militaryRank: u.militaryRank ?? null,
         muName: u.mu ? (muLookup.get(u.mu) ?? null) : null,
-        lastConnectionAt: dates?.lastConnectionAt ?? null,
-        isBanned: infos?.isBanned === true,
         points: computePoints({ level: levelValue, damageValue, wealthValue }),
+        premiumGiftsValue: r?.userPremiumGifts?.value ?? null,
+        premiumMonthsValue: r?.userPremiumMonths?.value ?? null,
+        referralsValue: r?.userReferrals?.value ?? null,
+        terrainValue: r?.userTerrain?.value ?? null,
+        username: u.username,
+        wealthRank: wealth?.rank ?? null,
+        wealthValue,
+        weeklyDamageValue: r?.weeklyUserDamages?.value ?? null,
       }
     })
     .filter(r => r.levelRank !== null)
@@ -96,20 +105,35 @@ async function loadFromRedis(): Promise<Snapshot> {
   const countryRows: CountryRow[] = countries
     .map((c) => {
       const agg = pointsByCountry.get(c._id)
+      const r = c.rankings
+      const unrestPercent = c.unrest?.barMax
+        ? ((c.unrest.bar ?? 0) / c.unrest.barMax) * 100
+        : null
       return {
-        id: c._id,
-        name: c.name,
-        code: c.code,
-        damageRank: c.rankings?.countryDamages?.rank ?? null,
-        damageValue: c.rankings?.countryDamages?.value ?? null,
-        damageTier: c.rankings?.countryDamages?.tier ?? null,
-        weeklyDamageValue: c.rankings?.weeklyCountryDamages?.value ?? null,
-        wealthRank: c.rankings?.countryWealth?.rank ?? null,
-        wealthValue: c.rankings?.countryWealth?.value ?? null,
-        development: c.development ?? null,
-        activePopulation: c.rankings?.countryActivePopulation?.value ?? null,
-        totalPoints: agg?.total ?? 0,
+        activePopulation: r?.countryActivePopulation?.value ?? null,
+        alliesCount: c.allies?.length ?? 0,
         avgPoints: agg ? Math.round(agg.total / agg.count) : null,
+        bountyValue: r?.countryBounty?.value ?? null,
+        code: c.code,
+        damageRank: r?.countryDamages?.rank ?? null,
+        damageTier: r?.countryDamages?.tier ?? null,
+        damageValue: r?.countryDamages?.value ?? null,
+        development: c.development ?? null,
+        id: c._id,
+        money: c.money ?? null,
+        name: c.name,
+        productionBonusValue: r?.countryProductionBonus?.value ?? null,
+        specializedItem: c.specializedItem ?? null,
+        taxIncome: c.taxes?.income ?? null,
+        taxMarket: c.taxes?.market ?? null,
+        taxSelfWork: c.taxes?.selfWork ?? null,
+        totalPoints: agg?.total ?? 0,
+        unrestPercent,
+        warsCount: c.warsWith?.length ?? 0,
+        wealthRank: r?.countryWealth?.rank ?? null,
+        wealthValue: r?.countryWealth?.value ?? null,
+        weeklyDamagePerCitizenValue: r?.weeklyCountryDamagesPerCitizen?.value ?? null,
+        weeklyDamageValue: r?.weeklyCountryDamages?.value ?? null,
       }
     })
     .sort((a, b) => {

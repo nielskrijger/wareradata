@@ -35,6 +35,14 @@ function userSortValue(row: UserRow, sort: string): number | string | null {
     case 'wealthValue': return row.wealthValue
     case 'damageRank': return row.damageRank
     case 'damageValue': return row.damageValue
+    case 'weeklyDamageValue': return row.weeklyDamageValue
+    case 'bountyValue': return row.bountyValue
+    case 'terrainValue': return row.terrainValue
+    case 'referralsValue': return row.referralsValue
+    case 'premiumMonthsValue': return row.premiumMonthsValue
+    case 'premiumGiftsValue': return row.premiumGiftsValue
+    case 'casesOpenedValue': return row.casesOpenedValue
+    case 'gemsPurchasedValue': return row.gemsPurchasedValue
     case 'militaryRank': return row.militaryRank
     case 'muName': return row.muName?.toLowerCase() ?? null
     case 'lastConnectionAt': return row.lastConnectionAt

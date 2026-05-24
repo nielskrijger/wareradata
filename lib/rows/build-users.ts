@@ -20,6 +20,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
       const wealthValue = wealth?.value ?? null
       const r = u.rankings
       const pts = computePoints({ level: levelValue, damageValue, wealthValue })
+      const party = lookups.partyByUser.get(u._id)
 
       return {
         bountyValue: r?.userBounty?.value ?? null,
@@ -41,6 +42,8 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         militaryRank: u.militaryRank ?? null,
         muId: u.mu ?? null,
         muName: u.mu ? (lookups.muNameById.get(u.mu) ?? null) : null,
+        partyId: party?.id ?? null,
+        partyName: party?.name ?? null,
         points: pts.total,
         premiumGiftsValue: r?.userPremiumGifts?.value ?? null,
         premiumMonthsValue: r?.userPremiumMonths?.value ?? null,

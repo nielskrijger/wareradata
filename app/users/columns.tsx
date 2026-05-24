@@ -8,6 +8,7 @@ import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
 import { MUCell } from '@/components/mu-cell'
+import { PartyCell } from '@/components/party-cell'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
@@ -120,6 +121,12 @@ export const userColumns: ColumnDef<UserRow>[] = [
       <MUCell muName={row.original.muName} />
     ),
     meta: { width: 170 },
+  },
+  {
+    accessorKey: 'partyName',
+    header: 'Party',
+    cell: ({ row }) => <PartyCell partyName={row.original.partyName} />,
+    meta: { width: 200 },
   },
   {
     accessorKey: 'lastConnectionAt',

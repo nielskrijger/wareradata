@@ -5,17 +5,9 @@ import type { Party } from '@/lib/warera/schemas'
 import { aggregatePoints } from '@/lib/rows/points-agg'
 
 export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: Lookups): PartyRow[] {
-  // Invert party.members[] → user → party so we can aggregate per-user
-  // points into per-party buckets without round-tripping back through the API.
-  const partyByUser = new Map<string, string>()
-  for (const p of parties) {
-    if (p.members) {
-      for (const uid of p.members) {
-        partyByUser.set(uid, p._id)
-      }
-    }
-  }
-  const pointsByParty = aggregatePoints(userRows, u => partyByUser.get(u.id) ?? null)
+  // partyByUser is built once in buildLookups (also consumed by buildUserRows
+  // to set partyId/partyName on each user row).
+  const pointsByParty = aggregatePoints(userRows, u => lookups.partyByUser.get(u.id)?.id ?? null)
 
   return parties
     .map((p) => {

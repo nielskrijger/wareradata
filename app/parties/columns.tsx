@@ -7,7 +7,7 @@ import type { PartyRow } from '@/lib/rows'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { TruncatedCell } from '@/components/truncated-cell'
 import { wareraUrl } from '@/lib/warera/urls'
 
 export type { PartyRow }
@@ -28,14 +28,7 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
     accessorKey: 'name',
     header: 'Party',
     cell: ({ row }) => (
-      <Tooltip>
-        <TooltipTrigger className="block w-full truncate text-left font-medium">
-          {row.original.name}
-        </TooltipTrigger>
-        <TooltipContent side="top" align="start">
-          {row.original.name}
-        </TooltipContent>
-      </Tooltip>
+      <TruncatedCell text={row.original.name} className="font-medium" />
     ),
     meta: { width: 240 },
   },

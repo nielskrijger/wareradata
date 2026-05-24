@@ -52,7 +52,7 @@ async function loadFromRedis(): Promise<Snapshot> {
     readSnapshot('parties'),
   ])
 
-  const lookups = buildLookups(countries, mus, regions, users)
+  const lookups = buildLookups(countries, mus, regions, users, parties)
   const userRows = buildUserRows(users, lookups)
   const countryRows = buildCountryRows(countries, mus, userRows, lookups)
   const muRows = buildMURows(mus, userRows, lookups)

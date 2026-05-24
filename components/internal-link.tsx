@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils'
 interface Props {
   href: string
   children: ReactNode
-  /**
-   * Render the link text in medium weight. Use sparingly — meant for the
-   * primary identifier in a row (e.g. MU name).
-   */
   bold?: boolean
+  /**
+   * Native browser tooltip. Useful when the visible text is truncated.
+   */
+  title?: string
   className?: string
 }
 
@@ -20,10 +20,11 @@ interface Props {
  * rest, strengthening on hover. Pairs with `ExternalLink` (which is for
  * out-of-site URLs and adds an icon).
  */
-export function InternalLink({ href, children, bold, className }: Props) {
+export function InternalLink({ href, children, bold, title, className }: Props) {
   return (
     <Link
       href={href}
+      title={title}
       className={cn(
         'text-blue-600 hover:text-blue-800 hover:underline',
         bold && 'font-medium',

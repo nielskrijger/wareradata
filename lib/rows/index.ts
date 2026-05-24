@@ -25,6 +25,8 @@ export interface UserRow {
   militaryRank: number | null
   muId: string | null
   muName: string | null
+  partyId: string | null
+  partyName: string | null
   points: number
   premiumGiftsValue: number | null
   premiumMonthsValue: number | null

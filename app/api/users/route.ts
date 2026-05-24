@@ -13,6 +13,7 @@ import { RANKING_TIERS } from '@/lib/warera/schemas'
 const userFieldAliases: FieldAliases = {
   country: 'countryCode',
   mu: 'muName',
+  party: 'partyName',
   rank: 'levelRank',
   damage: 'damageValue',
   wealth: 'wealthValue',
@@ -54,6 +55,7 @@ function userSortValue(row: UserRow, sort: string): number | string | null {
     case 'gemsPurchasedValue': return row.gemsPurchasedValue
     case 'militaryRank': return row.militaryRank
     case 'muName': return row.muName?.toLowerCase() ?? null
+    case 'partyName': return row.partyName?.toLowerCase() ?? null
     case 'lastConnectionAt': return row.lastConnectionAt
     case 'isBanned': return row.isBanned ? 1 : 0
     case 'points': return row.points

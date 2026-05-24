@@ -1,12 +1,12 @@
 'use client'
 
-import type { ColumnDef, RowData, SortingState, VisibilityState } from '@tanstack/react-table'
+import type { ColumnDef, RowData, VisibilityState } from '@tanstack/react-table'
 import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import { ChevronDown } from 'lucide-react'
-import * as React from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils'
 
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
+import { useTableUrlState } from './use-table-url-state'
 
 /**
  * Extend TanStack's `columnDef.meta` so column defs can declare `meta:
@@ -67,8 +68,6 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string
 }
 
-const FILTER_DEBOUNCE_MS = 250
-
 export function DataTable<TData, TValue>({
   columns,
   initialData,
@@ -77,67 +76,45 @@ export function DataTable<TData, TValue>({
   fetchPage,
   searchPlaceholder = 'Filter…',
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([initialSort])
-  const [filterInput, setFilterInput] = React.useState('')
-  const [filter, setFilter] = React.useState('')
-  const [pageIndex, setPageIndex] = React.useState(0)
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const {
+    q,
+    filterInput,
+    setFilterInput,
+    sorting,
+    setSorting,
+    pageIndex,
+    setPageIndex,
+    isAtInitialState,
+  } = useTableUrlState({ initialSort })
 
-  const [data, setData] = React.useState<PageResult<TData>>(initialData)
-  const [isPending, startTransition] = React.useTransition()
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [data, setData] = useState<PageResult<TData>>(initialData)
+  const [isPending, startTransition] = useTransition()
 
-  // Debounce typing in the filter box. Resetting the page to 0 happens via
-  // the fetch effect when `filter` changes below.
-  React.useEffect(() => {
-    if (filterInput === filter) {
-      return
-    }
-    const handle = setTimeout(setFilter, FILTER_DEBOUNCE_MS, filterInput)
-    return () => clearTimeout(handle)
-  }, [filterInput, filter])
+  // Skip the very first fetch when state matches initialData (no URL params).
+  // After any state change, fetch from the server.
+  const firstRenderRef = useRef(true)
 
-  const sortKey = sorting[0]
-    ? `${sorting[0].id}:${sorting[0].desc ? 'desc' : 'asc'}`
-    : ''
-  const initialSortKey = `${initialSort.id}:${initialSort.desc ? 'desc' : 'asc'}`
-
-  // Effective page index: any change to sort or filter snaps us back to page 0
-  // without an extra render. The Next/Previous buttons drive `pageIndex`
-  // directly when neither sort nor filter has changed since the last reset.
-  const lastResetKeyRef = React.useRef(`${sortKey}|${filter}`)
-  const currentResetKey = `${sortKey}|${filter}`
-  if (lastResetKeyRef.current !== currentResetKey) {
-    lastResetKeyRef.current = currentResetKey
-    if (pageIndex !== 0) {
-      setPageIndex(0)
-    }
-  }
-
-  // Skip the very first fetch — initialData already covers `pageIndex=0, no
-  // filter, initial sort`. After any state change, fetch from the server.
-  const firstRenderRef = React.useRef(true)
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (firstRenderRef.current) {
       firstRenderRef.current = false
-      if (pageIndex === 0 && filter === '' && sortKey === initialSortKey) {
+      if (isAtInitialState) {
         return
       }
     }
+    const first = sorting[0]
     const req: PageRequest = {
       page: pageIndex,
       pageSize,
-      sort: sorting[0]?.id ?? null,
-      dir: sorting[0]?.desc ? 'desc' : 'asc',
-      filter,
+      sort: first?.id ?? null,
+      dir: first?.desc ? 'desc' : 'asc',
+      filter: q,
     }
     startTransition(async () => {
       const result = await fetchPage(req)
       setData(result)
     })
-    // We intentionally omit `sorting` from deps: it's covered by `sortKey`.
-    // eslint-disable-next-line react/exhaustive-deps
-  }, [pageIndex, pageSize, sortKey, filter, fetchPage, initialSortKey])
+  }, [pageIndex, pageSize, sorting, q, fetchPage, isAtInitialState])
 
   const pageCount = Math.max(1, Math.ceil(data.total / pageSize))
 

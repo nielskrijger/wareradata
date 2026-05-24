@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import type { ReactNode } from 'react'
 import { Bebas_Neue, Geist, Geist_Mono } from 'next/font/google'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import { SiteNav } from '@/components/site-nav'
 
@@ -47,15 +49,17 @@ export const metadata: Metadata = {
 }
 
 interface Props {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export default function RootLayout({ children }: Props) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <SiteNav />
-        {children}
+        <NuqsAdapter>
+          <SiteNav />
+          {children}
+        </NuqsAdapter>
       </body>
     </html>
   )

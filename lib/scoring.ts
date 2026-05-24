@@ -5,8 +5,8 @@
  * already get a separate visual badge.
  */
 const LEVEL_POINTS = 1_000 // points per level (lvl 50 = 50,000 pts)
-const DAMAGE_DIVISOR = 1_000 // 1 pt per 1k damage (200M dmg = 200,000 pts)
-const WEALTH_DIVISOR = 10 // 1 pt per 10 gold  (100K wealth = 10,000 pts)
+const DAMAGE_DIVISOR = 2_000 // 1 pt per 2k damage (200M dmg = 100,000 pts)
+const WEALTH_DIVISOR = 1 // 1 pt per gold (100K wealth = 100,000 pts)
 
 interface PointsInput {
   level: number | null

@@ -21,7 +21,7 @@ export function CompactNumber({ value }: Props) {
     return <>—</>
   }
   const text = compactNumber.format(value)
-  const match = text.match(/^([\d.]+)(\D+)$/)
+  const match = text.match(/^([\d.,]+)([A-Z]+)$/i)
   if (!match) {
     return <>{text}</>
   }

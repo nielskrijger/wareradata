@@ -200,9 +200,8 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   },
   {
     id: 'warera',
-    header: '',
+    header: 'Link',
     enableSorting: false,
-    enableHiding: false,
     cell: ({ row }) => (
       <ExternalLink href={wareraUrl('country', row.original.id)}>
         WarEra.io

@@ -14,6 +14,8 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
@@ -168,6 +170,13 @@ export function DataTable<TData, TValue>({
             Columns <ChevronDown className="ml-1 h-4 w-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="!w-auto min-w-40">
+            <DropdownMenuItem closeOnClick={false} onClick={() => table.toggleAllColumnsVisible(true)}>
+              Show all
+            </DropdownMenuItem>
+            <DropdownMenuItem closeOnClick={false} onClick={() => table.toggleAllColumnsVisible(false)}>
+              Hide all
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             {table
               .getAllColumns()
               .filter(c => c.getCanHide())

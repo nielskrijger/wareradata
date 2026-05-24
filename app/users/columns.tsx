@@ -181,9 +181,8 @@ export const userColumns: ColumnDef<UserRow>[] = [
   },
   {
     id: 'warera',
-    header: '',
+    header: 'Link',
     enableSorting: false,
-    enableHiding: false,
     cell: ({ row }) => (
       <ExternalLink href={wareraUrl('user', row.original.id)}>
         WarEra.io

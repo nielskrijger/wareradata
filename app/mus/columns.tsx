@@ -161,9 +161,8 @@ export const muColumns: ColumnDef<MURow>[] = [
   },
   {
     id: 'warera',
-    header: '',
+    header: 'Link',
     enableSorting: false,
-    enableHiding: false,
     cell: ({ row }) => (
       <ExternalLink href={wareraUrl('mu', row.original.id)}>
         WarEra.io

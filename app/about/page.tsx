@@ -61,6 +61,35 @@ export default function AboutPage() {
           ~187,000 points; a mid-tier player (level 30, 5M damage, 2K wealth)
           scores ~35,000.
         </p>
+        <p className="text-muted-foreground text-sm">
+          The scoring formula is deliberately kept simple so it stays easy
+          to understand at a glance. The full breakdown is visible in a
+          tooltip on every Points value throughout the site.
+        </p>
+        <h3 className="pt-2 text-base font-semibold">Caveats and limitations</h3>
+        <p className="text-muted-foreground text-sm">
+          Levels translate into skill points and thus into eco and war
+          potential, which is why they&apos;re included in the score. But the
+          early levels come quickly: a new account can hit level 12 in a
+          week, banking ~12,000 points almost for free, while higher levels
+          take much longer. As a result, most of a beginner&apos;s score is
+          leveling, while a veteran&apos;s score is mostly damage and wealth
+          accumulated over months.
+        </p>
+        <p className="text-muted-foreground text-sm">
+          That said, after the first month the curve flattens out
+          considerably. The typical player aged 1–3 months sits around level
+          21 at ~520 points/day; at 3–6 months it&apos;s level 28 at ~410
+          points/day; at 6–12 months it&apos;s level 37 at ~280 points/day.
+          The drop is real, but far less dramatic than the first-week numbers
+          might suggest.
+        </p>
+        <p className="text-muted-foreground text-sm">
+          Donated money isn&apos;t exposed on a per-user basis in the WarEra
+          API, so it can&apos;t be counted in the score the way damage is. Eco
+          players who heavily donate to their country are scored lower than
+          their real contribution would suggest.
+        </p>
       </section>
 
       <section className="max-w-2xl space-y-2">

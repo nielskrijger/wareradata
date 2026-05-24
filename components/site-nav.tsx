@@ -18,10 +18,10 @@ export function SiteNav() {
   const pathname = usePathname()
   return (
     <nav className="bg-background sticky top-0 z-10 border-b">
-      <div className="flex items-center gap-6 px-6 py-3 sm:px-8 lg:px-12">
+      <div className="flex items-center gap-3 px-6 py-3 sm:gap-6 sm:px-8 lg:px-12">
         <Link href="/users" className="font-brand flex items-center gap-2 text-[20px] tracking-wide">
           <Logo />
-          WARERA DATA
+          <span className="hidden sm:inline">WARERA DATA</span>
         </Link>
         <ul className="flex items-center gap-1 text-sm">
           {links.map((link) => {

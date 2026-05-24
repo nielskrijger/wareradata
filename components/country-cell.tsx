@@ -19,9 +19,13 @@ export function CountryCell({ countryCode, countryName }: Props) {
   }
   const label = countryName ?? countryCode ?? ''
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 min-w-0">
       <Flag code={countryCode} />
-      <InternalLink href={`/users?q=${encodeURIComponent(`country:${countryCode}`)}`}>
+      <InternalLink
+        href={`/users?q=${encodeURIComponent(`country:${countryCode}`)}`}
+        title={label}
+        className="truncate"
+      >
         {label}
       </InternalLink>
     </div>

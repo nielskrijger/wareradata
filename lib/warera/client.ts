@@ -68,13 +68,20 @@ async function awaitPacer() {
   }
 }
 
+const LOG_REQUESTS = process.env.WARERA_LOG_REQUESTS === '1'
+
 /**
  * Fetches with automatic retry on transient failures: 429 (rate limit), 5xx
  * upstream errors, and network throws. 4xx other than 429 fall through.
+ *
+ * Set `WARERA_LOG_REQUESTS=1` to emit one line per request
+ * (`[warera] <label> <status> <ms>`). The scrape workflow turns this on;
+ * the Next.js app leaves it off to avoid spamming Vercel logs.
  */
 async function fetchWithRetry(url: URL, init: RequestInit, label: string): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     await awaitPacer()
+    const started = Date.now()
     let res: Response
     try {
       res = await fetch(url, init)
@@ -85,6 +92,10 @@ async function fetchWithRetry(url: URL, init: RequestInit, label: string): Promi
       console.warn(`[warera] network error on ${label} (attempt ${attempt + 1}); retrying in ${TRANSIENT_BACKOFF_SECONDS}s`)
       await sleep(TRANSIENT_BACKOFF_SECONDS * 1000)
       continue
+    }
+
+    if (LOG_REQUESTS) {
+      console.warn(`[warera] ${label} ${res.status} ${Date.now() - started}ms`)
     }
 
     if (res.status === 429) {

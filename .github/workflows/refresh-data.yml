@@ -28,3 +28,4 @@ jobs:
           WARERA_API_KEY: ${{ secrets.WARERA_API_KEY }}
           KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
           KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}
+          WARERA_LOG_REQUESTS: '1'

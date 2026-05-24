@@ -128,6 +128,7 @@ const muRankings = z
   .looseObject({
     muBounty: rankingEntry.optional(),
     muDamages: rankingEntry.optional(),
+    muReputation: rankingEntry.optional(),
     muTerrain: rankingEntry.optional(),
     muWealth: rankingEntry.optional(),
     muWeeklyDamages: rankingEntry.optional(),
@@ -136,9 +137,15 @@ const muRankings = z
 
 export const mu = z.looseObject({
   _id: z.string(),
+  activeUpgradeLevels: z.looseObject({
+    dormitories: z.number().optional(),
+    headquarters: z.number().optional(),
+  }).optional(),
   avatarUrl: z.string().nullish(),
   createdAt: z.string().optional(),
+  investedMoneyByUsers: z.record(z.string(), z.number()).optional(),
   members: z.array(z.string()).optional(),
+  mercenaryReputation: z.number().optional(),
   name: z.string(),
   rankings: muRankings,
   region: z.string().optional(),

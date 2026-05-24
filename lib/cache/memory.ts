@@ -1,4 +1,4 @@
-import type { CountryRow, UserRow } from '@/lib/rows'
+import type { CountryRow, MURow, UserRow } from '@/lib/rows'
 
 import type { RankingTier } from '@/lib/warera/schemas'
 import { computePoints } from '@/lib/scoring'
@@ -25,6 +25,7 @@ const TTL_MS = 5 * 60 * 1000
 interface Snapshot {
   users: UserRow[]
   countries: CountryRow[]
+  mus: MURow[]
 }
 
 interface CacheEntry {
@@ -79,6 +80,7 @@ async function loadFromRedis(): Promise<Snapshot> {
         levelRank: level?.rank ?? null,
         levelTier: toTier(level?.tier),
         militaryRank: u.militaryRank ?? null,
+        muId: u.mu ?? null,
         muName: u.mu ? (muLookup.get(u.mu) ?? null) : null,
         points: computePoints({ level: levelValue, damageValue, wealthValue }),
         premiumGiftsValue: r?.userPremiumGifts?.value ?? null,
@@ -146,7 +148,48 @@ async function loadFromRedis(): Promise<Snapshot> {
       return a.damageRank - b.damageRank
     })
 
-  return { users: userRows, countries: countryRows }
+  const pointsByMu = new Map<string, { total: number, count: number }>()
+  for (const u of userRows) {
+    if (!u.muId) {
+      continue
+    }
+    const entry = pointsByMu.get(u.muId) ?? { total: 0, count: 0 }
+    entry.total += u.points
+    entry.count += 1
+    pointsByMu.set(u.muId, entry)
+  }
+
+  const muRows: MURow[] = mus
+    .map((m) => {
+      const agg = pointsByMu.get(m._id)
+      const r = m.rankings
+      const investedMoney = m.investedMoneyByUsers
+        ? Object.values(m.investedMoneyByUsers).reduce((sum, n) => sum + n, 0)
+        : 0
+      return {
+        avgPoints: agg ? Math.round(agg.total / agg.count) : null,
+        bountyValue: r?.muBounty?.value ?? null,
+        damageRank: r?.muDamages?.rank ?? null,
+        damageTier: toTier(r?.muDamages?.tier),
+        damageValue: r?.muDamages?.value ?? null,
+        dormitoriesLevel: m.activeUpgradeLevels?.dormitories ?? null,
+        headquartersLevel: m.activeUpgradeLevels?.headquarters ?? null,
+        id: m._id,
+        investedMoney,
+        memberCount: m.members?.length ?? 0,
+        mercenaryReputation: m.mercenaryReputation ?? null,
+        name: m.name,
+        reputationValue: r?.muReputation?.value ?? null,
+        terrainValue: r?.muTerrain?.value ?? null,
+        totalPoints: agg?.total ?? 0,
+        wealthRank: r?.muWealth?.rank ?? null,
+        wealthValue: r?.muWealth?.value ?? null,
+        weeklyDamageValue: r?.muWeeklyDamages?.value ?? null,
+      }
+    })
+    .sort((a, b) => (b.totalPoints - a.totalPoints))
+
+  return { users: userRows, countries: countryRows, mus: muRows }
 }
 
 export function getSnapshot(): Promise<Snapshot> {

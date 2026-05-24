@@ -21,6 +21,7 @@ export interface UserRow {
   levelRank: number | null
   levelTier: RankingTier | null
   militaryRank: number | null
+  muId: string | null
   muName: string | null
   points: number
   premiumGiftsValue: number | null
@@ -60,5 +61,29 @@ export interface CountryRow {
   wealthRank: number | null
   wealthValue: number | null
   weeklyDamagePerCitizenValue: number | null
+  weeklyDamageValue: number | null
+}
+
+/**
+ * Projected MU (military unit) row used by /mus and /api/mus.
+ */
+export interface MURow {
+  avgPoints: number | null
+  bountyValue: number | null
+  damageRank: number | null
+  damageTier: RankingTier | null
+  damageValue: number | null
+  dormitoriesLevel: number | null
+  headquartersLevel: number | null
+  id: string
+  investedMoney: number
+  memberCount: number
+  mercenaryReputation: number | null
+  name: string
+  reputationValue: number | null
+  terrainValue: number | null
+  totalPoints: number
+  wealthRank: number | null
+  wealthValue: number | null
   weeklyDamageValue: number | null
 }

@@ -6,6 +6,7 @@ import type { MURow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
 import { ExternalLink } from '@/components/external-link'
+import { Flag } from '@/components/flag'
 import { TierBadge } from '@/components/tier-badge'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -21,6 +22,31 @@ export const muColumns: ColumnDef<MURow>[] = [
       </ExternalLink>
     ),
     meta: { minWidth: 220 },
+  },
+  {
+    accessorKey: 'countryName',
+    header: 'Country',
+    cell: ({ row }) => {
+      const { countryId, countryCode, countryName } = row.original
+      if (!countryName) {
+        return '—'
+      }
+      return (
+        <div className="flex items-center gap-2">
+          <Flag code={countryCode} />
+          {countryId
+            ? <ExternalLink href={wareraUrl('country', countryId)}>{countryName}</ExternalLink>
+            : <span>{countryName}</span>}
+        </div>
+      )
+    },
+    meta: { minWidth: 180 },
+  },
+  {
+    accessorKey: 'regionName',
+    header: 'Region',
+    cell: ({ row }) => row.original.regionName ?? '—',
+    meta: { minWidth: 140 },
   },
   {
     accessorKey: 'totalPoints',
@@ -42,20 +68,6 @@ export const muColumns: ColumnDef<MURow>[] = [
     cell: ({ row }) => row.original.memberCount.toLocaleString(),
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 90 },
-  },
-  {
-    accessorKey: 'dormitoriesLevel',
-    header: 'Dorms',
-    cell: ({ row }) => row.original.dormitoriesLevel ?? '—',
-    sortDescFirst: true,
-    meta: { align: 'right', minWidth: 80 },
-  },
-  {
-    accessorKey: 'headquartersLevel',
-    header: 'HQ',
-    cell: ({ row }) => row.original.headquartersLevel ?? '—',
-    sortDescFirst: true,
-    meta: { align: 'right', minWidth: 70 },
   },
   {
     accessorKey: 'damageRank',
@@ -133,5 +145,19 @@ export const muColumns: ColumnDef<MURow>[] = [
     cell: ({ row }) => <CompactNumber value={row.original.investedMoney} />,
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 100 },
+  },
+  {
+    accessorKey: 'dormitoriesLevel',
+    header: 'Dorms',
+    cell: ({ row }) => row.original.dormitoriesLevel ?? '—',
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 80 },
+  },
+  {
+    accessorKey: 'headquartersLevel',
+    header: 'HQ',
+    cell: ({ row }) => row.original.headquartersLevel ?? '—',
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 70 },
   },
 ]

@@ -1,9 +1,10 @@
-import type { Country, MU, Ranking, RankingType, UserLite } from './schemas'
+import type { Country, MU, Ranking, RankingType, Region, UserLite } from './schemas'
 import { trpcBatch, trpcQuery } from './client'
 import {
   countriesList,
   muPage,
   ranking,
+  regionsObject,
   userLite,
   usersByCountryPage,
 } from './schemas'
@@ -58,6 +59,19 @@ export function getUserLite(userIds: string[], options: ScrapeRequestOptions = {
     userLite,
     { batchSize: 150, noCache: options.noCache },
   )
+}
+
+// --- Regions --------------------------------------------------------------
+
+/**
+ * Returns every region as an array. The API hands them back as an object
+ * keyed by id; we flatten for parity with other entity scrapes.
+ */
+export async function getAllRegions(options: ScrapeRequestOptions = {}): Promise<Region[]> {
+  const obj = await trpcQuery('region.getRegionsObject', undefined, regionsObject, {
+    noCache: options.noCache,
+  })
+  return Object.values(obj)
 }
 
 // --- MUs ------------------------------------------------------------------

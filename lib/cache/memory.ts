@@ -42,14 +42,16 @@ function toTier(value: unknown): RankingTier | null {
 }
 
 async function loadFromRedis(): Promise<Snapshot> {
-  const [users, countries, mus] = await Promise.all([
+  const [users, countries, mus, regions] = await Promise.all([
     readAllUsers(),
     readSnapshot('countries'),
     readSnapshot('mus'),
+    readSnapshot('regions'),
   ])
 
   const countryLookup = new Map(countries.map(c => [c._id, { name: c.name, code: c.code }]))
   const muLookup = new Map(mus.map(m => [m._id, m.name]))
+  const regionLookup = new Map(regions.map(r => [r._id, r]))
 
   const userRows: UserRow[] = users
     .map((u) => {
@@ -64,6 +66,7 @@ async function loadFromRedis(): Promise<Snapshot> {
       const damageValue = damage?.value ?? null
       const wealthValue = wealth?.value ?? null
       const r = u.rankings
+
       return {
         bountyValue: r?.userBounty?.value ?? null,
         casesOpenedValue: r?.userCasesOpened?.value ?? null,
@@ -111,6 +114,7 @@ async function loadFromRedis(): Promise<Snapshot> {
       const unrestPercent = c.unrest?.barMax
         ? ((c.unrest.bar ?? 0) / c.unrest.barMax) * 100
         : null
+
       return {
         activePopulation: r?.countryActivePopulation?.value ?? null,
         alliesCount: c.allies?.length ?? 0,
@@ -166,9 +170,18 @@ async function loadFromRedis(): Promise<Snapshot> {
       const investedMoney = m.investedMoneyByUsers
         ? Object.values(m.investedMoneyByUsers).reduce((sum, n) => sum + n, 0)
         : 0
+      const region = m.region ? regionLookup.get(m.region) : undefined
+
+      // MUs are headquartered in a region; the region's *initial* country is
+      // the MU's spiritual home (current owner can change as territory shifts).
+      const country = region?.initialCountry ? countryLookup.get(region.initialCountry) : undefined
+
       return {
         avgPoints: agg ? Math.round(agg.total / agg.count) : null,
         bountyValue: r?.muBounty?.value ?? null,
+        countryCode: country?.code ?? null,
+        countryId: region?.initialCountry ?? null,
+        countryName: country?.name ?? null,
         damageRank: r?.muDamages?.rank ?? null,
         damageTier: toTier(r?.muDamages?.tier),
         damageValue: r?.muDamages?.value ?? null,
@@ -179,6 +192,7 @@ async function loadFromRedis(): Promise<Snapshot> {
         memberCount: m.members?.length ?? 0,
         mercenaryReputation: m.mercenaryReputation ?? null,
         name: m.name,
+        regionName: region?.name ?? null,
         reputationValue: r?.muReputation?.value ?? null,
         terrainValue: r?.muTerrain?.value ?? null,
         totalPoints: agg?.total ?? 0,

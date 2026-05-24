@@ -161,6 +161,30 @@ export const muPage = z.looseObject({
   nextCursor: z.string().nullish(),
 })
 
+// --- Regions --------------------------------------------------------------
+
+export const region = z.looseObject({
+  _id: z.string(),
+  baseDevelopment: z.number().optional(),
+  biome: z.string().optional(),
+  climate: z.string().optional(),
+  code: z.string().optional(),
+  country: z.string().optional(),
+  development: z.number().optional(),
+  initialCountry: z.string().optional(),
+  isCapital: z.boolean().optional(),
+  mainCity: z.string().optional(),
+  name: z.string(),
+  strategicResource: z.string().optional(),
+})
+
+export type Region = z.infer<typeof region>
+
+/**
+ * region.getRegionsObject returns regions as an object keyed by id, not an array.
+ */
+export const regionsObject = z.record(z.string(), region)
+
 // --- Snapshot meta --------------------------------------------------------
 
 export const snapshotMeta = z.looseObject({

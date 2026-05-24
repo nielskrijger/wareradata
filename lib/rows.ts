@@ -70,6 +70,9 @@ export interface CountryRow {
 export interface MURow {
   avgPoints: number | null
   bountyValue: number | null
+  countryCode: string | null
+  countryId: string | null
+  countryName: string | null
   damageRank: number | null
   damageTier: RankingTier | null
   damageValue: number | null
@@ -80,6 +83,7 @@ export interface MURow {
   memberCount: number
   mercenaryReputation: number | null
   name: string
+  regionName: string | null
   reputationValue: number | null
   terrainValue: number | null
   totalPoints: number

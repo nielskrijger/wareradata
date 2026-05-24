@@ -37,7 +37,7 @@ export function MUsTable({ initial }: Props) {
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}
       fetchPage={fetchMUs}
-      searchPlaceholder="Filter by MU name…"
+      searchPlaceholder="Filter by MU name or country…"
     />
   )
 }

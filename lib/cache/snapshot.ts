@@ -1,7 +1,7 @@
 import type { userLite } from '@/lib/warera/schemas'
 
 import { z } from 'zod'
-import { countriesList, musList, snapshotMeta, usersList } from '@/lib/warera/schemas'
+import { countriesList, musList, region, snapshotMeta, usersList } from '@/lib/warera/schemas'
 
 import { redis } from './redis'
 
@@ -12,6 +12,7 @@ const KEY_PREFIX = 'wareradata:snapshot'
 const schemas = {
   countries: countriesList,
   mus: musList,
+  regions: z.array(region),
   meta: snapshotMeta,
 } as const
 

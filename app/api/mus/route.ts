@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic'
  * Lowercased blob the global filter substring matches against.
  */
 function muHaystack(row: MURow): string {
-  return row.name.toLowerCase()
+  return `${row.name} ${row.countryName ?? ''} ${row.countryCode ?? ''} ${row.regionName ?? ''}`.toLowerCase()
 }
 
 /**
@@ -28,6 +28,7 @@ function muSortValue(row: MURow, sort: string): number | string | null {
   switch (sort) {
     case 'avgPoints': return row.avgPoints
     case 'bountyValue': return row.bountyValue
+    case 'countryName': return row.countryName?.toLowerCase() ?? null
     case 'damageRank': return row.damageRank
     case 'damageTier': return row.damageTier ? tierIndex[row.damageTier] : null
     case 'damageValue': return row.damageValue
@@ -37,6 +38,7 @@ function muSortValue(row: MURow, sort: string): number | string | null {
     case 'memberCount': return row.memberCount
     case 'mercenaryReputation': return row.mercenaryReputation
     case 'name': return row.name.toLowerCase()
+    case 'regionName': return row.regionName?.toLowerCase() ?? null
     case 'reputationValue': return row.reputationValue
     case 'terrainValue': return row.terrainValue
     case 'totalPoints': return row.totalPoints

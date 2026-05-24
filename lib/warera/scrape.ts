@@ -2,13 +2,13 @@ import type { SnapshotMeta, UserLite } from './schemas'
 
 import { writeSnapshot, writeUsersSharded } from '@/lib/cache/snapshot'
 
-import { getAllCountries, getAllMUs, getUserIdsForCountry, getUserLite } from './endpoints'
+import { getAllCountries, getAllMUs, getAllRegions, getUserIdsForCountry, getUserLite } from './endpoints'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
 interface ScrapeResult {
   scrapedAt: string
-  counts: { countries: number, users: number, mus: number }
+  counts: { countries: number, users: number, mus: number, regions: number }
   durationMs: number
 }
 
@@ -67,26 +67,41 @@ export async function runFullScrape(): Promise<ScrapeResult> {
   const mus = await getAllMUs(opts)
   console.warn(`[scrape] fetched ${mus.length} MUs`)
 
+  // 5. Regions — single call, returns ~700 regions as an object.
+  const regions = await getAllRegions(opts)
+  console.warn(`[scrape] fetched ${regions.length} regions`)
+
   const durationMs = Date.now() - start
   const scrapedAt = new Date().toISOString()
   const meta: SnapshotMeta = {
     scrapedAt,
-    entityCounts: { countries: countries.length, users: users.length, mus: mus.length },
+    entityCounts: {
+      countries: countries.length,
+      users: users.length,
+      mus: mus.length,
+      regions: regions.length,
+    },
     scrapeDurationMs: durationMs,
   }
 
-  // 5. Write to Redis. Users are sharded; everything else fits a single key.
+  // 6. Write to Redis. Users are sharded; everything else fits a single key.
   await writeUsersSharded(usersByCountry)
   await Promise.all([
     writeSnapshot('countries', countries),
     writeSnapshot('mus', mus),
+    writeSnapshot('regions', regions),
     writeSnapshot('meta', meta),
   ])
   console.warn(`[scrape] wrote snapshot in ${durationMs}ms`)
 
   return {
     scrapedAt,
-    counts: { countries: countries.length, users: users.length, mus: mus.length },
+    counts: {
+      countries: countries.length,
+      users: users.length,
+      mus: mus.length,
+      regions: regions.length,
+    },
     durationMs,
   }
 }

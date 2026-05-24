@@ -26,6 +26,7 @@
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
+  --color-table-surface: var(--table-surface);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
@@ -67,6 +68,10 @@
   --destructive: oklch(0.577 0.245 27.325);
   --heat-green: oklch(0.72 0.19 145);
   --heat-red: oklch(0.63 0.24 27);
+  /* Opaque equivalent of the table fill, for sticky cells that can't be
+     translucent (scrolled columns would bleed through). Light mode's table
+     has no overlay, so this is just the page background. */
+  --table-surface: var(--background);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -102,6 +107,9 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  /* Matches the dark table fill (page bg + ~7.5% white from dark:bg-input/50),
+     but opaque so sticky cells don't reveal scrolled columns underneath. */
+  --table-surface: color-mix(in oklab, oklch(1 0 0) 7.5%, var(--background));
   --heat-green: oklch(0.8 0.2 145);
   --heat-red: oklch(0.7 0.22 27);
   --border: oklch(1 0 0 / 10%);

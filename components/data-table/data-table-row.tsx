@@ -3,19 +3,26 @@ import type { Row } from '@tanstack/react-table'
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { EMPTY } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 interface Props<TData> {
   row: Row<TData>
 }
 
+// Pins the first column while the rest scroll horizontally. bg-table-surface
+// matches the table fill (opaque, so scrolled columns don't bleed through);
+// a soft right-edge shadow signals the pin without recoloring the column.
+const STICKY = 'bg-table-surface sticky left-0 z-10 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.35)]'
+
 export function DataTableRow<TData>({ row }: Props<TData>) {
   return (
     <TableRow>
-      {row.getVisibleCells().map((cell) => {
+      {row.getVisibleCells().map((cell, index) => {
         const meta = cell.column.columnDef.meta
         const align = meta?.align ?? 'left'
         const width = meta?.width
         const style = width ? { width: `${width}px` } : undefined
+        const sticky = index === 0 ? STICKY : undefined
 
         // Cells that render the bare empty sentinel get muted centrally, so
         // every `?? EMPTY` column reads grey without per-column styling.
@@ -28,7 +35,7 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
           return (
             <TableCell
               key={cell.id}
-              className={align === 'right' ? 'text-muted-foreground text-right tabular-nums' : 'text-muted-foreground'}
+              className={cn(align === 'right' ? 'text-muted-foreground text-right tabular-nums' : 'text-muted-foreground', sticky)}
               style={style}
             >
               {EMPTY}
@@ -54,7 +61,7 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
         return (
           <TableCell
             key={cell.id}
-            className={align === 'right' ? 'text-right tabular-nums' : undefined}
+            className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, sticky)}
             style={style}
           >
             {wrapped}

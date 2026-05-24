@@ -240,8 +240,8 @@ export function DataTable<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map(hg => (
               <TableRow key={hg.id}>
-                {hg.headers.map(header => (
-                  <DataTableHeaderCell key={header.id} header={header} />
+                {hg.headers.map((header, index) => (
+                  <DataTableHeaderCell key={header.id} header={header} sticky={index === 0} />
                 ))}
               </TableRow>
             ))}

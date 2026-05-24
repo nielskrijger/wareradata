@@ -9,17 +9,21 @@ import { SortIcon } from './sort-icon'
 
 interface Props<TData> {
   header: Header<TData, unknown>
+  sticky?: boolean
 }
 
-export function DataTableHeaderCell<TData>({ header }: Props<TData>) {
+// Above the body's sticky cells (z-10) so the top-left corner stays on top.
+const STICKY = 'bg-table-surface sticky left-0 z-20 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.35)]'
+
+export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
   if (header.isPlaceholder) {
-    return <TableHead />
+    return <TableHead className={sticky ? STICKY : undefined} />
   }
   const canSort = header.column.getCanSort()
   const sorted = header.column.getIsSorted()
   const align = header.column.columnDef.meta?.align ?? 'left'
   const width = header.column.columnDef.meta?.width
-  const headClass = align === 'right' ? 'text-right' : undefined
+  const headClass = cn(align === 'right' ? 'text-right' : undefined, sticky && STICKY)
   const style = width ? { width: `${width}px` } : undefined
   const rendered = flexRender(header.column.columnDef.header, header.getContext())
 

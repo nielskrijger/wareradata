@@ -52,7 +52,9 @@ export default function AboutPage() {
           </li>
           <li>
             <strong className="text-foreground">Wealth</strong>
-            : 1 point per gold. A player with 100K wealth gets 100,000 points.
+            : 1 point per unit of total assets (gold + equipment + weapons +
+            items, as valued by the game). A player with 100K wealth gets
+            100,000 points.
           </li>
         </ul>
         <p className="text-muted-foreground text-sm">

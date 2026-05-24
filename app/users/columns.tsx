@@ -5,8 +5,10 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { UserRow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
+import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
-import { Flag } from '@/components/flag'
+import { MUCell } from '@/components/mu-cell'
+import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
 import { formatRelativeTime } from '@/lib/format'
@@ -20,9 +22,11 @@ export const userColumns: ColumnDef<UserRow>[] = [
     header: 'User',
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <ExternalLink href={wareraUrl('user', row.original.id)}>
-          <span className="font-medium">{row.original.username}</span>
-        </ExternalLink>
+        <span className="font-medium">{row.original.username}</span>
+        <ExternalLink
+          href={wareraUrl('user', row.original.id)}
+          label={`Open ${row.original.username} on warera.io`}
+        />
         {row.original.isBanned && <Badge className="bg-red-500/15 text-red-900">banned</Badge>}
       </div>
     ),
@@ -31,25 +35,27 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'points',
     header: 'Points',
-    cell: ({ row }) => row.original.points.toLocaleString(),
+    cell: ({ row }) => (
+      <PointsBreakdownCell
+        total={row.original.points}
+        level={row.original.levelPoints}
+        damage={row.original.damagePoints}
+        wealth={row.original.wealthPoints}
+      />
+    ),
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 90 },
   },
   {
     accessorKey: 'countryCode',
     header: 'Country',
-    cell: ({ row }) => {
-      const { countryId, countryCode, countryName } = row.original
-      if (!countryCode) {
-        return '—'
-      }
-      return (
-        <div className="flex items-center gap-2">
-          <Flag code={countryCode} />
-          <ExternalLink href={wareraUrl('country', countryId)}>{countryName ?? ''}</ExternalLink>
-        </div>
-      )
-    },
+    cell: ({ row }) => (
+      <CountryCell
+        countryId={row.original.countryId}
+        countryCode={row.original.countryCode}
+        countryName={row.original.countryName}
+      />
+    ),
     meta: { minWidth: 180 },
   },
   {
@@ -115,7 +121,9 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'muName',
     header: 'MU',
-    cell: ({ row }) => row.original.muName ?? '—',
+    cell: ({ row }) => (
+      <MUCell muId={row.original.muId} muName={row.original.muName} />
+    ),
     meta: { minWidth: 160 },
   },
   {

@@ -3,7 +3,9 @@ import type { ReactNode } from 'react'
 import { Bebas_Neue, Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
+import { SiteFooter } from '@/components/site-footer'
 import { SiteNav } from '@/components/site-nav'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 import 'flag-icons/css/flag-icons.min.css'
 import './globals.css'
@@ -57,8 +59,11 @@ export default function RootLayout({ children }: Props) {
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <NuqsAdapter>
-          <SiteNav />
-          {children}
+          <TooltipProvider>
+            <SiteNav />
+            {children}
+            <SiteFooter />
+          </TooltipProvider>
         </NuqsAdapter>
       </body>
     </html>

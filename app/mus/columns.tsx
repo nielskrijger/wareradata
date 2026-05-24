@@ -5,10 +5,10 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { MURow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
-import { ExternalLink } from '@/components/external-link'
-import { Flag } from '@/components/flag'
+import { CountryCell } from '@/components/country-cell'
+import { MUCell } from '@/components/mu-cell'
+import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
-import { wareraUrl } from '@/lib/warera/urls'
 
 export type { MURow }
 
@@ -17,41 +17,21 @@ export const muColumns: ColumnDef<MURow>[] = [
     accessorKey: 'name',
     header: 'MU',
     cell: ({ row }) => (
-      <ExternalLink href={wareraUrl('mu', row.original.id)}>
-        <span className="font-medium">{row.original.name}</span>
-      </ExternalLink>
+      <MUCell muId={row.original.id} muName={row.original.name} />
     ),
     meta: { minWidth: 220 },
   },
   {
-    accessorKey: 'countryName',
-    header: 'Country',
-    cell: ({ row }) => {
-      const { countryId, countryCode, countryName } = row.original
-      if (!countryName) {
-        return '—'
-      }
-      return (
-        <div className="flex items-center gap-2">
-          <Flag code={countryCode} />
-          {countryId
-            ? <ExternalLink href={wareraUrl('country', countryId)}>{countryName}</ExternalLink>
-            : <span>{countryName}</span>}
-        </div>
-      )
-    },
-    meta: { minWidth: 180 },
-  },
-  {
-    accessorKey: 'regionName',
-    header: 'Region',
-    cell: ({ row }) => row.original.regionName ?? '—',
-    meta: { minWidth: 140 },
-  },
-  {
     accessorKey: 'totalPoints',
     header: 'Total Points',
-    cell: ({ row }) => row.original.totalPoints.toLocaleString(),
+    cell: ({ row }) => (
+      <PointsBreakdownCell
+        total={row.original.totalPoints}
+        level={row.original.levelPoints}
+        damage={row.original.damagePoints}
+        wealth={row.original.wealthPoints}
+      />
+    ),
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 110 },
   },
@@ -61,6 +41,24 @@ export const muColumns: ColumnDef<MURow>[] = [
     cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 100 },
+  },
+  {
+    accessorKey: 'countryName',
+    header: 'Country',
+    cell: ({ row }) => (
+      <CountryCell
+        countryId={row.original.countryId}
+        countryCode={row.original.countryCode}
+        countryName={row.original.countryName}
+      />
+    ),
+    meta: { minWidth: 180 },
+  },
+  {
+    accessorKey: 'regionName',
+    header: 'Region',
+    cell: ({ row }) => row.original.regionName ?? '—',
+    meta: { minWidth: 140 },
   },
   {
     accessorKey: 'memberCount',

@@ -13,11 +13,13 @@ export interface UserRow {
   countryName: string | null
   damageRank: number | null
   damageValue: number | null
+  damagePoints: number
   gemsPurchasedValue: number | null
   id: string
   isBanned: boolean
   lastConnectionAt: string | null
   level: number | null
+  levelPoints: number
   levelRank: number | null
   levelTier: RankingTier | null
   militaryRank: number | null
@@ -29,6 +31,7 @@ export interface UserRow {
   referralsValue: number | null
   terrainValue: number | null
   username: string
+  wealthPoints: number
   wealthRank: number | null
   wealthValue: number | null
   weeklyDamageValue: number | null
@@ -46,9 +49,12 @@ export interface CountryRow {
   damageRank: number | null
   damageTier: RankingTier | null
   damageValue: number | null
+  damagePoints: number
   development: number | null
   id: string
+  levelPoints: number
   money: number | null
+  musCount: number
   name: string
   productionBonusValue: number | null
   specializedItem: string | null
@@ -58,6 +64,7 @@ export interface CountryRow {
   totalPoints: number
   unrestPercent: number | null
   warsCount: number
+  wealthPoints: number
   wealthRank: number | null
   wealthValue: number | null
   weeklyDamagePerCitizenValue: number | null
@@ -76,10 +83,12 @@ export interface MURow {
   damageRank: number | null
   damageTier: RankingTier | null
   damageValue: number | null
+  damagePoints: number
   dormitoriesLevel: number | null
   headquartersLevel: number | null
   id: string
   investedMoney: number
+  levelPoints: number
   memberCount: number
   mercenaryReputation: number | null
   name: string
@@ -87,6 +96,7 @@ export interface MURow {
   reputationValue: number | null
   terrainValue: number | null
   totalPoints: number
+  wealthPoints: number
   wealthRank: number | null
   wealthValue: number | null
   weeklyDamageValue: number | null

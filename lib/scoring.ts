@@ -14,11 +14,16 @@ interface PointsInput {
   wealthValue: number | null
 }
 
-export function computePoints(u: PointsInput): number {
-  const level = u.level ?? 0
-  const damage = u.damageValue ?? 0
-  const wealth = u.wealthValue ?? 0
-  return Math.round(
-    level * LEVEL_POINTS + damage / DAMAGE_DIVISOR + wealth / WEALTH_DIVISOR,
-  )
+export interface PointsBreakdown {
+  level: number
+  damage: number
+  wealth: number
+  total: number
+}
+
+export function computePoints(u: PointsInput): PointsBreakdown {
+  const level = Math.round((u.level ?? 0) * LEVEL_POINTS)
+  const damage = Math.round((u.damageValue ?? 0) / DAMAGE_DIVISOR)
+  const wealth = Math.round((u.wealthValue ?? 0) / WEALTH_DIVISOR)
+  return { level, damage, wealth, total: level + damage + wealth }
 }

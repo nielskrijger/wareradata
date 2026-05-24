@@ -66,6 +66,7 @@ async function loadFromRedis(): Promise<Snapshot> {
       const damageValue = damage?.value ?? null
       const wealthValue = wealth?.value ?? null
       const r = u.rankings
+      const pts = computePoints({ level: levelValue, damageValue, wealthValue })
 
       return {
         bountyValue: r?.userBounty?.value ?? null,
@@ -73,6 +74,7 @@ async function loadFromRedis(): Promise<Snapshot> {
         countryCode: country?.code ?? null,
         countryId: u.country,
         countryName: country?.name ?? null,
+        damagePoints: pts.damage,
         damageRank: damage?.rank ?? null,
         damageValue,
         gemsPurchasedValue: r?.userGemsPurchased?.value ?? null,
@@ -80,17 +82,19 @@ async function loadFromRedis(): Promise<Snapshot> {
         isBanned: infos?.isBanned === true,
         lastConnectionAt: dates?.lastConnectionAt ?? null,
         level: levelValue,
+        levelPoints: pts.level,
         levelRank: level?.rank ?? null,
         levelTier: toTier(level?.tier),
         militaryRank: u.militaryRank ?? null,
         muId: u.mu ?? null,
         muName: u.mu ? (muLookup.get(u.mu) ?? null) : null,
-        points: computePoints({ level: levelValue, damageValue, wealthValue }),
+        points: pts.total,
         premiumGiftsValue: r?.userPremiumGifts?.value ?? null,
         premiumMonthsValue: r?.userPremiumMonths?.value ?? null,
         referralsValue: r?.userReferrals?.value ?? null,
         terrainValue: r?.userTerrain?.value ?? null,
         username: u.username,
+        wealthPoints: pts.wealth,
         wealthRank: wealth?.rank ?? null,
         wealthValue,
         weeklyDamageValue: r?.weeklyUserDamages?.value ?? null,
@@ -99,12 +103,38 @@ async function loadFromRedis(): Promise<Snapshot> {
     .filter(r => r.levelRank !== null)
     .sort((a, b) => (a.levelRank ?? Infinity) - (b.levelRank ?? Infinity))
 
-  const pointsByCountry = new Map<string, { total: number, count: number }>()
+  interface PointsAgg {
+    total: number
+    level: number
+    damage: number
+    wealth: number
+    count: number
+  }
+
+  function emptyAgg(): PointsAgg {
+    return { total: 0, level: 0, damage: 0, wealth: 0, count: 0 }
+  }
+
+  const pointsByCountry = new Map<string, PointsAgg>()
   for (const u of userRows) {
-    const entry = pointsByCountry.get(u.countryId) ?? { total: 0, count: 0 }
+    const entry = pointsByCountry.get(u.countryId) ?? emptyAgg()
     entry.total += u.points
+    entry.level += u.levelPoints
+    entry.damage += u.damagePoints
+    entry.wealth += u.wealthPoints
     entry.count += 1
     pointsByCountry.set(u.countryId, entry)
+  }
+
+  // MUs are headquartered in a region; an MU "belongs to" its region's
+  // initialCountry for ranking purposes (same logic used below for muRows).
+  const musCountByCountry = new Map<string, number>()
+  for (const m of mus) {
+    const region = m.region ? regionLookup.get(m.region) : undefined
+    const countryId = region?.initialCountry
+    if (countryId) {
+      musCountByCountry.set(countryId, (musCountByCountry.get(countryId) ?? 0) + 1)
+    }
   }
 
   const countryRows: CountryRow[] = countries
@@ -121,12 +151,15 @@ async function loadFromRedis(): Promise<Snapshot> {
         avgPoints: agg ? Math.round(agg.total / agg.count) : null,
         bountyValue: r?.countryBounty?.value ?? null,
         code: c.code,
+        damagePoints: agg?.damage ?? 0,
         damageRank: r?.countryDamages?.rank ?? null,
         damageTier: r?.countryDamages?.tier ?? null,
         damageValue: r?.countryDamages?.value ?? null,
         development: c.development ?? null,
         id: c._id,
+        levelPoints: agg?.level ?? 0,
         money: c.money ?? null,
+        musCount: musCountByCountry.get(c._id) ?? 0,
         name: c.name,
         productionBonusValue: r?.countryProductionBonus?.value ?? null,
         specializedItem: c.specializedItem ?? null,
@@ -136,6 +169,7 @@ async function loadFromRedis(): Promise<Snapshot> {
         totalPoints: agg?.total ?? 0,
         unrestPercent,
         warsCount: c.warsWith?.length ?? 0,
+        wealthPoints: agg?.wealth ?? 0,
         wealthRank: r?.countryWealth?.rank ?? null,
         wealthValue: r?.countryWealth?.value ?? null,
         weeklyDamagePerCitizenValue: r?.weeklyCountryDamagesPerCitizen?.value ?? null,
@@ -152,13 +186,16 @@ async function loadFromRedis(): Promise<Snapshot> {
       return a.damageRank - b.damageRank
     })
 
-  const pointsByMu = new Map<string, { total: number, count: number }>()
+  const pointsByMu = new Map<string, PointsAgg>()
   for (const u of userRows) {
     if (!u.muId) {
       continue
     }
-    const entry = pointsByMu.get(u.muId) ?? { total: 0, count: 0 }
+    const entry = pointsByMu.get(u.muId) ?? emptyAgg()
     entry.total += u.points
+    entry.level += u.levelPoints
+    entry.damage += u.damagePoints
+    entry.wealth += u.wealthPoints
     entry.count += 1
     pointsByMu.set(u.muId, entry)
   }
@@ -182,6 +219,7 @@ async function loadFromRedis(): Promise<Snapshot> {
         countryCode: country?.code ?? null,
         countryId: region?.initialCountry ?? null,
         countryName: country?.name ?? null,
+        damagePoints: agg?.damage ?? 0,
         damageRank: r?.muDamages?.rank ?? null,
         damageTier: toTier(r?.muDamages?.tier),
         damageValue: r?.muDamages?.value ?? null,
@@ -189,6 +227,7 @@ async function loadFromRedis(): Promise<Snapshot> {
         headquartersLevel: m.activeUpgradeLevels?.headquarters ?? null,
         id: m._id,
         investedMoney,
+        levelPoints: agg?.level ?? 0,
         memberCount: m.members?.length ?? 0,
         mercenaryReputation: m.mercenaryReputation ?? null,
         name: m.name,
@@ -196,6 +235,7 @@ async function loadFromRedis(): Promise<Snapshot> {
         reputationValue: r?.muReputation?.value ?? null,
         terrainValue: r?.muTerrain?.value ?? null,
         totalPoints: agg?.total ?? 0,
+        wealthPoints: agg?.wealth ?? 0,
         wealthRank: r?.muWealth?.rank ?? null,
         wealthValue: r?.muWealth?.value ?? null,
         weeklyDamageValue: r?.muWeeklyDamages?.value ?? null,

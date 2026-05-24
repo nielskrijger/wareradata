@@ -5,36 +5,37 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { CountryRow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
-import { ExternalLink } from '@/components/external-link'
-import { Flag } from '@/components/flag'
+import { CountryCell } from '@/components/country-cell'
+import { InternalLink } from '@/components/internal-link'
+import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
-import { wareraUrl } from '@/lib/warera/urls'
 
 export type { CountryRow }
 
 export const countryColumns: ColumnDef<CountryRow>[] = [
   {
-    accessorKey: 'damageRank',
-    header: 'Rank',
-    cell: ({ row }) => row.original.damageRank ?? '—',
-    sortUndefined: 'last',
-    meta: { align: 'right', minWidth: 70 },
-  },
-  {
     accessorKey: 'name',
     header: 'Country',
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Flag code={row.original.code} />
-        <ExternalLink href={wareraUrl('country', row.original.id)}>{row.original.name}</ExternalLink>
-      </div>
+      <CountryCell
+        countryId={row.original.id}
+        countryCode={row.original.code}
+        countryName={row.original.name}
+      />
     ),
     meta: { minWidth: 200 },
   },
   {
     accessorKey: 'totalPoints',
     header: 'Total Points',
-    cell: ({ row }) => row.original.totalPoints.toLocaleString(),
+    cell: ({ row }) => (
+      <PointsBreakdownCell
+        total={row.original.totalPoints}
+        level={row.original.levelPoints}
+        damage={row.original.damagePoints}
+        wealth={row.original.wealthPoints}
+      />
+    ),
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 110 },
   },
@@ -44,6 +45,13 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 100 },
+  },
+  {
+    accessorKey: 'damageRank',
+    header: 'Damage Rank',
+    cell: ({ row }) => row.original.damageRank ?? '—',
+    sortUndefined: 'last',
+    meta: { align: 'right', minWidth: 110 },
   },
   {
     accessorKey: 'damageTier',
@@ -99,6 +107,17 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) => row.original.activePopulation ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', minWidth: 100 },
+  },
+  {
+    accessorKey: 'musCount',
+    header: 'MUs',
+    cell: ({ row }) => (
+      <InternalLink href={`/mus?q=${encodeURIComponent(`country:${row.original.code}`)}`}>
+        {row.original.musCount.toLocaleString()}
+      </InternalLink>
+    ),
+    sortDescFirst: true,
+    meta: { align: 'right', minWidth: 80 },
   },
   {
     accessorKey: 'bountyValue',

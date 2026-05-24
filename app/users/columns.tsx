@@ -86,14 +86,14 @@ export const userColumns: ColumnDef<UserRow>[] = [
     header: 'Total Damage',
     cell: ({ row }) => <CompactNumber value={row.original.damage} />,
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 130 },
+    meta: { heat: 'median', align: 'right', width: 130 },
   },
   {
     accessorKey: 'weeklyDamage',
     header: 'Weekly Damage',
     cell: ({ row }) => <CompactNumber value={row.original.weeklyDamage} />,
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 140 },
+    meta: { heat: 'median', align: 'right', width: 140 },
   },
   {
     accessorKey: 'wealthRank',
@@ -106,7 +106,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
     header: 'Wealth',
     cell: ({ row }) => <CompactNumber value={row.original.wealth} />,
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 90 },
+    meta: { heat: 'median', align: 'right', width: 90 },
   },
   {
     accessorKey: 'militaryRank',
@@ -150,14 +150,14 @@ export const userColumns: ColumnDef<UserRow>[] = [
     header: 'Bounty',
     cell: ({ row }) => <CompactNumber value={row.original.bounty} />,
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 90 },
+    meta: { heat: 'median', align: 'right', width: 90 },
   },
   {
     accessorKey: 'terrain',
     header: 'Terrain',
     cell: ({ row }) => row.original.terrain?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 90 },
+    meta: { heat: 'median', align: 'right', width: 90 },
   },
   {
     accessorKey: 'referrals',

@@ -24,7 +24,6 @@ const regionFieldAliases: FieldAliases = {
  */
 function regionSortValue(row: RegionRow, sort: string): number | string | null {
   switch (sort) {
-    case 'baseDevelopment': return row.baseDevelopment
     case 'biome': return row.biome
     case 'climate': return row.climate
     case 'countryName': return row.countryName?.toLowerCase() ?? null

@@ -107,7 +107,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.development !== null ? row.original.development.toFixed(1) : '—',
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 130 },
+    meta: { heat: 'median', align: 'right', width: 130 },
   },
   {
     accessorKey: 'activePopulation',
@@ -157,7 +157,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     header: 'Treasury',
     cell: ({ row }) => <CompactNumber value={row.original.money} />,
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 100 },
+    meta: { heat: 'median', align: 'right', width: 100 },
   },
   {
     accessorKey: 'productionBonus',
@@ -167,7 +167,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         ? `${row.original.productionBonus}%`
         : '—',
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 120 },
+    meta: { heat: 'median', align: 'right', width: 120 },
   },
   {
     accessorKey: 'unrestPercent',

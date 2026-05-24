@@ -47,14 +47,7 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
     header: 'Development',
     cell: ({ row }) => formatDevelopment(row.original.development),
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 130 },
-  },
-  {
-    accessorKey: 'baseDevelopment',
-    header: 'Base Dev.',
-    cell: ({ row }) => formatDevelopment(row.original.baseDevelopment),
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 110 },
+    meta: { heat: 'median', align: 'right', width: 130 },
   },
   {
     accessorKey: 'strategicResource',

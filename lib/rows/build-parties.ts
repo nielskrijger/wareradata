@@ -1,6 +1,6 @@
 import type { PartyRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
-import type { Party } from '@/lib/warera/schemas'
+import type { Party } from '@/lib/warera/api'
 
 import { aggregatePoints } from '@/lib/rows/points-agg'
 

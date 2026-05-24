@@ -199,7 +199,7 @@ export function DataTable<TData, TValue>({
         </DropdownMenu>
       </div>
 
-      <div className={cn('rounded-md border', isPending && 'opacity-60')}>
+      <div className={cn('border-input overflow-hidden rounded-md border dark:bg-input/30', isPending && 'opacity-60')}>
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map(hg => (

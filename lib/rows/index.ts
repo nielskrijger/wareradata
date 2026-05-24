@@ -1,4 +1,4 @@
-import type { RankingTier } from '@/lib/warera/schemas'
+import type { RankingTier } from '@/lib/warera/api'
 
 /**
  * Projected user row used by both the /users page and /api/users.
@@ -113,6 +113,26 @@ export interface MURow {
   wealthRank: number | null
   wealth: number | null
   weeklyDamage: number | null
+}
+
+/**
+ * Projected region row used by /regions and /api/regions.
+ */
+export interface RegionRow {
+  baseDevelopment: number | null
+  biome: string | null
+  climate: string | null
+  code: string
+  countryCode: string | null
+  countryName: string | null
+  development: number | null
+  id: string
+  isCapital: boolean
+  isLinkedToCapital: boolean
+  mainCity: string | null
+  name: string
+  neighborCount: number
+  strategicResource: string | null
 }
 
 /**

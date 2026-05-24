@@ -28,36 +28,42 @@ locally: `npm run scrape`.
 ## The scraper
 
 [scripts/scrape.ts](scripts/scrape.ts) → [lib/warera/scrape.ts](lib/warera/scrape.ts)
-runs five phases sequentially:
+runs six phases sequentially via the
+[@wareraprojects/api](https://www.npmjs.com/package/@wareraprojects/api)
+tRPC client, which handles batching, rate limiting, and retries:
 
 1. **Countries** — `country.getAllCountries`, one call (~180 countries).
 2. **User IDs per country** — paginate `user.getUsersByCountry` for
    each country, bounded concurrency 10.
-3. **Hydrate users** — `user.getUserLite` via tRPC batch, 150 per
-   request (~15k users → ~100 batches).
+3. **Hydrate users** — `user.getUserLite` per id; the client auto-batches
+   concurrent calls (cap 50/request), so ~15k users → ~330 batches.
 4. **MUs** — cursor loop, 100 per page (~950 MUs).
 5. **Regions** — single `region.getRegionsObject` call (~700 regions).
+6. **Parties** — cursor loop, 100 per page (~480 parties).
 
-Total: ~250–400 HTTP requests per refresh, ~30 s on a clean run, up
-to several minutes if Warera throws 429s.
+A clean run takes a few minutes; much longer if Warera throttles (429s),
+which the client backs off and retries automatically.
 
 ### Snapshot shape in Redis
 
-Single JSON blob per entity, except users which are sharded by country
-(a single 15k-user blob would exceed Upstash's 10 MB cap).
+Single JSON blob per entity, except users which are sharded into 32
+fixed buckets (a single 15k-user blob would exceed Upstash's 10 MB cap).
+Users are bucketed by a hash of their `_id` (last two hex chars mod 32),
+so the distribution stays uniform regardless of country sizes.
 
-| Key                                           | Shape                                             |
-| --------------------------------------------- | ------------------------------------------------- |
-| `wareradata:snapshot:countries`               | `Country[]`                                       |
-| `wareradata:snapshot:mus`                     | `MU[]`                                            |
-| `wareradata:snapshot:regions`                 | `Region[]`                                        |
-| `wareradata:snapshot:users:index`             | `string[]` — list of country IDs that have shards |
-| `wareradata:snapshot:users:shard:<countryId>` | `UserLite[]`                                      |
-| `wareradata:snapshot:meta`                    | `{ scrapedAt, entityCounts, scrapeDurationMs }`   |
+| Key                                       | Shape                                           |
+| ----------------------------------------- | ----------------------------------------------- |
+| `wareradata:snapshot:countries`           | `Country[]`                                     |
+| `wareradata:snapshot:mus`                 | `MU[]`                                          |
+| `wareradata:snapshot:parties`             | `Party[]`                                       |
+| `wareradata:snapshot:regions`             | `Region[]`                                      |
+| `wareradata:snapshot:users:bucket:<0–31>` | `UserLite[]`                                    |
+| `wareradata:snapshot:meta`                | `{ scrapedAt, entityCounts, scrapeDurationMs }` |
 
 Writes are per-key atomic `SET`s — a request landing mid-scrape always
-sees a consistent (older) snapshot, never a torn one. The users index
-is written last so a partial users update is invisible to readers.
+sees a consistent (older) snapshot, never a torn one. The bucket count
+is a fixed constant, so readers don't need an index — they just read
+buckets 0–31.
 
 ### Triggering a refresh
 

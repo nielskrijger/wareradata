@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { Logo } from '@/components/logo'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { cn } from '@/lib/utils'
 
 const links = [
@@ -11,6 +12,7 @@ const links = [
   { href: '/countries', label: 'Countries' },
   { href: '/mus', label: 'MUs' },
   { href: '/parties', label: 'Parties' },
+  { href: '/regions', label: 'Regions' },
   { href: '/about', label: 'About' },
 ]
 
@@ -43,6 +45,9 @@ export function SiteNav() {
             )
           })}
         </ul>
+        <div className="ml-auto">
+          <ThemeToggle />
+        </div>
       </div>
     </nav>
   )

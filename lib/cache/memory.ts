@@ -1,8 +1,9 @@
-import type { CountryRow, MURow, PartyRow, UserRow } from '@/lib/rows'
+import type { CountryRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
 
 import { buildCountryRows } from '@/lib/rows/build-countries'
 import { buildMURows } from '@/lib/rows/build-mus'
 import { buildPartyRows } from '@/lib/rows/build-parties'
+import { buildRegionRows } from '@/lib/rows/build-regions'
 import { buildUserRows } from '@/lib/rows/build-users'
 import { buildLookups } from '@/lib/rows/lookups'
 
@@ -33,6 +34,7 @@ interface Snapshot {
   countries: CountryRow[]
   mus: MURow[]
   parties: PartyRow[]
+  regions: RegionRow[]
 }
 
 interface CacheEntry {
@@ -57,8 +59,9 @@ async function loadFromRedis(): Promise<Snapshot> {
   const countryRows = buildCountryRows(countries, mus, userRows, lookups)
   const muRows = buildMURows(mus, userRows, lookups)
   const partyRows = buildPartyRows(parties, userRows, lookups)
+  const regionRows = buildRegionRows(regions, lookups)
 
-  return { users: userRows, countries: countryRows, mus: muRows, parties: partyRows }
+  return { users: userRows, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows }
 }
 
 export function getSnapshot(): Promise<Snapshot> {

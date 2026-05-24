@@ -3,7 +3,7 @@ import type { UserRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyStructuredQuery, parseQuery } from '@/lib/query'
-import { RANKING_TIERS } from '@/lib/warera/schemas'
+import { RANKING_TIERS } from '@/lib/warera/api'
 
 /**
  * Friendly field names for the advanced filter. Underlying row keys still

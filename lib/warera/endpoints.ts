@@ -1,8 +1,9 @@
-import type { Country, MU, Ranking, RankingType, Region, UserLite } from './schemas'
+import type { Country, MU, Party, Ranking, RankingType, Region, UserLite } from './schemas'
 import { trpcBatch, trpcQuery } from './client'
 import {
   countriesList,
   muPage,
+  partyPage,
   ranking,
   regionsObject,
   userLite,
@@ -85,6 +86,26 @@ export async function getAllMUs(options: ScrapeRequestOptions = {}): Promise<MU[
       'mu.getManyPaginated',
       cursor ? { limit: 100, cursor } : { limit: 100 },
       muPage,
+      { noCache: options.noCache },
+    )
+    all.push(...page.items)
+    cursor = page.nextCursor
+  } while (cursor)
+
+  return all
+}
+
+// --- Parties --------------------------------------------------------------
+
+export async function getAllParties(options: ScrapeRequestOptions = {}): Promise<Party[]> {
+  const all: Party[] = []
+  let cursor: string | null | undefined
+
+  do {
+    const page = await trpcQuery(
+      'party.getManyPaginated',
+      cursor ? { limit: 100, cursor } : { limit: 100 },
+      partyPage,
       { noCache: options.noCache },
     )
     all.push(...page.items)

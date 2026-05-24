@@ -2,13 +2,13 @@ import type { SnapshotMeta, UserLite } from './schemas'
 
 import { writeSnapshot, writeUsersSharded } from '@/lib/cache/snapshot'
 
-import { getAllCountries, getAllMUs, getAllRegions, getUserIdsForCountry, getUserLite } from './endpoints'
+import { getAllCountries, getAllMUs, getAllParties, getAllRegions, getUserIdsForCountry, getUserLite } from './endpoints'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
 interface ScrapeResult {
   scrapedAt: string
-  counts: { countries: number, users: number, mus: number, regions: number }
+  counts: { countries: number, users: number, mus: number, regions: number, parties: number }
   durationMs: number
 }
 
@@ -71,6 +71,10 @@ export async function runFullScrape(): Promise<ScrapeResult> {
   const regions = await getAllRegions(opts)
   console.warn(`[scrape] fetched ${regions.length} regions`)
 
+  // 6. Parties — single cursor-paginated stream (returns full party objects).
+  const parties = await getAllParties(opts)
+  console.warn(`[scrape] fetched ${parties.length} parties`)
+
   const durationMs = Date.now() - start
   const scrapedAt = new Date().toISOString()
   const meta: SnapshotMeta = {
@@ -80,6 +84,7 @@ export async function runFullScrape(): Promise<ScrapeResult> {
       users: users.length,
       mus: mus.length,
       regions: regions.length,
+      parties: parties.length,
     },
     scrapeDurationMs: durationMs,
   }
@@ -90,6 +95,7 @@ export async function runFullScrape(): Promise<ScrapeResult> {
     writeSnapshot('countries', countries),
     writeSnapshot('mus', mus),
     writeSnapshot('regions', regions),
+    writeSnapshot('parties', parties),
     writeSnapshot('meta', meta),
   ])
   console.warn(`[scrape] wrote snapshot in ${durationMs}ms`)
@@ -101,6 +107,7 @@ export async function runFullScrape(): Promise<ScrapeResult> {
       users: users.length,
       mus: mus.length,
       regions: regions.length,
+      parties: parties.length,
     },
     durationMs,
   }

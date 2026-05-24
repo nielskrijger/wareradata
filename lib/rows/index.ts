@@ -101,3 +101,27 @@ export interface MURow {
   wealthValue: number | null
   weeklyDamageValue: number | null
 }
+
+/**
+ * Projected political-party row used by /parties and /api/parties.
+ */
+export interface PartyRow {
+  avgPoints: number | null
+  countryCode: string | null
+  countryId: string | null
+  countryName: string | null
+  createdAt: string | null
+  damagePoints: number
+  description: string | null
+  id: string
+  imperialism: number | null
+  industrialism: number | null
+  isolationism: number | null
+  leaderName: string | null
+  levelPoints: number
+  memberCount: number
+  militarism: number | null
+  name: string
+  totalPoints: number
+  wealthPoints: number
+}

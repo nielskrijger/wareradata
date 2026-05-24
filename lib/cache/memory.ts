@@ -1,7 +1,8 @@
-import type { CountryRow, MURow, UserRow } from '@/lib/rows'
+import type { CountryRow, MURow, PartyRow, UserRow } from '@/lib/rows'
 
 import { buildCountryRows } from '@/lib/rows/build-countries'
 import { buildMURows } from '@/lib/rows/build-mus'
+import { buildPartyRows } from '@/lib/rows/build-parties'
 import { buildUserRows } from '@/lib/rows/build-users'
 import { buildLookups } from '@/lib/rows/lookups'
 
@@ -31,6 +32,7 @@ interface Snapshot {
   users: UserRow[]
   countries: CountryRow[]
   mus: MURow[]
+  parties: PartyRow[]
 }
 
 interface CacheEntry {
@@ -42,23 +44,26 @@ let cache: CacheEntry | null = null
 let refreshing: Promise<Snapshot> | null = null
 
 async function loadFromRedis(): Promise<Snapshot> {
-  const [users, countries, mus, regions] = await Promise.all([
+  const [users, countries, mus, regions, parties] = await Promise.all([
     readAllUsers(),
     readSnapshot('countries'),
     readSnapshot('mus'),
     readSnapshot('regions'),
+    readSnapshot('parties'),
   ])
 
-  const lookups = buildLookups(countries, mus, regions)
+  const lookups = buildLookups(countries, mus, regions, users)
   const userRows = buildUserRows(users, lookups)
   const countryRows = buildCountryRows(countries, mus, userRows, lookups)
   const muRows = buildMURows(mus, userRows, lookups)
+  const partyRows = buildPartyRows(parties, userRows, lookups)
 
-  return { users: userRows, countries: countryRows, mus: muRows }
+  return { users: userRows, countries: countryRows, mus: muRows, parties: partyRows }
 }
 
 export function getSnapshot(): Promise<Snapshot> {
   const now = Date.now()
+
   // Cold cache: caller has to wait for the first load.
   if (!cache) {
     const promise = loadFromRedis()
@@ -70,6 +75,7 @@ export function getSnapshot(): Promise<Snapshot> {
     })
     return promise
   }
+
   // Warm cache, possibly stale: serve current snapshot immediately and kick
   // off a background refresh if past TTL. A single in-flight refresh is
   // shared across concurrent requests.
@@ -87,5 +93,6 @@ export function getSnapshot(): Promise<Snapshot> {
       refreshing = null
     })
   }
+
   return cache.promise
 }

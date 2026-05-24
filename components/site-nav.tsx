@@ -10,6 +10,7 @@ const links = [
   { href: '/users', label: 'Users' },
   { href: '/countries', label: 'Countries' },
   { href: '/mus', label: 'MUs' },
+  { href: '/parties', label: 'Parties' },
   { href: '/about', label: 'About' },
 ]
 

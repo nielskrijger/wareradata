@@ -161,6 +161,40 @@ export const muPage = z.looseObject({
   nextCursor: z.string().nullish(),
 })
 
+// --- Parties --------------------------------------------------------------
+
+export const partyEthics = z.looseObject({
+  militarism: z.number(),
+  isolationism: z.number(),
+  imperialism: z.number(),
+  industrialism: z.number(),
+})
+
+export const party = z.looseObject({
+  _id: z.string(),
+  avatarUrl: z.string().nullish(),
+  councilMembers: z.array(z.string()).optional(),
+  country: z.string().optional(),
+  createdAt: z.string().optional(),
+  description: z.string().optional(),
+  ethics: partyEthics.optional(),
+  leader: z.string().optional(),
+  members: z.array(z.string()).optional(),
+  name: z.string(),
+  primaryWinner: z.string().optional(),
+  region: z.string().optional(),
+  treasurer: z.string().optional(),
+  updatedAt: z.string().optional(),
+})
+
+export type Party = z.infer<typeof party>
+export const partiesList = z.array(party)
+
+export const partyPage = z.looseObject({
+  items: z.array(party),
+  nextCursor: z.string().nullish(),
+})
+
 // --- Regions --------------------------------------------------------------
 
 export const region = z.looseObject({

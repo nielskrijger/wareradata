@@ -27,7 +27,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
         {row.original.isBanned && <Badge className="bg-red-500/15 text-red-900">banned</Badge>}
       </div>
     ),
-    meta: { width: 200 },
+    meta: { width: 170 },
   },
   {
     accessorKey: 'points',
@@ -192,6 +192,31 @@ export const userColumns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => row.original.gemsPurchasedValue?.toLocaleString() ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', width: 150 },
+  },
+  {
+    accessorKey: 'pointsPerDay',
+    header: 'Points / day',
+    cell: ({ row }) => {
+      const ppd = row.original.pointsPerDay
+      if (ppd !== null) {
+        return ppd.toLocaleString()
+      }
+      const created = row.original.createdAt
+      const hasValidJoinDate = !!created && !created.startsWith('0000')
+      if (hasValidJoinDate) {
+        return (
+          <span
+            className="text-muted-foreground"
+            title="Account is less than 7 days old; per-day rate isn't meaningful yet."
+          >
+            N/A
+          </span>
+        )
+      }
+      return '—'
+    },
+    sortDescFirst: true,
+    meta: { align: 'right', width: 110 },
   },
   {
     id: 'warera',

@@ -20,6 +20,8 @@ const userFieldAliases: FieldAliases = {
   weeklyDamage: 'weeklyDamageValue',
   lastSeen: 'lastConnectionAt',
   joined: 'createdAt',
+  pointsPerDay: 'pointsPerDay',
+  ppd: 'pointsPerDay',
 }
 
 /**
@@ -61,6 +63,7 @@ function userSortValue(row: UserRow, sort: string): number | string | null {
     case 'createdAt': return row.createdAt
     case 'isBanned': return row.isBanned ? 1 : 0
     case 'points': return row.points
+    case 'pointsPerDay': return row.pointsPerDay
     default: return row.levelRank
   }
 }

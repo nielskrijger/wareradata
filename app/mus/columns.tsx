@@ -119,7 +119,7 @@ export const muColumns: ColumnDef<MURow>[] = [
     header: 'Wealth',
     cell: ({ row }) => <CompactNumber value={row.original.wealth} />,
     sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 100 },
+    meta: { heat: 'median', heatCenter: 0, align: 'right', width: 100 },
   },
   {
     accessorKey: 'terrain',
@@ -143,7 +143,7 @@ export const muColumns: ColumnDef<MURow>[] = [
         ? row.original.mercenaryReputation.toFixed(2)
         : '—',
     sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 140 },
+    meta: { heat: 'median', heatCenter: 0, align: 'right', width: 140 },
   },
   {
     accessorKey: 'investedMoney',
@@ -164,7 +164,7 @@ export const muColumns: ColumnDef<MURow>[] = [
     header: 'HQ',
     cell: ({ row }) => row.original.headquartersLevel ?? '—',
     sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 70 },
+    meta: { heat: 'median', heatCenter: 2.5, align: 'right', width: 70 },
   },
   {
     accessorKey: 'gemsPurchasedTotal',

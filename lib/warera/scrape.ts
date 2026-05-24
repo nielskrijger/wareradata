@@ -1,4 +1,4 @@
-import type { SnapshotMeta, UserLite } from './schemas'
+import type { SnapshotMeta } from './schemas'
 
 import { writeSnapshot, writeUsersSharded } from '@/lib/cache/snapshot'
 
@@ -54,15 +54,6 @@ export async function runFullScrape(): Promise<ScrapeResult> {
   const users = await getUserLite(userIds, opts)
   console.warn(`[scrape] hydrated ${users.length} users`)
 
-  // Group users by country for sharded storage (single SET would exceed Upstash 10MB cap).
-  const usersByCountry: Record<string, UserLite[]> = {}
-  for (const u of users) {
-    if (!usersByCountry[u.country]) {
-      usersByCountry[u.country] = []
-    }
-    usersByCountry[u.country].push(u)
-  }
-
   // 4. MUs — single cursor-paginated stream.
   const mus = await getAllMUs(opts)
   console.warn(`[scrape] fetched ${mus.length} MUs`)
@@ -89,8 +80,8 @@ export async function runFullScrape(): Promise<ScrapeResult> {
     scrapeDurationMs: durationMs,
   }
 
-  // 6. Write to Redis. Users are sharded; everything else fits a single key.
-  await writeUsersSharded(usersByCountry)
+  // 6. Write to Redis. Users are sharded (hashed by _id); everything else fits a single key.
+  await writeUsersSharded(users)
   await Promise.all([
     writeSnapshot('countries', countries),
     writeSnapshot('mus', mus),

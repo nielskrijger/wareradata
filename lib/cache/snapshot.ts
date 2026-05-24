@@ -1,5 +1,6 @@
 import type { userLite } from '@/lib/warera/schemas'
 
+import { Buffer } from 'node:buffer'
 import { z } from 'zod'
 import { countriesList, musList, partiesList, region, snapshotMeta, usersList } from '@/lib/warera/schemas'
 
@@ -45,50 +46,67 @@ export async function writeSnapshot<E extends SnapshotEntity>(
 }
 
 // --- Sharded users snapshot ----------------------------------------------
-// Users total ~16k and ~64 MB serialized — exceeds Upstash's 10 MB SET cap.
-// Shard by countryId: one key per country, plus an index key listing the
-// country IDs that have data. See project memory `upstash-limits`.
+// Users total ~16k and ~64 MB serialized, which exceeds Upstash's 10 MB
+// request cap. We shard into BUCKETS fixed buckets, hashing by the user's
+// `_id` (last two hex chars mod BUCKETS) so the distribution is uniform
+// regardless of country sizes. With 32 buckets and 62 MB total, each bucket
+// is ~2 MB and an MGET of READ_SHARD_CHUNK buckets stays well under 10 MB.
+//
+// History: we used to shard by countryId, but Germany alone grew to ~7 MB
+// and a single MGET batch that included it would push past the cap. See
+// project memory `upstash-limits`.
 
-const USERS_INDEX_KEY = `${KEY_PREFIX}:users:index`
-const USERS_SHARD_PREFIX = `${KEY_PREFIX}:users:shard:`
-const usersIndexSchema = z.array(z.string())
+const BUCKETS = 32
+const READ_SHARD_CHUNK = 4
+const USERS_BUCKET_PREFIX = `${KEY_PREFIX}:users:bucket:`
 
-function usersShardKey(countryId: string) {
-  return `${USERS_SHARD_PREFIX}${countryId}`
+function usersBucketKey(bucket: number) {
+  return `${USERS_BUCKET_PREFIX}${bucket}`
 }
 
 /**
- * Writes user shards keyed by country ID, plus the country-id index used by
- * `readAllUsers`. Shards are written in small batches to limit concurrent
- * Upstash requests. Logs per-shard byte size + a sorted summary so we can
- * spot fat shards that risk blowing the 10 MB MGET cap on the read side.
+ * Bucket assignment. Uses the last two hex chars of the Mongo ObjectId,
+ * which are derived from the random portion of the ID — uniform across all
+ * users regardless of country, MU, etc.
  */
-export async function writeUsersSharded(byCountry: Record<string, z.infer<typeof userLite>[]>): Promise<void> {
-  const countryIds = Object.keys(byCountry)
+function bucketFor(userId: string): number {
+  return Number.parseInt(userId.slice(-2), 16) % BUCKETS
+}
 
-  const shardSizes: Array<{ countryId: string, users: number, bytes: number }> = []
+/**
+ * Writes user buckets. The input is the flat list of users; we hash and
+ * group internally. Logs per-bucket sizes so we can spot any drift toward
+ * the 10 MB cap as the dataset grows.
+ */
+export async function writeUsersSharded(users: z.infer<typeof userLite>[]): Promise<void> {
+  const buckets: z.infer<typeof userLite>[][] = Array.from({ length: BUCKETS }, () => [])
+  for (const u of users) {
+    buckets[bucketFor(u._id)].push(u)
+  }
 
-  const SHARD_BATCH = 10
-  for (let i = 0; i < countryIds.length; i += SHARD_BATCH) {
-    const slice = countryIds.slice(i, i + SHARD_BATCH)
+  const bucketSizes: Array<{ bucket: number, users: number, bytes: number }> = []
+
+  const SHARD_BATCH = 8
+  for (let i = 0; i < BUCKETS; i += SHARD_BATCH) {
+    const slice = Array.from({ length: Math.min(SHARD_BATCH, BUCKETS - i) }, (_, k) => i + k)
     await Promise.all(
-      slice.map((cid) => {
-        const parsed = usersList.parse(byCountry[cid])
+      slice.map((b) => {
+        const parsed = usersList.parse(buckets[b])
         const bytes = Buffer.byteLength(JSON.stringify(parsed), 'utf8')
-        shardSizes.push({ countryId: cid, users: parsed.length, bytes })
-        return redis.set(usersShardKey(cid), parsed)
+        bucketSizes.push({ bucket: b, users: parsed.length, bytes })
+        return redis.set(usersBucketKey(b), parsed)
       }),
     )
   }
-  await redis.set(USERS_INDEX_KEY, countryIds)
 
-  shardSizes.sort((a, b) => b.bytes - a.bytes)
-  const totalBytes = shardSizes.reduce((sum, s) => sum + s.bytes, 0)
+  bucketSizes.sort((a, b) => b.bytes - a.bytes)
+  const totalBytes = bucketSizes.reduce((sum, s) => sum + s.bytes, 0)
+  const totalUsers = bucketSizes.reduce((sum, s) => sum + s.users, 0)
   console.warn(
-    `[scrape] wrote ${shardSizes.length} user shards, total ${fmtMB(totalBytes)} MB`,
+    `[scrape] wrote ${BUCKETS} user buckets, ${totalUsers} users, total ${fmtMB(totalBytes)} MB`,
   )
-  for (const s of shardSizes.slice(0, 5)) {
-    console.warn(`[scrape]   top shard ${s.countryId}: ${s.users} users, ${fmtMB(s.bytes)} MB`)
+  for (const s of bucketSizes.slice(0, 3)) {
+    console.warn(`[scrape]   top bucket ${s.bucket}: ${s.users} users, ${fmtMB(s.bytes)} MB`)
   }
 }
 
@@ -96,36 +114,23 @@ function fmtMB(bytes: number): string {
   return (bytes / 1024 / 1024).toFixed(2)
 }
 
-// Upstash caps both request and response payloads at 10 MB. A full MGET of
-// all shards can easily exceed that (some single-country shards are ~5 MB),
-// so we fetch in chunks.
-const READ_SHARD_CHUNK = 5
-
 /**
- * Reads every user shard and returns the flat list, in no particular order.
- * Returns `[]` on cache miss so callers can render an empty state.
+ * Reads every user bucket and returns the flat list, in no particular
+ * order. Returns `[]` on cache miss so callers can render an empty state.
  *
- * Logs per-batch response sizes so we can see how close each MGET is to the
- * 10 MB cap. On failure, the error already names the actual byte size; the
- * surrounding batch log tells us which country IDs were involved.
+ * Logs per-batch response sizes so we can see how close each MGET is to
+ * the 10 MB cap. On failure, logs the failing bucket numbers.
  */
 export async function readAllUsers(): Promise<z.infer<typeof userLite>[]> {
-  const raw = await redis.get(USERS_INDEX_KEY)
-  if (raw === null || raw === undefined) {
-    return []
-  }
-  const countryIds = usersIndexSchema.parse(raw)
-  if (!countryIds.length) {
-    return []
-  }
-
   const out: z.infer<typeof userLite>[] = []
+  const totalBatches = Math.ceil(BUCKETS / READ_SHARD_CHUNK)
   let batchNum = 0
-  const totalBatches = Math.ceil(countryIds.length / READ_SHARD_CHUNK)
-  for (let i = 0; i < countryIds.length; i += READ_SHARD_CHUNK) {
+
+  for (let i = 0; i < BUCKETS; i += READ_SHARD_CHUNK) {
     batchNum++
-    const slice = countryIds.slice(i, i + READ_SHARD_CHUNK)
-    const keys = slice.map(cid => usersShardKey(cid)) as [string, ...string[]]
+    const slice = Array.from({ length: Math.min(READ_SHARD_CHUNK, BUCKETS - i) }, (_, k) => i + k)
+    const keys = slice.map(b => usersBucketKey(b)) as [string, ...string[]]
+
     try {
       const shards = (await redis.mget<(z.infer<typeof userLite>[] | null)[]>(...keys)) ?? []
       let batchBytes = 0
@@ -139,16 +144,16 @@ export async function readAllUsers(): Promise<z.infer<typeof userLite>[]> {
         }
       }
       console.warn(
-        `[users:read] batch ${batchNum}/${totalBatches}: ${slice.length} shards, ${batchUsers} users, ${(batchBytes / 1024 / 1024).toFixed(2)} MB`,
+        `[users:read] batch ${batchNum}/${totalBatches}: buckets [${slice.join(', ')}], ${batchUsers} users, ${fmtMB(batchBytes)} MB`,
       )
-    }
-    catch (err) {
+    } catch (err) {
       console.error(
-        `[users:read] batch ${batchNum}/${totalBatches} FAILED for countries [${slice.join(', ')}]:`,
+        `[users:read] batch ${batchNum}/${totalBatches} FAILED for buckets [${slice.join(', ')}]:`,
         err instanceof Error ? err.message : err,
       )
       throw err
     }
   }
+
   return out
 }

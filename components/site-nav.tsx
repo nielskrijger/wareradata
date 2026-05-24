@@ -23,7 +23,7 @@ export function SiteNav() {
       <div className="flex items-center gap-3 px-6 py-3 sm:gap-6 sm:px-8 lg:px-12">
         <Link href="/users" className="font-brand flex items-center gap-2 text-[20px] tracking-wide">
           <Logo />
-          <span className="hidden sm:inline">WARERA DATA</span>
+          <span className="logo-fire-text hidden sm:inline">WARERA DATA</span>
         </Link>
         <ul className="flex items-center gap-1 text-sm">
           {links.map((link) => {

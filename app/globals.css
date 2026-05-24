@@ -65,6 +65,8 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --heat-green: oklch(0.72 0.19 145);
+  --heat-red: oklch(0.63 0.24 27);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -100,6 +102,8 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --heat-green: oklch(0.8 0.2 145);
+  --heat-red: oklch(0.7 0.22 27);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
@@ -132,5 +136,67 @@
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
+  }
+}
+
+/* One sweep for the whole logo: an orange base with a single bright band travels
+   left → right across the tank AND the WARERA DATA wordmark, sharing colour,
+   band shape, speed and direction so the two read as one continuous effect.
+
+   The tank (SVG) slides a tiled band gradient via `gradientTransform`; the text
+   slides the same gradient via `background-position`. Both run 8s linear so the
+   band moves through the assembly in lockstep. The shared band colours: */
+:root {
+  --logo-base: oklch(0.73 0.19 58); /* warm orange */
+  --logo-bright: oklch(0.82 0.2 75); /* lighter highlight */
+}
+
+.logo-stop-base {
+  stop-color: var(--logo-base);
+}
+.logo-stop-bright {
+  stop-color: var(--logo-bright);
+}
+
+/* The tank's sweep is driven by SMIL (<animateTransform>) inside the SVG, since
+   gradientTransform is not reliably animatable via CSS. It matches this text
+   sweep: same colours, same 8s linear duration, same left → right direction. */
+
+.logo-fire-text {
+  /* Same band as the tank: orange base with one bright stripe, ends matching so
+     the loop restarts seamlessly. */
+  background-image: linear-gradient(
+    100deg,
+    var(--logo-base) 0%,
+    var(--logo-base) 35%,
+    var(--logo-bright) 50%,
+    var(--logo-base) 65%,
+    var(--logo-base) 100%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: logo-fire-text 8s linear infinite;
+}
+
+/* Bright band travels left → right, then the cycle restarts. */
+@keyframes logo-fire-text {
+  from {
+    background-position: 100% 50%;
+  }
+  to {
+    background-position: 0% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-gradient {
+    animation: none;
+  }
+  .logo-fire-text {
+    animation: none;
+    background-position: 50% 50%;
   }
 }

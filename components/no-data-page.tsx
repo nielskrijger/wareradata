@@ -1,4 +1,4 @@
-import { PageTitle } from '@/components/page-title'
+import { PageShell } from '@/components/page-shell'
 
 /**
  * Full-page placeholder shown when a page has no data to render — typically
@@ -7,14 +7,11 @@ import { PageTitle } from '@/components/page-title'
  */
 export function NoDataPage() {
   return (
-    <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
-      <header>
-        <PageTitle>No data</PageTitle>
-      </header>
+    <PageShell title="No data">
       <p className="text-muted-foreground text-sm">
         No data yet — the scrape job hasn&apos;t populated the cache. Trigger the{' '}
         <code className="rounded bg-muted px-1 py-0.5">refresh-data</code> workflow.
       </p>
-    </main>
+    </PageShell>
   )
 }

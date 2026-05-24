@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { NoDataPage } from '@/components/no-data-page'
-import { PageTitle } from '@/components/page-title'
+import { PageShell } from '@/components/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 
@@ -29,14 +29,11 @@ export default async function CountriesPage() {
   )
 
   return (
-    <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
-      <header>
-        <PageTitle>Countries</PageTitle>
-        <p className="text-muted-foreground text-sm">
-          All {initial.total.toLocaleString()} countries in Warera.
-        </p>
-      </header>
+    <PageShell
+      title="Countries"
+      subtitle={`All ${initial.total.toLocaleString()} countries in Warera.`}
+    >
       <CountriesTable initial={initial} />
-    </main>
+    </PageShell>
   )
 }

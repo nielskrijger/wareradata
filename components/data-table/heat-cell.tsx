@@ -84,23 +84,23 @@ export function HeatCell({ value, range, mode = 'ramp', center, log = false, chi
     return tinted('--heat-green', 0.3 + 0.7 * t, children)
   }
 
-  // Diverging: distance from the neutral center, normalized by the widest
-  // reach to either extreme so both sides ramp to full color at the edges.
+  // Diverging: distance from the neutral center, normalized by *that side's*
+  // own reach so each extreme saturates — the column min hits full color on
+  // the low side, the max on the high side, regardless of skew.
   const centersOnMedian = mode === 'median' || mode === 'invertMedian'
   const pivot = center ?? (centersOnMedian ? median : (min + max) / 2)
-  const reach = Math.max(pivot - min, max - pivot)
+  const high = value > pivot
+  const reach = high ? max - pivot : pivot - min
   if (reach <= 0) {
     return <>{children}</>
   }
-  const frac = (value - pivot) / reach
-  const raw = Math.min(1, Math.abs(frac))
+  const raw = Math.min(1, Math.abs(value - pivot) / reach)
   const intensity = log ? logCurve(raw) : raw
   if (intensity < 0.05) {
     return <>{children}</>
   }
 
   // 'median' greens above center; the invert modes green below.
-  const high = frac > 0
   const isGreen = mode === 'median' ? high : !high
   const token = isGreen ? '--heat-green' : '--heat-red'
   return tinted(token, 0.45 + 0.45 * intensity, children)

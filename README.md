@@ -16,7 +16,7 @@ Prereqs:
 
 ```bash
 cp .env.example .env.local
-# fill in WARERA_API_KEY, KV_REST_API_URL, KV_REST_API_TOKEN
+# fill in WARERA_API_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
 npm install
 npm run dev
 ```

@@ -66,3 +66,8 @@ Automatic: GitHub Actions cron at `0 * * * *`
 
 Manual: Actions → `refresh-data` → Run workflow. Or locally:
 `npm run scrape`.
+
+## License
+
+[MIT](LICENSE). If you use this code in your own project, a link back
+to <https://wareradata.com> is much appreciated!

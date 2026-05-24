@@ -1,5 +1,5 @@
-import type { Country, MU, Party, RankingTier, Region, UserLite } from '@/lib/warera/schemas'
-import { RANKING_TIERS } from '@/lib/warera/schemas'
+import type { Country, MU, Party, RankingTier, Region, UserLite } from '@/lib/warera/api'
+import { RANKING_TIERS } from '@/lib/warera/api'
 
 export interface Lookups {
   countryById: Map<string, { name: string, code: string }>

@@ -1,6 +1,6 @@
 import type { MURow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
-import type { MU } from '@/lib/warera/schemas'
+import type { MU } from '@/lib/warera/api'
 
 import { toTier } from '@/lib/rows/lookups'
 import { aggregatePoints } from '@/lib/rows/points-agg'

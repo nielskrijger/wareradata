@@ -1,8 +1,8 @@
-import type { SnapshotMeta } from './schemas'
+import type { SnapshotMeta } from './api'
 
 import { writeSnapshot, writeUsersSharded } from '@/lib/cache/snapshot'
 
-import { getAllCountries, getAllMUs, getAllParties, getAllRegions, getUserIdsForCountry, getUserLite } from './endpoints'
+import { getAllCountries, getAllMUs, getAllParties, getAllRegions, getUserIdsForCountry, getUserLite } from './api'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 

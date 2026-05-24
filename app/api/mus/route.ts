@@ -3,7 +3,7 @@ import type { MURow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyStructuredQuery, parseQuery } from '@/lib/query'
-import { RANKING_TIERS } from '@/lib/warera/schemas'
+import { RANKING_TIERS } from '@/lib/warera/api'
 
 /**
  * Tier rank lookup so sorting follows progression

@@ -1,4 +1,4 @@
-import type { RankingTier } from '@/lib/warera/schemas'
+import type { RankingTier } from '@/lib/warera/api'
 
 import { Badge } from '@/components/ui/badge'
 

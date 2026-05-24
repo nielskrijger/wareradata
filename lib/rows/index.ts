@@ -1,4 +1,4 @@
-import type { RankingTier } from '@/lib/warera/schemas'
+import type { RankingTier } from '@/lib/warera/api'
 
 /**
  * Projected user row used by both the /users page and /api/users.

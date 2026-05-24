@@ -1,6 +1,6 @@
 import type { UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
-import type { UserLite } from '@/lib/warera/schemas'
+import type { UserLite } from '@/lib/warera/api'
 
 import { toTier } from '@/lib/rows/lookups'
 import { computePoints } from '@/lib/scoring'

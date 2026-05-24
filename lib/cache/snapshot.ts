@@ -1,25 +1,21 @@
-import type { userLite } from '@/lib/warera/schemas'
+import type { Country, MU, Party, Region, SnapshotMeta, UserLite } from '@/lib/warera/api'
 
 import { Buffer } from 'node:buffer'
-import { z } from 'zod'
-import { countriesList, musList, partiesList, region, snapshotMeta, usersList } from '@/lib/warera/schemas'
 
 import { redis } from './redis'
 
 const KEY_PREFIX = 'wareradata:snapshot'
 
-// --- Single-key snapshots (small payloads) -------------------------------
+interface SnapshotShape {
+  countries: Country[]
+  mus: MU[]
+  parties: Party[]
+  regions: Region[]
+  meta: SnapshotMeta
+}
 
-const schemas = {
-  countries: countriesList,
-  mus: musList,
-  parties: partiesList,
-  regions: z.array(region),
-  meta: snapshotMeta,
-} as const
-
-export type SnapshotEntity = keyof typeof schemas
-export type SnapshotData<E extends SnapshotEntity> = z.infer<(typeof schemas)[E]>
+export type SnapshotEntity = keyof SnapshotShape
+export type SnapshotData<E extends SnapshotEntity> = SnapshotShape[E]
 
 function singleKey(entity: SnapshotEntity) {
   return `${KEY_PREFIX}:${entity}`
@@ -35,14 +31,14 @@ export async function readSnapshot<E extends SnapshotEntity>(entity: E): Promise
   if (raw === null || raw === undefined) {
     return (entity === 'meta' ? {} : []) as SnapshotData<E>
   }
-  return schemas[entity].parse(raw) as SnapshotData<E>
+  return raw as SnapshotData<E>
 }
 
 export async function writeSnapshot<E extends SnapshotEntity>(
   entity: E,
   data: SnapshotData<E>,
 ): Promise<void> {
-  await redis.set(singleKey(entity), schemas[entity].parse(data))
+  await redis.set(singleKey(entity), data)
 }
 
 // --- Sharded users snapshot ----------------------------------------------
@@ -78,8 +74,8 @@ function bucketFor(userId: string): number {
  * group internally. Logs per-bucket sizes so we can spot any drift toward
  * the 10 MB cap as the dataset grows.
  */
-export async function writeUsersSharded(users: z.infer<typeof userLite>[]): Promise<void> {
-  const buckets: z.infer<typeof userLite>[][] = Array.from({ length: BUCKETS }, () => [])
+export async function writeUsersSharded(users: UserLite[]): Promise<void> {
+  const buckets: UserLite[][] = Array.from({ length: BUCKETS }, () => [])
   for (const u of users) {
     buckets[bucketFor(u._id)].push(u)
   }
@@ -91,10 +87,10 @@ export async function writeUsersSharded(users: z.infer<typeof userLite>[]): Prom
     const slice = Array.from({ length: Math.min(SHARD_BATCH, BUCKETS - i) }, (_, k) => i + k)
     await Promise.all(
       slice.map((b) => {
-        const parsed = usersList.parse(buckets[b])
-        const bytes = Buffer.byteLength(JSON.stringify(parsed), 'utf8')
-        bucketSizes.push({ bucket: b, users: parsed.length, bytes })
-        return redis.set(usersBucketKey(b), parsed)
+        const data = buckets[b]
+        const bytes = Buffer.byteLength(JSON.stringify(data), 'utf8')
+        bucketSizes.push({ bucket: b, users: data.length, bytes })
+        return redis.set(usersBucketKey(b), data)
       }),
     )
   }
@@ -121,8 +117,8 @@ function fmtMB(bytes: number): string {
  * Logs per-batch response sizes so we can see how close each MGET is to
  * the 10 MB cap. On failure, logs the failing bucket numbers.
  */
-export async function readAllUsers(): Promise<z.infer<typeof userLite>[]> {
-  const out: z.infer<typeof userLite>[] = []
+export async function readAllUsers(): Promise<UserLite[]> {
+  const out: UserLite[] = []
   const totalBatches = Math.ceil(BUCKETS / READ_SHARD_CHUNK)
   let batchNum = 0
 
@@ -132,15 +128,14 @@ export async function readAllUsers(): Promise<z.infer<typeof userLite>[]> {
     const keys = slice.map(b => usersBucketKey(b)) as [string, ...string[]]
 
     try {
-      const shards = (await redis.mget<(z.infer<typeof userLite>[] | null)[]>(...keys)) ?? []
+      const shards = (await redis.mget<(UserLite[] | null)[]>(...keys)) ?? []
       let batchBytes = 0
       let batchUsers = 0
       for (const shard of shards) {
         if (shard) {
           batchBytes += Buffer.byteLength(JSON.stringify(shard), 'utf8')
-          const parsed = usersList.parse(shard)
-          batchUsers += parsed.length
-          out.push(...parsed)
+          batchUsers += shard.length
+          out.push(...shard)
         }
       }
       console.warn(

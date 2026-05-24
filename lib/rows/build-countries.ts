@@ -1,7 +1,8 @@
 import type { CountryRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
-import type { Country, MU } from '@/lib/warera/schemas'
+import type { Country, MU } from '@/lib/warera/api'
 
+import { toTier } from '@/lib/rows/lookups'
 import { aggregatePoints } from '@/lib/rows/points-agg'
 
 export function buildCountryRows(
@@ -30,7 +31,7 @@ export function buildCountryRows(
         code: c.code,
         damagePoints: agg?.damage ?? 0,
         damageRank: r?.countryDamages?.rank ?? null,
-        damageTier: r?.countryDamages?.tier ?? null,
+        damageTier: toTier(r?.countryDamages?.tier),
         damage: r?.countryDamages?.value ?? null,
         development: c.development ?? null,
         gemsPurchasedTotal: agg?.gemsPurchasedTotal ?? 0,

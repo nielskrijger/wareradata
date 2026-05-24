@@ -23,9 +23,9 @@ export default async function CountriesPage() {
 
   const initial = applyQuery(
     countries,
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'damageRank', dir: 'asc', filter: '' },
+    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'totalPoints', dir: 'desc', filter: '' },
     () => '',
-    row => row.damageRank,
+    row => row.totalPoints,
   )
 
   return (

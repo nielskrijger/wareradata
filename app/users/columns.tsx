@@ -7,6 +7,7 @@ import type { UserRow } from '@/lib/rows'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
@@ -205,12 +206,11 @@ export const userColumns: ColumnDef<UserRow>[] = [
       const hasValidJoinDate = !!created && !created.startsWith('0000')
       if (hasValidJoinDate) {
         return (
-          <span
-            className="text-muted-foreground"
-            title="Account is less than 7 days old; per-day rate isn't meaningful yet."
-          >
-            N/A
-          </span>
+          <InfoTooltip
+            label="N/A"
+            hint="Account is less than 7 days old; per-day rate isn't meaningful yet."
+            className="text-muted-foreground no-underline"
+          />
         )
       }
       return '—'

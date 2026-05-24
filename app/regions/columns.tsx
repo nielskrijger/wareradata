@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { RegionRow } from '@/lib/rows'
 
 import { CountryCell } from '@/components/country-cell'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { TruncatedCell } from '@/components/truncated-cell'
 
 export type { RegionRow }
@@ -81,10 +82,15 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
   },
   {
     accessorKey: 'isLinkedToCapital',
-    header: 'Linked',
+    header: () => (
+      <InfoTooltip
+        label="Connected"
+        hint="Connected to the country's capital via a chain of owned territory. “No” means an isolated exclave cut off from home territory."
+      />
+    ),
     cell: ({ row }) => (row.original.isLinkedToCapital ? 'Yes' : 'No'),
     sortDescFirst: true,
-    meta: { width: 90 },
+    meta: { width: 110 },
   },
   {
     accessorKey: 'mainCity',

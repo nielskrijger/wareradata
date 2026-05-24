@@ -26,7 +26,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
         {row.original.isBanned && <Badge className="bg-red-500/15 text-red-900">banned</Badge>}
       </div>
     ),
-    meta: { minWidth: 200 },
+    meta: { width: 200 },
   },
   {
     accessorKey: 'points',
@@ -40,7 +40,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
       />
     ),
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 90 },
+    meta: { align: 'right', width: 90 },
   },
   {
     accessorKey: 'countryCode',
@@ -51,67 +51,67 @@ export const userColumns: ColumnDef<UserRow>[] = [
         countryName={row.original.countryName}
       />
     ),
-    meta: { minWidth: 180 },
+    meta: { width: 180 },
   },
   {
     accessorKey: 'levelRank',
     header: 'Level Rank',
     cell: ({ row }) => row.original.levelRank ?? '—',
     sortUndefined: 'last',
-    meta: { align: 'right', minWidth: 100 },
+    meta: { align: 'right', width: 110 },
   },
   {
     accessorKey: 'level',
     header: 'Level',
     cell: ({ row }) => row.original.level ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 70 },
+    meta: { align: 'right', width: 70 },
   },
   {
     accessorKey: 'levelTier',
     header: 'Tier',
     cell: ({ row }) => <TierBadge tier={row.original.levelTier} />,
-    meta: { minWidth: 90 },
+    meta: { width: 90 },
   },
   {
     accessorKey: 'damageRank',
     header: 'Damage Rank',
     cell: ({ row }) => row.original.damageRank ?? '—',
-    meta: { align: 'right', minWidth: 110 },
+    meta: { align: 'right', width: 130 },
   },
   {
     accessorKey: 'damageValue',
     header: 'Total Damage',
     cell: ({ row }) => <CompactNumber value={row.original.damageValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 120 },
+    meta: { align: 'right', width: 130 },
   },
   {
     accessorKey: 'weeklyDamageValue',
     header: 'Weekly Damage',
     cell: ({ row }) => <CompactNumber value={row.original.weeklyDamageValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 130 },
+    meta: { align: 'right', width: 140 },
   },
   {
     accessorKey: 'wealthRank',
     header: 'Wealth Rank',
     cell: ({ row }) => row.original.wealthRank ?? '—',
-    meta: { align: 'right', minWidth: 110 },
+    meta: { align: 'right', width: 120 },
   },
   {
     accessorKey: 'wealthValue',
     header: 'Wealth',
     cell: ({ row }) => <CompactNumber value={row.original.wealthValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 90 },
+    meta: { align: 'right', width: 90 },
   },
   {
     accessorKey: 'militaryRank',
     header: 'Mil. Rank',
     cell: ({ row }) => row.original.militaryRank ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 90 },
+    meta: { align: 'right', width: 100 },
   },
   {
     accessorKey: 'muName',
@@ -119,7 +119,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => (
       <MUCell muName={row.original.muName} />
     ),
-    meta: { minWidth: 160 },
+    meta: { width: 170 },
   },
   {
     accessorKey: 'lastConnectionAt',
@@ -128,56 +128,56 @@ export const userColumns: ColumnDef<UserRow>[] = [
       <span className="text-muted-foreground">{formatRelativeTime(row.original.lastConnectionAt)}</span>
     ),
     sortDescFirst: true,
-    meta: { minWidth: 100 },
+    meta: { width: 110 },
   },
   {
     accessorKey: 'bountyValue',
     header: 'Bounty',
     cell: ({ row }) => <CompactNumber value={row.original.bountyValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 90 },
+    meta: { align: 'right', width: 90 },
   },
   {
     accessorKey: 'terrainValue',
     header: 'Terrain',
     cell: ({ row }) => row.original.terrainValue?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 90 },
+    meta: { align: 'right', width: 90 },
   },
   {
     accessorKey: 'referralsValue',
     header: 'Referrals',
     cell: ({ row }) => row.original.referralsValue?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 90 },
+    meta: { align: 'right', width: 100 },
   },
   {
     accessorKey: 'premiumMonthsValue',
     header: 'Premium Mo.',
     cell: ({ row }) => row.original.premiumMonthsValue?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 110 },
+    meta: { align: 'right', width: 120 },
   },
   {
     accessorKey: 'premiumGiftsValue',
     header: 'Premium Gifts',
     cell: ({ row }) => row.original.premiumGiftsValue?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 120 },
+    meta: { align: 'right', width: 130 },
   },
   {
     accessorKey: 'casesOpenedValue',
     header: 'Cases Opened',
     cell: ({ row }) => row.original.casesOpenedValue?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 120 },
+    meta: { align: 'right', width: 130 },
   },
   {
     accessorKey: 'gemsPurchasedValue',
     header: 'Gems Purchased',
     cell: ({ row }) => row.original.gemsPurchasedValue?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 130 },
+    meta: { align: 'right', width: 150 },
   },
   {
     id: 'warera',
@@ -188,6 +188,6 @@ export const userColumns: ColumnDef<UserRow>[] = [
         WarEra.io
       </ExternalLink>
     ),
-    meta: { minWidth: 110 },
+    meta: { width: 110 },
   },
 ]

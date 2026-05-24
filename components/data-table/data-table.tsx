@@ -43,9 +43,11 @@ declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     align?: 'left' | 'right'
     /**
-     * Minimum column width in px. Header + cell both get min-width applied.
+     * Column width in px. With table-layout: fixed (set on the <Table>),
+     * this is the actual rendered width — content overflowing gets the
+     * whitespace-nowrap + ellipsis treatment from TableCell.
      */
-    minWidth?: number
+    width?: number
   }
 }
 
@@ -198,7 +200,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className={cn('rounded-md border', isPending && 'opacity-60')}>
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map(hg => (
               <TableRow key={hg.id}>

@@ -18,9 +18,9 @@ export function DataTableHeaderCell<TData>({ header }: Props<TData>) {
   const canSort = header.column.getCanSort()
   const sorted = header.column.getIsSorted()
   const align = header.column.columnDef.meta?.align ?? 'left'
-  const minWidth = header.column.columnDef.meta?.minWidth
+  const width = header.column.columnDef.meta?.width
   const headClass = align === 'right' ? 'text-right' : undefined
-  const style = minWidth ? { minWidth: `${minWidth}px` } : undefined
+  const style = width ? { width: `${width}px` } : undefined
   const rendered = flexRender(header.column.columnDef.header, header.getContext())
 
   if (!canSort) {

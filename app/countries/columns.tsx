@@ -24,7 +24,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         countryName={row.original.name}
       />
     ),
-    meta: { minWidth: 200 },
+    meta: { width: 200 },
   },
   {
     accessorKey: 'totalPoints',
@@ -38,61 +38,61 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
       />
     ),
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 110 },
+    meta: { align: 'right', width: 120 },
   },
   {
     accessorKey: 'avgPoints',
     header: 'Avg Points',
     cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 100 },
+    meta: { align: 'right', width: 110 },
   },
   {
     accessorKey: 'damageRank',
     header: 'Damage Rank',
     cell: ({ row }) => row.original.damageRank ?? '—',
     sortUndefined: 'last',
-    meta: { align: 'right', minWidth: 110 },
+    meta: { align: 'right', width: 130 },
   },
   {
     accessorKey: 'damageTier',
     header: 'Tier',
     cell: ({ row }) => <TierBadge tier={row.original.damageTier} />,
-    meta: { minWidth: 90 },
+    meta: { width: 90 },
   },
   {
     accessorKey: 'damageValue',
     header: 'Total Damage',
     cell: ({ row }) => <CompactNumber value={row.original.damageValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 120 },
+    meta: { align: 'right', width: 130 },
   },
   {
     accessorKey: 'weeklyDamageValue',
     header: 'Weekly Damage',
     cell: ({ row }) => <CompactNumber value={row.original.weeklyDamageValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 130 },
+    meta: { align: 'right', width: 140 },
   },
   {
     accessorKey: 'weeklyDamagePerCitizenValue',
     header: 'Weekly / Citizen',
     cell: ({ row }) => <CompactNumber value={row.original.weeklyDamagePerCitizenValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 140 },
+    meta: { align: 'right', width: 150 },
   },
   {
     accessorKey: 'wealthRank',
     header: 'Wealth Rank',
     cell: ({ row }) => row.original.wealthRank ?? '—',
-    meta: { align: 'right', minWidth: 110 },
+    meta: { align: 'right', width: 120 },
   },
   {
     accessorKey: 'wealthValue',
     header: 'Wealth',
     cell: ({ row }) => <CompactNumber value={row.original.wealthValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 100 },
+    meta: { align: 'right', width: 100 },
   },
   {
     accessorKey: 'development',
@@ -100,14 +100,14 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.development !== null ? row.original.development.toFixed(1) : '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 110 },
+    meta: { align: 'right', width: 130 },
   },
   {
     accessorKey: 'activePopulation',
     header: 'Active pop.',
     cell: ({ row }) => row.original.activePopulation ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 100 },
+    meta: { align: 'right', width: 110 },
   },
   {
     accessorKey: 'musCount',
@@ -118,21 +118,21 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
       </InternalLink>
     ),
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 80 },
+    meta: { align: 'right', width: 80 },
   },
   {
     accessorKey: 'bountyValue',
     header: 'Bounty',
     cell: ({ row }) => <CompactNumber value={row.original.bountyValue} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 90 },
+    meta: { align: 'right', width: 90 },
   },
   {
     accessorKey: 'money',
     header: 'Treasury',
     cell: ({ row }) => <CompactNumber value={row.original.money} />,
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 100 },
+    meta: { align: 'right', width: 100 },
   },
   {
     accessorKey: 'productionBonusValue',
@@ -142,7 +142,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         ? `${row.original.productionBonusValue}%`
         : '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 110 },
+    meta: { align: 'right', width: 120 },
   },
   {
     accessorKey: 'unrestPercent',
@@ -152,7 +152,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         ? `${row.original.unrestPercent.toFixed(1)}%`
         : '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 90 },
+    meta: { align: 'right', width: 90 },
   },
   {
     accessorKey: 'taxIncome',
@@ -160,7 +160,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.taxIncome !== null ? `${row.original.taxIncome}%` : '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 100 },
+    meta: { align: 'right', width: 110 },
   },
   {
     accessorKey: 'taxMarket',
@@ -168,7 +168,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.taxMarket !== null ? `${row.original.taxMarket}%` : '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 100 },
+    meta: { align: 'right', width: 110 },
   },
   {
     accessorKey: 'taxSelfWork',
@@ -176,27 +176,27 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.taxSelfWork !== null ? `${row.original.taxSelfWork}%` : '—',
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 120 },
+    meta: { align: 'right', width: 130 },
   },
   {
     accessorKey: 'alliesCount',
     header: 'Allies',
     cell: ({ row }) => row.original.alliesCount.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 80 },
+    meta: { align: 'right', width: 80 },
   },
   {
     accessorKey: 'warsCount',
     header: 'Wars',
     cell: ({ row }) => row.original.warsCount.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', minWidth: 80 },
+    meta: { align: 'right', width: 80 },
   },
   {
     accessorKey: 'specializedItem',
     header: 'Specialty',
     cell: ({ row }) => row.original.specializedItem ?? '—',
-    meta: { minWidth: 120 },
+    meta: { width: 120 },
   },
   {
     id: 'warera',
@@ -207,6 +207,6 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         WarEra.io
       </ExternalLink>
     ),
-    meta: { minWidth: 110 },
+    meta: { width: 110 },
   },
 ]

@@ -13,8 +13,8 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
     <TableRow>
       {row.getVisibleCells().map((cell) => {
         const align = cell.column.columnDef.meta?.align ?? 'left'
-        const minWidth = cell.column.columnDef.meta?.minWidth
-        const style = minWidth ? { minWidth: `${minWidth}px` } : undefined
+        const width = cell.column.columnDef.meta?.width
+        const style = width ? { width: `${width}px` } : undefined
         return (
           <TableCell
             key={cell.id}

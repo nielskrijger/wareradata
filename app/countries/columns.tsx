@@ -38,28 +38,28 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
       />
     ),
     sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
+    meta: { heat: 'median', align: 'right', width: 120 },
   },
   {
     accessorKey: 'avgPoints',
     header: 'Avg Points',
     cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 110 },
+    meta: { heat: 'median', align: 'right', width: 110 },
   },
   {
     accessorKey: 'avgLevel',
     header: 'Avg Level',
     cell: ({ row }) => row.original.avgLevel ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 100 },
+    meta: { heat: 'median', align: 'right', width: 100 },
   },
   {
     accessorKey: 'damageRank',
     header: 'Damage Rank',
     cell: ({ row }) => row.original.damageRank ?? '—',
     sortUndefined: 'last',
-    meta: { align: 'right', width: 130 },
+    meta: { heat: 'invert', align: 'right', width: 130 },
   },
   {
     accessorKey: 'damageTier',
@@ -72,34 +72,34 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     header: 'Total Damage',
     cell: ({ row }) => <CompactNumber value={row.original.damage} />,
     sortDescFirst: true,
-    meta: { align: 'right', width: 130 },
+    meta: { heat: 'median', align: 'right', width: 130 },
   },
   {
     accessorKey: 'weeklyDamage',
     header: 'Weekly Damage',
     cell: ({ row }) => <CompactNumber value={row.original.weeklyDamage} />,
     sortDescFirst: true,
-    meta: { align: 'right', width: 140 },
+    meta: { heat: 'median', align: 'right', width: 140 },
   },
   {
     accessorKey: 'weeklyDamagePerCitizen',
     header: 'Weekly / Citizen',
     cell: ({ row }) => <CompactNumber value={row.original.weeklyDamagePerCitizen} />,
     sortDescFirst: true,
-    meta: { align: 'right', width: 150 },
+    meta: { heat: 'median', align: 'right', width: 150 },
   },
   {
     accessorKey: 'wealthRank',
     header: 'Wealth Rank',
     cell: ({ row }) => row.original.wealthRank ?? '—',
-    meta: { align: 'right', width: 120 },
+    meta: { heat: 'invert', align: 'right', width: 120 },
   },
   {
     accessorKey: 'wealth',
     header: 'Wealth',
     cell: ({ row }) => <CompactNumber value={row.original.wealth} />,
     sortDescFirst: true,
-    meta: { align: 'right', width: 100 },
+    meta: { heat: 'median', align: 'right', width: 100 },
   },
   {
     accessorKey: 'development',
@@ -107,7 +107,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.development !== null ? row.original.development.toFixed(1) : '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 130 },
+    meta: { heat: 'ramp', align: 'right', width: 130 },
   },
   {
     accessorKey: 'activePopulation',
@@ -150,14 +150,14 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     header: 'Bounty',
     cell: ({ row }) => <CompactNumber value={row.original.bounty} />,
     sortDescFirst: true,
-    meta: { align: 'right', width: 90 },
+    meta: { heat: 'ramp', align: 'right', width: 90 },
   },
   {
     accessorKey: 'money',
     header: 'Treasury',
     cell: ({ row }) => <CompactNumber value={row.original.money} />,
     sortDescFirst: true,
-    meta: { align: 'right', width: 100 },
+    meta: { heat: 'ramp', align: 'right', width: 100 },
   },
   {
     accessorKey: 'productionBonus',
@@ -167,7 +167,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         ? `${row.original.productionBonus}%`
         : '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
+    meta: { heat: 'ramp', align: 'right', width: 120 },
   },
   {
     accessorKey: 'unrestPercent',
@@ -177,7 +177,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         ? `${row.original.unrestPercent.toFixed(1)}%`
         : '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 90 },
+    meta: { heat: 'invert', align: 'right', width: 90 },
   },
   {
     accessorKey: 'taxIncome',
@@ -185,7 +185,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.taxIncome !== null ? `${row.original.taxIncome}%` : '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 110 },
+    meta: { heat: 'invert', heatCenter: 10, align: 'right', width: 110 },
   },
   {
     accessorKey: 'taxMarket',
@@ -193,7 +193,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.taxMarket !== null ? `${row.original.taxMarket}%` : '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 110 },
+    meta: { heat: 'invert', align: 'right', width: 110 },
   },
   {
     accessorKey: 'taxSelfWork',
@@ -201,21 +201,21 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.taxSelfWork !== null ? `${row.original.taxSelfWork}%` : '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 130 },
+    meta: { heat: 'invert', heatCenter: 5, align: 'right', width: 130 },
   },
   {
     accessorKey: 'alliesCount',
     header: 'Allies',
     cell: ({ row }) => row.original.alliesCount.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 80 },
+    meta: { heat: 'ramp', align: 'right', width: 80 },
   },
   {
     accessorKey: 'warsCount',
     header: 'Wars',
     cell: ({ row }) => row.original.warsCount.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 80 },
+    meta: { heat: 'invertMedian', align: 'right', width: 80 },
   },
   {
     accessorKey: 'specializedItem',
@@ -228,21 +228,21 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     header: 'Gems Bought',
     cell: ({ row }) => row.original.gemsPurchasedTotal.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
+    meta: { heat: 'ramp', align: 'right', width: 120 },
   },
   {
     accessorKey: 'premiumMonthsTotal',
     header: 'Premium Mo.',
     cell: ({ row }) => row.original.premiumMonthsTotal.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
+    meta: { heat: 'ramp', align: 'right', width: 120 },
   },
   {
     accessorKey: 'premiumGiftsTotal',
     header: 'Premium Gifts',
     cell: ({ row }) => row.original.premiumGiftsTotal.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 130 },
+    meta: { heat: 'ramp', align: 'right', width: 130 },
   },
   {
     id: 'warera',

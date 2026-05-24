@@ -1,3 +1,7 @@
+// Placeholder shown wherever a value is missing. DataTableRow detects this
+// sentinel and renders it muted, so cells can keep returning the bare string.
+export const EMPTY = '—'
+
 /**
  * Formats an ISO timestamp as a short relative time ("3h ago", "2d ago",
  * "1mo ago", "2y ago") via Intl.RelativeTimeFormat in narrow style.

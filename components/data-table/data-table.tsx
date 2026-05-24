@@ -2,6 +2,8 @@
 
 import type { ColumnDef, RowData, VisibilityState } from '@tanstack/react-table'
 import type { ReactNode } from 'react'
+
+import type { Range } from '@/lib/query'
 import {
   getCoreRowModel,
   useReactTable,
@@ -48,6 +50,37 @@ declare module '@tanstack/react-table' {
      * whitespace-nowrap + ellipsis treatment from TableCell.
      */
     width?: number
+
+    /**
+     * Heat-tint the cell text by the column's value relative to the dataset
+     * range (see HeatCell). `'ramp'` = green-only full gradient (min neutral →
+     * max full green); `'median'` = diverging green→red centered on the
+     * median, higher is better; `'invert'` = diverging the other way (lower is
+     * better) centered on the midpoint, for ranks/taxes; `'invertMedian'` =
+     * lower is better but centered on the median, for skewed columns like wars.
+     * The accessorKey must match a key present in the response `ranges`.
+     */
+    heat?: 'ramp' | 'median' | 'invert' | 'invertMedian'
+
+    /**
+     * For diverging columns (`'median'` / `'invert'`), the value that reads
+     * neutral (no tint). Defaults to the median (`'median'`) or dataset
+     * midpoint (`'invert'`); set it for scales with a meaningful baseline,
+     * e.g. `10` so a 10% tax is neutral, lower greens, higher reds.
+     */
+    heatCenter?: number
+
+    /**
+     * Compress the heat scale logarithmically for extremely skewed columns
+     * (e.g. casesOpened, spanning 1 → 170k) so typical values still get tinted
+     * instead of everything reading neutral until the lone outlier.
+     */
+    heatLog?: boolean
+  }
+
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  interface TableMeta<TData extends RowData> {
+    ranges?: Record<string, Range>
   }
 }
 
@@ -62,6 +95,8 @@ export interface PageRequest {
 export interface PageResult<TData> {
   rows: TData[]
   total: number
+  // Per-column [min, max, median] over the full filtered set, for heat coloring.
+  ranges?: Record<string, Range>
 }
 
 interface DataTableProps<TData, TValue> {
@@ -140,6 +175,7 @@ export function DataTable<TData, TValue>({
     manualSorting: true,
     manualFiltering: true,
     pageCount,
+    meta: { ranges: data.ranges },
     getCoreRowModel: getCoreRowModel(),
   })
 
@@ -199,7 +235,7 @@ export function DataTable<TData, TValue>({
         </DropdownMenu>
       </div>
 
-      <div className={cn('border-input overflow-hidden rounded-md border dark:bg-input/30', isPending && 'opacity-60')}>
+      <div className={cn('border-input overflow-hidden rounded-md border dark:bg-input/50', isPending && 'opacity-60')}>
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map(hg => (

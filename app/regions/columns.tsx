@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { RegionRow } from '@/lib/rows'
 
+import { BoolCell } from '@/components/bool-cell'
 import { CountryCell } from '@/components/country-cell'
 import { InfoTooltip } from '@/components/info-tooltip'
 import { TruncatedCell } from '@/components/truncated-cell'
@@ -46,14 +47,14 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
     header: 'Development',
     cell: ({ row }) => formatDevelopment(row.original.development),
     sortDescFirst: true,
-    meta: { align: 'right', width: 130 },
+    meta: { heat: 'ramp', align: 'right', width: 130 },
   },
   {
     accessorKey: 'baseDevelopment',
     header: 'Base Dev.',
     cell: ({ row }) => formatDevelopment(row.original.baseDevelopment),
     sortDescFirst: true,
-    meta: { align: 'right', width: 110 },
+    meta: { heat: 'ramp', align: 'right', width: 110 },
   },
   {
     accessorKey: 'strategicResource',
@@ -76,7 +77,7 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
   {
     accessorKey: 'isCapital',
     header: 'Capital',
-    cell: ({ row }) => (row.original.isCapital ? 'Yes' : '—'),
+    cell: ({ row }) => <BoolCell value={row.original.isCapital} falsy="dash" />,
     sortDescFirst: true,
     meta: { width: 90 },
   },
@@ -88,7 +89,7 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
         hint="Connected to the country's capital via a chain of owned territory. “No” means an isolated exclave cut off from home territory."
       />
     ),
-    cell: ({ row }) => (row.original.isLinkedToCapital ? 'Yes' : 'No'),
+    cell: ({ row }) => <BoolCell value={row.original.isLinkedToCapital} />,
     sortDescFirst: true,
     meta: { width: 110 },
   },
@@ -103,6 +104,6 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
     header: 'Neighbors',
     cell: ({ row }) => row.original.neighborCount.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 100 },
+    meta: { heat: 'median', align: 'right', width: 100 },
   },
 ]

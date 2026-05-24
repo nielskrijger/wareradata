@@ -33,9 +33,50 @@ export function parseQuery(searchParams: URLSearchParams): QueryParams {
   return { page, pageSize, sort, dir, filter }
 }
 
+// [min, max, median] over the full filtered set. The median lets the client
+// anchor a ramp at a typical value (skewed columns like avgLevel) instead of
+// the minimum, so low/typical rows stay calm.
+export type Range = [number, number, number]
+
 export interface PagedResult<T> {
   rows: T[]
   total: number
+  // Per-numeric-column range over the full filtered set (not just the page),
+  // for client-side heat coloring. The client uses whichever keys it needs.
+  ranges?: Record<string, Range>
+}
+
+/**
+ * Computes [min, max, median] for every numeric field across `rows`, ignoring
+ * null/undefined/non-finite values. The set of fields is discovered from the
+ * rows themselves (any key that is numeric on at least one row), so callers
+ * don't have to enumerate columns — the client picks whichever it heat-tints.
+ */
+function computeRanges<T extends object>(rows: T[]): Record<string, Range> {
+  if (!rows.length) {
+    return {}
+  }
+
+  const buckets = new Map<string, number[]>()
+  for (const row of rows) {
+    for (const [key, v] of Object.entries(row as Record<string, unknown>)) {
+      if (typeof v === 'number' && Number.isFinite(v)) {
+        let values = buckets.get(key)
+        if (!values) {
+          values = []
+          buckets.set(key, values)
+        }
+        values.push(v)
+      }
+    }
+  }
+
+  const out: Record<string, Range> = {}
+  for (const [key, values] of buckets) {
+    values.sort((a, b) => a - b)
+    out[key] = [values[0], values[values.length - 1], values[Math.floor(values.length / 2)]]
+  }
+  return out
 }
 
 /**
@@ -44,7 +85,7 @@ export interface PagedResult<T> {
  * `sortValue` returns the comparable value for a given column id, or undefined if
  * the column isn't sortable / unknown.
  */
-export function applyQuery<T>(
+export function applyQuery<T extends object>(
   rows: T[],
   query: QueryParams,
   getFilterHaystack: (row: T) => string,
@@ -55,6 +96,8 @@ export function applyQuery<T>(
     const needle = query.filter.toLowerCase()
     filtered = rows.filter(r => getFilterHaystack(r).includes(needle))
   }
+
+  const ranges = computeRanges(filtered)
 
   if (query.sort) {
     const sortField = query.sort
@@ -83,6 +126,7 @@ export function applyQuery<T>(
   return {
     rows: filtered.slice(start, start + query.pageSize),
     total: filtered.length,
+    ranges,
   }
 }
 
@@ -147,6 +191,8 @@ export function applyStructuredQuery<T extends object>(
     }
   }
 
+  const ranges = computeRanges(filtered)
+
   if (query.sort) {
     const sortField = query.sort
     const dirMul = query.dir === 'desc' ? -1 : 1
@@ -173,5 +219,6 @@ export function applyStructuredQuery<T extends object>(
   return {
     rows: filtered.slice(start, start + query.pageSize),
     total: filtered.length,
+    ranges,
   }
 }

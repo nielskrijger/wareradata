@@ -41,21 +41,21 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
       />
     ),
     sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
+    meta: { heat: 'median', align: 'right', width: 120 },
   },
   {
     accessorKey: 'avgPoints',
     header: 'Avg Points',
     cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 110 },
+    meta: { heat: 'median', align: 'right', width: 110 },
   },
   {
     accessorKey: 'avgLevel',
     header: 'Avg Level',
     cell: ({ row }) => row.original.avgLevel ?? '—',
     sortDescFirst: true,
-    meta: { align: 'right', width: 100 },
+    meta: { heat: 'median', align: 'right', width: 100 },
   },
   {
     accessorKey: 'countryName',
@@ -73,7 +73,7 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
     header: 'Members',
     cell: ({ row }) => row.original.memberCount.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 100 },
+    meta: { heat: 'ramp', align: 'right', width: 100 },
   },
   {
     accessorKey: 'leaderName',
@@ -114,21 +114,21 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
     header: 'Gems Bought',
     cell: ({ row }) => row.original.gemsPurchasedTotal.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
+    meta: { heat: 'ramp', align: 'right', width: 120 },
   },
   {
     accessorKey: 'premiumMonthsTotal',
     header: 'Premium Mo.',
     cell: ({ row }) => row.original.premiumMonthsTotal.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
+    meta: { heat: 'ramp', align: 'right', width: 120 },
   },
   {
     accessorKey: 'premiumGiftsTotal',
     header: 'Premium Gifts',
     cell: ({ row }) => row.original.premiumGiftsTotal.toLocaleString(),
     sortDescFirst: true,
-    meta: { align: 'right', width: 130 },
+    meta: { heat: 'ramp', align: 'right', width: 130 },
   },
   {
     accessorKey: 'createdAt',

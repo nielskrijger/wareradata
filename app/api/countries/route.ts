@@ -1,7 +1,8 @@
+import type { FieldAliases } from '@/lib/query'
 import type { CountryRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, parseQuery } from '@/lib/query'
+import { applyStructuredQuery, parseQuery } from '@/lib/query'
 import { RANKING_TIERS } from '@/lib/warera/schemas'
 
 /**
@@ -15,10 +16,21 @@ const tierIndex: Record<string, number> = Object.fromEntries(
 export const dynamic = 'force-dynamic'
 
 /**
- * Lowercased blob the global filter substring matches against.
+ * Friendly field names for the advanced filter. Keep in sync with the
+ * popover cheatsheet in `countries-table.tsx`.
  */
-function countryHaystack(row: CountryRow): string {
-  return `${row.name} ${row.code} ${row.specializedItem ?? ''}`.toLowerCase()
+const countryFieldAliases: FieldAliases = {
+  rank: 'damageRank',
+  damage: 'damageValue',
+  weeklyDamage: 'weeklyDamageValue',
+  wealth: 'wealthValue',
+  treasury: 'money',
+  population: 'activePopulation',
+  allies: 'alliesCount',
+  wars: 'warsCount',
+  specialty: 'specializedItem',
+  productionBonus: 'productionBonusValue',
+  unrest: 'unrestPercent',
 }
 
 /**
@@ -62,6 +74,6 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const query = parseQuery(searchParams)
   const { countries } = await getSnapshot()
-  const result = applyQuery(countries, query, countryHaystack, countrySortValue)
+  const result = applyStructuredQuery(countries, query, countrySortValue, countryFieldAliases)
   return Response.json(result)
 }

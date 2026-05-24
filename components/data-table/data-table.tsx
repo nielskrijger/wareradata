@@ -1,11 +1,12 @@
 'use client'
 
 import type { ColumnDef, RowData, VisibilityState } from '@tanstack/react-table'
+import type { ReactNode } from 'react'
 import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 import { useEffect, useRef, useState, useTransition } from 'react'
 
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -66,6 +67,12 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number
   fetchPage: (req: PageRequest) => Promise<PageResult<TData>>
   searchPlaceholder?: string
+  /**
+   * Optional element rendered next to the search input — typically a help
+   * affordance (info icon + popover) for pages that support advanced
+   * query syntax.
+   */
+  searchHint?: ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -75,6 +82,7 @@ export function DataTable<TData, TValue>({
   pageSize = 25,
   fetchPage,
   searchPlaceholder = 'Filter…',
+  searchHint,
 }: DataTableProps<TData, TValue>) {
   const {
     q,
@@ -136,12 +144,25 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-3" data-pending={isPending ? 'true' : 'false'}>
       <div className="flex items-center gap-2">
-        <Input
-          value={filterInput}
-          onChange={e => setFilterInput(e.target.value)}
-          placeholder={searchPlaceholder}
-          className="max-w-xs"
-        />
+        <div className="relative w-full max-w-xl">
+          <Input
+            value={filterInput}
+            onChange={e => setFilterInput(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="pr-8"
+          />
+          {filterInput && (
+            <button
+              type="button"
+              onClick={() => setFilterInput('')}
+              aria-label="Clear filter"
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        {searchHint}
         <DropdownMenu>
           <DropdownMenuTrigger className={cn(buttonVariants({ variant: 'outline' }), 'ml-auto')}>
             Columns <ChevronDown className="ml-1 h-4 w-4" />

@@ -3,6 +3,7 @@
 import type { PageRequest, PageResult } from '@/components/data-table/data-table'
 import type { MURow } from '@/lib/rows'
 
+import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
 
 import { muColumns } from './columns'
@@ -38,6 +39,20 @@ export function MUsTable({ initial }: Props) {
       initialSort={{ id: 'totalPoints', desc: true }}
       fetchPage={fetchMUs}
       searchPlaceholder="Filter by MU name or country…"
+      searchHint={(
+        <AdvancedSearchHint
+          introText="Type plain text to search across name, country, and region. Or use field-specific syntax:"
+          examples={[
+            { q: 'oranje', desc: 'Search any field' },
+            { q: 'country:nl', desc: 'Field match' },
+            { q: '-region:limburg', desc: 'Exclude with -' },
+            { q: 'members:[10 TO 50]', desc: 'Numeric range' },
+            { q: 'damage:>1000000', desc: 'Comparators' },
+            { q: 'country:nl AND members:>20', desc: 'Combine with AND/OR' },
+          ]}
+          fieldsList="name, country, region, members, damage, weeklyDamage, wealth, reputation, mercenary, invested, dorms, hq, and more."
+        />
+      )}
     />
   )
 }

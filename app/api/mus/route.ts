@@ -1,7 +1,8 @@
+import type { FieldAliases } from '@/lib/query'
 import type { MURow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, parseQuery } from '@/lib/query'
+import { applyStructuredQuery, parseQuery } from '@/lib/query'
 import { RANKING_TIERS } from '@/lib/warera/schemas'
 
 /**
@@ -15,10 +16,21 @@ const tierIndex: Record<string, number> = Object.fromEntries(
 export const dynamic = 'force-dynamic'
 
 /**
- * Lowercased blob the global filter substring matches against.
+ * Friendly field names for the advanced filter. Keep in sync with the
+ * popover cheatsheet in `mus-table.tsx`.
  */
-function muHaystack(row: MURow): string {
-  return `${row.name} ${row.countryName ?? ''} ${row.countryCode ?? ''} ${row.regionName ?? ''}`.toLowerCase()
+const muFieldAliases: FieldAliases = {
+  country: 'countryCode',
+  region: 'regionName',
+  members: 'memberCount',
+  damage: 'damageValue',
+  weeklyDamage: 'weeklyDamageValue',
+  wealth: 'wealthValue',
+  reputation: 'reputationValue',
+  mercenary: 'mercenaryReputation',
+  invested: 'investedMoney',
+  dorms: 'dormitoriesLevel',
+  hq: 'headquartersLevel',
 }
 
 /**
@@ -58,6 +70,6 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const query = parseQuery(searchParams)
   const { mus } = await getSnapshot()
-  const result = applyQuery(mus, query, muHaystack, muSortValue)
+  const result = applyStructuredQuery(mus, query, muSortValue, muFieldAliases)
   return Response.json(result)
 }

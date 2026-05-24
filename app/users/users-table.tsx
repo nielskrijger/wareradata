@@ -3,6 +3,7 @@
 import type { PageRequest, PageResult } from '@/components/data-table/data-table'
 import type { UserRow } from '@/lib/rows'
 
+import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
 
 import { userColumns } from './columns'
@@ -38,6 +39,20 @@ export function UsersTable({ initial }: Props) {
       initialSort={{ id: 'points', desc: true }}
       fetchPage={fetchUsers}
       searchPlaceholder="Filter by username, country, or MU…"
+      searchHint={(
+        <AdvancedSearchHint
+          introText="Type plain text to search across username, country, and MU. Or use field-specific syntax:"
+          examples={[
+            { q: 'alice', desc: 'Search any field' },
+            { q: 'country:nl', desc: 'Field match' },
+            { q: '-mu:"Bla bla"', desc: 'Exclude with -' },
+            { q: 'rank:[1 TO 100]', desc: 'Numeric range' },
+            { q: 'level:>30', desc: 'Comparators' },
+            { q: 'country:nl AND ...', desc: 'Combine with AND/OR' },
+          ]}
+          fieldsList="username, country, mu, level, rank, damage, wealth, weeklyDamage, lastSeen, militaryRank, and more."
+        />
+      )}
     />
   )
 }

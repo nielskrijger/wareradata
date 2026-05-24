@@ -1,8 +1,24 @@
+import type { FieldAliases } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, parseQuery } from '@/lib/query'
+import { applyStructuredQuery, parseQuery } from '@/lib/query'
 import { RANKING_TIERS } from '@/lib/warera/schemas'
+
+/**
+ * Friendly field names for the advanced filter. Underlying row keys still
+ * work — these just give a nicer DX (`country:nl` instead of `countryCode:nl`).
+ * Keep in sync with the popover cheatsheet in `users-table.tsx`.
+ */
+const userFieldAliases: FieldAliases = {
+  country: 'countryCode',
+  mu: 'muName',
+  rank: 'levelRank',
+  damage: 'damageValue',
+  wealth: 'wealthValue',
+  weeklyDamage: 'weeklyDamageValue',
+  lastSeen: 'lastConnectionAt',
+}
 
 /**
  * Tier rank lookup so sorting follows progression
@@ -13,13 +29,6 @@ const tierIndex: Record<string, number> = Object.fromEntries(
 )
 
 export const dynamic = 'force-dynamic'
-
-/**
- * Lowercased blob the global filter substring matches against.
- */
-function userHaystack(row: UserRow): string {
-  return `${row.username} ${row.countryCode ?? ''} ${row.countryName ?? ''} ${row.muName ?? ''}`.toLowerCase()
-}
 
 /**
  * Maps a column id from the client to a comparable value on the row.
@@ -61,6 +70,6 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const query = parseQuery(searchParams)
   const { users } = await getSnapshot()
-  const result = applyQuery(users, query, userHaystack, userSortValue)
+  const result = applyStructuredQuery(users, query, userSortValue, userFieldAliases)
   return Response.json(result)
 }

@@ -72,11 +72,25 @@ export function useTableUrlState({ initialSort }: Args): State {
   )
 
   const [filterInput, setFilterInput] = useState(q)
+
+  // Track the last `q` value the user typed (after debounce flush) so we can
+  // distinguish typing from external URL changes (back/forward, in-app links
+  // like /users?q=country:nl). External changes overwrite the input;
+  // typing flows the other way, debounced into the URL.
+  const lastTypedQRef = useRef(q)
+  if (q !== lastTypedQRef.current && q !== filterInput) {
+    lastTypedQRef.current = q
+    setFilterInput(q)
+  }
+
   useEffect(() => {
     if (filterInput === q) {
       return
     }
-    const handle = setTimeout(setQ, FILTER_DEBOUNCE_MS, filterInput || null)
+    const handle = setTimeout(() => {
+      lastTypedQRef.current = filterInput
+      setQ(filterInput || null)
+    }, FILTER_DEBOUNCE_MS)
     return () => clearTimeout(handle)
   }, [filterInput, q, setQ])
 

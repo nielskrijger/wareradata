@@ -37,6 +37,7 @@ export function buildCountryRows(
         money: c.money ?? null,
         musCount: musCountByCountry.get(c._id) ?? 0,
         name: c.name,
+        partyCount: lookups.partyCountByCountry.get(c._id) ?? 0,
         productionBonusValue: r?.countryProductionBonus?.value ?? null,
         specializedItem: c.specializedItem ?? null,
         taxIncome: c.taxes?.income ?? null,

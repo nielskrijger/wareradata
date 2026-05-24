@@ -7,6 +7,7 @@ export interface Lookups {
   regionById: Map<string, Region>
   userNameById: Map<string, string>
   partyByUser: Map<string, { id: string, name: string }>
+  partyCountByCountry: Map<string, number>
 }
 
 export function buildLookups(
@@ -17,12 +18,15 @@ export function buildLookups(
   parties: Party[],
 ): Lookups {
   const partyByUser = new Map<string, { id: string, name: string }>()
+  const partyCountByCountry = new Map<string, number>()
   for (const p of parties) {
-    if (!p.members) {
-      continue
+    if (p.members) {
+      for (const uid of p.members) {
+        partyByUser.set(uid, { id: p._id, name: p.name })
+      }
     }
-    for (const uid of p.members) {
-      partyByUser.set(uid, { id: p._id, name: p.name })
+    if (p.country) {
+      partyCountByCountry.set(p.country, (partyCountByCountry.get(p.country) ?? 0) + 1)
     }
   }
 
@@ -32,6 +36,7 @@ export function buildLookups(
     regionById: new Map(regions.map(r => [r._id, r])),
     userNameById: new Map(users.map(u => [u._id, u.username])),
     partyByUser,
+    partyCountByCountry,
   }
 }
 

@@ -48,7 +48,9 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'damageValue': return row.damageValue
     case 'development': return row.development
     case 'money': return row.money
+    case 'musCount': return row.musCount
     case 'name': return row.name.toLowerCase()
+    case 'partyCount': return row.partyCount
     case 'productionBonusValue': return row.productionBonusValue
     case 'specializedItem': return row.specializedItem
     case 'taxIncome': return row.taxIncome

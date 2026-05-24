@@ -121,6 +121,17 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     meta: { align: 'right', width: 80 },
   },
   {
+    accessorKey: 'partyCount',
+    header: 'Parties',
+    cell: ({ row }) => (
+      <InternalLink href={`/parties?q=${encodeURIComponent(`country:${row.original.code}`)}`}>
+        {row.original.partyCount.toLocaleString()}
+      </InternalLink>
+    ),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 90 },
+  },
+  {
     accessorKey: 'bountyValue',
     header: 'Bounty',
     cell: ({ row }) => <CompactNumber value={row.original.bountyValue} />,

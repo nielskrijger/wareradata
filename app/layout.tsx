@@ -61,8 +61,8 @@ export default function RootLayout({ children }: Props) {
       <body className="flex min-h-full flex-col">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <NuqsAdapter>

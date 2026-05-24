@@ -16,8 +16,8 @@ export function ThemeToggle() {
   // eslint-disable-next-line react/set-state-in-effect
   useEffect(() => setMounted(true), [])
 
-  // The initial theme still follows the OS preference (defaultTheme="system"
-  // in the provider); this toggle only flips between the two concrete themes.
+  // Dark is the default (defaultTheme="dark" in the provider); this toggle
+  // flips between the two concrete themes and persists the choice.
   const isDark = mounted && resolvedTheme === 'dark'
 
   return (

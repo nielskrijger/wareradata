@@ -11,6 +11,7 @@ const links = [
   { href: '/countries', label: 'Countries' },
   { href: '/mus', label: 'MUs' },
   { href: '/parties', label: 'Parties' },
+  { href: '/regions', label: 'Regions' },
   { href: '/about', label: 'About' },
 ]
 

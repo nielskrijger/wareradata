@@ -116,6 +116,26 @@ export interface MURow {
 }
 
 /**
+ * Projected region row used by /regions and /api/regions.
+ */
+export interface RegionRow {
+  baseDevelopment: number | null
+  biome: string | null
+  climate: string | null
+  code: string
+  countryCode: string | null
+  countryName: string | null
+  development: number | null
+  id: string
+  isCapital: boolean
+  isLinkedToCapital: boolean
+  mainCity: string | null
+  name: string
+  neighborCount: number
+  strategicResource: string | null
+}
+
+/**
  * Projected political-party row used by /parties and /api/parties.
  */
 export interface PartyRow {

@@ -24,7 +24,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         countryName={row.original.name}
       />
     ),
-    meta: { width: 200 },
+    meta: { width: 170 },
   },
   {
     accessorKey: 'totalPoints',
@@ -46,6 +46,13 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', width: 110 },
+  },
+  {
+    accessorKey: 'avgLevel',
+    header: 'Avg Level',
+    cell: ({ row }) => row.original.avgLevel ?? '—',
+    sortDescFirst: true,
+    meta: { align: 'right', width: 100 },
   },
   {
     accessorKey: 'damageRank',
@@ -208,6 +215,27 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     header: 'Specialty',
     cell: ({ row }) => row.original.specializedItem ?? '—',
     meta: { width: 120 },
+  },
+  {
+    accessorKey: 'gemsPurchasedTotal',
+    header: 'Gems Bought',
+    cell: ({ row }) => row.original.gemsPurchasedTotal.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 120 },
+  },
+  {
+    accessorKey: 'premiumMonthsTotal',
+    header: 'Premium Mo.',
+    cell: ({ row }) => row.original.premiumMonthsTotal.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 120 },
+  },
+  {
+    accessorKey: 'premiumGiftsTotal',
+    header: 'Premium Gifts',
+    cell: ({ row }) => row.original.premiumGiftsTotal.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 130 },
   },
   {
     id: 'warera',

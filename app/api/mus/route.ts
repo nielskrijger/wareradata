@@ -31,6 +31,11 @@ const muFieldAliases: FieldAliases = {
   invested: 'investedMoney',
   dorms: 'dormitoriesLevel',
   hq: 'headquartersLevel',
+  gems: 'gemsPurchasedTotal',
+  premiumMonths: 'premiumMonthsTotal',
+  premiumGifts: 'premiumGiftsTotal',
+  avgLevel: 'avgLevel',
+  level: 'avgLevel',
 }
 
 /**
@@ -38,6 +43,7 @@ const muFieldAliases: FieldAliases = {
  */
 function muSortValue(row: MURow, sort: string): number | string | null {
   switch (sort) {
+    case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
     case 'bountyValue': return row.bountyValue
     case 'countryName': return row.countryName?.toLowerCase() ?? null
@@ -45,11 +51,14 @@ function muSortValue(row: MURow, sort: string): number | string | null {
     case 'damageTier': return row.damageTier ? tierIndex[row.damageTier] : null
     case 'damageValue': return row.damageValue
     case 'dormitoriesLevel': return row.dormitoriesLevel
+    case 'gemsPurchasedTotal': return row.gemsPurchasedTotal
     case 'headquartersLevel': return row.headquartersLevel
     case 'investedMoney': return row.investedMoney
     case 'memberCount': return row.memberCount
     case 'mercenaryReputation': return row.mercenaryReputation
     case 'name': return row.name.toLowerCase()
+    case 'premiumGiftsTotal': return row.premiumGiftsTotal
+    case 'premiumMonthsTotal': return row.premiumMonthsTotal
     case 'regionName': return row.regionName?.toLowerCase() ?? null
     case 'reputationValue': return row.reputationValue
     case 'terrainValue': return row.terrainValue

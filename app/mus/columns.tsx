@@ -45,6 +45,13 @@ export const muColumns: ColumnDef<MURow>[] = [
     meta: { align: 'right', width: 110 },
   },
   {
+    accessorKey: 'avgLevel',
+    header: 'Avg Level',
+    cell: ({ row }) => row.original.avgLevel ?? '—',
+    sortDescFirst: true,
+    meta: { align: 'right', width: 100 },
+  },
+  {
     accessorKey: 'countryName',
     header: 'Country',
     cell: ({ row }) => (
@@ -158,6 +165,27 @@ export const muColumns: ColumnDef<MURow>[] = [
     cell: ({ row }) => row.original.headquartersLevel ?? '—',
     sortDescFirst: true,
     meta: { align: 'right', width: 70 },
+  },
+  {
+    accessorKey: 'gemsPurchasedTotal',
+    header: 'Gems Bought',
+    cell: ({ row }) => row.original.gemsPurchasedTotal.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 120 },
+  },
+  {
+    accessorKey: 'premiumMonthsTotal',
+    header: 'Premium Mo.',
+    cell: ({ row }) => row.original.premiumMonthsTotal.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 120 },
+  },
+  {
+    accessorKey: 'premiumGiftsTotal',
+    header: 'Premium Gifts',
+    cell: ({ row }) => row.original.premiumGiftsTotal.toLocaleString(),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 130 },
   },
   {
     id: 'warera',

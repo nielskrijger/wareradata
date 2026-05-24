@@ -16,6 +16,11 @@ const partyFieldAliases: FieldAliases = {
   members: 'memberCount',
   points: 'totalPoints',
   avg: 'avgPoints',
+  gems: 'gemsPurchasedTotal',
+  premiumMonths: 'premiumMonthsTotal',
+  premiumGifts: 'premiumGiftsTotal',
+  avgLevel: 'avgLevel',
+  level: 'avgLevel',
 }
 
 /**
@@ -23,9 +28,11 @@ const partyFieldAliases: FieldAliases = {
  */
 function partySortValue(row: PartyRow, sort: string): number | string | null {
   switch (sort) {
+    case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
     case 'countryName': return row.countryName?.toLowerCase() ?? null
     case 'createdAt': return row.createdAt
+    case 'gemsPurchasedTotal': return row.gemsPurchasedTotal
     case 'imperialism': return row.imperialism
     case 'industrialism': return row.industrialism
     case 'isolationism': return row.isolationism
@@ -33,6 +40,8 @@ function partySortValue(row: PartyRow, sort: string): number | string | null {
     case 'memberCount': return row.memberCount
     case 'militarism': return row.militarism
     case 'name': return row.name.toLowerCase()
+    case 'premiumGiftsTotal': return row.premiumGiftsTotal
+    case 'premiumMonthsTotal': return row.premiumMonthsTotal
     case 'totalPoints': return row.totalPoints
     default: return row.totalPoints
   }

@@ -20,17 +20,22 @@ export const dynamic = 'force-dynamic'
  * popover cheatsheet in `countries-table.tsx`.
  */
 const countryFieldAliases: FieldAliases = {
-  rank: 'damageRank',
-  damage: 'damageValue',
-  weeklyDamage: 'weeklyDamageValue',
-  wealth: 'wealthValue',
-  treasury: 'money',
-  population: 'activePopulation',
   allies: 'alliesCount',
-  wars: 'warsCount',
-  specialty: 'specializedItem',
+  avgLevel: 'avgLevel',
+  damage: 'damageValue',
+  gems: 'gemsPurchasedTotal',
+  level: 'avgLevel',
+  population: 'activePopulation',
+  premiumGifts: 'premiumGiftsTotal',
+  premiumMonths: 'premiumMonthsTotal',
   productionBonus: 'productionBonusValue',
+  rank: 'damageRank',
+  specialty: 'specializedItem',
+  treasury: 'money',
   unrest: 'unrestPercent',
+  wars: 'warsCount',
+  wealth: 'wealthValue',
+  weeklyDamage: 'weeklyDamageValue',
 }
 
 /**
@@ -40,6 +45,7 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
   switch (sort) {
     case 'activePopulation': return row.activePopulation
     case 'alliesCount': return row.alliesCount
+    case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
     case 'bountyValue': return row.bountyValue
     case 'code': return row.code
@@ -47,10 +53,13 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'damageTier': return row.damageTier ? tierIndex[row.damageTier] : null
     case 'damageValue': return row.damageValue
     case 'development': return row.development
+    case 'gemsPurchasedTotal': return row.gemsPurchasedTotal
     case 'money': return row.money
     case 'musCount': return row.musCount
     case 'name': return row.name.toLowerCase()
     case 'partyCount': return row.partyCount
+    case 'premiumGiftsTotal': return row.premiumGiftsTotal
+    case 'premiumMonthsTotal': return row.premiumMonthsTotal
     case 'productionBonusValue': return row.productionBonusValue
     case 'specializedItem': return row.specializedItem
     case 'taxIncome': return row.taxIncome

@@ -24,6 +24,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         : undefined
 
       return {
+        avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
         avgPoints: agg ? Math.round(agg.total / agg.count) : null,
         bountyValue: r?.muBounty?.value ?? null,
         countryCode: country?.code ?? null,
@@ -34,6 +35,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         damageTier: toTier(r?.muDamages?.tier),
         damageValue: r?.muDamages?.value ?? null,
         dormitoriesLevel: m.activeUpgradeLevels?.dormitories ?? null,
+        gemsPurchasedTotal: agg?.gemsPurchasedTotal ?? 0,
         headquartersLevel: m.activeUpgradeLevels?.headquarters ?? null,
         id: m._id,
         investedMoney,
@@ -41,6 +43,8 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         memberCount: m.members?.length ?? 0,
         mercenaryReputation: m.mercenaryReputation ?? null,
         name: m.name,
+        premiumGiftsTotal: agg?.premiumGiftsTotal ?? 0,
+        premiumMonthsTotal: agg?.premiumMonthsTotal ?? 0,
         regionName: region?.name ?? null,
         reputationValue: r?.muReputation?.value ?? null,
         terrainValue: r?.muTerrain?.value ?? null,

@@ -47,6 +47,7 @@ export interface UserRow {
 export interface CountryRow {
   activePopulation: number | null
   alliesCount: number
+  avgLevel: number | null
   avgPoints: number | null
   bountyValue: number | null
   code: string
@@ -55,12 +56,15 @@ export interface CountryRow {
   damageValue: number | null
   damagePoints: number
   development: number | null
+  gemsPurchasedTotal: number
   id: string
   levelPoints: number
   money: number | null
   musCount: number
   name: string
   partyCount: number
+  premiumGiftsTotal: number
+  premiumMonthsTotal: number
   productionBonusValue: number | null
   specializedItem: string | null
   taxIncome: number | null
@@ -80,6 +84,7 @@ export interface CountryRow {
  * Projected MU (military unit) row used by /mus and /api/mus.
  */
 export interface MURow {
+  avgLevel: number | null
   avgPoints: number | null
   bountyValue: number | null
   countryCode: string | null
@@ -90,6 +95,7 @@ export interface MURow {
   damageValue: number | null
   damagePoints: number
   dormitoriesLevel: number | null
+  gemsPurchasedTotal: number
   headquartersLevel: number | null
   id: string
   investedMoney: number
@@ -97,6 +103,8 @@ export interface MURow {
   memberCount: number
   mercenaryReputation: number | null
   name: string
+  premiumGiftsTotal: number
+  premiumMonthsTotal: number
   regionName: string | null
   reputationValue: number | null
   terrainValue: number | null
@@ -111,6 +119,7 @@ export interface MURow {
  * Projected political-party row used by /parties and /api/parties.
  */
 export interface PartyRow {
+  avgLevel: number | null
   avgPoints: number | null
   countryCode: string | null
   countryId: string | null
@@ -118,6 +127,7 @@ export interface PartyRow {
   createdAt: string | null
   damagePoints: number
   description: string | null
+  gemsPurchasedTotal: number
   id: string
   imperialism: number | null
   industrialism: number | null
@@ -127,6 +137,8 @@ export interface PartyRow {
   memberCount: number
   militarism: number | null
   name: string
+  premiumGiftsTotal: number
+  premiumMonthsTotal: number
   totalPoints: number
   wealthPoints: number
 }

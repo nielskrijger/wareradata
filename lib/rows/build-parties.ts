@@ -17,6 +17,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
       const ethics = p.ethics
 
       return {
+        avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
         avgPoints: agg ? Math.round(agg.total / agg.count) : null,
         countryCode: country?.code ?? null,
         countryId: p.country ?? null,
@@ -24,6 +25,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         createdAt: p.createdAt ?? null,
         damagePoints: agg?.damage ?? 0,
         description: p.description ?? null,
+        gemsPurchasedTotal: agg?.gemsPurchasedTotal ?? 0,
         id: p._id,
         imperialism: ethics?.imperialism ?? null,
         industrialism: ethics?.industrialism ?? null,
@@ -33,6 +35,8 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         memberCount: p.members?.length ?? 0,
         militarism: ethics?.militarism ?? null,
         name: p.name,
+        premiumGiftsTotal: agg?.premiumGiftsTotal ?? 0,
+        premiumMonthsTotal: agg?.premiumMonthsTotal ?? 0,
         totalPoints: agg?.total ?? 0,
         wealthPoints: agg?.wealth ?? 0,
       }

@@ -14,11 +14,10 @@ export default function AboutPage() {
       <header className="space-y-2">
         <PageTitle>About</PageTitle>
         <p className="text-muted-foreground max-w-2xl text-sm">
-          Warera Data is an unofficial stats site for the browser game
+          Warera Data is an unofficial stats site for the game
           {' '}
           <ExternalLink href="https://app.warera.io/">WarEra</ExternalLink>
-          . Every row you see is scraped from the public game API, kept in a
-          fast in-memory cache, and refreshed on a schedule.
+          .
         </p>
       </header>
 
@@ -78,8 +77,8 @@ export default function AboutPage() {
       <section className="max-w-2xl space-y-2">
         <h2 className="font-brand text-xl tracking-wide">Open source</h2>
         <p className="text-muted-foreground text-sm">
-          Warera Data is open source. Bug reports, sorting suggestions, or a
-          better points formula are all welcome — message
+          Warera Data is open source. Bug reports and feature requests
+          are all welcome — message
           {' '}
           <ExternalLink href="https://app.warera.io/user/697e645fe58ed7f88da92f20">Flaky</ExternalLink>
           {' '}

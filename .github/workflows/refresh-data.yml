@@ -9,12 +9,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  trigger:
+  scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 30
     steps:
-      - name: Hit /api/refresh
-        run: |
-          curl -fSsL --max-time 320 -X POST \
-            -H "x-refresh-secret: ${{ secrets.REFRESH_SECRET }}" \
-            "https://wareradata.vercel.app/api/refresh"
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run scrape
+        run: npm run scrape
+        env:
+          WARERA_API_KEY: ${{ secrets.WARERA_API_KEY }}
+          KV_REST_API_URL: ${{ secrets.KV_REST_API_URL }}
+          KV_REST_API_TOKEN: ${{ secrets.KV_REST_API_TOKEN }}

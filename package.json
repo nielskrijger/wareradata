@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "scrape": "tsx scripts/scrape.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -39,6 +40,7 @@
     "eslint-plugin-format": "^2.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "tailwindcss": "^4",
+    "tsx": "^4.22.3",
     "typescript": "^5"
   }
 }

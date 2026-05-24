@@ -222,10 +222,3 @@ export function getSnapshot(): Promise<Snapshot> {
   })
   return promise
 }
-
-/**
- * Manually drop the cache. Useful after /api/refresh writes new data.
- */
-export function invalidateSnapshot() {
-  cache = null
-}

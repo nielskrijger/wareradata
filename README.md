@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WareraData
 
-## Getting Started
+Sortable, filterable datatables for the [WarEra](https://app.warera.io)
+browser game. Live at **<https://wareradata.com>**.
 
-First, run the development server:
+This README is for operating the codebase, not for end-users of the site
+(the `/about` page covers that).
+
+## Local development
+
+Prereqs:
+
+- Node 22+
+- Either your own Upstash Redis instance or the prod credentials (read
+  access is enough — pages just `GET` snapshot keys)
 
 ```bash
+cp .env.example .env.local
+# fill in WARERA_API_KEY, KV_REST_API_URL, KV_REST_API_TOKEN
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+If Redis is empty (cold cache), pages render an "no data" state.
+Either point at a Redis that already has snapshots, or run a scrape
+locally: `npm run scrape`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## The scraper
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+[scripts/scrape.ts](scripts/scrape.ts) → [lib/warera/scrape.ts](lib/warera/scrape.ts)
+runs five phases sequentially:
 
-## Learn More
+1. **Countries** — `country.getAllCountries`, one call (~180 countries).
+2. **User IDs per country** — paginate `user.getUsersByCountry` for
+   each country, bounded concurrency 10.
+3. **Hydrate users** — `user.getUserLite` via tRPC batch, 150 per
+   request (~15k users → ~100 batches).
+4. **MUs** — cursor loop, 100 per page (~950 MUs).
+5. **Regions** — single `region.getRegionsObject` call (~700 regions).
 
-To learn more about Next.js, take a look at the following resources:
+Total: ~250–400 HTTP requests per refresh, ~30 s on a clean run, up
+to several minutes if Warera throws 429s.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Snapshot shape in Redis
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Single JSON blob per entity, except users which are sharded by country
+(a single 15k-user blob would exceed Upstash's 10 MB cap).
 
-## Deploy on Vercel
+| Key                                           | Shape                                             |
+| --------------------------------------------- | ------------------------------------------------- |
+| `wareradata:snapshot:countries`               | `Country[]`                                       |
+| `wareradata:snapshot:mus`                     | `MU[]`                                            |
+| `wareradata:snapshot:regions`                 | `Region[]`                                        |
+| `wareradata:snapshot:users:index`             | `string[]` — list of country IDs that have shards |
+| `wareradata:snapshot:users:shard:<countryId>` | `UserLite[]`                                      |
+| `wareradata:snapshot:meta`                    | `{ scrapedAt, entityCounts, scrapeDurationMs }`   |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Writes are per-key atomic `SET`s — a request landing mid-scrape always
+sees a consistent (older) snapshot, never a torn one. The users index
+is written last so a partial users update is invisible to readers.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Triggering a refresh
+
+Automatic: GitHub Actions cron at `0 * * * *`
+([refresh-data.yml](.github/workflows/refresh-data.yml)).
+
+Manual: Actions → `refresh-data` → Run workflow. Or locally:
+`npm run scrape`.

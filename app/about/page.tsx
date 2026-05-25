@@ -107,8 +107,11 @@ export default function AboutPage() {
       <section className="max-w-2xl space-y-2">
         <h2 className="font-brand text-xl tracking-wide">Open source</h2>
         <Paragraph>
-          Warera Data is open source. Bug reports and feature requests
-          are all welcome — message
+          Warera Data is open source on
+          {' '}
+          <ExternalLink href="https://github.com/nielskrijger/wareradata">GitHub</ExternalLink>
+          . Bug reports and feature requests are all welcome — open an issue
+          there, or message
           {' '}
           <ExternalLink href="https://app.warera.io/user/697e645fe58ed7f88da92f20">Flaky</ExternalLink>
           {' '}

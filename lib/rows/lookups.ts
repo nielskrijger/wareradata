@@ -6,6 +6,8 @@ export interface Lookups {
   muNameById: Map<string, string>
   regionById: Map<string, Region>
   userNameById: Map<string, string>
+  userAvatarById: Map<string, string | null>
+  userColorSchemeById: Map<string, string | null>
   partyByUser: Map<string, { id: string, name: string }>
   partyCountByCountry: Map<string, number>
 }
@@ -35,6 +37,8 @@ export function buildLookups(
     muNameById: new Map(mus.map(m => [m._id, m.name])),
     regionById: new Map(regions.map(r => [r._id, r])),
     userNameById: new Map(users.map(u => [u._id, u.username])),
+    userAvatarById: new Map(users.map(u => [u._id, u.avatarUrl ?? null])),
+    userColorSchemeById: new Map(users.map(u => [u._id, u.infos?.colorScheme ?? null])),
     partyByUser,
     partyCountByCountry,
   }

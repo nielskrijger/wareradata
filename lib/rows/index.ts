@@ -6,16 +6,21 @@ import type { RankingTier } from '@/lib/warera/api'
  * payload stays small.
  */
 export interface UserRow {
+  avatarUrl: string | null
   bounty: number | null
+  bountyRank: number | null
   casesOpened: number | null
+  casesOpenedRank: number | null
   countryCode: string | null
   countryId: string
   countryName: string | null
+  colorScheme: string | null
   createdAt: string | null
   damageRank: number | null
   damage: number | null
   damagePoints: number
   gemsPurchased: number | null
+  gemsPurchasedRank: number | null
   id: string
   isBanned: boolean
   lastConnectionAt: string | null
@@ -24,6 +29,7 @@ export interface UserRow {
   levelRank: number | null
   levelTier: RankingTier | null
   militaryRank: number | null
+  militaryRankPos: number | null
   muId: string | null
   muName: string | null
   partyId: string | null
@@ -31,14 +37,19 @@ export interface UserRow {
   points: number
   pointsPerDay: number | null
   premiumGifts: number | null
+  premiumGiftsRank: number | null
   premiumMonths: number | null
+  premiumMonthsRank: number | null
   referrals: number | null
+  referralsRank: number | null
   terrain: number | null
+  terrainRank: number | null
   username: string
   wealthPoints: number
   wealthRank: number | null
   wealth: number | null
   weeklyDamage: number | null
+  weeklyDamageRank: number | null
 }
 
 /**
@@ -152,6 +163,9 @@ export interface PartyRow {
   imperialism: number | null
   industrialism: number | null
   isolationism: number | null
+  leaderAvatarUrl: string | null
+  leaderColorScheme: string | null
+  leaderId: string | null
   leaderName: string | null
   levelPoints: number
   memberCount: number

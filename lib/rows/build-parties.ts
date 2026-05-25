@@ -14,6 +14,8 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
       const agg = pointsByParty.get(p._id)
       const country = p.country ? lookups.countryById.get(p.country) : undefined
       const leaderName = p.leader ? lookups.userNameById.get(p.leader) ?? null : null
+      const leaderAvatarUrl = p.leader ? lookups.userAvatarById.get(p.leader) ?? null : null
+      const leaderColorScheme = p.leader ? lookups.userColorSchemeById.get(p.leader) ?? null : null
       const ethics = p.ethics
 
       return {
@@ -30,6 +32,9 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         imperialism: ethics?.imperialism ?? null,
         industrialism: ethics?.industrialism ?? null,
         isolationism: ethics?.isolationism ?? null,
+        leaderAvatarUrl,
+        leaderColorScheme,
+        leaderId: p.leader ?? null,
         leaderName,
         levelPoints: agg?.level ?? 0,
         memberCount: p.members?.length ?? 0,

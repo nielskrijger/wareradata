@@ -23,7 +23,10 @@ export type MU = Omit<MuListItem, 'rankings'> & {
 }
 export type Party = PartyGetManyPaginatedResponse['items'][number]
 export type Region = RegionsObjectItem
-export type UserLite = UserGetUserLiteResponse
+export type UserLite = UserGetUserLiteResponse & {
+  infos?: { isBanned?: boolean, colorScheme?: string }
+  dates?: { lastConnectionAt?: string }
+}
 export type Ranking = RankingGetRankingResponse
 
 export const RANKING_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'] as const

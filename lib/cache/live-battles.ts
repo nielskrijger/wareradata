@@ -33,20 +33,25 @@ async function load(): Promise<BattleRow[]> {
  * Live active battles as enriched {@link BattleRow}s, cached for {@link TTL_MS}.
  * Backs both the /battles active tab and the active-battle detail page, so a
  * click-through stays consistent within the cache window.
+ *
+ * The live layer is an enhancement, not load-bearing: if the WarEra API is
+ * down (it 503s under load), we degrade to an empty list rather than crashing
+ * every page that shows the ⚔ pill. A failure isn't cached, so the next caller
+ * retries instead of serving empty for the whole TTL window.
  */
 export function getLiveActiveBattles(): Promise<BattleRow[]> {
   const now = Date.now()
   if (cache && now - cache.loadedAt < TTL_MS) {
     return cache.promise
   }
-  const promise = load()
-  cache = { loadedAt: now, promise }
-  // Drop a failed fetch so the next caller retries instead of caching a reject.
-  promise.catch(() => {
+  const promise = load().catch((err) => {
+    console.warn('[live-battles] active-battle fetch failed, serving empty:', err)
     if (cache?.promise === promise) {
       cache = null
     }
+    return [] as BattleRow[]
   })
+  cache = { loadedAt: now, promise }
   return promise
 }
 

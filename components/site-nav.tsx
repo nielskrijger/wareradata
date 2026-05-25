@@ -30,7 +30,7 @@ function isActive(pathname: string, href: string) {
 export function SiteNav() {
   const pathname = usePathname()
   return (
-    <nav className="bg-background sticky top-0 z-10 border-b">
+    <nav className="bg-background sticky top-0 z-30 border-b">
       <div className="flex items-center gap-3 px-6 py-3 sm:gap-6 sm:px-8 lg:px-12">
         <Link href="/users" className="font-brand flex items-center gap-2 text-[20px] tracking-wide">
           <Logo />

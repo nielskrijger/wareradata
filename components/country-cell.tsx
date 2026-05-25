@@ -1,3 +1,4 @@
+import { EmptyDash } from '@/components/empty-dash'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/internal-link'
 
@@ -15,7 +16,7 @@ interface Props {
  */
 export function CountryCell({ countryCode, countryName }: Props) {
   if (!countryCode && !countryName) {
-    return '—'
+    return <EmptyDash />
   }
   const label = countryName ?? countryCode ?? ''
   return (

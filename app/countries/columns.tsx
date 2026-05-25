@@ -43,21 +43,21 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   {
     accessorKey: 'avgPoints',
     header: 'Avg Points',
-    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 110 },
   },
   {
     accessorKey: 'avgLevel',
     header: 'Avg Level',
-    cell: ({ row }) => row.original.avgLevel ?? '—',
+    cell: ({ row }) => row.original.avgLevel ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
   },
   {
     accessorKey: 'damageRank',
     header: 'Damage Rank',
-    cell: ({ row }) => row.original.damageRank ?? '—',
+    cell: ({ row }) => row.original.damageRank ?? null,
     sortUndefined: 'last',
     meta: { heat: 'invert', align: 'right', width: 130 },
   },
@@ -91,7 +91,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   {
     accessorKey: 'wealthRank',
     header: 'Wealth Rank',
-    cell: ({ row }) => row.original.wealthRank ?? '—',
+    cell: ({ row }) => row.original.wealthRank ?? null,
     meta: { heat: 'invert', align: 'right', width: 120 },
   },
   {
@@ -105,7 +105,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     accessorKey: 'development',
     header: 'Development',
     cell: ({ row }) =>
-      row.original.development !== null ? row.original.development.toFixed(1) : '—',
+      row.original.development !== null ? row.original.development.toFixed(1) : null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 130 },
   },
@@ -114,7 +114,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     header: 'Active pop.',
     cell: ({ row }) =>
       row.original.activePopulation === null
-        ? '—'
+        ? null
         : (
             <InternalLink href={`/users?q=${encodeURIComponent(`country:${row.original.code}`)}`}>
               {row.original.activePopulation.toLocaleString()}
@@ -165,7 +165,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.productionBonus !== null
         ? `${row.original.productionBonus}%`
-        : '—',
+        : null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 120 },
   },
@@ -175,7 +175,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.unrestPercent !== null
         ? `${row.original.unrestPercent.toFixed(1)}%`
-        : '—',
+        : null,
     sortDescFirst: true,
     meta: { heat: 'invert', align: 'right', width: 90 },
   },
@@ -183,7 +183,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     accessorKey: 'taxIncome',
     header: 'Income Tax',
     cell: ({ row }) =>
-      row.original.taxIncome !== null ? `${row.original.taxIncome}%` : '—',
+      row.original.taxIncome !== null ? `${row.original.taxIncome}%` : null,
     sortDescFirst: true,
     meta: { heat: 'invert', heatCenter: 10, align: 'right', width: 110 },
   },
@@ -191,7 +191,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     accessorKey: 'taxMarket',
     header: 'Market Tax',
     cell: ({ row }) =>
-      row.original.taxMarket !== null ? `${row.original.taxMarket}%` : '—',
+      row.original.taxMarket !== null ? `${row.original.taxMarket}%` : null,
     sortDescFirst: true,
     meta: { heat: 'invert', align: 'right', width: 110 },
   },
@@ -199,7 +199,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     accessorKey: 'taxSelfWork',
     header: 'Self-Work Tax',
     cell: ({ row }) =>
-      row.original.taxSelfWork !== null ? `${row.original.taxSelfWork}%` : '—',
+      row.original.taxSelfWork !== null ? `${row.original.taxSelfWork}%` : null,
     sortDescFirst: true,
     meta: { heat: 'invert', heatCenter: 5, align: 'right', width: 130 },
   },
@@ -220,7 +220,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   {
     accessorKey: 'specializedItem',
     header: 'Specialty',
-    cell: ({ row }) => row.original.specializedItem ?? '—',
+    cell: ({ row }) => row.original.specializedItem ?? null,
     meta: { width: 120 },
   },
   {

@@ -1,3 +1,4 @@
+import { EmptyDash } from '@/components/empty-dash'
 import { InternalLink } from '@/components/internal-link'
 
 interface Props {
@@ -18,7 +19,7 @@ interface Props {
  */
 export function MUCell({ muName, bold }: Props) {
   if (!muName) {
-    return '—'
+    return <EmptyDash />
   }
   return (
     <InternalLink href={`/users?q=${encodeURIComponent(`mu:"${muName}"`)}`} bold={bold}>

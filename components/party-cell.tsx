@@ -1,3 +1,4 @@
+import { EmptyDash } from '@/components/empty-dash'
 import { InternalLink } from '@/components/internal-link'
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
  */
 export function PartyCell({ partyName }: Props) {
   if (!partyName) {
-    return '—'
+    return <EmptyDash />
   }
   const href = `/users?q=${encodeURIComponent(`party:"${partyName}"`)}`
   return (

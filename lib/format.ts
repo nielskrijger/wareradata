@@ -10,11 +10,11 @@ const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'narrow'
 
 export function formatRelativeTime(iso: string | null): string {
   if (!iso) {
-    return '—'
+    return EMPTY
   }
   const then = Date.parse(iso)
   if (Number.isNaN(then)) {
-    return '—'
+    return EMPTY
   }
   const seconds = Math.max(0, Math.floor((Date.now() - then) / 1000))
   if (seconds < 60) {

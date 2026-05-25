@@ -1,8 +1,8 @@
 import type { Row } from '@tanstack/react-table'
 
 import { HeatCell } from '@/components/data-table/heat-cell'
+import { EmptyDash } from '@/components/empty-dash'
 import { TableCell, TableRow } from '@/components/ui/table'
-import { EMPTY } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 interface Props<TData> {
@@ -24,21 +24,21 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
         const style = width ? { width: `${width}px` } : undefined
         const sticky = index === 0 ? STICKY : undefined
 
-        // Cells that render the bare empty sentinel get muted centrally, so
-        // every `?? EMPTY` column reads grey without per-column styling.
-        // flexRender wraps the cell fn in createElement, so the bare string
-        // never survives as a value to compare; instead we invoke the renderer
-        // directly (these cells are pure formatters with no hooks) and check.
+        // Cells with no value render the muted EmptyDash, so every column that
+        // returns null for a missing value reads grey without per-column
+        // styling. flexRender wraps the cell fn in createElement, so we invoke
+        // the renderer directly (these cells are pure formatters with no hooks)
+        // to see the raw null before it's wrapped.
         const cellDef = cell.column.columnDef.cell
         const rendered = typeof cellDef === 'function' ? cellDef(cell.getContext()) : cellDef
-        if (rendered === EMPTY) {
+        if (rendered == null) {
           return (
             <TableCell
               key={cell.id}
-              className={cn(align === 'right' ? 'text-muted-foreground text-right tabular-nums' : 'text-muted-foreground', sticky)}
+              className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, sticky)}
               style={style}
             >
-              {EMPTY}
+              <EmptyDash />
             </TableCell>
           )
         }

@@ -11,13 +11,13 @@ import { TruncatedCell } from '@/components/truncated-cell'
 
 export type { RegionRow }
 
-function formatDevelopment(value: number | null): string {
-  return value === null ? '—' : value.toFixed(1)
+function formatDevelopment(value: number | null): string | null {
+  return value === null ? null : value.toFixed(1)
 }
 
-function titleCase(value: string | null): string {
+function titleCase(value: string | null): string | null {
   if (!value) {
-    return '—'
+    return null
   }
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
@@ -89,7 +89,7 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
   {
     accessorKey: 'mainCity',
     header: 'Main City',
-    cell: ({ row }) => row.original.mainCity ?? '—',
+    cell: ({ row }) => row.original.mainCity ?? null,
     meta: { width: 160 },
   },
   {

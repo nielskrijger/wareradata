@@ -9,13 +9,14 @@ import { ExternalLink } from '@/components/external-link'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { ScaleBadge } from '@/components/scale-badge'
 import { TruncatedCell } from '@/components/truncated-cell'
+import { UserNameCell } from '@/components/user-name-cell'
 import { wareraUrl } from '@/lib/warera/urls'
 
 export type { PartyRow }
 
-function formatCreated(iso: string | null): string {
+function formatCreated(iso: string | null): string | null {
   if (!iso) {
-    return '—'
+    return null
   }
   return iso.slice(0, 10)
 }
@@ -46,14 +47,14 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
   {
     accessorKey: 'avgPoints',
     header: 'Avg Points',
-    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 110 },
   },
   {
     accessorKey: 'avgLevel',
     header: 'Avg Level',
-    cell: ({ row }) => row.original.avgLevel ?? '—',
+    cell: ({ row }) => row.original.avgLevel ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
   },
@@ -78,8 +79,15 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
   {
     accessorKey: 'leaderName',
     header: 'Leader',
-    cell: ({ row }) => row.original.leaderName ?? '—',
-    meta: { width: 180 },
+    cell: ({ row }) => (
+      <UserNameCell
+        userId={row.original.leaderId}
+        name={row.original.leaderName}
+        avatarUrl={row.original.leaderAvatarUrl}
+        colorScheme={row.original.leaderColorScheme}
+      />
+    ),
+    meta: { width: 190 },
   },
   {
     accessorKey: 'militarism',

@@ -1,3 +1,5 @@
+import { EmptyDash } from '@/components/empty-dash'
+
 interface Props {
   value: boolean | null | undefined
   // What to render when the value is false. 'no' colors a red "No";
@@ -16,7 +18,7 @@ export function BoolCell({ value, falsy = 'no' }: Props) {
   }
 
   if (falsy === 'dash') {
-    return <span className="text-muted-foreground">—</span>
+    return <EmptyDash />
   }
 
   return <span className="font-medium text-red-700 dark:text-red-400">No</span>

@@ -13,6 +13,7 @@ import { PartyCell } from '@/components/party-cell'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
+import { UserNameCell } from '@/components/user-name-cell'
 import { formatRelativeTime } from '@/lib/format'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -24,11 +25,11 @@ export const userColumns: ColumnDef<UserRow>[] = [
     header: 'User',
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <span className="font-medium">{row.original.username}</span>
+        <UserNameCell userId={row.original.id} name={row.original.username} avatarUrl={row.original.avatarUrl} colorScheme={row.original.colorScheme} />
         {row.original.isBanned && <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
       </div>
     ),
-    meta: { width: 170 },
+    meta: { width: 190 },
   },
   {
     accessorKey: 'points',
@@ -58,14 +59,14 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'levelRank',
     header: 'Level Rank',
-    cell: ({ row }) => row.original.levelRank ?? '—',
+    cell: ({ row }) => row.original.levelRank ?? null,
     sortUndefined: 'last',
     meta: { heat: 'invert', align: 'right', width: 110 },
   },
   {
     accessorKey: 'level',
     header: 'Level',
-    cell: ({ row }) => row.original.level ?? '—',
+    cell: ({ row }) => row.original.level ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 70 },
   },
@@ -78,7 +79,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'damageRank',
     header: 'Damage Rank',
-    cell: ({ row }) => row.original.damageRank ?? '—',
+    cell: ({ row }) => row.original.damageRank ?? null,
     meta: { heat: 'invert', align: 'right', width: 130 },
   },
   {
@@ -98,7 +99,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'wealthRank',
     header: 'Wealth Rank',
-    cell: ({ row }) => row.original.wealthRank ?? '—',
+    cell: ({ row }) => row.original.wealthRank ?? null,
     meta: { heat: 'invert', align: 'right', width: 120 },
   },
   {
@@ -111,7 +112,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'militaryRank',
     header: 'Mil. Rank',
-    cell: ({ row }) => row.original.militaryRank ?? '—',
+    cell: ({ row }) => row.original.militaryRank ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
   },
@@ -141,7 +142,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'createdAt',
     header: 'Joined',
-    cell: ({ row }) => row.original.createdAt?.slice(0, 10) ?? '—',
+    cell: ({ row }) => row.original.createdAt?.slice(0, 10) ?? null,
     sortDescFirst: true,
     meta: { width: 110 },
   },
@@ -155,42 +156,42 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'terrain',
     header: 'Terrain',
-    cell: ({ row }) => row.original.terrain?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.terrain?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 90 },
   },
   {
     accessorKey: 'referrals',
     header: 'Referrals',
-    cell: ({ row }) => row.original.referrals?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.referrals?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'ramp', align: 'right', width: 100 },
   },
   {
     accessorKey: 'premiumMonths',
     header: 'Premium Mo.',
-    cell: ({ row }) => row.original.premiumMonths?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.premiumMonths?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'ramp', align: 'right', width: 120 },
   },
   {
     accessorKey: 'premiumGifts',
     header: 'Premium Gifts',
-    cell: ({ row }) => row.original.premiumGifts?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.premiumGifts?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'ramp', align: 'right', width: 130 },
   },
   {
     accessorKey: 'casesOpened',
     header: 'Cases Opened',
-    cell: ({ row }) => row.original.casesOpened?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.casesOpened?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', heatLog: true, align: 'right', width: 130 },
   },
   {
     accessorKey: 'gemsPurchased',
     header: 'Gems Purchased',
-    cell: ({ row }) => row.original.gemsPurchased?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.gemsPurchased?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'ramp', align: 'right', width: 150 },
   },
@@ -213,7 +214,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
           />
         )
       }
-      return '—'
+      return null
     },
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 110 },

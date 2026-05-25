@@ -40,14 +40,14 @@ export const muColumns: ColumnDef<MURow>[] = [
   {
     accessorKey: 'avgPoints',
     header: 'Avg Points',
-    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 110 },
   },
   {
     accessorKey: 'avgLevel',
     header: 'Avg Level',
-    cell: ({ row }) => row.original.avgLevel ?? '—',
+    cell: ({ row }) => row.original.avgLevel ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
   },
@@ -65,7 +65,7 @@ export const muColumns: ColumnDef<MURow>[] = [
   {
     accessorKey: 'regionName',
     header: 'Region',
-    cell: ({ row }) => row.original.regionName ?? '—',
+    cell: ({ row }) => row.original.regionName ?? null,
     meta: { width: 140 },
   },
   {
@@ -78,7 +78,7 @@ export const muColumns: ColumnDef<MURow>[] = [
   {
     accessorKey: 'damageRank',
     header: 'Damage Rank',
-    cell: ({ row }) => row.original.damageRank ?? '—',
+    cell: ({ row }) => row.original.damageRank ?? null,
     meta: { heat: 'invert', align: 'right', width: 130 },
   },
   {
@@ -111,7 +111,7 @@ export const muColumns: ColumnDef<MURow>[] = [
   {
     accessorKey: 'wealthRank',
     header: 'Wealth Rank',
-    cell: ({ row }) => row.original.wealthRank ?? '—',
+    cell: ({ row }) => row.original.wealthRank ?? null,
     meta: { heat: 'invert', align: 'right', width: 120 },
   },
   {
@@ -124,14 +124,14 @@ export const muColumns: ColumnDef<MURow>[] = [
   {
     accessorKey: 'terrain',
     header: 'Terrain',
-    cell: ({ row }) => row.original.terrain?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.terrain?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
   },
   {
     accessorKey: 'reputation',
     header: 'Reputation',
-    cell: ({ row }) => row.original.reputation?.toLocaleString() ?? '—',
+    cell: ({ row }) => row.original.reputation?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', heatCenter: 0, align: 'right', width: 110 },
   },
@@ -141,7 +141,7 @@ export const muColumns: ColumnDef<MURow>[] = [
     cell: ({ row }) =>
       row.original.mercenaryReputation !== null
         ? row.original.mercenaryReputation.toFixed(2)
-        : '—',
+        : null,
     sortDescFirst: true,
     meta: { heat: 'median', heatCenter: 0, align: 'right', width: 140 },
   },
@@ -155,14 +155,14 @@ export const muColumns: ColumnDef<MURow>[] = [
   {
     accessorKey: 'dormitoriesLevel',
     header: 'Dorms',
-    cell: ({ row }) => row.original.dormitoriesLevel ?? '—',
+    cell: ({ row }) => row.original.dormitoriesLevel ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 80 },
   },
   {
     accessorKey: 'headquartersLevel',
     header: 'HQ',
-    cell: ({ row }) => row.original.headquartersLevel ?? '—',
+    cell: ({ row }) => row.original.headquartersLevel ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', heatCenter: 2.5, align: 'right', width: 70 },
   },

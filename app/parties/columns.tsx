@@ -87,7 +87,7 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
         colorScheme={row.original.leaderColorScheme}
       />
     ),
-    meta: { width: 190 },
+    meta: { width: 220 },
   },
   {
     accessorKey: 'militarism',

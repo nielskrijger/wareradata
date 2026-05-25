@@ -24,12 +24,12 @@ export const userColumns: ColumnDef<UserRow>[] = [
     accessorKey: 'username',
     header: 'User',
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         <UserNameCell userId={row.original.id} name={row.original.username} avatarUrl={row.original.avatarUrl} colorScheme={row.original.colorScheme} />
-        {row.original.isBanned && <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
+        {row.original.isBanned && <Badge className="shrink-0 bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
       </div>
     ),
-    meta: { width: 190 },
+    meta: { width: 220 },
   },
   {
     accessorKey: 'points',
@@ -120,9 +120,9 @@ export const userColumns: ColumnDef<UserRow>[] = [
     accessorKey: 'muName',
     header: 'MU',
     cell: ({ row }) => (
-      <MUCell muName={row.original.muName} muId={row.original.muId} />
+      <MUCell muName={row.original.muName} muId={row.original.muId} avatarUrl={row.original.muAvatarUrl} />
     ),
-    meta: { width: 170 },
+    meta: { width: 200 },
   },
   {
     accessorKey: 'partyName',

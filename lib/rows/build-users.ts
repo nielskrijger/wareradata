@@ -52,6 +52,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         levelTier: toTier(level?.tier),
         militaryRank: u.militaryRank ?? null,
         militaryRankPos: null,
+        muAvatarUrl: u.mu ? (lookups.muAvatarById.get(u.mu) ?? null) : null,
         muId: u.mu ?? null,
         muName: u.mu ? (lookups.muNameById.get(u.mu) ?? null) : null,
         partyId: party?.id ?? null,

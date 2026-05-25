@@ -30,6 +30,7 @@ export interface UserRow {
   levelTier: RankingTier | null
   militaryRank: number | null
   militaryRankPos: number | null
+  muAvatarUrl: string | null
   muId: string | null
   muName: string | null
   partyId: string | null

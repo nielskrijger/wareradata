@@ -4,6 +4,7 @@ import { RANKING_TIERS } from '@/lib/warera/api'
 export interface Lookups {
   countryById: Map<string, { name: string, code: string }>
   muNameById: Map<string, string>
+  muAvatarById: Map<string, string | null>
   regionById: Map<string, Region>
   userNameById: Map<string, string>
   userAvatarById: Map<string, string | null>
@@ -35,6 +36,7 @@ export function buildLookups(
   return {
     countryById: new Map(countries.map(c => [c._id, { name: c.name, code: c.code }])),
     muNameById: new Map(mus.map(m => [m._id, m.name])),
+    muAvatarById: new Map(mus.map(m => [m._id, m.avatarUrl ?? null])),
     regionById: new Map(regions.map(r => [r._id, r])),
     userNameById: new Map(users.map(u => [u._id, u.username])),
     userAvatarById: new Map(users.map(u => [u._id, u.avatarUrl ?? null])),

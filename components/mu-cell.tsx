@@ -48,7 +48,7 @@ export function MUCell({ muName, muId, avatarUrl, bold }: Props) {
     return link
   }
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <Avatar src={avatarUrl} name={muName} size={22} />
       {link}
     </div>

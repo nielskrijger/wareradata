@@ -18,6 +18,9 @@ const userFieldAliases: FieldAliases = {
   lastSeen: 'lastConnectionAt',
   joined: 'createdAt',
   ppd: 'pointsPerDay',
+  health: 'healthPercent',
+  hunger: 'hungerPercent',
+  status: 'combatStatus',
 }
 
 /**
@@ -60,6 +63,9 @@ function userSortValue(row: UserRow, sort: string): number | string | null {
     case 'isBanned': return row.isBanned ? 1 : 0
     case 'points': return row.points
     case 'pointsPerDay': return row.pointsPerDay
+    case 'healthPercent': return row.healthPercent
+    case 'hungerPercent': return row.hungerPercent
+    case 'combatStatus': return row.combatStatus
     default: return row.levelRank
   }
 }

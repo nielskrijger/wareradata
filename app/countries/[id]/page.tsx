@@ -7,6 +7,7 @@ import { CompactNumber } from '@/components/compact-number'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
 import { Flag } from '@/components/flag'
+import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
@@ -129,6 +130,16 @@ export default async function CountryDetailPage({ params }: PageProps) {
           <BattleCountBadge count={battlePage.total} />
           <ExternalLink href={wareraUrl('country', c.id)}>WarEra.io</ExternalLink>
         </FactRow>
+        {(c.avgHealth != null || c.avgHunger != null) && (
+          <FactRow muted>
+            {c.avgHealth != null && (
+              <span className="inline-flex items-center gap-1.5">Avg health <PercentBar value={c.avgHealth} /></span>
+            )}
+            {c.avgHunger != null && (
+              <span className="inline-flex items-center gap-1.5">Avg hunger <PercentBar value={c.avgHunger} /></span>
+            )}
+          </FactRow>
+        )}
       </DetailHeader>
 
       <PointsBreakdownPanel
@@ -141,6 +152,8 @@ export default async function CountryDetailPage({ params }: PageProps) {
       <StatCardGrid>
         <StatCard label="Active Pop." value={c.activePopulation} range={ranges.activePopulation} heat="ramp" rank={c.activePopulationRank} total={total} />
         <StatCard label="Avg Level" value={c.avgLevel} range={ranges.avgLevel} heat="median" rank={c.avgLevelRank} total={total} />
+        <StatCard label="Avg Health" value={c.avgHealth} display={c.avgHealth != null ? `${c.avgHealth}%` : undefined} range={ranges.avgHealth} heat="ramp" rank={c.avgHealthRank} total={total} />
+        <StatCard label="Avg Hunger" value={c.avgHunger} display={c.avgHunger != null ? `${c.avgHunger}%` : undefined} range={ranges.avgHunger} heat="ramp" rank={c.avgHungerRank} total={total} />
         <StatCard label="Avg Points" value={c.avgPoints} range={ranges.avgPoints} heat="median" rank={c.avgPointsRank} total={total} />
         <StatCard label="Total Damage" value={c.damage} display={<CompactNumber value={c.damage} />} range={ranges.damage} heat="median" rank={c.damageRank} total={total} />
         <StatCard label="Weekly Damage" value={c.weeklyDamage} display={<CompactNumber value={c.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={c.weeklyDamageRank} total={total} />

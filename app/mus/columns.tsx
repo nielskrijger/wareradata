@@ -8,6 +8,7 @@ import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
 import { MUCell } from '@/components/mu-cell'
+import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -55,6 +56,22 @@ export const muColumns: ColumnDef<MURow>[] = [
     cell: ({ row }) => row.original.avgLevel ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
+  },
+  {
+    accessorKey: 'avgHealth',
+    header: 'Avg Health',
+    cell: ({ row }) => <PercentBar value={row.original.avgHealth} />,
+    sortDescFirst: true,
+    sortUndefined: 'last',
+    meta: { width: 130 },
+  },
+  {
+    accessorKey: 'avgHunger',
+    header: 'Avg Hunger',
+    cell: ({ row }) => <PercentBar value={row.original.avgHunger} />,
+    sortDescFirst: true,
+    sortUndefined: 'last',
+    meta: { width: 130 },
   },
   {
     accessorKey: 'countryName',

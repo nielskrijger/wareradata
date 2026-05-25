@@ -37,6 +37,8 @@ const muFieldAliases: FieldAliases = {
  */
 function muSortValue(row: MURow, sort: string): number | string | null {
   switch (sort) {
+    case 'avgHealth': return row.avgHealth
+    case 'avgHunger': return row.avgHunger
     case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
     case 'bounty': return row.bounty

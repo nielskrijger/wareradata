@@ -11,6 +11,7 @@ export interface UserRow {
   bountyRank: number | null
   casesOpened: number | null
   casesOpenedRank: number | null
+  combatStatus: 'buff' | 'debuff' | 'neither' | null
   countryCode: string | null
   countryId: string
   countryName: string | null
@@ -19,6 +20,8 @@ export interface UserRow {
   damageRank: number | null
   damage: number | null
   damagePoints: number
+  healthPercent: number | null
+  hungerPercent: number | null
   gemsPurchased: number | null
   gemsPurchasedRank: number | null
   id: string
@@ -83,6 +86,10 @@ export interface CountryRow {
   activePopulationRank: number | null
   alliesCount: number
   alliesCountRank: number | null
+  avgHealth: number | null
+  avgHealthRank: number | null
+  avgHunger: number | null
+  avgHungerRank: number | null
   avgLevel: number | null
   avgLevelRank: number | null
   avgPoints: number | null
@@ -136,6 +143,10 @@ export interface CountryRow {
  */
 export interface MURow {
   avatarUrl: string | null
+  avgHealth: number | null
+  avgHealthRank: number | null
+  avgHunger: number | null
+  avgHungerRank: number | null
   avgLevel: number | null
   avgLevelRank: number | null
   avgPoints: number | null

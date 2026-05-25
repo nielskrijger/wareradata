@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { MU } from '@/lib/warera/api'
 
 import { assignRank, toTier } from '@/lib/rows/lookups'
-import { aggregatePoints } from '@/lib/rows/points-agg'
+import { aggMean, aggregatePoints } from '@/lib/rows/points-agg'
 
 export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): MURow[] {
   const pointsByMu = aggregatePoints(userRows, u => u.muId)
@@ -29,6 +29,10 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
 
       return {
         avatarUrl: m.avatarUrl ?? null,
+        avgHealth: agg ? aggMean(agg.healthSum, agg.healthCount) : null,
+        avgHealthRank: null,
+        avgHunger: agg ? aggMean(agg.hungerSum, agg.hungerCount) : null,
+        avgHungerRank: null,
         avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
         avgLevelRank: null,
         avgPoints: agg ? Math.round(agg.total / agg.count) : null,
@@ -87,6 +91,8 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
   assignRank(rows, 'totalPoints', 'totalPointsRank')
   assignRank(rows, 'avgPoints', 'avgPointsRank')
   assignRank(rows, 'avgLevel', 'avgLevelRank')
+  assignRank(rows, 'avgHealth', 'avgHealthRank')
+  assignRank(rows, 'avgHunger', 'avgHungerRank')
   assignRank(rows, 'damage', 'damageRank')
   assignRank(rows, 'weeklyDamage', 'weeklyDamageRank')
   assignRank(rows, 'bounty', 'bountyRank')

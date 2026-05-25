@@ -3,12 +3,14 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Avatar } from '@/components/avatar'
+import { CombatStatusBadge } from '@/components/combat-status-badge'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
 import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
+import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
@@ -88,10 +90,21 @@ export default async function UserDetailPage({ params }: PageProps) {
             </span>
           )}
           <TierBadge tier={user.levelTier} />
+          {user.combatStatus != null && user.combatStatus !== 'neither' && (
+            <CombatStatusBadge status={user.combatStatus} />
+          )}
           {user.isBanned && (
             <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>
           )}
           <ExternalLink href={wareraUrl('user', user.id)}>WarEra.io</ExternalLink>
+        </FactRow>
+        <FactRow muted>
+          {user.healthPercent != null && (
+            <span className="inline-flex items-center gap-1.5">Health <PercentBar value={user.healthPercent} /></span>
+          )}
+          {user.hungerPercent != null && (
+            <span className="inline-flex items-center gap-1.5">Hunger <PercentBar value={user.hungerPercent} /></span>
+          )}
         </FactRow>
         <FactRow muted>
           {user.muName && (

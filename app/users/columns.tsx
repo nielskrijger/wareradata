@@ -4,12 +4,14 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { UserRow } from '@/lib/rows'
 
+import { CombatStatusBadge } from '@/components/combat-status-badge'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
 import { InfoTooltip } from '@/components/info-tooltip'
 import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
+import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
@@ -56,6 +58,22 @@ export const userColumns: ColumnDef<UserRow>[] = [
       />
     ),
     meta: { width: 180 },
+  },
+  {
+    accessorKey: 'healthPercent',
+    header: 'Health',
+    cell: ({ row }) => <PercentBar value={row.original.healthPercent} />,
+    sortDescFirst: true,
+    sortUndefined: 'last',
+    meta: { width: 120 },
+  },
+  {
+    accessorKey: 'hungerPercent',
+    header: 'Hunger',
+    cell: ({ row }) => <PercentBar value={row.original.hungerPercent} />,
+    sortDescFirst: true,
+    sortUndefined: 'last',
+    meta: { width: 120 },
   },
   {
     accessorKey: 'levelRank',
@@ -116,6 +134,12 @@ export const userColumns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => row.original.militaryRank ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
+  },
+  {
+    accessorKey: 'combatStatus',
+    header: 'Status',
+    cell: ({ row }) => <CombatStatusBadge status={row.original.combatStatus} />,
+    meta: { width: 100 },
   },
   {
     accessorKey: 'muName',

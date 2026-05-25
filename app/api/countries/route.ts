@@ -41,6 +41,8 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
   switch (sort) {
     case 'activePopulation': return row.activePopulation
     case 'alliesCount': return row.alliesCount
+    case 'avgHealth': return row.avgHealth
+    case 'avgHunger': return row.avgHunger
     case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
     case 'bounty': return row.bounty

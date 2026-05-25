@@ -26,6 +26,10 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
       const party = lookups.partyByUser.get(u._id)
       const days = daysSinceJoin(u.createdAt, nowMs)
       const pointsPerDay = days === null ? null : Math.round(pts.total / days)
+      const skills = u.skills
+      const healthPercent = barPercent(skills?.health)
+      const hungerPercent = barPercent(skills?.hunger)
+      const combatStatus = toCombatStatus(skills?.attack)
 
       return {
         avatarUrl: u.avatarUrl ?? null,
@@ -33,6 +37,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         bountyRank: null,
         casesOpened: r?.userCasesOpened?.value ?? null,
         casesOpenedRank: null,
+        combatStatus,
         countryCode: country?.code ?? null,
         countryId: u.country,
         countryName: country?.name ?? null,
@@ -43,6 +48,8 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         damage,
         gemsPurchased: r?.userGemsPurchased?.value ?? null,
         gemsPurchasedRank: null,
+        healthPercent,
+        hungerPercent,
         id: u._id,
         isBanned: infos?.isBanned === true,
         lastConnectionAt: dates?.lastConnectionAt ?? null,
@@ -93,6 +100,42 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
   assignRank(rows, 'weeklyDamage', 'weeklyDamageRank')
 
   return rows
+}
+
+/**
+ * Current fill of a regenerating bar (health, hunger) as a 0-100 percent of its
+ * max. `total` is the bar's capacity, `currentBarValue` how full it is now.
+ * Returns null when the bar or its capacity is missing, and clamps to [0, 100]
+ * since `currentBarValue` can briefly read slightly over `total`.
+ */
+function barPercent(bar: { currentBarValue?: number, total?: number } | undefined): number | null {
+  if (!bar || !bar.total || bar.currentBarValue == null) {
+    return null
+  }
+  const pct = (bar.currentBarValue / bar.total) * 100
+  return Math.round(Math.min(100, Math.max(0, pct)))
+}
+
+/**
+ * Net combat status from the attack skill's buff / debuff percentages: 'buff'
+ * when buffed more than debuffed, 'debuff' when the reverse, 'neither' when
+ * they're equal (typically both zero). Null when the attack data is missing.
+ */
+function toCombatStatus(
+  attack: { buffsPercent?: number, debuffsPercent?: number } | undefined,
+): 'buff' | 'debuff' | 'neither' | null {
+  if (!attack) {
+    return null
+  }
+  const buff = attack.buffsPercent ?? 0
+  const debuff = attack.debuffsPercent ?? 0
+  if (buff > debuff) {
+    return 'buff'
+  }
+  if (debuff > buff) {
+    return 'debuff'
+  }
+  return 'neither'
 }
 
 const MIN_AGE_DAYS = 7

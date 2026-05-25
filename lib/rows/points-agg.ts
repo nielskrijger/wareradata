@@ -4,6 +4,10 @@ export interface PointsAgg {
   count: number
   damage: number
   gemsPurchasedTotal: number
+  healthCount: number
+  healthSum: number
+  hungerCount: number
+  hungerSum: number
   level: number
   levelCount: number
   levelSum: number // Tracked seperately from count because not every user has a level value
@@ -18,6 +22,10 @@ function emptyAgg(): PointsAgg {
     count: 0,
     damage: 0,
     gemsPurchasedTotal: 0,
+    healthCount: 0,
+    healthSum: 0,
+    hungerCount: 0,
+    hungerSum: 0,
     level: 0,
     levelCount: 0,
     levelSum: 0,
@@ -61,8 +69,25 @@ export function aggregatePoints(
       entry.levelSum += u.level
       entry.levelCount += 1
     }
+    if (u.healthPercent !== null) {
+      entry.healthSum += u.healthPercent
+      entry.healthCount += 1
+    }
+    if (u.hungerPercent !== null) {
+      entry.hungerSum += u.hungerPercent
+      entry.hungerCount += 1
+    }
     out.set(key, entry)
   }
 
   return out
+}
+
+/**
+ * Rounded mean of a sum/count pair from a {@link PointsAgg}, or null when the
+ * count is zero. Used to derive average health/hunger (and similar) percentages
+ * across an entity's members without re-walking the user list.
+ */
+export function aggMean(sum: number, count: number): number | null {
+  return count > 0 ? Math.round(sum / count) : null
 }

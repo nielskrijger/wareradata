@@ -8,6 +8,7 @@ import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
+import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
@@ -97,6 +98,16 @@ export default async function MUDetailPage({ params }: PageProps) {
           <TierBadge tier={mu.damageTier} />
           <ExternalLink href={wareraUrl('mu', mu.id)}>WarEra.io</ExternalLink>
         </FactRow>
+        {(mu.avgHealth != null || mu.avgHunger != null) && (
+          <FactRow muted>
+            {mu.avgHealth != null && (
+              <span className="inline-flex items-center gap-1.5">Avg health <PercentBar value={mu.avgHealth} /></span>
+            )}
+            {mu.avgHunger != null && (
+              <span className="inline-flex items-center gap-1.5">Avg hunger <PercentBar value={mu.avgHunger} /></span>
+            )}
+          </FactRow>
+        )}
         {mu.leaderName && (
           <FactRow muted>
             <span className="inline-flex items-center gap-2">
@@ -122,6 +133,8 @@ export default async function MUDetailPage({ params }: PageProps) {
       <StatCardGrid>
         <StatCard label="Members" value={mu.memberCount} range={ranges.memberCount} heat="ramp" rank={mu.memberCountRank} total={total} />
         <StatCard label="Avg Level" value={mu.avgLevel} range={ranges.avgLevel} heat="median" rank={mu.avgLevelRank} total={total} />
+        <StatCard label="Avg Health" value={mu.avgHealth} display={mu.avgHealth != null ? `${mu.avgHealth}%` : undefined} range={ranges.avgHealth} heat="ramp" rank={mu.avgHealthRank} total={total} />
+        <StatCard label="Avg Hunger" value={mu.avgHunger} display={mu.avgHunger != null ? `${mu.avgHunger}%` : undefined} range={ranges.avgHunger} heat="ramp" rank={mu.avgHungerRank} total={total} />
         <StatCard label="Avg Points" value={mu.avgPoints} range={ranges.avgPoints} heat="median" rank={mu.avgPointsRank} total={total} />
         <StatCard label="Total Damage" value={mu.damage} display={<CompactNumber value={mu.damage} />} range={ranges.damage} heat="median" rank={mu.damageRank} total={total} />
         <StatCard label="Weekly Damage" value={mu.weeklyDamage} display={<CompactNumber value={mu.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={mu.weeklyDamageRank} total={total} />

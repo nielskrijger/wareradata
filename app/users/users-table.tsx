@@ -3,12 +3,26 @@
 import type { PageRequest, PageResult } from '@/components/data-table/data-table'
 import type { UserRow } from '@/lib/rows'
 
+import { useCallback } from 'react'
+
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
 
 import { userColumns } from './columns'
 
-async function fetchUsers(req: PageRequest): Promise<PageResult<UserRow>> {
+/**
+ * Combines a locked-in base filter (e.g. `muId:<id>` on the MU detail page)
+ * with whatever the user typed. The user's part is parenthesised so their own
+ * OR/NOT can't escape the base scope.
+ */
+function combineFilter(base: string | undefined, userFilter: string): string {
+  if (!base) {
+    return userFilter
+  }
+  return userFilter ? `${base} AND (${userFilter})` : base
+}
+
+async function fetchUsers(req: PageRequest, baseFilter?: string): Promise<PageResult<UserRow>> {
   const params = new URLSearchParams({
     page: String(req.page),
     pageSize: String(req.pageSize),
@@ -17,8 +31,9 @@ async function fetchUsers(req: PageRequest): Promise<PageResult<UserRow>> {
   if (req.sort) {
     params.set('sort', req.sort)
   }
-  if (req.filter) {
-    params.set('filter', req.filter)
+  const filter = combineFilter(baseFilter, req.filter)
+  if (filter) {
+    params.set('filter', filter)
   }
   const res = await fetch(`/api/users?${params.toString()}`)
   if (!res.ok) {
@@ -29,15 +44,25 @@ async function fetchUsers(req: PageRequest): Promise<PageResult<UserRow>> {
 
 interface Props {
   initial: PageResult<UserRow>
+  /**
+   * Scopes the table to a subset of users via a structured filter that's
+   * always applied (e.g. `muId:<id>`). Combined with the user's search.
+   */
+  baseFilter?: string
 }
 
-export function UsersTable({ initial }: Props) {
+export function UsersTable({ initial, baseFilter }: Props) {
+  const fetchPage = useCallback(
+    (req: PageRequest) => fetchUsers(req, baseFilter),
+    [baseFilter],
+  )
+
   return (
     <DataTable
       columns={userColumns}
       initialData={initial}
       initialSort={{ id: 'points', desc: true }}
-      fetchPage={fetchUsers}
+      fetchPage={fetchPage}
       searchPlaceholder="Filter by username, country, MU, or party…"
       searchHint={(
         <AdvancedSearchHint

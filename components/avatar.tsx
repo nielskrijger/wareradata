@@ -8,13 +8,15 @@ import { schemeRgb } from '@/lib/warera/color-schemes'
 interface Props {
   src: string | null | undefined
   /**
-   * Username, for the alt text and the fallback initial.
+   * Display name of the pictured entity (user or MU), for the alt text and the
+   * fallback initial.
    */
   name: string
   size: number
   /**
-   * The player's WarEra color scheme; when set, draws a thin ring in that
-   * color around the avatar. No scheme means no ring (matches the game).
+   * A WarEra color scheme; when set, draws a thin ring in that color around the
+   * avatar. No scheme means no ring (matches the game). Users have one; MUs do
+   * not, so MU avatars render ringless.
    */
   colorScheme?: string | null
   className?: string
@@ -22,15 +24,15 @@ interface Props {
 }
 
 /**
- * Round user avatar with a thin ring in the player's color scheme (neutral
- * border as fallback). Falls back to the username's first initial on a muted
- * disc when no avatar is set (~17% of players). Uses next/image; the host is
+ * Round avatar for any entity that has one (users, MUs). Draws a thin ring in
+ * the color scheme when given, otherwise none. Falls back to the name's first
+ * initial on a muted disc when no image is set. Uses next/image; the host is
  * allowlisted in next.config.
  *
  * Callers that need a different ring (e.g. the detail header's thicker
  * card+scheme double ring) can override `boxShadow` via `style`.
  */
-export function UserAvatar({ src, name, size, colorScheme, className, style }: Props) {
+export function Avatar({ src, name, size, colorScheme, className, style }: Props) {
   const base = cn('shrink-0 rounded-full object-cover', className)
   // Only schemes that resolve to a color get a ring; no scheme = no ring
   // (matches the game). box-shadow is outside layout, so omitting it shifts

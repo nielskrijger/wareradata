@@ -2,16 +2,16 @@ import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
 
+import { Avatar } from '@/components/avatar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
 import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
+import { StatCard } from '@/components/stat-card'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
-import { UserAvatar } from '@/components/user-avatar'
-import { UserStatCard } from '@/components/user-stat-card'
 import { getSnapshot } from '@/lib/cache/memory'
 import { EMPTY, formatRelativeTime } from '@/lib/format'
 import { applyQuery } from '@/lib/query'
@@ -71,7 +71,7 @@ export default async function UserDetailPage({ params }: PageProps) {
           style={{ background: `linear-gradient(100deg, rgba(${rgb}, 0.38), rgba(${rgb}, 0.06))` }}
         />
         <div className="flex flex-col items-start gap-3 px-4 pb-4">
-          <UserAvatar
+          <Avatar
             src={user.avatarUrl}
             name={user.username}
             size={64}
@@ -95,7 +95,7 @@ export default async function UserDetailPage({ params }: PageProps) {
             </div>
             <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
               {user.muName && (
-                <span className="inline-flex items-center gap-1">MU <MUCell muName={user.muName} /></span>
+                <span className="inline-flex items-center gap-1">MU <MUCell muName={user.muName} muId={user.muId} /></span>
               )}
               {user.partyName && (
                 <span className="inline-flex max-w-[16rem] items-center gap-1">Party <PartyCell partyName={user.partyName} /></span>
@@ -115,19 +115,19 @@ export default async function UserDetailPage({ params }: PageProps) {
         pointsPerDay={user.pointsPerDay}
       />
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <UserStatCard label="Level" value={user.level} range={ranges.level} heat="median" rank={user.levelRank} total={total} />
-        <UserStatCard label="Total Damage" value={user.damage} display={<CompactNumber value={user.damage} />} range={ranges.damage} heat="median" rank={user.damageRank} total={total} />
-        <UserStatCard label="Weekly Damage" value={user.weeklyDamage} display={<CompactNumber value={user.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={user.weeklyDamageRank} total={total} />
-        <UserStatCard label="Wealth" value={user.wealth} display={<CompactNumber value={user.wealth} />} range={ranges.wealth} heat="median" rank={user.wealthRank} total={total} />
-        <UserStatCard label="Bounty" value={user.bounty} display={<CompactNumber value={user.bounty} />} range={ranges.bounty} heat="median" rank={user.bountyRank} total={total} />
-        <UserStatCard label="Military Rank" value={user.militaryRank} range={ranges.militaryRank} heat="median" rank={user.militaryRankPos} total={total} />
-        <UserStatCard label="Terrain" value={user.terrain} range={ranges.terrain} heat="median" rank={user.terrainRank} total={total} />
-        <UserStatCard label="Cases Opened" value={user.casesOpened} range={ranges.casesOpened} heat="median" log rank={user.casesOpenedRank} total={total} />
-        <UserStatCard label="Referrals" value={user.referrals} range={ranges.referrals} heat="ramp" rank={user.referralsRank} total={total} />
-        <UserStatCard label="Gems Purchased" value={user.gemsPurchased} range={ranges.gemsPurchased} heat="ramp" rank={user.gemsPurchasedRank} total={total} />
-        <UserStatCard label="Premium Months" value={user.premiumMonths} range={ranges.premiumMonths} heat="ramp" rank={user.premiumMonthsRank} total={total} />
-        <UserStatCard label="Premium Gifts" value={user.premiumGifts} range={ranges.premiumGifts} heat="ramp" rank={user.premiumGiftsRank} total={total} />
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        <StatCard label="Level" value={user.level} range={ranges.level} heat="median" rank={user.levelRank} total={total} />
+        <StatCard label="Total Damage" value={user.damage} display={<CompactNumber value={user.damage} />} range={ranges.damage} heat="median" rank={user.damageRank} total={total} />
+        <StatCard label="Weekly Damage" value={user.weeklyDamage} display={<CompactNumber value={user.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={user.weeklyDamageRank} total={total} />
+        <StatCard label="Wealth" value={user.wealth} display={<CompactNumber value={user.wealth} />} range={ranges.wealth} heat="median" rank={user.wealthRank} total={total} />
+        <StatCard label="Bounty" value={user.bounty} display={<CompactNumber value={user.bounty} />} range={ranges.bounty} heat="median" rank={user.bountyRank} total={total} />
+        <StatCard label="Military Rank" value={user.militaryRank} range={ranges.militaryRank} heat="median" rank={user.militaryRankPos} total={total} />
+        <StatCard label="Terrain" value={user.terrain} range={ranges.terrain} heat="median" rank={user.terrainRank} total={total} />
+        <StatCard label="Cases Opened" value={user.casesOpened} range={ranges.casesOpened} heat="median" log rank={user.casesOpenedRank} total={total} />
+        <StatCard label="Referrals" value={user.referrals} range={ranges.referrals} heat="ramp" rank={user.referralsRank} total={total} />
+        <StatCard label="Gems Purchased" value={user.gemsPurchased} range={ranges.gemsPurchased} heat="ramp" rank={user.gemsPurchasedRank} total={total} />
+        <StatCard label="Premium Months" value={user.premiumMonths} range={ranges.premiumMonths} heat="ramp" rank={user.premiumMonthsRank} total={total} />
+        <StatCard label="Premium Gifts" value={user.premiumGifts} range={ranges.premiumGifts} heat="ramp" rank={user.premiumGiftsRank} total={total} />
       </section>
     </main>
   )

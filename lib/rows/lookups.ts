@@ -49,3 +49,32 @@ export function toTier(value: unknown): RankingTier | null {
     ? (value as RankingTier)
     : null
 }
+
+/**
+ * Assigns a standard-competition rank (1 = highest value) into `rankKey`,
+ * derived from `valueKey`. Rows tied on a value share a rank; the next distinct
+ * value skips ahead by the size of the tie. Rows with a null value keep a null
+ * rank — they're unranked for that stat, not last.
+ *
+ * Mutates the rows in place. Shared by the user and MU builders to rank rows
+ * against their own kind (users vs users, MUs vs MUs), not as a sum of members.
+ */
+export function assignRank<T extends Record<string, unknown>>(
+  rows: T[],
+  valueKey: keyof T,
+  rankKey: keyof T,
+): void {
+  const ranked = rows
+    .filter(r => typeof r[valueKey] === 'number')
+    .sort((a, b) => (b[valueKey] as number) - (a[valueKey] as number))
+
+  let lastValue: number | null = null
+  let lastRank = 0
+  ranked.forEach((row, i) => {
+    const value = row[valueKey] as number
+    const rank = value === lastValue ? lastRank : i + 1
+    ;(row[rankKey] as number | null) = rank
+    lastValue = value
+    lastRank = rank
+  })
+}

@@ -18,7 +18,6 @@ import { createAPIClient } from '@wareraprojects/api'
 export type Country = CountryListItem
 export type MU = Omit<MuListItem, 'rankings'> & {
   investedMoneyByUsers?: Record<string, number>
-  mercenaryReputation?: number
   rankings?: MuRankingsOptional & { muReputation?: RankingValueTier }
 }
 export type Party = PartyGetManyPaginatedResponse['items'][number]

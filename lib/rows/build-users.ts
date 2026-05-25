@@ -2,7 +2,7 @@ import type { UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { UserLite } from '@/lib/warera/api'
 
-import { toTier } from '@/lib/rows/lookups'
+import { assignRank, toTier } from '@/lib/rows/lookups'
 import { computePoints } from '@/lib/scoring'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -91,32 +91,6 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
   assignRank(rows, 'weeklyDamage', 'weeklyDamageRank')
 
   return rows
-}
-
-/**
- * Assigns a standard-competition rank (1 = highest value) into `rankKey`,
- * derived from `valueKey`. Players tied on a value share a rank; the next
- * distinct value skips ahead by the size of the tie. Rows with a null value
- * keep a null rank — they're unranked for that stat, not last.
- */
-function assignRank(
-  rows: UserRow[],
-  valueKey: keyof UserRow,
-  rankKey: keyof UserRow,
-): void {
-  const ranked = rows
-    .filter(r => typeof r[valueKey] === 'number')
-    .sort((a, b) => (b[valueKey] as number) - (a[valueKey] as number))
-
-  let lastValue: number | null = null
-  let lastRank = 0
-  ranked.forEach((row, i) => {
-    const value = row[valueKey] as number
-    const rank = value === lastValue ? lastRank : i + 1
-    ;(row[rankKey] as number | null) = rank
-    lastValue = value
-    lastRank = rank
-  })
 }
 
 const MIN_AGE_DAYS = 7

@@ -19,7 +19,12 @@ export const muColumns: ColumnDef<MURow>[] = [
     accessorKey: 'name',
     header: 'MU',
     cell: ({ row }) => (
-      <MUCell muName={row.original.name} bold />
+      <MUCell
+        muName={row.original.name}
+        muId={row.original.id}
+        avatarUrl={row.original.avatarUrl}
+        bold
+      />
     ),
     meta: { width: 220 },
   },
@@ -134,16 +139,6 @@ export const muColumns: ColumnDef<MURow>[] = [
     cell: ({ row }) => row.original.reputation?.toLocaleString() ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', heatCenter: 0, align: 'right', width: 110 },
-  },
-  {
-    accessorKey: 'mercenaryReputation',
-    header: 'Mercenary Rep.',
-    cell: ({ row }) =>
-      row.original.mercenaryReputation !== null
-        ? row.original.mercenaryReputation.toFixed(2)
-        : null,
-    sortDescFirst: true,
-    meta: { heat: 'median', heatCenter: 0, align: 'right', width: 140 },
   },
   {
     accessorKey: 'investedMoney',

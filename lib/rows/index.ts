@@ -95,9 +95,13 @@ export interface CountryRow {
  * Projected MU (military unit) row used by /mus and /api/mus.
  */
 export interface MURow {
+  avatarUrl: string | null
   avgLevel: number | null
+  avgLevelRank: number | null
   avgPoints: number | null
+  avgPointsRank: number | null
   bounty: number | null
+  bountyRank: number | null
   countryCode: string | null
   countryId: string | null
   countryName: string | null
@@ -106,24 +110,38 @@ export interface MURow {
   damage: number | null
   damagePoints: number
   dormitoriesLevel: number | null
+  dormitoriesLevelRank: number | null
   gemsPurchasedTotal: number
+  gemsPurchasedTotalRank: number | null
   headquartersLevel: number | null
+  headquartersLevelRank: number | null
   id: string
   investedMoney: number
+  investedMoneyRank: number | null
+  leaderAvatarUrl: string | null
+  leaderColorScheme: string | null
+  leaderId: string | null
+  leaderName: string | null
   levelPoints: number
   memberCount: number
-  mercenaryReputation: number | null
+  memberCountRank: number | null
   name: string
   premiumGiftsTotal: number
+  premiumGiftsTotalRank: number | null
   premiumMonthsTotal: number
+  premiumMonthsTotalRank: number | null
   regionName: string | null
   reputation: number | null
+  reputationRank: number | null
   terrain: number | null
+  terrainRank: number | null
   totalPoints: number
+  totalPointsRank: number | null
   wealthPoints: number
   wealthRank: number | null
   wealth: number | null
   weeklyDamage: number | null
+  weeklyDamageRank: number | null
 }
 
 /**

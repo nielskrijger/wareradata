@@ -50,7 +50,7 @@ export function MUsTable({ initial }: Props) {
             { q: 'damage:>1000000', desc: 'Comparators' },
             { q: 'country:nl AND members:>20', desc: 'Combine with AND/OR' },
           ]}
-          fieldsList="name, country, region, members, damage, weeklyDamage, wealth, reputation, mercenary, invested, dorms, hq, and more."
+          fieldsList="name, country, region, members, damage, weeklyDamage, wealth, reputation, invested, dorms, hq, and more."
         />
       )}
     />

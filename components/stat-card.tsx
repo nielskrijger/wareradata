@@ -25,12 +25,13 @@ interface Props {
    */
   rank?: number | null
   /**
-   * Total ranked players, for the "#rank of N" context line.
+   * Total ranked entities, for the "#rank of N" context line. Only read when
+   * a rank is shown, so it can be omitted for cards that pass no rank.
    */
-  total: number
+  total?: number
 }
 
-export function UserStatCard({ label, value, display, range, heat, center, log, rank, total }: Props) {
+export function StatCard({ label, value, display, range, heat, center, log, rank, total }: Props) {
   return (
     <div className="bg-card flex flex-col gap-1 rounded-md border p-4">
       <span className="text-muted-foreground text-xs">{label}</span>
@@ -43,7 +44,7 @@ export function UserStatCard({ label, value, display, range, heat, center, log, 
               </HeatCell>
             )}
       </span>
-      {rank != null && value != null && (
+      {rank != null && value != null && total != null && (
         <span className="text-muted-foreground text-xs">
           #{rank.toLocaleString()} of {total.toLocaleString()}
         </span>

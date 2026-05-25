@@ -23,7 +23,6 @@ const muFieldAliases: FieldAliases = {
   country: 'countryCode',
   region: 'regionName',
   members: 'memberCount',
-  mercenary: 'mercenaryReputation',
   invested: 'investedMoney',
   dorms: 'dormitoriesLevel',
   hq: 'headquartersLevel',
@@ -50,7 +49,6 @@ function muSortValue(row: MURow, sort: string): number | string | null {
     case 'headquartersLevel': return row.headquartersLevel
     case 'investedMoney': return row.investedMoney
     case 'memberCount': return row.memberCount
-    case 'mercenaryReputation': return row.mercenaryReputation
     case 'name': return row.name.toLowerCase()
     case 'premiumGiftsTotal': return row.premiumGiftsTotal
     case 'premiumMonthsTotal': return row.premiumMonthsTotal

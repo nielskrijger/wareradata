@@ -120,7 +120,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
     accessorKey: 'muName',
     header: 'MU',
     cell: ({ row }) => (
-      <MUCell muName={row.original.muName} />
+      <MUCell muName={row.original.muName} muId={row.original.muId} />
     ),
     meta: { width: 170 },
   },

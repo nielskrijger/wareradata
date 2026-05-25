@@ -87,8 +87,13 @@ export default async function CountryDetailPage({ params }: PageProps) {
         emblem={(
           <Flag
             code={c.code}
-            className="-mt-9 h-12 w-16 rounded-md"
-            style={{ boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)' }}
+            className="-mt-9 rounded-md"
+            style={{
+              width: 64,
+              height: 48,
+              backgroundSize: 'cover',
+              boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)',
+            }}
           />
         )}
       >

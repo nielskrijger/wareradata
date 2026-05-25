@@ -13,6 +13,7 @@ export function buildRegionRows(regions: Region[], lookups: Lookups): RegionRow[
         climate: r.climate ?? null,
         code: r.code,
         countryCode: country?.code ?? null,
+        countryId: r.country ?? null,
         countryName: country?.name ?? null,
         development: r.development ?? null,
         id: r._id,

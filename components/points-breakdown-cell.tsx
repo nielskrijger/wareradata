@@ -12,9 +12,6 @@ interface Props {
 /**
  * Renders a points total in a table cell with a hover tooltip that breaks
  * it down into the three contributing slices (level, damage, wealth).
- *
- * Used on /users (per-user score), /countries (sum across the country's
- * users), and /mus (sum across the MU's members).
  */
 export function PointsBreakdownCell({ total, level, damage, wealth }: Props) {
   return (

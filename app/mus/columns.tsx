@@ -63,6 +63,7 @@ export const muColumns: ColumnDef<MURow>[] = [
       <CountryCell
         countryCode={row.original.countryCode}
         countryName={row.original.countryName}
+        countryId={row.original.countryId}
       />
     ),
     meta: { width: 180 },

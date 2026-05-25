@@ -58,38 +58,55 @@ export interface UserRow {
  */
 export interface CountryRow {
   activePopulation: number | null
+  activePopulationRank: number | null
   alliesCount: number
+  alliesCountRank: number | null
   avgLevel: number | null
+  avgLevelRank: number | null
   avgPoints: number | null
+  avgPointsRank: number | null
   bounty: number | null
+  bountyRank: number | null
   code: string
   damageRank: number | null
   damageTier: RankingTier | null
   damage: number | null
   damagePoints: number
   development: number | null
+  developmentRank: number | null
   gemsPurchasedTotal: number
+  gemsPurchasedTotalRank: number | null
   id: string
   levelPoints: number
   money: number | null
+  moneyRank: number | null
   musCount: number
+  musCountRank: number | null
   name: string
   partyCount: number
+  partyCountRank: number | null
   premiumGiftsTotal: number
+  premiumGiftsTotalRank: number | null
   premiumMonthsTotal: number
+  premiumMonthsTotalRank: number | null
   productionBonus: number | null
+  productionBonusRank: number | null
   specializedItem: string | null
   taxIncome: number | null
   taxMarket: number | null
   taxSelfWork: number | null
   totalPoints: number
+  totalPointsRank: number | null
   unrestPercent: number | null
   warsCount: number
+  warsCountRank: number | null
   wealthPoints: number
   wealthRank: number | null
   wealth: number | null
   weeklyDamagePerCitizen: number | null
+  weeklyDamagePerCitizenRank: number | null
   weeklyDamage: number | null
+  weeklyDamageRank: number | null
 }
 
 /**
@@ -154,6 +171,7 @@ export interface RegionRow {
   climate: string | null
   code: string
   countryCode: string | null
+  countryId: string | null
   countryName: string | null
   development: number | null
   id: string

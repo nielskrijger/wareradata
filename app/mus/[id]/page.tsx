@@ -6,9 +6,11 @@ import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
+import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { StatCard } from '@/components/stat-card'
+import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
 import { UserNameCell } from '@/components/user-name-cell'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -72,9 +74,9 @@ export default async function MUDetailPage({ params }: PageProps) {
 
   return (
     <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
-      <div className="bg-card overflow-hidden rounded-md border">
-        <div className="from-muted h-14 bg-gradient-to-r to-transparent" />
-        <div className="flex flex-col items-start gap-3 px-4 pb-4">
+      <DetailHeader
+        title={mu.name}
+        emblem={(
           <Avatar
             src={mu.avatarUrl}
             name={mu.name}
@@ -82,35 +84,33 @@ export default async function MUDetailPage({ params }: PageProps) {
             className="-mt-9"
             style={{ boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)' }}
           />
-          <div className="space-y-1.5">
-            <h1 className="font-brand text-[28px] leading-none tracking-wide">{mu.name}</h1>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-              <CountryCell countryCode={mu.countryCode} countryName={mu.countryName} />
-              {mu.regionName && <span className="text-muted-foreground">{mu.regionName}</span>}
-              <span className="text-muted-foreground">
-                <span className="text-foreground font-medium">{mu.memberCount.toLocaleString()}</span>
-                {' '}
-                members
-              </span>
-              <TierBadge tier={mu.damageTier} />
-              <ExternalLink href={wareraUrl('mu', mu.id)}>WarEra.io</ExternalLink>
-            </div>
-            {mu.leaderName && (
-              <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <span className="inline-flex items-center gap-2">
-                  Leader
-                  <UserNameCell
-                    userId={mu.leaderId}
-                    name={mu.leaderName}
-                    avatarUrl={mu.leaderAvatarUrl}
-                    colorScheme={mu.leaderColorScheme}
-                  />
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        )}
+      >
+        <FactRow>
+          <CountryCell countryCode={mu.countryCode} countryName={mu.countryName} countryId={mu.countryId} />
+          {mu.regionName && <span className="text-muted-foreground">{mu.regionName}</span>}
+          <span className="text-muted-foreground">
+            <span className="text-foreground font-medium">{mu.memberCount.toLocaleString()}</span>
+            {' '}
+            members
+          </span>
+          <TierBadge tier={mu.damageTier} />
+          <ExternalLink href={wareraUrl('mu', mu.id)}>WarEra.io</ExternalLink>
+        </FactRow>
+        {mu.leaderName && (
+          <FactRow muted>
+            <span className="inline-flex items-center gap-2">
+              Leader
+              <UserNameCell
+                userId={mu.leaderId}
+                name={mu.leaderName}
+                avatarUrl={mu.leaderAvatarUrl}
+                colorScheme={mu.leaderColorScheme}
+              />
+            </span>
+          </FactRow>
+        )}
+      </DetailHeader>
 
       <PointsBreakdownPanel
         total={mu.totalPoints}
@@ -119,7 +119,7 @@ export default async function MUDetailPage({ params }: PageProps) {
         wealth={mu.wealthPoints}
       />
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+      <StatCardGrid>
         <StatCard label="Members" value={mu.memberCount} range={ranges.memberCount} heat="ramp" rank={mu.memberCountRank} total={total} />
         <StatCard label="Avg Level" value={mu.avgLevel} range={ranges.avgLevel} heat="median" rank={mu.avgLevelRank} total={total} />
         <StatCard label="Avg Points" value={mu.avgPoints} range={ranges.avgPoints} heat="median" rank={mu.avgPointsRank} total={total} />
@@ -135,7 +135,7 @@ export default async function MUDetailPage({ params }: PageProps) {
         <StatCard label="Gems Bought" value={mu.gemsPurchasedTotal} range={ranges.gemsPurchasedTotal} heat="ramp" rank={mu.gemsPurchasedTotalRank} total={total} />
         <StatCard label="Premium Months" value={mu.premiumMonthsTotal} range={ranges.premiumMonthsTotal} heat="ramp" rank={mu.premiumMonthsTotalRank} total={total} />
         <StatCard label="Premium Gifts" value={mu.premiumGiftsTotal} range={ranges.premiumGiftsTotal} heat="ramp" rank={mu.premiumGiftsTotalRank} total={total} />
-      </section>
+      </StatCardGrid>
 
       <section className="space-y-3">
         <h2 className="font-brand text-lg tracking-wide">Members</h2>

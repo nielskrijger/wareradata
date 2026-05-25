@@ -65,6 +65,7 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
       <CountryCell
         countryCode={row.original.countryCode}
         countryName={row.original.countryName}
+        countryId={row.original.countryId}
       />
     ),
     meta: { width: 180 },

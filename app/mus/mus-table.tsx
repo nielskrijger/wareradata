@@ -3,12 +3,15 @@
 import type { PageRequest, PageResult } from '@/components/data-table/data-table'
 import type { MURow } from '@/lib/rows'
 
+import { useCallback } from 'react'
+
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
+import { combineFilter } from '@/components/data-table/combine-filter'
 import { DataTable } from '@/components/data-table/data-table'
 
 import { muColumns } from './columns'
 
-async function fetchMUs(req: PageRequest): Promise<PageResult<MURow>> {
+async function fetchMUs(req: PageRequest, baseFilter?: string): Promise<PageResult<MURow>> {
   const params = new URLSearchParams({
     page: String(req.page),
     pageSize: String(req.pageSize),
@@ -17,8 +20,9 @@ async function fetchMUs(req: PageRequest): Promise<PageResult<MURow>> {
   if (req.sort) {
     params.set('sort', req.sort)
   }
-  if (req.filter) {
-    params.set('filter', req.filter)
+  const filter = combineFilter(baseFilter, req.filter)
+  if (filter) {
+    params.set('filter', filter)
   }
   const res = await fetch(`/api/mus?${params.toString()}`)
   if (!res.ok) {
@@ -29,15 +33,25 @@ async function fetchMUs(req: PageRequest): Promise<PageResult<MURow>> {
 
 interface Props {
   initial: PageResult<MURow>
+  /**
+   * Scopes the table via a structured filter that's always applied (e.g.
+   * `countryCode:<code>` on the country page). Combined with the user's search.
+   */
+  baseFilter?: string
 }
 
-export function MUsTable({ initial }: Props) {
+export function MUsTable({ initial, baseFilter }: Props) {
+  const fetchPage = useCallback(
+    (req: PageRequest) => fetchMUs(req, baseFilter),
+    [baseFilter],
+  )
+
   return (
     <DataTable
       columns={muColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}
-      fetchPage={fetchMUs}
+      fetchPage={fetchPage}
       searchPlaceholder="Filter by MU name or country…"
       searchHint={(
         <AdvancedSearchHint

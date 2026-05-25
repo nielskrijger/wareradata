@@ -5,11 +5,13 @@ import { notFound } from 'next/navigation'
 import { Avatar } from '@/components/avatar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
+import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
 import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { StatCard } from '@/components/stat-card'
+import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -65,12 +67,10 @@ export default async function UserDetailPage({ params }: PageProps) {
 
   return (
     <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
-      <div className="bg-card overflow-hidden rounded-md border">
-        <div
-          className="h-14"
-          style={{ background: `linear-gradient(100deg, rgba(${rgb}, 0.38), rgba(${rgb}, 0.06))` }}
-        />
-        <div className="flex flex-col items-start gap-3 px-4 pb-4">
+      <DetailHeader
+        title={user.username}
+        bannerStyle={{ background: `linear-gradient(100deg, rgba(${rgb}, 0.38), rgba(${rgb}, 0.06))` }}
+        emblem={(
           <Avatar
             src={user.avatarUrl}
             name={user.username}
@@ -78,34 +78,32 @@ export default async function UserDetailPage({ params }: PageProps) {
             className="-mt-9"
             style={{ boxShadow: `0 0 0 4px var(--card), 0 0 0 5px rgb(${rgb})` }}
           />
-          <div className="space-y-1.5">
-            <h1 className="font-brand text-[28px] leading-none tracking-wide">{user.username}</h1>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-              <CountryCell countryCode={user.countryCode} countryName={user.countryName} />
-              {user.level != null && (
-                <span className="text-muted-foreground">
-                  Level <span className="text-foreground font-medium">{user.level}</span>
-                </span>
-              )}
-              <TierBadge tier={user.levelTier} />
-              {user.isBanned && (
-                <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>
-              )}
-              <ExternalLink href={wareraUrl('user', user.id)}>WarEra.io</ExternalLink>
-            </div>
-            <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-              {user.muName && (
-                <span className="inline-flex items-center gap-1">MU <MUCell muName={user.muName} muId={user.muId} /></span>
-              )}
-              {user.partyName && (
-                <span className="inline-flex max-w-[16rem] items-center gap-1">Party <PartyCell partyName={user.partyName} /></span>
-              )}
-              <span>Joined {user.createdAt?.slice(0, 10) ?? EMPTY}</span>
-              <span>Last seen {formatRelativeTime(user.lastConnectionAt)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        )}
+      >
+        <FactRow>
+          <CountryCell countryCode={user.countryCode} countryName={user.countryName} countryId={user.countryId} />
+          {user.level != null && (
+            <span className="text-muted-foreground">
+              Level <span className="text-foreground font-medium">{user.level}</span>
+            </span>
+          )}
+          <TierBadge tier={user.levelTier} />
+          {user.isBanned && (
+            <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>
+          )}
+          <ExternalLink href={wareraUrl('user', user.id)}>WarEra.io</ExternalLink>
+        </FactRow>
+        <FactRow muted>
+          {user.muName && (
+            <span className="inline-flex items-center gap-1">MU <MUCell muName={user.muName} muId={user.muId} /></span>
+          )}
+          {user.partyName && (
+            <span className="inline-flex max-w-[16rem] items-center gap-1">Party <PartyCell partyName={user.partyName} /></span>
+          )}
+          <span>Joined {user.createdAt?.slice(0, 10) ?? EMPTY}</span>
+          <span>Last seen {formatRelativeTime(user.lastConnectionAt)}</span>
+        </FactRow>
+      </DetailHeader>
 
       <PointsBreakdownPanel
         total={user.points}
@@ -115,7 +113,7 @@ export default async function UserDetailPage({ params }: PageProps) {
         pointsPerDay={user.pointsPerDay}
       />
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+      <StatCardGrid>
         <StatCard label="Level" value={user.level} range={ranges.level} heat="median" rank={user.levelRank} total={total} />
         <StatCard label="Total Damage" value={user.damage} display={<CompactNumber value={user.damage} />} range={ranges.damage} heat="median" rank={user.damageRank} total={total} />
         <StatCard label="Weekly Damage" value={user.weeklyDamage} display={<CompactNumber value={user.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={user.weeklyDamageRank} total={total} />
@@ -128,7 +126,7 @@ export default async function UserDetailPage({ params }: PageProps) {
         <StatCard label="Gems Purchased" value={user.gemsPurchased} range={ranges.gemsPurchased} heat="ramp" rank={user.gemsPurchasedRank} total={total} />
         <StatCard label="Premium Months" value={user.premiumMonths} range={ranges.premiumMonths} heat="ramp" rank={user.premiumMonthsRank} total={total} />
         <StatCard label="Premium Gifts" value={user.premiumGifts} range={ranges.premiumGifts} heat="ramp" rank={user.premiumGiftsRank} total={total} />
-      </section>
+      </StatCardGrid>
     </main>
   )
 }

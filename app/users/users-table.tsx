@@ -6,21 +6,10 @@ import type { UserRow } from '@/lib/rows'
 import { useCallback } from 'react'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
+import { combineFilter } from '@/components/data-table/combine-filter'
 import { DataTable } from '@/components/data-table/data-table'
 
 import { userColumns } from './columns'
-
-/**
- * Combines a locked-in base filter (e.g. `muId:<id>` on the MU detail page)
- * with whatever the user typed. The user's part is parenthesised so their own
- * OR/NOT can't escape the base scope.
- */
-function combineFilter(base: string | undefined, userFilter: string): string {
-  if (!base) {
-    return userFilter
-  }
-  return userFilter ? `${base} AND (${userFilter})` : base
-}
 
 async function fetchUsers(req: PageRequest, baseFilter?: string): Promise<PageResult<UserRow>> {
   const params = new URLSearchParams({

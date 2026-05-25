@@ -22,6 +22,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
       <CountryCell
         countryCode={row.original.code}
         countryName={row.original.name}
+        countryId={row.original.id}
       />
     ),
     meta: { width: 170 },

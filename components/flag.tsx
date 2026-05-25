@@ -1,8 +1,11 @@
+import type { CSSProperties } from 'react'
+
 import { cn } from '@/lib/utils'
 
 interface Props {
   code: string | null | undefined
   className?: string
+  style?: CSSProperties
 }
 
 /**
@@ -10,7 +13,7 @@ interface Props {
  * `flag-icons` CSS sprite. Returns null for missing codes so callers can
  * compose with other "—" placeholders.
  */
-export function Flag({ code, className }: Props) {
+export function Flag({ code, className, style }: Props) {
   if (!code) {
     return null
   }
@@ -22,6 +25,7 @@ export function Flag({ code, className }: Props) {
         'inline-block h-3 w-4 shrink-0 rounded-[2px] shadow-[0_0_0_1px_rgba(0,0,0,0.06)]',
         className,
       )}
+      style={style}
       aria-label={code}
     />
   )

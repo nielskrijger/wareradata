@@ -34,7 +34,7 @@ interface Props {
 export function StatCard({ label, value, display, range, heat, center, log, rank, total }: Props) {
   return (
     <div className="bg-card flex flex-col gap-1 rounded-md border p-3">
-      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className="text-xs font-medium">{label}</span>
       <span className="text-2xl tabular-nums">
         {value == null
           ? <EmptyDash />

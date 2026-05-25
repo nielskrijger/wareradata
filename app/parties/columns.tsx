@@ -6,9 +6,9 @@ import type { PartyRow } from '@/lib/rows'
 
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
+import { PartyCell } from '@/components/party-cell'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
 import { ScaleBadge } from '@/components/scale-badge'
-import { TruncatedCell } from '@/components/truncated-cell'
 import { UserNameCell } from '@/components/user-name-cell'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -26,7 +26,12 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
     accessorKey: 'name',
     header: 'Party',
     cell: ({ row }) => (
-      <TruncatedCell text={row.original.name} className="font-medium" />
+      <PartyCell
+        partyName={row.original.name}
+        partyId={row.original.id}
+        avatarUrl={row.original.avatarUrl}
+        bold
+      />
     ),
     meta: { width: 240 },
   },

@@ -128,7 +128,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
   {
     accessorKey: 'partyName',
     header: 'Party',
-    cell: ({ row }) => <PartyCell partyName={row.original.partyName} />,
+    cell: ({ row }) => <PartyCell partyName={row.original.partyName} partyId={row.original.partyId} />,
     meta: { width: 200 },
   },
   {

@@ -187,8 +187,11 @@ export interface RegionRow {
  * Projected political-party row used by /parties and /api/parties.
  */
 export interface PartyRow {
+  avatarUrl: string | null
   avgLevel: number | null
+  avgLevelRank: number | null
   avgPoints: number | null
+  avgPointsRank: number | null
   countryCode: string | null
   countryId: string | null
   countryName: string | null
@@ -196,6 +199,7 @@ export interface PartyRow {
   damagePoints: number
   description: string | null
   gemsPurchasedTotal: number
+  gemsPurchasedTotalRank: number | null
   id: string
   imperialism: number | null
   industrialism: number | null
@@ -206,10 +210,14 @@ export interface PartyRow {
   leaderName: string | null
   levelPoints: number
   memberCount: number
+  memberCountRank: number | null
   militarism: number | null
   name: string
   premiumGiftsTotal: number
+  premiumGiftsTotalRank: number | null
   premiumMonthsTotal: number
+  premiumMonthsTotalRank: number | null
   totalPoints: number
+  totalPointsRank: number | null
   wealthPoints: number
 }

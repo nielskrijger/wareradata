@@ -98,7 +98,7 @@ export default async function UserDetailPage({ params }: PageProps) {
             <span className="inline-flex items-center gap-1">MU <MUCell muName={user.muName} muId={user.muId} /></span>
           )}
           {user.partyName && (
-            <span className="inline-flex max-w-[16rem] items-center gap-1">Party <PartyCell partyName={user.partyName} /></span>
+            <span className="inline-flex max-w-[16rem] items-center gap-1">Party <PartyCell partyName={user.partyName} partyId={user.partyId} /></span>
           )}
           <span>Joined {user.createdAt?.slice(0, 10) ?? EMPTY}</span>
           <span>Last seen {formatRelativeTime(user.lastConnectionAt)}</span>

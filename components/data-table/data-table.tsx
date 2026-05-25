@@ -189,7 +189,7 @@ export function DataTable<TData, TValue>({
             value={filterInput}
             onChange={e => setFilterInput(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pr-8"
+            className="bg-card pr-8"
           />
           {filterInput && (
             <button
@@ -235,7 +235,7 @@ export function DataTable<TData, TValue>({
         </DropdownMenu>
       </div>
 
-      <div className={cn('border-input overflow-hidden rounded-md border dark:bg-input/50', isPending && 'opacity-60')}>
+      <div className={cn('border-input bg-card overflow-hidden rounded-md border dark:bg-input/50', isPending && 'opacity-60')}>
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map(hg => (

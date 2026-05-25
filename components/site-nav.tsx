@@ -35,7 +35,7 @@ export function SiteNav() {
                   className={cn(
                     'rounded-md px-3 py-1.5 transition-colors',
                     active
-                      ? 'bg-accent text-foreground'
+                      ? 'bg-fire/12 text-fire ring-fire/25 ring-1'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                   )}
                 >

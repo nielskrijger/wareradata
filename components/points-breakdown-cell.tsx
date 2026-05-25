@@ -27,8 +27,8 @@ export function PointsBreakdownCell({ total, level, damage, wealth }: Props) {
           <BreakdownRow label="Level" value={level} total={total} />
           <BreakdownRow label="Damage" value={damage} total={total} />
           <BreakdownRow label="Wealth" value={wealth} total={total} />
-          <dt className="border-background/30 mt-1 border-t pt-1 font-medium">Total</dt>
-          <dd className="border-background/30 mt-1 border-t pt-1 text-right font-medium">
+          <dt className="border-neutral-50/20 mt-1 border-t pt-1 font-medium">Total</dt>
+          <dd className="border-neutral-50/20 mt-1 border-t pt-1 text-right font-medium">
             {total.toLocaleString()}
           </dd>
         </dl>

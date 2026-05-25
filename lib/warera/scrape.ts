@@ -2,13 +2,13 @@ import type { SnapshotMeta } from './api'
 
 import { writeSnapshot, writeUsersSharded } from '@/lib/cache/snapshot'
 
-import { getAllCountries, getAllMUs, getAllParties, getAllRegions, getUserIdsForCountry, getUserLite } from './api'
+import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getTournamentInfo, getUserIdsForCountry, getUserLite } from './api'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
 interface ScrapeResult {
   scrapedAt: string
-  counts: { countries: number, users: number, mus: number, regions: number, parties: number }
+  counts: { countries: number, users: number, mus: number, regions: number, parties: number, battles: number }
   durationMs: number
 }
 
@@ -66,6 +66,21 @@ export async function runFullScrape(): Promise<ScrapeResult> {
   const parties = await getAllParties(opts)
   console.warn(`[scrape] fetched ${parties.length} parties`)
 
+  // 7. Battles — all active plus a recent window of finished ones.
+  const battles = await getAllBattles(opts)
+  console.warn(`[scrape] fetched ${battles.length} battles`)
+
+  // 7b. Tournament teams — so tournament battles (team-vs-team, no country) can
+  // resolve each side to its MU. Stored as a serializable record (the live
+  // shape uses a Map, which doesn't survive JSON).
+  const tournament = await getTournamentInfo()
+  const tournamentSnapshot = {
+    id: tournament.id,
+    name: tournament.name,
+    teams: Object.fromEntries(tournament.teams),
+  }
+  console.warn(`[scrape] fetched tournament "${tournament.name}" with ${tournament.teams.size} teams`)
+
   const durationMs = Date.now() - start
   const scrapedAt = new Date().toISOString()
   const meta: SnapshotMeta = {
@@ -76,17 +91,20 @@ export async function runFullScrape(): Promise<ScrapeResult> {
       mus: mus.length,
       regions: regions.length,
       parties: parties.length,
+      battles: battles.length,
     },
     scrapeDurationMs: durationMs,
   }
 
-  // 6. Write to Redis. Users are sharded (hashed by _id); everything else fits a single key.
+  // 8. Write to Redis. Users are sharded (hashed by _id); everything else fits a single key.
   await writeUsersSharded(users)
   await Promise.all([
     writeSnapshot('countries', countries),
     writeSnapshot('mus', mus),
     writeSnapshot('regions', regions),
     writeSnapshot('parties', parties),
+    writeSnapshot('battles', battles),
+    writeSnapshot('tournament', tournamentSnapshot),
     writeSnapshot('meta', meta),
   ])
   console.warn(`[scrape] wrote snapshot in ${durationMs}ms`)
@@ -99,6 +117,7 @@ export async function runFullScrape(): Promise<ScrapeResult> {
       mus: mus.length,
       regions: regions.length,
       parties: parties.length,
+      battles: battles.length,
     },
     durationMs,
   }

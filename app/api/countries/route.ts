@@ -1,6 +1,7 @@
 import type { FieldAliases } from '@/lib/query'
 import type { CountryRow } from '@/lib/rows'
 
+import { withActiveBattleCounts } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyStructuredQuery, parseQuery } from '@/lib/query'
 import { RANKING_TIERS } from '@/lib/warera/api'
@@ -80,6 +81,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const query = parseQuery(searchParams)
   const { countries } = await getSnapshot()
-  const result = applyStructuredQuery(countries, query, countrySortValue, countryFieldAliases)
+  const withCounts = await withActiveBattleCounts(countries)
+  const result = applyStructuredQuery(withCounts, query, countrySortValue, countryFieldAliases)
   return Response.json(result)
 }

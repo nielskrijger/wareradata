@@ -1,5 +1,8 @@
-import type { CountryRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
+import type { BattleRow, CountryRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
+import type { Lookups } from '@/lib/rows/lookups'
+import type { TournamentSnapshot } from '@/lib/warera/api'
 
+import { buildBattleRows } from '@/lib/rows/build-battles'
 import { buildCountryRows } from '@/lib/rows/build-countries'
 import { buildMURows } from '@/lib/rows/build-mus'
 import { buildPartyRows } from '@/lib/rows/build-parties'
@@ -35,6 +38,12 @@ interface Snapshot {
   mus: MURow[]
   parties: PartyRow[]
   regions: RegionRow[]
+  battles: BattleRow[]
+  // Kept so live, on-demand fetches (active battles) can enrich raw API data
+  // against the same warm lookups the hourly rows were built from, without
+  // re-reading Redis.
+  lookups: Lookups
+  tournament: TournamentSnapshot
 }
 
 interface CacheEntry {
@@ -46,12 +55,14 @@ let cache: CacheEntry | null = null
 let refreshing: Promise<Snapshot> | null = null
 
 async function loadFromRedis(): Promise<Snapshot> {
-  const [users, countries, mus, regions, parties] = await Promise.all([
+  const [users, countries, mus, regions, parties, battles, tournament] = await Promise.all([
     readAllUsers(),
     readSnapshot('countries'),
     readSnapshot('mus'),
     readSnapshot('regions'),
     readSnapshot('parties'),
+    readSnapshot('battles'),
+    readSnapshot('tournament'),
   ])
 
   const lookups = buildLookups(countries, mus, regions, users, parties)
@@ -60,8 +71,9 @@ async function loadFromRedis(): Promise<Snapshot> {
   const muRows = buildMURows(mus, userRows, lookups)
   const partyRows = buildPartyRows(parties, userRows, lookups)
   const regionRows = buildRegionRows(regions, lookups)
+  const battleRows = buildBattleRows(battles, tournament, lookups)
 
-  return { users: userRows, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows }
+  return { users: userRows, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament }
 }
 
 export function getSnapshot(): Promise<Snapshot> {

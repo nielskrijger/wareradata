@@ -1,0 +1,177 @@
+'use client'
+
+import type { ColumnDef } from '@tanstack/react-table'
+
+import type { BattleRow } from '@/lib/rows'
+
+import { BattleMatchupCell } from '@/components/battle-matchup-cell'
+import { BattleTypeBadge } from '@/components/battle-type-badge'
+import { CompactNumber } from '@/components/compact-number'
+import { CountryCell } from '@/components/country-cell'
+import { ExternalLink } from '@/components/external-link'
+import { InternalLink } from '@/components/internal-link'
+import { MUCell } from '@/components/mu-cell'
+import { formatRelativeTime } from '@/lib/format'
+
+export type { BattleRow }
+
+/**
+ * Rounds tally "won–won / N". The leader's number is emphasized; the trailing
+ * "/ N" is the first-to count.
+ */
+function scoreCell(row: BattleRow) {
+  const { attackerWonRounds: a, defenderWonRounds: d, roundsToWin } = row
+  return (
+    <span className="tabular-nums">
+      <span className={a >= d ? 'text-foreground font-medium' : 'text-muted-foreground'}>{a}</span>
+      <span className="text-muted-foreground">–</span>
+      <span className={d >= a ? 'text-foreground font-medium' : 'text-muted-foreground'}>{d}</span>
+      <span className="text-muted-foreground ml-1 text-xs">/ {roundsToWin}</span>
+    </span>
+  )
+}
+
+function winnerCell(row: BattleRow) {
+  if (!row.wonBy) {
+    return null
+  }
+  const side = row.wonBy === 'attacker' ? row.attacker : row.defender
+  return side.kind === 'mu'
+    ? <MUCell muName={side.name} muId={side.id} avatarUrl={side.avatarUrl} />
+    : <CountryCell countryCode={side.code} countryName={side.name} countryId={side.id} />
+}
+
+function regionCell(row: BattleRow) {
+  const { regionId, regionName } = row
+  if (!regionName) {
+    return null
+  }
+  return regionId
+    ? <InternalLink href={`/regions?q=${encodeURIComponent(regionName)}`} className="truncate">{regionName}</InternalLink>
+    : <span className="truncate">{regionName}</span>
+}
+
+const matchupColumn: ColumnDef<BattleRow> = {
+  accessorKey: 'attackerName',
+  header: 'Battle',
+  cell: ({ row }) => (
+    <BattleMatchupCell
+      battleId={row.original.id}
+      attacker={row.original.attacker}
+      defender={row.original.defender}
+    />
+  ),
+  enableSorting: false,
+  meta: { width: 320 },
+}
+
+const regionColumn: ColumnDef<BattleRow> = {
+  accessorKey: 'regionName',
+  header: 'Region',
+  cell: ({ row }) => regionCell(row.original),
+  meta: { width: 160 },
+}
+
+const typeColumn: ColumnDef<BattleRow> = {
+  accessorKey: 'isResistance',
+  header: 'Type',
+  cell: ({ row }) => (
+    <BattleTypeBadge
+      isTournament={row.original.isTournament}
+      isResistance={row.original.isResistance}
+      tournamentName={row.original.tournamentName}
+      tournamentRound={row.original.tournamentRound}
+    />
+  ),
+  meta: { width: 160 },
+}
+
+const wareraColumn: ColumnDef<BattleRow> = {
+  id: 'warera',
+  header: 'Link',
+  enableSorting: false,
+  cell: ({ row }) => (
+    <ExternalLink href={`https://app.warera.io/battle/${row.original.id}`}>
+      WarEra.io
+    </ExternalLink>
+  ),
+  meta: { width: 110 },
+}
+
+export const activeBattleColumns: ColumnDef<BattleRow>[] = [
+  matchupColumn,
+  regionColumn,
+  typeColumn,
+  {
+    accessorKey: 'attackerWonRounds',
+    header: 'Rounds',
+    cell: ({ row }) => scoreCell(row.original),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 110 },
+  },
+  {
+    accessorKey: 'roundAttackerDamage',
+    header: 'Round Dmg (Atk)',
+    cell: ({ row }) => <CompactNumber value={row.original.roundAttackerDamage} />,
+    sortDescFirst: true,
+    meta: { heat: 'ramp', align: 'right', width: 140 },
+  },
+  {
+    accessorKey: 'roundDefenderDamage',
+    header: 'Round Dmg (Def)',
+    cell: ({ row }) => <CompactNumber value={row.original.roundDefenderDamage} />,
+    sortDescFirst: true,
+    meta: { heat: 'ramp', align: 'right', width: 140 },
+  },
+  {
+    accessorKey: 'totalDamage',
+    header: 'Total Damage',
+    cell: ({ row }) => <CompactNumber value={row.original.totalDamage} />,
+    sortDescFirst: true,
+    meta: { heat: 'median', align: 'right', width: 130 },
+  },
+  {
+    accessorKey: 'moneyPool',
+    header: 'Money Pool',
+    cell: ({ row }) => <CompactNumber value={row.original.moneyPool} />,
+    sortDescFirst: true,
+    meta: { heat: 'ramp', align: 'right', width: 120 },
+  },
+  wareraColumn,
+]
+
+export const finishedBattleColumns: ColumnDef<BattleRow>[] = [
+  matchupColumn,
+  regionColumn,
+  typeColumn,
+  {
+    accessorKey: 'wonBy',
+    header: 'Winner',
+    cell: ({ row }) => winnerCell(row.original),
+    meta: { width: 180 },
+  },
+  {
+    accessorKey: 'attackerWonRounds',
+    header: 'Score',
+    cell: ({ row }) => scoreCell(row.original),
+    sortDescFirst: true,
+    meta: { align: 'right', width: 110 },
+  },
+  {
+    accessorKey: 'totalDamage',
+    header: 'Total Damage',
+    cell: ({ row }) => <CompactNumber value={row.original.totalDamage} />,
+    sortDescFirst: true,
+    meta: { heat: 'median', align: 'right', width: 130 },
+  },
+  {
+    accessorKey: 'endedAt',
+    header: 'Ended',
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{formatRelativeTime(row.original.endedAt)}</span>
+    ),
+    sortDescFirst: true,
+    meta: { width: 120 },
+  },
+  wareraColumn,
+]

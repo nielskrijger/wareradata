@@ -1,4 +1,4 @@
-import type { Country, MU, Party, Region, SnapshotMeta, UserLite } from '@/lib/warera/api'
+import type { Battle, Country, MU, Party, Region, SnapshotMeta, TournamentSnapshot, UserLite } from '@/lib/warera/api'
 
 import { Buffer } from 'node:buffer'
 
@@ -7,10 +7,12 @@ import { redis } from './redis'
 const KEY_PREFIX = 'wareradata:snapshot'
 
 interface SnapshotShape {
+  battles: Battle[]
   countries: Country[]
   mus: MU[]
   parties: Party[]
   regions: Region[]
+  tournament: TournamentSnapshot
   meta: SnapshotMeta
 }
 
@@ -23,13 +25,19 @@ function singleKey(entity: SnapshotEntity) {
 
 /**
  * Returns the stored snapshot for `entity`, or an empty value on cache miss
- * (empty array for lists, empty object for `meta`). Pages should render an
- * empty state when the result is empty rather than throwing.
+ * (empty array for lists, empty object for `meta`/`tournament`). Pages should
+ * render an empty state when the result is empty rather than throwing.
  */
 export async function readSnapshot<E extends SnapshotEntity>(entity: E): Promise<SnapshotData<E>> {
   const raw = await redis.get(singleKey(entity))
   if (raw === null || raw === undefined) {
-    return (entity === 'meta' ? {} : []) as SnapshotData<E>
+    if (entity === 'meta') {
+      return {} as unknown as SnapshotData<E>
+    }
+    if (entity === 'tournament') {
+      return { id: null, name: null, teams: {} } as unknown as SnapshotData<E>
+    }
+    return [] as unknown as SnapshotData<E>
   }
   return raw as SnapshotData<E>
 }

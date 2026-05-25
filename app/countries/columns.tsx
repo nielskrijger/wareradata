@@ -23,9 +23,11 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
         countryCode={row.original.code}
         countryName={row.original.name}
         countryId={row.original.id}
+        activeBattles={row.original.activeBattles}
+        activeBattlesList={row.original.activeBattlesList}
       />
     ),
-    meta: { width: 170 },
+    meta: { width: 210 },
   },
   {
     accessorKey: 'totalPoints',

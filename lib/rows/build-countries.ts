@@ -23,6 +23,8 @@ export function buildCountryRows(
         : null
 
       return {
+        activeBattles: 0,
+        activeBattlesList: [],
         activePopulation: r?.countryActivePopulation?.value ?? null,
         activePopulationRank: null,
         alliesCount: c.allies?.length ?? 0,

@@ -9,7 +9,7 @@ export interface Lookups {
   userNameById: Map<string, string>
   userAvatarById: Map<string, string | null>
   userColorSchemeById: Map<string, string | null>
-  partyByUser: Map<string, { id: string, name: string }>
+  partyByUser: Map<string, { id: string, name: string, avatarUrl: string | null }>
   partyCountByCountry: Map<string, number>
 }
 
@@ -20,12 +20,12 @@ export function buildLookups(
   users: UserLite[],
   parties: Party[],
 ): Lookups {
-  const partyByUser = new Map<string, { id: string, name: string }>()
+  const partyByUser = new Map<string, { id: string, name: string, avatarUrl: string | null }>()
   const partyCountByCountry = new Map<string, number>()
   for (const p of parties) {
     if (p.members) {
       for (const uid of p.members) {
-        partyByUser.set(uid, { id: p._id, name: p.name })
+        partyByUser.set(uid, { id: p._id, name: p.name, avatarUrl: p.avatarUrl ?? null })
       }
     }
     if (p.country) {

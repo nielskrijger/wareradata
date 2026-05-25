@@ -1,3 +1,6 @@
+import type { ActiveBattleSummary } from '@/lib/rows'
+
+import { BattleCountBadge } from '@/components/battle-count-badge'
 import { EmptyDash } from '@/components/empty-dash'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/internal-link'
@@ -6,6 +9,14 @@ interface Props {
   countryCode: string | null
   countryName: string | null
   countryId: string | null
+  /**
+   * Active-battle count; when > 0 a small ⚔ pill is shown after the name.
+   * Omit (or pass 0) to hide it, e.g. on the /battles page where it'd be
+   * redundant next to the battle itself.
+   */
+  activeBattles?: number
+  // Matchups behind `activeBattles`, shown in the pill's hover tooltip.
+  activeBattlesList?: ActiveBattleSummary[]
 }
 
 /**
@@ -13,7 +24,7 @@ interface Props {
  * detail headers. The flag + name link to the country detail page. For the
  * warera.io link, use the dedicated trailing "WarEra" column on each table.
  */
-export function CountryCell({ countryCode, countryName, countryId }: Props) {
+export function CountryCell({ countryCode, countryName, countryId, activeBattles, activeBattlesList }: Props) {
   if (!countryCode && !countryName) {
     return <EmptyDash />
   }
@@ -30,6 +41,13 @@ export function CountryCell({ countryCode, countryName, countryId }: Props) {
         : (
             <span className="truncate">{label}</span>
           )}
+      {activeBattles != null && (
+        <BattleCountBadge
+          count={activeBattles}
+          countryId={countryId ?? undefined}
+          battles={activeBattlesList}
+        />
+      )}
     </div>
   )
 }

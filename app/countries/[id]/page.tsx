@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
 
+import { BattleCountBadge } from '@/components/battle-count-badge'
 import { CompactNumber } from '@/components/compact-number'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
@@ -10,20 +11,25 @@ import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
+import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 import { CountryTables } from './country-tables'
 
-export const revalidate = 600
+// Active battles are fetched live (60s cache), so this page can't be static.
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
 async function getCountry(id: string) {
-  const { countries, users, mus, parties } = await getSnapshot()
+  const [{ countries, users, mus, parties }, liveActive] = await Promise.all([
+    getSnapshot(),
+    getLiveActiveBattles(),
+  ])
   const country = countries.find(c => c.id === id)
   if (!country) {
     return null
@@ -56,8 +62,14 @@ async function getCountry(id: string) {
     () => '',
     row => row.totalPoints,
   )
+  const battlePage = applyQuery(
+    liveActive.filter(b => b.attacker.id === id || b.defender.id === id),
+    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'totalDamage', dir: 'desc', filter: '' },
+    () => '',
+    row => row.totalDamage,
+  )
 
-  return { country, ranges: ranges ?? {}, total, citizenPage, muPage, partyPage }
+  return { country, ranges: ranges ?? {}, total, citizenPage, muPage, partyPage, battlePage }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -78,7 +90,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
-  const { country: c, ranges, total, citizenPage, muPage, partyPage } = result
+  const { country: c, ranges, total, citizenPage, muPage, partyPage, battlePage } = result
 
   return (
     <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
@@ -114,6 +126,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
             parties
           </span>
           <TierBadge tier={c.damageTier} />
+          <BattleCountBadge count={battlePage.total} />
           <ExternalLink href={wareraUrl('country', c.id)}>WarEra.io</ExternalLink>
         </FactRow>
       </DetailHeader>
@@ -154,6 +167,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
         citizens={citizenPage}
         mus={muPage}
         parties={partyPage}
+        battles={battlePage}
       />
     </main>
   )

@@ -33,6 +33,7 @@ export interface UserRow {
   muAvatarUrl: string | null
   muId: string | null
   muName: string | null
+  partyAvatarUrl: string | null
   partyId: string | null
   partyName: string | null
   points: number
@@ -54,9 +55,30 @@ export interface UserRow {
 }
 
 /**
+ * One active battle a country is in, from the country's point of view. Powers
+ * the ⚔ pill's hover tooltip. Kept tiny on purpose: only what the tooltip
+ * renders, so embedding the list on every CountryRow stays cheap on the wire.
+ */
+export interface ActiveBattleSummary {
+  id: string
+  // The other side (country flag/name), from this country's perspective.
+  opponentName: string | null
+  opponentCode: string | null
+  regionName: string | null
+  isResistance: boolean
+  isTournament: boolean
+}
+
+/**
  * Projected country row used by /countries and /api/countries.
  */
 export interface CountryRow {
+  // Count of active battles this country is in (attacker or defender). Live
+  // data, stamped on by withActiveBattleCounts(); 0 when not populated.
+  activeBattles: number
+  // The battles behind `activeBattles`, for the pill's hover tooltip. Stamped
+  // alongside the count by withActiveBattleCounts(); empty when not populated.
+  activeBattlesList: ActiveBattleSummary[]
   activePopulation: number | null
   activePopulationRank: number | null
   alliesCount: number
@@ -181,6 +203,64 @@ export interface RegionRow {
   name: string
   neighborCount: number
   strategicResource: string | null
+}
+
+/**
+ * One side of a battle's matchup. Country wars resolve to a country (flag +
+ * link to /countries); tournament battles resolve to the team's MU (avatar +
+ * link to /mus), falling back to "Team #N" when the MU isn't in the snapshot.
+ * The cell branches on `kind` to pick flag vs. avatar and the link target.
+ */
+export interface BattleSide {
+  kind: 'country' | 'mu'
+  // Country or MU id, for the detail-page link. Null if unresolved.
+  id: string | null
+  // Country name, MU name, or "Team #N" fallback.
+  name: string | null
+  // ISO-3166 code for the flag (country sides only).
+  code: string | null
+  // MU avatar url (mu sides only).
+  avatarUrl: string | null
+}
+
+/**
+ * Projected battle row used by /battles and /api/battles. Battles are events,
+ * not entities ranked against each other, so there are no rank fields (cf.
+ * RegionRow). `attackerDamage` / `defenderDamage` are cumulative across the
+ * whole battle; `roundAttackerDamage` / `roundDefenderDamage` are the current
+ * (or final) round only, which drives the live-progress bar.
+ *
+ * `attackerName` / `defenderName` / `attackerCode` / `defenderCode` are kept
+ * flat (mirroring the structured sides) purely so the liqe text filter can
+ * match on them; the cells render from `attacker` / `defender`.
+ */
+export interface BattleRow {
+  attacker: BattleSide
+  attackerCode: string | null
+  attackerDamage: number
+  attackerName: string | null
+  attackerWonRounds: number
+  createdAt: string | null
+  defender: BattleSide
+  defenderCode: string | null
+  defenderDamage: number
+  defenderName: string | null
+  defenderWonRounds: number
+  endedAt: string | null
+  id: string
+  isActive: boolean
+  isResistance: boolean
+  isTournament: boolean
+  moneyPool: number
+  regionId: string | null
+  regionName: string | null
+  roundAttackerDamage: number
+  roundDefenderDamage: number
+  roundsToWin: number
+  totalDamage: number
+  tournamentName: string | null
+  tournamentRound: number | null
+  wonBy: 'attacker' | 'defender' | null
 }
 
 /**

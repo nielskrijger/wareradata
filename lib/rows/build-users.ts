@@ -55,6 +55,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         muAvatarUrl: u.mu ? (lookups.muAvatarById.get(u.mu) ?? null) : null,
         muId: u.mu ?? null,
         muName: u.mu ? (lookups.muNameById.get(u.mu) ?? null) : null,
+        partyAvatarUrl: party?.avatarUrl ?? null,
         partyId: party?.id ?? null,
         partyName: party?.name ?? null,
         points: pts.total,

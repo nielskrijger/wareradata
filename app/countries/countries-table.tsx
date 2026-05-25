@@ -50,7 +50,7 @@ export function CountriesTable({ initial }: Props) {
             { q: 'taxIncome:>10', desc: 'Comparators' },
             { q: 'code:nl AND wars:>0', desc: 'Combine with AND/OR' },
           ]}
-          fieldsList="name, code, specialty, rank, damage, weeklyDamage, wealth, treasury, population, allies, wars, taxIncome, taxMarket, taxSelfWork, productionBonus, unrest, development, and more."
+          fieldsList="name, code, rank, damage, weeklyDamage, wealth, population, unrest, and more."
         />
       )}
     />

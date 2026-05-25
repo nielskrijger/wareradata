@@ -4,6 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { MURow } from '@/lib/rows'
 
+import { CombatMixBar } from '@/components/combat-mix-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
@@ -72,6 +73,14 @@ export const muColumns: ColumnDef<MURow>[] = [
     sortDescFirst: true,
     sortUndefined: 'last',
     meta: { width: 130 },
+  },
+  {
+    id: 'combatBuffPct',
+    header: 'Combat',
+    cell: ({ row }) => <CombatMixBar mix={row.original.combatMix} />,
+    sortDescFirst: true,
+    sortUndefined: 'last',
+    meta: { width: 120 },
   },
   {
     accessorKey: 'countryName',

@@ -73,6 +73,26 @@ export interface ActiveBattleSummary {
 }
 
 /**
+ * Member counts by combat status (buff / ready / debuff) for an entity, used by
+ * the CombatMixBar. Excludes members with an unknown status, so the three need
+ * not sum to the member count.
+ */
+export interface CombatMix {
+  buff: number
+  ready: number
+  debuff: number
+}
+
+/**
+ * Share of an entity's classified members that are buffed (0-100), or null when
+ * none have a known status. Used as the sort key for the combat-mix column.
+ */
+export function combatBuffPct(mix: CombatMix): number | null {
+  const total = mix.buff + mix.ready + mix.debuff
+  return total > 0 ? Math.round((mix.buff / total) * 100) : null
+}
+
+/**
  * Projected country row used by /countries and /api/countries.
  */
 export interface CountryRow {
@@ -97,6 +117,7 @@ export interface CountryRow {
   bounty: number | null
   bountyRank: number | null
   code: string
+  combatMix: CombatMix
   damageRank: number | null
   damageTier: RankingTier | null
   damage: number | null
@@ -153,6 +174,7 @@ export interface MURow {
   avgPointsRank: number | null
   bounty: number | null
   bountyRank: number | null
+  combatMix: CombatMix
   countryCode: string | null
   countryId: string | null
   countryName: string | null

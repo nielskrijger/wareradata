@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Country, MU } from '@/lib/warera/api'
 
 import { assignRank, toTier } from '@/lib/rows/lookups'
-import { aggMean, aggregatePoints } from '@/lib/rows/points-agg'
+import { aggCombatMix, aggMean, aggregatePoints } from '@/lib/rows/points-agg'
 
 export function buildCountryRows(
   countries: Country[],
@@ -40,6 +40,7 @@ export function buildCountryRows(
         bounty: r?.countryBounty?.value ?? null,
         bountyRank: null,
         code: c.code,
+        combatMix: aggCombatMix(agg),
         damagePoints: agg?.damage ?? 0,
         damageRank: null,
         damageTier: toTier(r?.countryDamages?.tier),

@@ -23,7 +23,7 @@ export function InfoTooltip({ label, hint, className }: Props) {
         render={(
           <span
             className={cn(
-              'cursor-help underline decoration-dotted decoration-1 underline-offset-2',
+              'underline decoration-dotted decoration-1 underline-offset-2',
               className,
             )}
           />

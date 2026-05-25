@@ -90,9 +90,6 @@ export default async function UserDetailPage({ params }: PageProps) {
             </span>
           )}
           <TierBadge tier={user.levelTier} />
-          {user.combatStatus != null && user.combatStatus !== 'neither' && (
-            <CombatStatusBadge status={user.combatStatus} />
-          )}
           {user.isBanned && (
             <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>
           )}
@@ -105,6 +102,7 @@ export default async function UserDetailPage({ params }: PageProps) {
           {user.hungerPercent != null && (
             <span className="inline-flex items-center gap-1.5">Hunger <PercentBar value={user.hungerPercent} /></span>
           )}
+          {user.combatStatus != null && <CombatStatusBadge status={user.combatStatus} />}
         </FactRow>
         <FactRow muted>
           {user.muName && (

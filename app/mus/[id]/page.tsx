@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
+import { CombatMixBar } from '@/components/combat-mix-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
@@ -106,6 +107,7 @@ export default async function MUDetailPage({ params }: PageProps) {
             {mu.avgHunger != null && (
               <span className="inline-flex items-center gap-1.5">Avg hunger <PercentBar value={mu.avgHunger} /></span>
             )}
+            <span className="inline-flex items-center gap-1.5">Combat <CombatMixBar mix={mu.combatMix} /></span>
           </FactRow>
         )}
         {mu.leaderName && (

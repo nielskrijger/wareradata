@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
+import { ArrowDown, ArrowUp } from 'lucide-react'
 
 import { EmptyDash } from '@/components/empty-dash'
 import { Badge } from '@/components/ui/badge'
@@ -9,8 +9,8 @@ interface Props {
 
 /**
  * Combat-status pill from a user's attack buffs/debuffs: green "Buff" (net
- * attack bonus), red "Debuff" (net penalty), or a muted dash for "neither".
- * Renders an em-dash placeholder when the status is unknown.
+ * attack bonus), red "Debuff" (net penalty), or a muted "Ready" when neither is
+ * active (baseline, free to take a buff). Renders an em-dash when unknown.
  */
 export function CombatStatusBadge({ status }: Props) {
   if (status == null) {
@@ -18,10 +18,9 @@ export function CombatStatusBadge({ status }: Props) {
   }
   if (status === 'neither') {
     return (
-      <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
-        <Minus className="size-3" />
-        None
-      </span>
+      <Badge className="bg-sky-500/15 text-sky-800 dark:text-sky-300">
+        Ready
+      </Badge>
     )
   }
   if (status === 'buff') {

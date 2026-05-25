@@ -76,6 +76,12 @@ export const userColumns: ColumnDef<UserRow>[] = [
     meta: { width: 120 },
   },
   {
+    accessorKey: 'combatStatus',
+    header: 'Status',
+    cell: ({ row }) => <CombatStatusBadge status={row.original.combatStatus} />,
+    meta: { width: 100 },
+  },
+  {
     accessorKey: 'levelRank',
     header: 'Level Rank',
     cell: ({ row }) => row.original.levelRank ?? null,
@@ -134,12 +140,6 @@ export const userColumns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => row.original.militaryRank ?? null,
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
-  },
-  {
-    accessorKey: 'combatStatus',
-    header: 'Status',
-    cell: ({ row }) => <CombatStatusBadge status={row.original.combatStatus} />,
-    meta: { width: 100 },
   },
   {
     accessorKey: 'muName',

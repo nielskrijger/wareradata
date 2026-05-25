@@ -28,13 +28,13 @@ export function PercentBar({ value, width = 64 }: Props) {
   const color = heatColor(value)
   return (
     <div className="flex items-center gap-2">
-      <div className="bg-muted h-1.5 overflow-hidden rounded-full" style={{ width }}>
-        <div className="h-full rounded-full" style={{ width: `${value}%`, backgroundColor: color }} />
-      </div>
-      <span className="text-xs tabular-nums" style={{ color }}>
+      <span className="w-9 text-right text-xs tabular-nums" style={{ color }}>
         {value}
         %
       </span>
+      <div className="bg-muted h-1.5 overflow-hidden rounded-full" style={{ width }}>
+        <div className="h-full rounded-full" style={{ width: `${value}%`, backgroundColor: color }} />
+      </div>
     </div>
   )
 }

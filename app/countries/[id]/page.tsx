@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { BattleCountBadge } from '@/components/battle-count-badge'
+import { CombatMixBar } from '@/components/combat-mix-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
@@ -138,6 +139,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
             {c.avgHunger != null && (
               <span className="inline-flex items-center gap-1.5">Avg hunger <PercentBar value={c.avgHunger} /></span>
             )}
+            <span className="inline-flex items-center gap-1.5">Combat <CombatMixBar mix={c.combatMix} /></span>
           </FactRow>
         )}
       </DetailHeader>

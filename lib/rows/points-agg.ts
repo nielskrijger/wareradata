@@ -1,14 +1,17 @@
 import type { UserRow } from '@/lib/rows'
 
 export interface PointsAgg {
+  buffCount: number
   count: number
   damage: number
+  debuffCount: number
   gemsPurchasedTotal: number
   healthCount: number
   healthSum: number
   hungerCount: number
   hungerSum: number
   level: number
+  readyCount: number
   levelCount: number
   levelSum: number // Tracked seperately from count because not every user has a level value
   premiumGiftsTotal: number
@@ -19,8 +22,10 @@ export interface PointsAgg {
 
 function emptyAgg(): PointsAgg {
   return {
+    buffCount: 0,
     count: 0,
     damage: 0,
+    debuffCount: 0,
     gemsPurchasedTotal: 0,
     healthCount: 0,
     healthSum: 0,
@@ -31,6 +36,7 @@ function emptyAgg(): PointsAgg {
     levelSum: 0,
     premiumGiftsTotal: 0,
     premiumMonthsTotal: 0,
+    readyCount: 0,
     total: 0,
     wealth: 0,
   }
@@ -77,6 +83,13 @@ export function aggregatePoints(
       entry.hungerSum += u.hungerPercent
       entry.hungerCount += 1
     }
+    if (u.combatStatus === 'buff') {
+      entry.buffCount += 1
+    } else if (u.combatStatus === 'debuff') {
+      entry.debuffCount += 1
+    } else if (u.combatStatus === 'neither') {
+      entry.readyCount += 1
+    }
     out.set(key, entry)
   }
 
@@ -90,4 +103,17 @@ export function aggregatePoints(
  */
 export function aggMean(sum: number, count: number): number | null {
   return count > 0 ? Math.round(sum / count) : null
+}
+
+/**
+ * Combat-status mix (buff / ready / debuff member counts) from a
+ * {@link PointsAgg}, or all-zero when the agg is missing. Feeds the
+ * CombatMixBar on country / MU rows.
+ */
+export function aggCombatMix(agg: PointsAgg | undefined): { buff: number, ready: number, debuff: number } {
+  return {
+    buff: agg?.buffCount ?? 0,
+    ready: agg?.readyCount ?? 0,
+    debuff: agg?.debuffCount ?? 0,
+  }
 }

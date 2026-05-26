@@ -96,7 +96,7 @@ export async function recordBattleHistory(battles: Battle[]): Promise<ArchiveRes
     const merged = [...existing, ...dayBattles]
     await writeJsonFile(dayFile(day), merged)
     index.add(day)
-    console.warn(`[archive] ${day}: +${dayBattles.length} battles (${merged.length} total)`)
+    console.info(`[archive] ${day}: +${dayBattles.length} battles (${merged.length} total)`)
   }
   await writeJsonFile(indexFile(), [...index].sort())
 

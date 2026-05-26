@@ -49,14 +49,14 @@ async function publish(raw: RawSnapshot): Promise<void> {
 async function scrapeLoop(): Promise<void> {
   for (;;) {
     try {
-      console.warn('[scraper] full scrape starting')
+      console.info('[scraper] full scrape starting')
       const raw = await scrapeRawSnapshot()
       await publish(raw)
-      console.warn('[scraper] full scrape published')
+      console.info('[scraper] full scrape published')
 
       try {
         const result = await recordBattleHistory(raw.battles)
-        console.warn('[archive]', JSON.stringify(result))
+        console.info('[archive]', JSON.stringify(result))
       } catch (err) {
         console.error('[archive] failed', err instanceof Error ? err.message : err)
       }
@@ -129,7 +129,7 @@ async function doRefreshMuMembers(muId: string): Promise<void> {
   // persist (the scrape loop owns the file).
   s.currentRaw = patched
   swapSnapshot(buildSnapshot(patched))
-  console.warn(`[scraper] MU ${muId} refreshed on demand (${fresh.length} members)`)
+  console.info(`[scraper] MU ${muId} refreshed on demand (${fresh.length} members)`)
 }
 
 /**

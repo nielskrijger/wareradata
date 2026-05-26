@@ -44,7 +44,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
 
   // 1. Countries: single call.
   const countries = await getAllCountries()
-  console.warn(`[scrape] fetched ${countries.length} countries`)
+  console.info(`[scrape] fetched ${countries.length} countries`)
 
   // 2. User IDs: paginate per country with bounded concurrency.
   const userIdLists = await mapWithConcurrency(
@@ -53,30 +53,30 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     countryId => getUserIdsForCountry(countryId),
   )
   const userIds = userIdLists.flat()
-  console.warn(`[scrape] collected ${userIds.length} user ids across ${countries.length} countries`)
+  console.info(`[scrape] collected ${userIds.length} user ids across ${countries.length} countries`)
 
   // 3. Hydrate users.
   const users = await getUserLite(userIds)
-  console.warn(`[scrape] hydrated ${users.length} users`)
+  console.info(`[scrape] hydrated ${users.length} users`)
 
   // 4. MUs: single cursor-paginated stream. Stamp each with the capture time so
   // the MU page can show data freshness; an on-demand refresh bumps it later.
   const musRaw = await getAllMUs()
   const capturedAt = new Date().toISOString()
   const mus = musRaw.map(m => ({ ...m, lastRefreshedAt: capturedAt }))
-  console.warn(`[scrape] fetched ${mus.length} MUs`)
+  console.info(`[scrape] fetched ${mus.length} MUs`)
 
   // 5. Regions: single call, returns ~700 regions as an object.
   const regions = await getAllRegions()
-  console.warn(`[scrape] fetched ${regions.length} regions`)
+  console.info(`[scrape] fetched ${regions.length} regions`)
 
   // 6. Parties: single cursor-paginated stream.
   const parties = await getAllParties()
-  console.warn(`[scrape] fetched ${parties.length} parties`)
+  console.info(`[scrape] fetched ${parties.length} parties`)
 
   // 7. Battles: all active plus a recent window of finished ones.
   const battles = await getAllBattles()
-  console.warn(`[scrape] fetched ${battles.length} battles`)
+  console.info(`[scrape] fetched ${battles.length} battles`)
 
   // 7b. Tournament teams: so tournament battles (team-vs-team, no country) can
   // resolve each side to its MU. Stored as a serializable record (the live
@@ -87,7 +87,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     name: tournament.name,
     teams: Object.fromEntries(tournament.teams),
   }
-  console.warn(`[scrape] fetched tournament "${tournament.name}" with ${tournament.teams.size} teams`)
+  console.info(`[scrape] fetched tournament "${tournament.name}" with ${tournament.teams.size} teams`)
 
   const durationMs = Date.now() - start
   const meta: SnapshotMeta = {
@@ -115,7 +115,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
 export async function runFullScrape(): Promise<ScrapeResult> {
   const raw = await scrapeRawSnapshot()
   await writeRawSnapshot(raw)
-  console.warn(`[scrape] wrote snapshot in ${raw.meta.scrapeDurationMs}ms`)
+  console.info(`[scrape] wrote snapshot in ${raw.meta.scrapeDurationMs}ms`)
 
   const counts = {
     countries: raw.countries.length,

@@ -80,7 +80,7 @@ export function buildSnapshot(raw: RawSnapshot): Snapshot {
   const regionRows = buildRegionRows(raw.regions, lookups)
   const battleRows = buildBattleRows(raw.battles, raw.tournament, lookups)
 
-  console.warn(`[snapshot] built rows in ${Date.now() - start}ms (${userRows.length} users)`)
+  console.info(`[snapshot] built rows in ${Date.now() - start}ms (${userRows.length} users)`)
 
   return { users: userRows, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament }
 }

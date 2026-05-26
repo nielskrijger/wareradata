@@ -15,6 +15,10 @@ export default antfu({
   ],
 }, {
   rules: {
+    // Allow info/warn/error: info goes to stdout for normal operational
+    // logging, warn/error to stderr for degradations and failures. Only plain
+    // `console.log` (easy to leave behind as debug noise) stays disallowed.
+    'no-console': ['error', { allow: ['info', 'warn', 'error'] }],
     // process.env is the canonical Next.js pattern for env vars.
     'node/prefer-global/process': 'off',
     // Lets inline JSX like `Page {x} of {y}` stay on one line.

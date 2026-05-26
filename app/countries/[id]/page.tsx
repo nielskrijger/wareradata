@@ -13,6 +13,7 @@ import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
+import { VitalCard } from '@/components/vital-card'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
@@ -152,10 +153,10 @@ export default async function CountryDetailPage({ params }: PageProps) {
 
       <StatCardGrid>
         <CombatPillCard mix={c.combatPill} />
+        <VitalCard kind="health" value={c.avgHealth} rank={c.avgHealthRank} total={total} />
+        <VitalCard kind="hunger" value={c.avgHunger} rank={c.avgHungerRank} total={total} />
         <StatCard label="Active Pop." value={c.activePopulation} range={ranges.activePopulation} heat="ramp" rank={c.activePopulationRank} total={total} />
         <StatCard label="Avg Level" value={c.avgLevel} range={ranges.avgLevel} heat="median" rank={c.avgLevelRank} total={total} />
-        <StatCard label="Avg Health" value={c.avgHealth} display={c.avgHealth != null ? `${c.avgHealth}%` : undefined} range={ranges.avgHealth} heat="ramp" rank={c.avgHealthRank} total={total} />
-        <StatCard label="Avg Hunger" value={c.avgHunger} display={c.avgHunger != null ? `${c.avgHunger}%` : undefined} range={ranges.avgHunger} heat="ramp" rank={c.avgHungerRank} total={total} />
         <StatCard label="Avg Points" value={c.avgPoints} range={ranges.avgPoints} heat="median" rank={c.avgPointsRank} total={total} />
         <StatCard label="Total Damage" value={c.damage} display={<CompactNumber value={c.damage} />} range={ranges.damage} heat="median" rank={c.damageRank} total={total} />
         <StatCard label="Weekly Damage" value={c.weeklyDamage} display={<CompactNumber value={c.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={c.weeklyDamageRank} total={total} />

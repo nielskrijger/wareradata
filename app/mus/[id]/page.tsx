@@ -15,6 +15,7 @@ import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
 import { UserNameCell } from '@/components/user-name-cell'
+import { VitalCard } from '@/components/vital-card'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -133,10 +134,10 @@ export default async function MUDetailPage({ params }: PageProps) {
 
       <StatCardGrid>
         <CombatPillCard mix={mu.combatPill} />
+        <VitalCard kind="health" value={mu.avgHealth} rank={mu.avgHealthRank} total={total} />
+        <VitalCard kind="hunger" value={mu.avgHunger} rank={mu.avgHungerRank} total={total} />
         <StatCard label="Members" value={mu.memberCount} range={ranges.memberCount} heat="ramp" rank={mu.memberCountRank} total={total} />
         <StatCard label="Avg Level" value={mu.avgLevel} range={ranges.avgLevel} heat="median" rank={mu.avgLevelRank} total={total} />
-        <StatCard label="Avg Health" value={mu.avgHealth} display={mu.avgHealth != null ? `${mu.avgHealth}%` : undefined} range={ranges.avgHealth} heat="ramp" rank={mu.avgHealthRank} total={total} />
-        <StatCard label="Avg Hunger" value={mu.avgHunger} display={mu.avgHunger != null ? `${mu.avgHunger}%` : undefined} range={ranges.avgHunger} heat="ramp" rank={mu.avgHungerRank} total={total} />
         <StatCard label="Avg Points" value={mu.avgPoints} range={ranges.avgPoints} heat="median" rank={mu.avgPointsRank} total={total} />
         <StatCard label="Total Damage" value={mu.damage} display={<CompactNumber value={mu.damage} />} range={ranges.damage} heat="median" rank={mu.damageRank} total={total} />
         <StatCard label="Weekly Damage" value={mu.weeklyDamage} display={<CompactNumber value={mu.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={mu.weeklyDamageRank} total={total} />

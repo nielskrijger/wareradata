@@ -1,19 +1,11 @@
 import { EmptyDash } from '@/components/empty-dash'
+import { heatColor } from '@/lib/utils'
 
 interface Props {
   // 0-100; null renders an em-dash placeholder.
   value: number | null
   // Bar track width. Defaults to a compact 64px for table cells.
   width?: number
-}
-
-/**
- * Colour value low->high as red->amber->green by hue, so a low reading reads as
- * urgent at a glance. Saturated, mid-lightness so it's legible on both themes.
- */
-function heatColor(pct: number): string {
-  const hue = 27 + (145 - 27) * (Math.min(100, Math.max(0, pct)) / 100)
-  return `oklch(0.68 0.19 ${hue})`
 }
 
 /**

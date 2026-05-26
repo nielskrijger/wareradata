@@ -96,11 +96,16 @@ export default function AboutPage() {
       <section className="max-w-2xl space-y-2">
         <h2 className="font-brand text-xl tracking-wide">Where the data comes from</h2>
         <Paragraph>
-          Data is refreshed from the
+          Data is scraped continuously from the
           {' '}
           <ExternalLink href="https://api2.warera.io/docs/">WarEra API</ExternalLink>
           {' '}
-          every hour.
+          using the community
+          {' '}
+          <ExternalLink href="https://github.com/WarEraProjects/trpc">tRPC client</ExternalLink>
+          {' '}
+          by WarEra Projects — a big thank you to them for making it easy to
+          work with.
         </Paragraph>
       </section>
 

@@ -11,7 +11,7 @@ import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
 import { InternalLink } from '@/components/internal-link'
 import { MUCell } from '@/components/mu-cell'
-import { formatRelativeTime } from '@/lib/format'
+import { RelativeTime } from '@/components/relative-time'
 
 export type { BattleRow }
 
@@ -168,7 +168,7 @@ export const finishedBattleColumns: ColumnDef<BattleRow>[] = [
     accessorKey: 'endedAt',
     header: 'Ended',
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{formatRelativeTime(row.original.endedAt)}</span>
+      <RelativeTime iso={row.original.endedAt} className="text-muted-foreground" />
     ),
     sortDescFirst: true,
     meta: { width: 120 },

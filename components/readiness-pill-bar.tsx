@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import type { CombatPill } from '@/lib/rows'
+import type { ReadinessPill } from '@/lib/rows'
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
@@ -8,7 +8,7 @@ import { EmptyDash } from '@/components/empty-dash'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
-  mix: CombatPill
+  mix: ReadinessPill
   // Bar track width. Defaults to 96px (a touch wider than the 64px health/
   // hunger bars, since this packs three segments).
   width?: number
@@ -46,12 +46,12 @@ function BreakdownRow({ label, n, total, color }: { label: string, n: number, to
 }
 
 /**
- * Compact stacked bar of an entity's members by combat status (buff / ready /
- * debuff), with a hover tooltip breaking the mix down by named status. Segments
- * are split by a hairline seam so the green/sky boundary stays legible. Renders
- * an em-dash when no member has a known status.
+ * Compact stacked bar of an entity's members by readiness status (buff / ready
+ * / debuff), with a hover tooltip breaking the mix down by named status.
+ * Segments are split by a hairline seam so the green/sky boundary stays legible.
+ * Renders an em-dash when no member has a known status.
  */
-export function CombatPillBar({ mix, width = 96 }: Props) {
+export function ReadinessPillBar({ mix, width = 96 }: Props) {
   const total = mix.buff + mix.ready + mix.debuff
   if (total === 0) {
     return <EmptyDash />
@@ -60,10 +60,14 @@ export function CombatPillBar({ mix, width = 96 }: Props) {
     <Tooltip>
       <TooltipTrigger
         render={(
-          <div className="flex h-1.5 overflow-hidden rounded-full" style={{ width }}>
-            {mix.buff > 0 && <div style={{ width: `${pct(mix.buff, total)}%`, backgroundColor: GREEN }} />}
-            {mix.ready > 0 && <div style={{ width: `${pct(mix.ready, total)}%`, backgroundColor: SKY, borderLeft: mix.buff > 0 ? SEAM : undefined }} />}
-            {mix.debuff > 0 && <div style={{ width: `${pct(mix.debuff, total)}%`, backgroundColor: RED, borderLeft: (mix.buff > 0 || mix.ready > 0) ? SEAM : undefined }} />}
+          // Pad the trigger vertically so the hover/hit area covers the full
+          // row height, not just the 1.5px-tall bar (which is hard to target).
+          <div className="flex cursor-default items-center py-2" style={{ width }}>
+            <div className="flex h-1.5 w-full overflow-hidden rounded-full">
+              {mix.buff > 0 && <div style={{ width: `${pct(mix.buff, total)}%`, backgroundColor: GREEN }} />}
+              {mix.ready > 0 && <div style={{ width: `${pct(mix.ready, total)}%`, backgroundColor: SKY, borderLeft: mix.buff > 0 ? SEAM : undefined }} />}
+              {mix.debuff > 0 && <div style={{ width: `${pct(mix.debuff, total)}%`, backgroundColor: RED, borderLeft: (mix.buff > 0 || mix.ready > 0) ? SEAM : undefined }} />}
+            </div>
           </div>
         )}
       />
@@ -96,18 +100,18 @@ function CardRow({ icon, label, n, total, color }: { icon: ReactNode, label: str
 }
 
 /**
- * Detail-page card form of the combat mix: an icon-led breakdown (buff up /
+ * Detail-page card form of the readiness mix: an icon-led breakdown (buff up /
  * ready dash / debuff down) with a per-state bar and member count. Spans two
  * StatCard columns. Renders nothing when no member has a known status.
  */
-export function CombatPillCard({ mix }: { mix: CombatPill }) {
+export function ReadinessPillCard({ mix }: { mix: ReadinessPill }) {
   const total = mix.buff + mix.ready + mix.debuff
   if (total === 0) {
     return null
   }
   return (
     <div className="bg-card col-span-2 flex flex-col gap-2 rounded-md border p-3">
-      <span className="text-xs font-medium">Combat status</span>
+      <span className="text-xs font-medium">Readiness</span>
       <div className="flex flex-col gap-1.5">
         <CardRow icon={<ArrowUp className="size-3.5" />} label="Buff" n={mix.buff} total={total} color={GREEN} />
         <CardRow icon={<Minus className="size-3.5" />} label="Ready" n={mix.ready} total={total} color={SKY} />

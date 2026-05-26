@@ -50,7 +50,7 @@ function emptyAgg(): MemberAgg {
  * Aggregates kept in one helper so callers do a single pass: points sums
  * (level / damage / wealth / total), member count, premium spend totals
  * (gems / months / gifts), level / health / hunger sums + counts for averages,
- * and buff / ready / debuff counts for the combat pill.
+ * and buff / ready / debuff counts for the readiness pill.
  */
 export function aggregateMembers(
   userRows: UserRow[],
@@ -84,11 +84,11 @@ export function aggregateMembers(
       entry.hungerSum += u.hungerPercent
       entry.hungerCount += 1
     }
-    if (u.combatStatus === 'buff') {
+    if (u.readinessStatus === 'buff') {
       entry.buffCount += 1
-    } else if (u.combatStatus === 'debuff') {
+    } else if (u.readinessStatus === 'debuff') {
       entry.debuffCount += 1
-    } else if (u.combatStatus === 'neither') {
+    } else if (u.readinessStatus === 'neither') {
       entry.readyCount += 1
     }
     out.set(key, entry)
@@ -107,11 +107,11 @@ export function aggMean(sum: number, count: number): number | null {
 }
 
 /**
- * Combat-status mix (buff / ready / debuff member counts) from a
+ * Readiness-status mix (buff / ready / debuff member counts) from a
  * {@link MemberAgg}, or all-zero when the agg is missing. Feeds the
- * CombatPillBar on country / MU rows.
+ * ReadinessPillBar on country / MU rows.
  */
-export function aggCombatPill(agg: MemberAgg | undefined): { buff: number, ready: number, debuff: number } {
+export function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, ready: number, debuff: number } {
   return {
     buff: agg?.buffCount ?? 0,
     ready: agg?.readyCount ?? 0,

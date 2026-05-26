@@ -4,13 +4,12 @@ import { notFound } from 'next/navigation'
 
 import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
-import { CombatPillCard } from '@/components/combat-pill-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
-import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
+import { ReadinessPillCard } from '@/components/readiness-pill-bar'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
@@ -19,6 +18,8 @@ import { VitalCard } from '@/components/vital-card'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
+
+import { RefreshButton } from './refresh-button'
 
 export const revalidate = 600
 
@@ -88,6 +89,7 @@ export default async function MUDetailPage({ params }: PageProps) {
             style={{ boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)' }}
           />
         )}
+        aside={<RefreshButton muId={mu.id} lastRefreshedAt={mu.lastRefreshedAt} />}
       >
         <FactRow>
           <CountryCell countryCode={mu.countryCode} countryName={mu.countryName} countryId={mu.countryId} />
@@ -100,16 +102,6 @@ export default async function MUDetailPage({ params }: PageProps) {
           <TierBadge tier={mu.damageTier} />
           <ExternalLink href={wareraUrl('mu', mu.id)}>WarEra.io</ExternalLink>
         </FactRow>
-        {(mu.avgHealth != null || mu.avgHunger != null) && (
-          <FactRow muted>
-            {mu.avgHealth != null && (
-              <span className="inline-flex items-center gap-1.5">Avg health <PercentBar value={mu.avgHealth} /></span>
-            )}
-            {mu.avgHunger != null && (
-              <span className="inline-flex items-center gap-1.5">Avg hunger <PercentBar value={mu.avgHunger} /></span>
-            )}
-          </FactRow>
-        )}
         {mu.leaderName && (
           <FactRow muted>
             <span className="inline-flex items-center gap-2">
@@ -133,7 +125,7 @@ export default async function MUDetailPage({ params }: PageProps) {
       />
 
       <StatCardGrid>
-        <CombatPillCard mix={mu.combatPill} />
+        <ReadinessPillCard mix={mu.readinessPill} />
         <VitalCard kind="health" value={mu.avgHealth} rank={mu.avgHealthRank} total={total} />
         <VitalCard kind="hunger" value={mu.avgHunger} rank={mu.avgHungerRank} total={total} />
         <StatCard label="Members" value={mu.memberCount} range={ranges.memberCount} heat="ramp" rank={mu.memberCountRank} total={total} />

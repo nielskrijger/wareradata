@@ -4,7 +4,7 @@ import type { CountryRow } from '@/lib/rows'
 import { withActiveBattleCounts } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyStructuredQuery, parseQuery } from '@/lib/query'
-import { combatBuffPct } from '@/lib/rows'
+import { readinessScore } from '@/lib/rows'
 import { RANKING_TIERS } from '@/lib/warera/api'
 
 /**
@@ -46,7 +46,6 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'avgHunger': return row.avgHunger
     case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
-    case 'combatBuffPct': return combatBuffPct(row.combatPill)
     case 'bounty': return row.bounty
     case 'code': return row.code
     case 'damageRank': return row.damageRank
@@ -61,6 +60,7 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'premiumGiftsTotal': return row.premiumGiftsTotal
     case 'premiumMonthsTotal': return row.premiumMonthsTotal
     case 'productionBonus': return row.productionBonus
+    case 'readinessScore': return readinessScore(row.readinessPill)
     case 'specializedItem': return row.specializedItem
     case 'taxIncome': return row.taxIncome
     case 'taxMarket': return row.taxMarket

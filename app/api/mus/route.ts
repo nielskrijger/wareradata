@@ -3,7 +3,7 @@ import type { MURow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyStructuredQuery, parseQuery } from '@/lib/query'
-import { combatBuffPct } from '@/lib/rows'
+import { readinessScore } from '@/lib/rows'
 import { RANKING_TIERS } from '@/lib/warera/api'
 
 /**
@@ -42,7 +42,6 @@ function muSortValue(row: MURow, sort: string): number | string | null {
     case 'avgHunger': return row.avgHunger
     case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
-    case 'combatBuffPct': return combatBuffPct(row.combatPill)
     case 'bounty': return row.bounty
     case 'countryName': return row.countryName?.toLowerCase() ?? null
     case 'damageRank': return row.damageRank
@@ -56,6 +55,7 @@ function muSortValue(row: MURow, sort: string): number | string | null {
     case 'name': return row.name.toLowerCase()
     case 'premiumGiftsTotal': return row.premiumGiftsTotal
     case 'premiumMonthsTotal': return row.premiumMonthsTotal
+    case 'readinessScore': return readinessScore(row.readinessPill)
     case 'regionName': return row.regionName?.toLowerCase() ?? null
     case 'reputation': return row.reputation
     case 'terrain': return row.terrain

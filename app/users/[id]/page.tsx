@@ -3,21 +3,22 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Avatar } from '@/components/avatar'
-import { CombatStatusBadge } from '@/components/combat-status-badge'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
 import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
-import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
+import { ReadinessBadge } from '@/components/readiness-badge'
+import { RelativeTime } from '@/components/relative-time'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
+import { VitalCard } from '@/components/vital-card'
 import { getSnapshot } from '@/lib/cache/memory'
-import { EMPTY, formatRelativeTime } from '@/lib/format'
+import { EMPTY } from '@/lib/format'
 import { applyQuery } from '@/lib/query'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -95,15 +96,11 @@ export default async function UserDetailPage({ params }: PageProps) {
           )}
           <ExternalLink href={wareraUrl('user', user.id)}>WarEra.io</ExternalLink>
         </FactRow>
-        <FactRow muted>
-          {user.healthPercent != null && (
-            <span className="inline-flex items-center gap-1.5">Health <PercentBar value={user.healthPercent} /></span>
-          )}
-          {user.hungerPercent != null && (
-            <span className="inline-flex items-center gap-1.5">Hunger <PercentBar value={user.hungerPercent} /></span>
-          )}
-          {user.combatStatus != null && <CombatStatusBadge status={user.combatStatus} />}
-        </FactRow>
+        {user.readinessStatus != null && (
+          <FactRow muted>
+            <ReadinessBadge status={user.readinessStatus} />
+          </FactRow>
+        )}
         <FactRow muted>
           {user.muName && (
             <span className="inline-flex items-center gap-1">MU <MUCell muName={user.muName} muId={user.muId} /></span>
@@ -112,7 +109,7 @@ export default async function UserDetailPage({ params }: PageProps) {
             <span className="inline-flex max-w-[16rem] items-center gap-1">Party <PartyCell partyName={user.partyName} partyId={user.partyId} /></span>
           )}
           <span>Joined {user.createdAt?.slice(0, 10) ?? EMPTY}</span>
-          <span>Last seen {formatRelativeTime(user.lastConnectionAt)}</span>
+          <span>Last seen <RelativeTime iso={user.lastConnectionAt} /></span>
         </FactRow>
       </DetailHeader>
 
@@ -125,6 +122,8 @@ export default async function UserDetailPage({ params }: PageProps) {
       />
 
       <StatCardGrid>
+        <VitalCard kind="health" label="Health" value={user.healthPercent} />
+        <VitalCard kind="hunger" label="Hunger" value={user.hungerPercent} />
         <StatCard label="Level" value={user.level} range={ranges.level} heat="median" rank={user.levelRank} total={total} />
         <StatCard label="Total Damage" value={user.damage} display={<CompactNumber value={user.damage} />} range={ranges.damage} heat="median" rank={user.damageRank} total={total} />
         <StatCard label="Weekly Damage" value={user.weeklyDamage} display={<CompactNumber value={user.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={user.weeklyDamageRank} total={total} />

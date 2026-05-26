@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { MU } from '@/lib/warera/api'
 
 import { assignRank, toTier } from '@/lib/rows/lookups'
-import { aggCombatPill, aggMean, aggregateMembers } from '@/lib/rows/member-agg'
+import { aggMean, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): MURow[] {
   const membersByMu = aggregateMembers(userRows, u => u.muId)
@@ -39,7 +39,6 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         avgPointsRank: null,
         bounty: r?.muBounty?.value ?? null,
         bountyRank: null,
-        combatPill: aggCombatPill(agg),
         countryCode: country?.code ?? null,
         countryId: region?.initialCountry ?? null,
         countryName: country?.name ?? null,
@@ -56,6 +55,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         id: m._id,
         investedMoney,
         investedMoneyRank: null,
+        lastRefreshedAt: m.lastRefreshedAt ?? null,
         leaderAvatarUrl,
         leaderColorScheme,
         leaderId,
@@ -68,6 +68,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         premiumGiftsTotalRank: null,
         premiumMonthsTotal: agg?.premiumMonthsTotal ?? 0,
         premiumMonthsTotalRank: null,
+        readinessPill: aggReadinessPill(agg),
         regionName: region?.name ?? null,
         reputation: r?.muReputation?.value ?? null,
         reputationRank: null,

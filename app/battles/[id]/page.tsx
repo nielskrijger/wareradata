@@ -11,10 +11,10 @@ import { CompactNumber } from '@/components/compact-number'
 import { ExternalLink } from '@/components/external-link'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/internal-link'
+import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
-import { formatRelativeTime } from '@/lib/format'
 
 // Active battles are fetched live (60s cache), so this page can't be static.
 export const dynamic = 'force-dynamic'
@@ -148,7 +148,7 @@ export default async function BattleDetailPage({ params }: PageProps) {
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm">
           {b.isActive
             ? <Badge variant="ghost" className="text-fire">Active</Badge>
-            : <span className="text-muted-foreground">Ended {formatRelativeTime(b.endedAt)}</span>}
+            : <span className="text-muted-foreground">Ended <RelativeTime iso={b.endedAt} /></span>}
           {b.regionName && (
             <span className="text-muted-foreground">
               Region

@@ -8,6 +8,9 @@ interface Props {
   kind: 'health' | 'hunger'
   // 0-100 average across the entity's members; null renders nothing.
   value: number | null
+  // Overrides the default label (e.g. "Health" for a single player, where the
+  // value isn't an average).
+  label?: string
   // Leaderboard position for this stat, shown as "#rank of total".
   rank?: number | null
   total?: number
@@ -24,12 +27,13 @@ const META: Record<Props['kind'], { label: string, icon: ReactNode }> = {
  * shifts red->green with the value so condition reads at a glance. Renders
  * nothing when the value is null (no member readings).
  */
-export function VitalCard({ kind, value, rank, total }: Props) {
+export function VitalCard({ kind, value, label, rank, total }: Props) {
   if (value == null) {
     return null
   }
   const color = heatColor(value)
-  const { label, icon } = META[kind]
+  const meta = META[kind]
+  const text = label ?? meta.label
   return (
     <div
       className="flex flex-col gap-1 rounded-md border p-3"
@@ -40,8 +44,8 @@ export function VitalCard({ kind, value, rank, total }: Props) {
     >
       <div className="flex items-baseline justify-between">
         <span className="inline-flex items-center gap-1 text-base font-medium" style={{ color }}>
-          {icon}
-          {label}
+          {meta.icon}
+          {text}
         </span>
         <span className="text-2xl tabular-nums" style={{ color }}>
           {value}

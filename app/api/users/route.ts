@@ -20,7 +20,7 @@ const userFieldAliases: FieldAliases = {
   ppd: 'pointsPerDay',
   health: 'healthPercent',
   hunger: 'hungerPercent',
-  status: 'combatStatus',
+  status: 'readinessStatus',
 }
 
 /**
@@ -65,7 +65,7 @@ function userSortValue(row: UserRow, sort: string): number | string | null {
     case 'pointsPerDay': return row.pointsPerDay
     case 'healthPercent': return row.healthPercent
     case 'hungerPercent': return row.hungerPercent
-    case 'combatStatus': return row.combatStatus
+    case 'readinessStatus': return row.readinessStatus
     default: return row.levelRank
   }
 }

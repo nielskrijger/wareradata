@@ -4,7 +4,6 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { UserRow } from '@/lib/rows'
 
-import { CombatStatusBadge } from '@/components/combat-status-badge'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
@@ -13,10 +12,11 @@ import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
 import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
+import { ReadinessBadge } from '@/components/readiness-badge'
+import { RelativeTime } from '@/components/relative-time'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
 import { UserNameCell } from '@/components/user-name-cell'
-import { formatRelativeTime } from '@/lib/format'
 import { wareraUrl } from '@/lib/warera/urls'
 
 export type { UserRow }
@@ -76,9 +76,9 @@ export const userColumns: ColumnDef<UserRow>[] = [
     meta: { width: 120 },
   },
   {
-    accessorKey: 'combatStatus',
+    accessorKey: 'readinessStatus',
     header: 'Status',
-    cell: ({ row }) => <CombatStatusBadge status={row.original.combatStatus} />,
+    cell: ({ row }) => <ReadinessBadge status={row.original.readinessStatus} />,
     meta: { width: 100 },
   },
   {
@@ -165,7 +165,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
     accessorKey: 'lastConnectionAt',
     header: 'Last seen',
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{formatRelativeTime(row.original.lastConnectionAt)}</span>
+      <RelativeTime iso={row.original.lastConnectionAt} className="text-muted-foreground" />
     ),
     sortDescFirst: true,
     meta: { width: 110 },

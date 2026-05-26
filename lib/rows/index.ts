@@ -11,7 +11,6 @@ export interface UserRow {
   bountyRank: number | null
   casesOpened: number | null
   casesOpenedRank: number | null
-  combatStatus: 'buff' | 'debuff' | 'neither' | null
   countryCode: string | null
   countryId: string
   countryName: string | null
@@ -45,6 +44,7 @@ export interface UserRow {
   premiumGiftsRank: number | null
   premiumMonths: number | null
   premiumMonthsRank: number | null
+  readinessStatus: 'buff' | 'debuff' | 'neither' | null
   referrals: number | null
   referralsRank: number | null
   terrain: number | null
@@ -73,23 +73,25 @@ export interface ActiveBattleSummary {
 }
 
 /**
- * Member counts by combat status (buff / ready / debuff) for an entity, used by
- * the CombatPillBar. Excludes members with an unknown status, so the three need
- * not sum to the member count.
+ * Member counts by readiness status (buff / ready / debuff) for an entity, used
+ * by the ReadinessPillBar. Excludes members with an unknown status, so the three
+ * need not sum to the member count.
  */
-export interface CombatPill {
+export interface ReadinessPill {
   buff: number
   ready: number
   debuff: number
 }
 
 /**
- * Share of an entity's classified members that are buffed (0-100), or null when
- * none have a known status. Used as the sort key for the combat-pill column.
+ * Mean readiness of an entity's classified members on a buff +1 / ready 0 /
+ * debuff -1 scale, so the value ranges -1 (all debuffed) to +1 (all buffed) and
+ * is comparable across entities of different sizes. Null when no member has a
+ * known status. The sort key for the readiness column.
  */
-export function combatBuffPct(mix: CombatPill): number | null {
+export function readinessScore(mix: ReadinessPill): number | null {
   const total = mix.buff + mix.ready + mix.debuff
-  return total > 0 ? Math.round((mix.buff / total) * 100) : null
+  return total > 0 ? (mix.buff - mix.debuff) / total : null
 }
 
 /**
@@ -117,7 +119,6 @@ export interface CountryRow {
   bounty: number | null
   bountyRank: number | null
   code: string
-  combatPill: CombatPill
   damageRank: number | null
   damageTier: RankingTier | null
   damage: number | null
@@ -141,6 +142,7 @@ export interface CountryRow {
   premiumMonthsTotalRank: number | null
   productionBonus: number | null
   productionBonusRank: number | null
+  readinessPill: ReadinessPill
   specializedItem: string | null
   taxIncome: number | null
   taxMarket: number | null
@@ -174,7 +176,6 @@ export interface MURow {
   avgPointsRank: number | null
   bounty: number | null
   bountyRank: number | null
-  combatPill: CombatPill
   countryCode: string | null
   countryId: string | null
   countryName: string | null
@@ -191,6 +192,7 @@ export interface MURow {
   id: string
   investedMoney: number
   investedMoneyRank: number | null
+  lastRefreshedAt: string | null
   leaderAvatarUrl: string | null
   leaderColorScheme: string | null
   leaderId: string | null
@@ -203,6 +205,7 @@ export interface MURow {
   premiumGiftsTotalRank: number | null
   premiumMonthsTotal: number
   premiumMonthsTotalRank: number | null
+  readinessPill: ReadinessPill
   regionName: string | null
   reputation: number | null
   reputationRank: number | null

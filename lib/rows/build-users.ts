@@ -29,7 +29,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
       const skills = u.skills
       const healthPercent = barPercent(skills?.health)
       const hungerPercent = barPercent(skills?.hunger)
-      const combatStatus = toCombatStatus(skills?.attack)
+      const readinessStatus = toReadinessStatus(skills?.attack)
 
       return {
         avatarUrl: u.avatarUrl ?? null,
@@ -37,7 +37,6 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         bountyRank: null,
         casesOpened: r?.userCasesOpened?.value ?? null,
         casesOpenedRank: null,
-        combatStatus,
         countryCode: country?.code ?? null,
         countryId: u.country,
         countryName: country?.name ?? null,
@@ -71,6 +70,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
         premiumGiftsRank: null,
         premiumMonths: r?.userPremiumMonths?.value ?? null,
         premiumMonthsRank: null,
+        readinessStatus,
         referrals: r?.userReferrals?.value ?? null,
         referralsRank: null,
         terrain: r?.userTerrain?.value ?? null,
@@ -117,11 +117,11 @@ function barPercent(bar: { currentBarValue?: number, total?: number } | undefine
 }
 
 /**
- * Net combat status from the attack skill's buff / debuff percentages: 'buff'
+ * Net readiness status from the attack skill's buff / debuff percentages: 'buff'
  * when buffed more than debuffed, 'debuff' when the reverse, 'neither' when
  * they're equal (typically both zero). Null when the attack data is missing.
  */
-function toCombatStatus(
+function toReadinessStatus(
   attack: { buffsPercent?: number, debuffsPercent?: number } | undefined,
 ): 'buff' | 'debuff' | 'neither' | null {
   if (!attack) {

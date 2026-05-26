@@ -4,14 +4,15 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { MURow } from '@/lib/rows'
 
-import { CombatPillBar } from '@/components/combat-pill-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
 import { MUCell } from '@/components/mu-cell'
 import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
+import { ReadinessPillBar } from '@/components/readiness-pill-bar'
 import { TierBadge } from '@/components/tier-badge'
+import { readinessScore } from '@/lib/rows'
 import { wareraUrl } from '@/lib/warera/urls'
 
 export type { MURow }
@@ -75,9 +76,12 @@ export const muColumns: ColumnDef<MURow>[] = [
     meta: { width: 130 },
   },
   {
-    id: 'combatBuffPct',
-    header: 'Combat',
-    cell: ({ row }) => <CombatPillBar mix={row.original.combatPill} />,
+    id: 'readinessScore',
+    header: 'Readiness',
+    // accessorFn enables the sortable header; the actual ordering is done
+    // server-side (manualSorting) via the matching `readinessScore` sort case.
+    accessorFn: row => readinessScore(row.readinessPill),
+    cell: ({ row }) => <ReadinessPillBar mix={row.original.readinessPill} />,
     sortDescFirst: true,
     sortUndefined: 'last',
     meta: { width: 120 },

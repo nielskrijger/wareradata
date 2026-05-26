@@ -3,13 +3,12 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { BattleCountBadge } from '@/components/battle-count-badge'
-import { CombatPillCard } from '@/components/combat-pill-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
 import { Flag } from '@/components/flag'
-import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
+import { ReadinessPillCard } from '@/components/readiness-pill-bar'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
@@ -132,16 +131,6 @@ export default async function CountryDetailPage({ params }: PageProps) {
           <BattleCountBadge count={battlePage.total} />
           <ExternalLink href={wareraUrl('country', c.id)}>WarEra.io</ExternalLink>
         </FactRow>
-        {(c.avgHealth != null || c.avgHunger != null) && (
-          <FactRow muted>
-            {c.avgHealth != null && (
-              <span className="inline-flex items-center gap-1.5">Avg health <PercentBar value={c.avgHealth} /></span>
-            )}
-            {c.avgHunger != null && (
-              <span className="inline-flex items-center gap-1.5">Avg hunger <PercentBar value={c.avgHunger} /></span>
-            )}
-          </FactRow>
-        )}
       </DetailHeader>
 
       <PointsBreakdownPanel
@@ -152,7 +141,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
       />
 
       <StatCardGrid>
-        <CombatPillCard mix={c.combatPill} />
+        <ReadinessPillCard mix={c.readinessPill} />
         <VitalCard kind="health" value={c.avgHealth} rank={c.avgHealthRank} total={total} />
         <VitalCard kind="hunger" value={c.avgHunger} rank={c.avgHungerRank} total={total} />
         <StatCard label="Active Pop." value={c.activePopulation} range={ranges.activePopulation} heat="ramp" rank={c.activePopulationRank} total={total} />

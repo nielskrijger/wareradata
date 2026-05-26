@@ -8,11 +8,11 @@ interface Props {
 }
 
 /**
- * Combat-status pill from a user's attack buffs/debuffs: green "Buff" (net
- * attack bonus), red "Debuff" (net penalty), or a muted "Ready" when neither is
- * active (baseline, free to take a buff). Renders an em-dash when unknown.
+ * Readiness pill from a user's attack buffs/debuffs: green "Buff" (net attack
+ * bonus), red "Debuff" (net penalty), or a muted "Ready" when neither is active
+ * (baseline, free to take a buff). Renders an em-dash when unknown.
  */
-export function CombatStatusBadge({ status }: Props) {
+export function ReadinessBadge({ status }: Props) {
   if (status == null) {
     return <EmptyDash />
   }

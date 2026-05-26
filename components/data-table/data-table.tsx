@@ -9,7 +9,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { ChevronDown, X } from 'lucide-react'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { Suspense, useEffect, useRef, useState, useTransition } from 'react'
 
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
@@ -114,7 +114,21 @@ interface DataTableProps<TData, TValue> {
   searchHint?: ReactNode
 }
 
-export function DataTable<TData, TValue>({
+/**
+ * Wraps the table in a Suspense boundary because the inner component reads URL
+ * search params (via nuqs `useTableUrlState` -> `useSearchParams`). Next
+ * requires that boundary so a statically prerendered list page (those with
+ * `revalidate`, e.g. /users, /parties) doesn't bail out of CSR.
+ */
+export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
+  return (
+    <Suspense>
+      <DataTableInner {...props} />
+    </Suspense>
+  )
+}
+
+function DataTableInner<TData, TValue>({
   columns,
   initialData,
   initialSort,

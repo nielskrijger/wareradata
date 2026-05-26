@@ -104,7 +104,13 @@ export async function initSnapshot(): Promise<void> {
   if (s.current) {
     return
   }
-  s.current = buildSnapshot((await readRawSnapshot()) ?? emptyRawSnapshot())
+  console.info('[snapshot] boot: loading persisted snapshot from disk')
+  const raw = await readRawSnapshot()
+  if (!raw) {
+    console.info('[snapshot] boot: no persisted data, starting empty until the scraper completes its first cycle')
+  }
+  s.current = buildSnapshot(raw ?? emptyRawSnapshot())
+  console.info(`[snapshot] boot: ready with ${s.current.users.length} users`)
 }
 
 /**

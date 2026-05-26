@@ -80,16 +80,25 @@ export function emptyRawSnapshot(): RawSnapshot {
  * not silently degrade to empty.
  */
 export async function readRawSnapshot(): Promise<RawSnapshot | null> {
+  const path = snapshotPath()
+  const start = Date.now()
   let raw: string
   try {
-    raw = await readFile(snapshotPath(), 'utf8')
+    raw = await readFile(path, 'utf8')
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+      console.info(`[file-store] no snapshot at ${path} yet (cold volume)`)
       return null
     }
     throw err
   }
-  return JSON.parse(raw) as RawSnapshot
+  const readMs = Date.now() - start
+  const parsed = JSON.parse(raw) as RawSnapshot
+  const sizeMb = (raw.length / 1_000_000).toFixed(1)
+  console.info(
+    `[file-store] read snapshot from ${path}: ${sizeMb}MB, ${parsed.users?.length ?? 0} users in ${readMs}ms`,
+  )
+  return parsed
 }
 
 /**

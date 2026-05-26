@@ -7,7 +7,10 @@ import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 
 import { PartiesTable } from './parties-table'
 
-export const revalidate = 600
+// Reads are served from the warm in-memory snapshot (sub-ms), so there is no
+// caching win from ISR; force-dynamic avoids serving a cached "no data" page
+// from the window between boot and the scraper's first cycle.
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Parties',

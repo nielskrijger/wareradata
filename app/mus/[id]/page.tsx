@@ -21,7 +21,9 @@ import { wareraUrl } from '@/lib/warera/urls'
 
 import { RefreshButton } from './refresh-button'
 
-export const revalidate = 600
+// Served from the warm in-memory snapshot (sub-ms). force-dynamic, not ISR, so
+// a request that lands before the scraper's first cycle can't cache a notFound.
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>

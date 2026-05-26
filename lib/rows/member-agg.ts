@@ -1,6 +1,6 @@
 import type { UserRow } from '@/lib/rows'
 
-export interface PointsAgg {
+export interface MemberAgg {
   buffCount: number
   count: number
   damage: number
@@ -20,7 +20,7 @@ export interface PointsAgg {
   wealth: number
 }
 
-function emptyAgg(): PointsAgg {
+function emptyAgg(): MemberAgg {
   return {
     buffCount: 0,
     count: 0,
@@ -49,13 +49,14 @@ function emptyAgg(): PointsAgg {
  *
  * Aggregates kept in one helper so callers do a single pass: points sums
  * (level / damage / wealth / total), member count, premium spend totals
- * (gems / months / gifts), and a level sum + count for avg-level derivation.
+ * (gems / months / gifts), level / health / hunger sums + counts for averages,
+ * and buff / ready / debuff counts for the combat pill.
  */
-export function aggregatePoints(
+export function aggregateMembers(
   userRows: UserRow[],
   keyFor: (u: UserRow) => string | null,
-): Map<string, PointsAgg> {
-  const out = new Map<string, PointsAgg>()
+): Map<string, MemberAgg> {
+  const out = new Map<string, MemberAgg>()
   for (const u of userRows) {
     const key = keyFor(u)
     if (!key) {
@@ -97,7 +98,7 @@ export function aggregatePoints(
 }
 
 /**
- * Rounded mean of a sum/count pair from a {@link PointsAgg}, or null when the
+ * Rounded mean of a sum/count pair from a {@link MemberAgg}, or null when the
  * count is zero. Used to derive average health/hunger (and similar) percentages
  * across an entity's members without re-walking the user list.
  */
@@ -107,10 +108,10 @@ export function aggMean(sum: number, count: number): number | null {
 
 /**
  * Combat-status mix (buff / ready / debuff member counts) from a
- * {@link PointsAgg}, or all-zero when the agg is missing. Feeds the
- * CombatMixBar on country / MU rows.
+ * {@link MemberAgg}, or all-zero when the agg is missing. Feeds the
+ * CombatPillBar on country / MU rows.
  */
-export function aggCombatMix(agg: PointsAgg | undefined): { buff: number, ready: number, debuff: number } {
+export function aggCombatPill(agg: MemberAgg | undefined): { buff: number, ready: number, debuff: number } {
   return {
     buff: agg?.buffCount ?? 0,
     ready: agg?.readyCount ?? 0,

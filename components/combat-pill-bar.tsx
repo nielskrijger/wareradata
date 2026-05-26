@@ -1,10 +1,14 @@
-import type { CombatMix } from '@/lib/rows'
+import type { ReactNode } from 'react'
+
+import type { CombatPill } from '@/lib/rows'
+
+import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
 import { EmptyDash } from '@/components/empty-dash'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
-  mix: CombatMix
+  mix: CombatPill
   // Bar track width. Defaults to 96px (a touch wider than the 64px health/
   // hunger bars, since this packs three segments).
   width?: number
@@ -47,7 +51,7 @@ function BreakdownRow({ label, n, total, color }: { label: string, n: number, to
  * are split by a hairline seam so the green/sky boundary stays legible. Renders
  * an em-dash when no member has a known status.
  */
-export function CombatMixBar({ mix, width = 96 }: Props) {
+export function CombatPillBar({ mix, width = 96 }: Props) {
   const total = mix.buff + mix.ready + mix.debuff
   if (total === 0) {
     return <EmptyDash />
@@ -71,5 +75,44 @@ export function CombatMixBar({ mix, width = 96 }: Props) {
         </div>
       </TooltipContent>
     </Tooltip>
+  )
+}
+
+function CardRow({ icon, label, n, total, color }: { icon: ReactNode, label: string, n: number, total: number, color: string }) {
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <span className="inline-flex w-16 items-center gap-1" style={{ color }}>
+        {icon}
+        {label}
+      </span>
+      <div className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full">
+        <div className="h-full rounded-full" style={{ width: `${pct(n, total)}%`, backgroundColor: color }} />
+      </div>
+      <span className="text-muted-foreground w-12 text-right tabular-nums">
+        {n}
+      </span>
+    </div>
+  )
+}
+
+/**
+ * Detail-page card form of the combat mix: an icon-led breakdown (buff up /
+ * ready dash / debuff down) with a per-state bar and member count. Spans two
+ * StatCard columns. Renders nothing when no member has a known status.
+ */
+export function CombatPillCard({ mix }: { mix: CombatPill }) {
+  const total = mix.buff + mix.ready + mix.debuff
+  if (total === 0) {
+    return null
+  }
+  return (
+    <div className="bg-card col-span-2 flex flex-col gap-2 rounded-md border p-3">
+      <span className="text-xs font-medium">Combat status</span>
+      <div className="flex flex-col gap-1.5">
+        <CardRow icon={<ArrowUp className="size-3.5" />} label="Buff" n={mix.buff} total={total} color={GREEN} />
+        <CardRow icon={<Minus className="size-3.5" />} label="Ready" n={mix.ready} total={total} color={SKY} />
+        <CardRow icon={<ArrowDown className="size-3.5" />} label="Debuff" n={mix.debuff} total={total} color={RED} />
+      </div>
+    </div>
   )
 }

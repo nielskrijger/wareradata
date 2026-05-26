@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { BattleCountBadge } from '@/components/battle-count-badge'
-import { CombatMixBar } from '@/components/combat-mix-bar'
+import { CombatPillCard } from '@/components/combat-pill-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { DetailHeader, FactRow } from '@/components/detail-header'
 import { ExternalLink } from '@/components/external-link'
@@ -139,7 +139,6 @@ export default async function CountryDetailPage({ params }: PageProps) {
             {c.avgHunger != null && (
               <span className="inline-flex items-center gap-1.5">Avg hunger <PercentBar value={c.avgHunger} /></span>
             )}
-            <span className="inline-flex items-center gap-1.5">Combat <CombatMixBar mix={c.combatMix} /></span>
           </FactRow>
         )}
       </DetailHeader>
@@ -152,6 +151,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
       />
 
       <StatCardGrid>
+        <CombatPillCard mix={c.combatPill} />
         <StatCard label="Active Pop." value={c.activePopulation} range={ranges.activePopulation} heat="ramp" rank={c.activePopulationRank} total={total} />
         <StatCard label="Avg Level" value={c.avgLevel} range={ranges.avgLevel} heat="median" rank={c.avgLevelRank} total={total} />
         <StatCard label="Avg Health" value={c.avgHealth} display={c.avgHealth != null ? `${c.avgHealth}%` : undefined} range={ranges.avgHealth} heat="ramp" rank={c.avgHealthRank} total={total} />

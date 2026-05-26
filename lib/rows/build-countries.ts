@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Country, MU } from '@/lib/warera/api'
 
 import { assignRank, toTier } from '@/lib/rows/lookups'
-import { aggCombatMix, aggMean, aggregatePoints } from '@/lib/rows/points-agg'
+import { aggCombatPill, aggMean, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildCountryRows(
   countries: Country[],
@@ -11,12 +11,12 @@ export function buildCountryRows(
   userRows: UserRow[],
   lookups: Lookups,
 ): CountryRow[] {
-  const pointsByCountry = aggregatePoints(userRows, u => u.countryId)
+  const membersByCountry = aggregateMembers(userRows, u => u.countryId)
   const musCountByCountry = countMusByCountry(mus, lookups)
 
   const rows = countries
     .map((c) => {
-      const agg = pointsByCountry.get(c._id)
+      const agg = membersByCountry.get(c._id)
       const r = c.rankings
       const unrestPercent = c.unrest?.barMax
         ? ((c.unrest.bar ?? 0) / c.unrest.barMax) * 100
@@ -40,7 +40,7 @@ export function buildCountryRows(
         bounty: r?.countryBounty?.value ?? null,
         bountyRank: null,
         code: c.code,
-        combatMix: aggCombatMix(agg),
+        combatPill: aggCombatPill(agg),
         damagePoints: agg?.damage ?? 0,
         damageRank: null,
         damageTier: toTier(r?.countryDamages?.tier),

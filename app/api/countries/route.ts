@@ -46,7 +46,7 @@ function countrySortValue(row: CountryRow, sort: string): number | string | null
     case 'avgHunger': return row.avgHunger
     case 'avgLevel': return row.avgLevel
     case 'avgPoints': return row.avgPoints
-    case 'combatBuffPct': return combatBuffPct(row.combatMix)
+    case 'combatBuffPct': return combatBuffPct(row.combatPill)
     case 'bounty': return row.bounty
     case 'code': return row.code
     case 'damageRank': return row.damageRank

@@ -3,14 +3,14 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { MU } from '@/lib/warera/api'
 
 import { assignRank, toTier } from '@/lib/rows/lookups'
-import { aggCombatMix, aggMean, aggregatePoints } from '@/lib/rows/points-agg'
+import { aggCombatPill, aggMean, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): MURow[] {
-  const pointsByMu = aggregatePoints(userRows, u => u.muId)
+  const membersByMu = aggregateMembers(userRows, u => u.muId)
 
   const rows = mus
     .map((m) => {
-      const agg = pointsByMu.get(m._id)
+      const agg = membersByMu.get(m._id)
       const r = m.rankings
       const investedMoney = m.investedMoneyByUsers
         ? Object.values(m.investedMoneyByUsers).reduce((sum, n) => sum + n, 0)
@@ -39,7 +39,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         avgPointsRank: null,
         bounty: r?.muBounty?.value ?? null,
         bountyRank: null,
-        combatMix: aggCombatMix(agg),
+        combatPill: aggCombatPill(agg),
         countryCode: country?.code ?? null,
         countryId: region?.initialCountry ?? null,
         countryName: country?.name ?? null,

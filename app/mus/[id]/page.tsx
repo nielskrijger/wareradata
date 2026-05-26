@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
-import { CombatMixBar } from '@/components/combat-mix-bar'
+import { CombatPillCard } from '@/components/combat-pill-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
@@ -107,7 +107,6 @@ export default async function MUDetailPage({ params }: PageProps) {
             {mu.avgHunger != null && (
               <span className="inline-flex items-center gap-1.5">Avg hunger <PercentBar value={mu.avgHunger} /></span>
             )}
-            <span className="inline-flex items-center gap-1.5">Combat <CombatMixBar mix={mu.combatMix} /></span>
           </FactRow>
         )}
         {mu.leaderName && (
@@ -133,6 +132,7 @@ export default async function MUDetailPage({ params }: PageProps) {
       />
 
       <StatCardGrid>
+        <CombatPillCard mix={mu.combatPill} />
         <StatCard label="Members" value={mu.memberCount} range={ranges.memberCount} heat="ramp" rank={mu.memberCountRank} total={total} />
         <StatCard label="Avg Level" value={mu.avgLevel} range={ranges.avgLevel} heat="median" rank={mu.avgLevelRank} total={total} />
         <StatCard label="Avg Health" value={mu.avgHealth} display={mu.avgHealth != null ? `${mu.avgHealth}%` : undefined} range={ranges.avgHealth} heat="ramp" rank={mu.avgHealthRank} total={total} />

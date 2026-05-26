@@ -3,16 +3,16 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Party } from '@/lib/warera/api'
 
 import { assignRank } from '@/lib/rows/lookups'
-import { aggregatePoints } from '@/lib/rows/points-agg'
+import { aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: Lookups): PartyRow[] {
   // partyByUser is built once in buildLookups (also consumed by buildUserRows
   // to set partyId/partyName on each user row).
-  const pointsByParty = aggregatePoints(userRows, u => lookups.partyByUser.get(u.id)?.id ?? null)
+  const membersByParty = aggregateMembers(userRows, u => lookups.partyByUser.get(u.id)?.id ?? null)
 
   const rows = parties
     .map((p) => {
-      const agg = pointsByParty.get(p._id)
+      const agg = membersByParty.get(p._id)
       const country = p.country ? lookups.countryById.get(p.country) : undefined
       const leaderName = p.leader ? lookups.userNameById.get(p.leader) ?? null : null
       const leaderAvatarUrl = p.leader ? lookups.userAvatarById.get(p.leader) ?? null : null

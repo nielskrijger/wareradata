@@ -4,7 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { CountryRow } from '@/lib/rows'
 
-import { CombatMixBar } from '@/components/combat-mix-bar'
+import { CombatPillBar } from '@/components/combat-pill-bar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { ExternalLink } from '@/components/external-link'
@@ -78,7 +78,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   {
     id: 'combatBuffPct',
     header: 'Combat',
-    cell: ({ row }) => <CombatMixBar mix={row.original.combatMix} />,
+    cell: ({ row }) => <CombatPillBar mix={row.original.combatPill} />,
     sortDescFirst: true,
     sortUndefined: 'last',
     meta: { width: 120 },

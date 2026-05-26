@@ -1,6 +1,7 @@
 import type { SnapshotMeta } from './api'
+import type { RawSnapshot } from '@/lib/cache/file-store'
 
-import { writeSnapshot, writeUsersSharded } from '@/lib/cache/snapshot'
+import { writeRawSnapshot } from '@/lib/cache/file-store'
 
 import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getTournamentInfo, getUserIdsForCountry, getUserLite } from './api'
 
@@ -33,44 +34,51 @@ async function mapWithConcurrency<T, R>(
   return results
 }
 
-export async function runFullScrape(): Promise<ScrapeResult> {
+/**
+ * Gathers the full dataset from the WarEra API and returns it in raw form. Runs
+ * on the scrape client, which has its own rate-limit budget separate from the
+ * urgent on-demand client, so the two never wait on each other.
+ */
+export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   const start = Date.now()
-  const opts = { noCache: true }
 
-  // 1. Countries — single call.
-  const countries = await getAllCountries(opts)
+  // 1. Countries: single call.
+  const countries = await getAllCountries()
   console.warn(`[scrape] fetched ${countries.length} countries`)
 
-  // 2. User IDs — paginate per country with bounded concurrency.
+  // 2. User IDs: paginate per country with bounded concurrency.
   const userIdLists = await mapWithConcurrency(
     countries.map(c => c._id),
     COUNTRY_PAGINATION_CONCURRENCY,
-    countryId => getUserIdsForCountry(countryId, opts),
+    countryId => getUserIdsForCountry(countryId),
   )
   const userIds = userIdLists.flat()
   console.warn(`[scrape] collected ${userIds.length} user ids across ${countries.length} countries`)
 
-  // 3. Hydrate users via tRPC batch (150 per request).
-  const users = await getUserLite(userIds, opts)
+  // 3. Hydrate users.
+  const users = await getUserLite(userIds)
   console.warn(`[scrape] hydrated ${users.length} users`)
 
-  // 4. MUs — single cursor-paginated stream.
-  const mus = await getAllMUs(opts)
+  // 4. MUs: single cursor-paginated stream. Stamp each with the capture time so
+  // the MU page can show data freshness; an on-demand refresh bumps it later.
+  const musRaw = await getAllMUs()
+  const capturedAt = new Date().toISOString()
+  const mus = musRaw.map(m => ({ ...m, lastRefreshedAt: capturedAt }))
   console.warn(`[scrape] fetched ${mus.length} MUs`)
 
-  // 5. Regions — single call, returns ~700 regions as an object.
-  const regions = await getAllRegions(opts)
+  // 5. Regions: single call, returns ~700 regions as an object.
+  const regions = await getAllRegions()
   console.warn(`[scrape] fetched ${regions.length} regions`)
 
-  // 6. Parties — single cursor-paginated stream (returns full party objects).
-  const parties = await getAllParties(opts)
+  // 6. Parties: single cursor-paginated stream.
+  const parties = await getAllParties()
   console.warn(`[scrape] fetched ${parties.length} parties`)
 
-  // 7. Battles — all active plus a recent window of finished ones.
-  const battles = await getAllBattles(opts)
+  // 7. Battles: all active plus a recent window of finished ones.
+  const battles = await getAllBattles()
   console.warn(`[scrape] fetched ${battles.length} battles`)
 
-  // 7b. Tournament teams — so tournament battles (team-vs-team, no country) can
+  // 7b. Tournament teams: so tournament battles (team-vs-team, no country) can
   // resolve each side to its MU. Stored as a serializable record (the live
   // shape uses a Map, which doesn't survive JSON).
   const tournament = await getTournamentInfo()
@@ -82,9 +90,8 @@ export async function runFullScrape(): Promise<ScrapeResult> {
   console.warn(`[scrape] fetched tournament "${tournament.name}" with ${tournament.teams.size} teams`)
 
   const durationMs = Date.now() - start
-  const scrapedAt = new Date().toISOString()
   const meta: SnapshotMeta = {
-    scrapedAt,
+    scrapedAt: new Date().toISOString(),
     entityCounts: {
       countries: countries.length,
       users: users.length,
@@ -96,29 +103,27 @@ export async function runFullScrape(): Promise<ScrapeResult> {
     scrapeDurationMs: durationMs,
   }
 
-  // 8. Write to Redis. Users are sharded (hashed by _id); everything else fits a single key.
-  await writeUsersSharded(users)
-  await Promise.all([
-    writeSnapshot('countries', countries),
-    writeSnapshot('mus', mus),
-    writeSnapshot('regions', regions),
-    writeSnapshot('parties', parties),
-    writeSnapshot('battles', battles),
-    writeSnapshot('tournament', tournamentSnapshot),
-    writeSnapshot('meta', meta),
-  ])
-  console.warn(`[scrape] wrote snapshot in ${durationMs}ms`)
+  return { users, countries, mus, regions, parties, battles, tournament: tournamentSnapshot, meta }
+}
 
-  return {
-    scrapedAt,
-    counts: {
-      countries: countries.length,
-      users: users.length,
-      mus: mus.length,
-      regions: regions.length,
-      parties: parties.length,
-      battles: battles.length,
-    },
-    durationMs,
+/**
+ * One-shot full scrape for the CLI (`npm run scrape`): gathers the dataset and
+ * writes it to the snapshot file, then returns counts. The in-server scraper
+ * uses {@link scrapeRawSnapshot} directly so it can also swap the in-memory
+ * snapshot and loop.
+ */
+export async function runFullScrape(): Promise<ScrapeResult> {
+  const raw = await scrapeRawSnapshot()
+  await writeRawSnapshot(raw)
+  console.warn(`[scrape] wrote snapshot in ${raw.meta.scrapeDurationMs}ms`)
+
+  const counts = {
+    countries: raw.countries.length,
+    users: raw.users.length,
+    mus: raw.mus.length,
+    regions: raw.regions.length,
+    parties: raw.parties.length,
+    battles: raw.battles.length,
   }
+  return { scrapedAt: raw.meta.scrapedAt!, counts, durationMs: raw.meta.scrapeDurationMs! }
 }

@@ -45,6 +45,11 @@ interface Props {
    * by the caller; the header just stacks them.
    */
   children: ReactNode
+  /**
+   * Optional control pinned to the bottom-right of the header, detached from the
+   * fact rows (e.g. an MU's "last refreshed / refresh" action).
+   */
+  aside?: ReactNode
 }
 
 /**
@@ -53,18 +58,21 @@ interface Props {
  * rows. The emblem and banner differ per entity (avatar+scheme vs flag+neutral)
  * so both are passed in.
  */
-export function DetailHeader({ emblem, title, bannerStyle, children }: Props) {
+export function DetailHeader({ emblem, title, bannerStyle, children, aside }: Props) {
   return (
     <div className="bg-card overflow-hidden rounded-md border">
       {bannerStyle
         ? <div className="h-14" style={bannerStyle} />
         : <div className="from-muted h-14 bg-gradient-to-r to-transparent" />}
-      <div className="flex flex-col items-start gap-3 px-4 pb-4">
-        {emblem}
-        <div className="space-y-1.5">
-          <h1 className="font-brand text-[28px] leading-none tracking-wide">{title}</h1>
-          {children}
+      <div className="flex items-end gap-3 px-4 pb-4">
+        <div className="flex min-w-0 flex-col items-start gap-3">
+          {emblem}
+          <div className="space-y-1.5">
+            <h1 className="font-brand text-[28px] leading-none tracking-wide">{title}</h1>
+            {children}
+          </div>
         </div>
+        {aside && <div className="ml-auto shrink-0">{aside}</div>}
       </div>
     </div>
   )

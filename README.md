@@ -11,67 +11,87 @@ This README is for operating the codebase, not for end-users of the site
 Prereqs:
 
 - Node 22+
-- Either your own Upstash Redis instance or the prod credentials (read
-  access is enough — pages just `GET` snapshot keys)
+- A `WARERA_API_KEY` (raises the request-rate tier)
 
 ```bash
 cp .env.example .env.local
-# fill in WARERA_API_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
+# fill in WARERA_API_KEY (DATA_DIR and SCRAPE_RATE_LIMIT have defaults)
 npm install
 npm run dev
 ```
 
-If Redis is empty (cold cache), pages render an "no data" state.
-Either point at a Redis that already has snapshots, or run a scrape
-locally: `npm run scrape`.
+The server runs the scraper in-process: on boot it loads the snapshot
+file (if present) and starts a continuous scrape loop. On a cold start
+with no `DATA_DIR/snapshot.json`, pages render a "no data" state until
+the first cycle completes (a few minutes). To seed the file once without
+running the server, use `npm run scrape`.
 
 ## The scraper
 
-[scripts/scrape.ts](scripts/scrape.ts) → [lib/warera/scrape.ts](lib/warera/scrape.ts)
-runs six phases sequentially via the
+The scraper runs **in-process** as a continuous loop, started from
+[instrumentation.ts](instrumentation.ts) on server boot. There are two
 [@wareraprojects/api](https://www.npmjs.com/package/@wareraprojects/api)
-tRPC client, which handles batching, rate limiting, and retries:
+clients, each with its own independent rate-limit budget so the two never
+wait on each other:
+
+- **scrape client** (`SCRAPE_RATE_LIMIT`, default 100/min): the continuous
+  full-scrape loop.
+- **urgent client** (`URGENT_RATE_LIMIT`, default 100/min): on-demand,
+  latency-sensitive traffic (piecemeal MU refreshes, live battles).
+
+The client handles tRPC batching (up to 50 calls/request) and retries, and
+enforces the rate limit at the HTTP-request level. A full cycle
+([lib/warera/scrape.ts](lib/warera/scrape.ts)) runs these phases, then
+publishes and immediately starts the next:
 
 1. **Countries** — `country.getAllCountries`, one call (~180 countries).
-2. **User IDs per country** — paginate `user.getUsersByCountry` for
-   each country, bounded concurrency 10.
-3. **Hydrate users** — `user.getUserLite` per id; the client auto-batches
-   concurrent calls (cap 50/request), so ~15k users → ~330 batches.
+2. **User IDs per country** — paginate `user.getUsersByCountry`, bounded
+   concurrency 10.
+3. **Hydrate users** — `user.getUserLite` per id (~15k users).
 4. **MUs** — cursor loop, 100 per page (~950 MUs).
 5. **Regions** — single `region.getRegionsObject` call (~700 regions).
 6. **Parties** — cursor loop, 100 per page (~480 parties).
+7. **Battles + tournament** — active + recent finished battles, plus the
+   current tournament's team→MU map.
 
-A clean run takes a few minutes; much longer if Warera throttles (429s),
-which the client backs off and retries automatically.
+Thanks to batching the user phase is ~hundreds of requests, not ~16k, so a
+full cycle is a few minutes; tune `SCRAPE_RATE_LIMIT` if needed.
 
-### Snapshot shape in Redis
+### Piecemeal refreshes
 
-Single JSON blob per entity, except users which are sharded into 32
-fixed buckets (a single 15k-user blob would exceed Upstash's 10 MB cap).
-Users are bucketed by a hash of their `_id` (last two hex chars mod 32),
-so the distribution stays uniform regardless of country sizes.
+Viewing an MU detail page fires `enqueueMuRefresh` (fire-and-forget, deduped
+per MU). It runs on the urgent client, so it returns promptly regardless of
+where the scrape loop is: it fetches that MU's live roster
+(`muMember.getByMu`), re-hydrates those users, and republishes. The current
+view shows possibly-stale data; the next view is fresh.
 
-| Key                                       | Shape                                           |
-| ----------------------------------------- | ----------------------------------------------- |
-| `wareradata:snapshot:countries`           | `Country[]`                                     |
-| `wareradata:snapshot:mus`                 | `MU[]`                                          |
-| `wareradata:snapshot:parties`             | `Party[]`                                       |
-| `wareradata:snapshot:regions`             | `Region[]`                                      |
-| `wareradata:snapshot:users:bucket:<0–31>` | `UserLite[]`                                    |
-| `wareradata:snapshot:meta`                | `{ scrapedAt, entityCounts, scrapeDurationMs }` |
+### Storage shape on disk
 
-Writes are per-key atomic `SET`s — a request landing mid-scrape always
-sees a consistent (older) snapshot, never a torn one. The bucket count
-is a fixed constant, so readers don't need an index — they just read
-buckets 0–31.
+Everything lives under `DATA_DIR` (the mounted volume in production):
+
+| Path                              | Shape                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `snapshot.json`                   | `{ users, countries, mus, regions, parties, battles, tournament, meta }` |
+| `archive/battles-YYYY-MM-DD.json` | `Battle[]` finished that UTC day                                         |
+| `archive/seen.json`               | `string[]` archived battle ids (dedupe)                                  |
+| `archive/index.json`              | `string[]` days available                                                |
+
+Writes are atomic (temp file + rename), so a request landing mid-scrape
+sees the old or new file, never a torn one. The in-memory row snapshot
+is swapped by reference after each cycle, so reads never block on I/O.
+
+### Battle history archive
+
+The API only serves a rolling ~2-week window of finished battles, so the
+full history is built **forward**: after each cycle the worker folds
+newly-finished battles into the per-day archive files, deduped by id. It
+can't backfill older battles (they age out of the API).
 
 ### Triggering a refresh
 
-Automatic: GitHub Actions cron at `0 * * * *`
-([refresh-data.yml](.github/workflows/refresh-data.yml)).
-
-Manual: Actions → `refresh-data` → Run workflow. Or locally:
-`npm run scrape`.
+The in-server loop refreshes continuously; there is no external cron. To
+seed or rebuild the snapshot file from a one-off run, use `npm run scrape`
+(it writes `DATA_DIR/snapshot.json` and exits).
 
 ## License
 

@@ -3,6 +3,7 @@ import type {
   BattleListItem,
   CountryListItem,
   MuListItem,
+  MuMemberListItem,
   MuRankingsOptional,
   PartyGetManyPaginatedResponse,
   RankingGetRankingResponse,
@@ -21,6 +22,9 @@ export type Country = CountryListItem
 export type MU = Omit<MuListItem, 'rankings'> & {
   investedMoneyByUsers?: Record<string, number>
   rankings?: MuRankingsOptional & { muReputation?: RankingValueTier }
+  // Not from the API: stamped by the scraper at capture time, and updated by an
+  // on-demand member refresh, so the UI can show how fresh an MU's data is.
+  lastRefreshedAt?: string
 }
 export type Party = PartyGetManyPaginatedResponse['items'][number]
 export type Region = RegionsObjectItem
@@ -73,16 +77,36 @@ interface ScrapeRequestOptions {
   noCache?: boolean
 }
 
-const client = createAPIClient({
+// Two independent clients, each with its own rate-limit budget (the limit is
+// enforced per client at the fetch level). Splitting by purpose means urgent,
+// on-demand work never waits behind the long continuous scrape, and vice versa.
+//
+//  - scrapeClient: the background full-scrape loop.
+//  - urgentClient: latency-sensitive on-demand traffic (piecemeal MU refreshes,
+//    live battles, and more over time).
+//
+// Both default to 100/min, summing to the API's authenticated default (200).
+const SCRAPE_RATE_LIMIT = Number(process.env.SCRAPE_RATE_LIMIT ?? 100)
+const URGENT_RATE_LIMIT = Number(process.env.URGENT_RATE_LIMIT ?? 100)
+
+const scrapeClient = createAPIClient({
   apiKey: process.env.WARERA_API_KEY,
+  rateLimit: SCRAPE_RATE_LIMIT,
 })
 
+const urgentClient = createAPIClient({
+  apiKey: process.env.WARERA_API_KEY,
+  rateLimit: URGENT_RATE_LIMIT,
+})
+
+type Client = typeof scrapeClient
+
 export function getAllCountries(_options: ScrapeRequestOptions = {}): Promise<Country[]> {
-  return client.country.getAllCountries()
+  return scrapeClient.country.getAllCountries()
 }
 
 export function getRanking(rankingType: RankingType): Promise<Ranking> {
-  return client.ranking.getRanking({ rankingType })
+  return scrapeClient.ranking.getRanking({ rankingType })
 }
 
 export async function getUserIdsForCountry(
@@ -90,7 +114,7 @@ export async function getUserIdsForCountry(
   _options: ScrapeRequestOptions = {},
 ): Promise<string[]> {
   const ids: string[] = []
-  for await (const page of client.user.getUsersByCountry({ countryId, autoPaginate: true })) {
+  for await (const page of scrapeClient.user.getUsersByCountry({ countryId, autoPaginate: true })) {
     for (const item of page.items) {
       ids.push(item._id)
     }
@@ -98,29 +122,52 @@ export async function getUserIdsForCountry(
   return ids
 }
 
-export async function getUserLite(
-  userIds: string[],
-  _options: ScrapeRequestOptions = {},
-): Promise<UserLite[]> {
+function hydrateUsers(client: Client, userIds: string[]): Promise<UserLite[]> {
   return Promise.all(userIds.map(userId => client.user.getUserLite({ userId })))
 }
 
+/**
+ * Hydrates users via the scrape client, for the full-scrape user phase.
+ */
+export function getUserLite(userIds: string[], _options: ScrapeRequestOptions = {}): Promise<UserLite[]> {
+  return hydrateUsers(scrapeClient, userIds)
+}
+
+/**
+ * Hydrates users via the urgent client, for on-demand piecemeal refreshes.
+ */
+export function getUserLiteUrgent(userIds: string[]): Promise<UserLite[]> {
+  return hydrateUsers(urgentClient, userIds)
+}
+
 export async function getAllRegions(_options: ScrapeRequestOptions = {}): Promise<Region[]> {
-  const obj = await client.region.getRegionsObject()
+  const obj = await scrapeClient.region.getRegionsObject()
   return Object.values(obj)
 }
 
 export async function getAllMUs(_options: ScrapeRequestOptions = {}): Promise<MU[]> {
   const all: MU[] = []
-  for await (const page of client.mu.getManyPaginated({ limit: 100, autoPaginate: true })) {
+  for await (const page of scrapeClient.mu.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...(page.items as MU[]))
   }
   return all
 }
 
+/**
+ * Fetches the current member roster of a single MU. Each item carries the
+ * member's `user` id plus their MU contribution counts, not the full user
+ * payload, so a piecemeal MU refresh follows this with {@link getUserLiteUrgent}
+ * over the returned user ids. Returns the authoritative live roster, which
+ * catches joins and leaves the stored member list may have missed. On the
+ * urgent client so it never waits behind the scrape.
+ */
+export function getMuMembers(muId: string): Promise<MuMemberListItem[]> {
+  return urgentClient.muMember.getByMu({ muId })
+}
+
 export async function getAllParties(_options: ScrapeRequestOptions = {}): Promise<Party[]> {
   const all: Party[] = []
-  for await (const page of client.party.getManyPaginated({ limit: 100, autoPaginate: true })) {
+  for await (const page of scrapeClient.party.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...page.items)
   }
   return all
@@ -140,7 +187,7 @@ export async function getAllBattles(_options: ScrapeRequestOptions = {}): Promis
   const active: Battle[] = []
   let cursor: string | undefined
   do {
-    const page: BattleGetBattlesResponse = await client.battle.getBattles({ isActive: true, limit: 50, cursor })
+    const page: BattleGetBattlesResponse = await scrapeClient.battle.getBattles({ isActive: true, limit: 50, cursor })
     active.push(...(page.items as Battle[]))
     cursor = page.nextCursor
   } while (cursor)
@@ -148,7 +195,7 @@ export async function getAllBattles(_options: ScrapeRequestOptions = {}): Promis
   const finished: Battle[] = []
   cursor = undefined
   do {
-    const page: BattleGetBattlesResponse = await client.battle.getBattles({ isActive: false, limit: 50, cursor })
+    const page: BattleGetBattlesResponse = await scrapeClient.battle.getBattles({ isActive: false, limit: 50, cursor })
     finished.push(...(page.items as Battle[]))
     cursor = page.nextCursor
   } while (cursor && finished.length < FINISHED_BATTLES_LIMIT)
@@ -166,7 +213,7 @@ export async function getActiveBattles(): Promise<Battle[]> {
   const active: Battle[] = []
   let cursor: string | undefined
   do {
-    const page: BattleGetBattlesResponse = await client.battle.getBattles({ isActive: true, limit: 50, cursor })
+    const page: BattleGetBattlesResponse = await urgentClient.battle.getBattles({ isActive: true, limit: 50, cursor })
     active.push(...(page.items as Battle[]))
     cursor = page.nextCursor
   } while (cursor)
@@ -185,7 +232,7 @@ export async function getFinishedBattles(maxBattles = 1000): Promise<Battle[]> {
   const finished: Battle[] = []
   let cursor: string | undefined
   do {
-    const page: BattleGetBattlesResponse = await client.battle.getBattles({ isActive: false, limit: 50, cursor })
+    const page: BattleGetBattlesResponse = await scrapeClient.battle.getBattles({ isActive: false, limit: 50, cursor })
     finished.push(...(page.items as Battle[]))
     cursor = page.nextCursor
   } while (cursor && finished.length < maxBattles)
@@ -221,12 +268,12 @@ export interface TournamentSnapshot {
  * Returns empty info if there's no active tournament.
  */
 export async function getTournamentInfo(): Promise<TournamentInfo> {
-  const tournament = await client.tournament.getLastTournament()
+  const tournament = await scrapeClient.tournament.getLastTournament()
   if (!tournament?._id) {
     return { id: null, name: null, teams: new Map() }
   }
 
-  const teams = await client.tournamentTeam.getByTournamentId({ tournamentId: tournament._id })
+  const teams = await scrapeClient.tournamentTeam.getByTournamentId({ tournamentId: tournament._id })
   const map = new Map<string, { number: number, muId: string | null, colorScheme: string | null }>()
   for (const t of teams) {
     map.set(t._id, {

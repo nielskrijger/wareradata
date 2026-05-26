@@ -1,15 +1,19 @@
 import type { Battle } from '@/lib/warera/api'
 
-import { Buffer } from 'node:buffer'
+import path from 'node:path'
 
-import { redis } from './redis'
+import { archiveDir, readJsonFile, writeJsonFile } from './file-store'
 
-const KEY_PREFIX = 'wareradata:archive:battles'
-const SEEN_KEY = `${KEY_PREFIX}:seen`
-const INDEX_KEY = `${KEY_PREFIX}:index`
+function dayFile(day: string): string {
+  return path.join(archiveDir(), `battles-${day}.json`)
+}
 
-function dayKey(day: string) {
-  return `${KEY_PREFIX}:${day}`
+function seenFile(): string {
+  return path.join(archiveDir(), 'seen.json')
+}
+
+function indexFile(): string {
+  return path.join(archiveDir(), 'index.json')
 }
 
 /**
@@ -50,18 +54,23 @@ export interface ArchiveResult {
 }
 
 /**
- * Captures finished battles into the per-day history archive.
+ * Captures finished battles into the per-day history archive on disk.
  *
- * Append-only and idempotent: a Redis Set of seen `_id`s means re-runs (and the
- * overlapping rolling window the API returns each day) never double-store. New
- * battles are trimmed (see {@link trimForArchive}), grouped by the UTC day they
- * ended, and merged into `…:battles:YYYY-MM-DD`. The day is recorded in an
- * index set so a future history view can list what's available.
+ * Append-only and idempotent: a `seen.json` set of `_id`s means re-runs (and
+ * the overlapping rolling window the API returns each cycle) never double-store.
+ * New battles are trimmed (see {@link trimForArchive}), grouped by the UTC day
+ * they ended, and merged into `archive/battles-YYYY-MM-DD.json`. Each touched
+ * day is recorded in `archive/index.json` so a future history view can list
+ * what's available.
+ *
+ * The WarEra API only serves a rolling ~2-week window of finished battles, so
+ * this is the only way to build a complete history: capture each cycle before
+ * battles age out.
  */
 export async function recordBattleHistory(battles: Battle[]): Promise<ArchiveResult> {
   const finished = battles.filter(b => !b.isActive)
 
-  const seenList = (await redis.smembers(SEEN_KEY)) as string[]
+  const seenList = await readJsonFile<string[]>(seenFile(), [])
   const seen = new Set(seenList)
 
   const fresh = finished.filter(b => !seen.has(b._id))
@@ -69,7 +78,7 @@ export async function recordBattleHistory(battles: Battle[]): Promise<ArchiveRes
     return { fetched: finished.length, newlyArchived: 0, alreadySeen: finished.length, daysTouched: [] }
   }
 
-  // Group fresh battles by their end-day so each day's key is a single merge.
+  // Group fresh battles by their end-day so each day's file is a single merge.
   const byDay = new Map<string, Battle[]>()
   for (const b of fresh) {
     const day = battleDay(b)
@@ -81,18 +90,21 @@ export async function recordBattleHistory(battles: Battle[]): Promise<ArchiveRes
     }
   }
 
+  const index = new Set(await readJsonFile<string[]>(indexFile(), []))
   for (const [day, dayBattles] of byDay) {
-    const existing = ((await redis.get(dayKey(day))) as Battle[] | null) ?? []
+    const existing = await readJsonFile<Battle[]>(dayFile(day), [])
     const merged = [...existing, ...dayBattles]
-    const bytes = Buffer.byteLength(JSON.stringify(merged), 'utf8')
-    await redis.set(dayKey(day), merged)
-    await redis.sadd(INDEX_KEY, day)
-    console.warn(`[archive] ${day}: +${dayBattles.length} battles (${merged.length} total, ${(bytes / 1024).toFixed(0)} KB)`)
+    await writeJsonFile(dayFile(day), merged)
+    index.add(day)
+    console.warn(`[archive] ${day}: +${dayBattles.length} battles (${merged.length} total)`)
   }
+  await writeJsonFile(indexFile(), [...index].sort())
 
-  // Mark all fresh ids as seen in one call (sadd takes a spread of members).
-  const freshIds = fresh.map(b => b._id) as [string, ...string[]]
-  await redis.sadd(SEEN_KEY, ...freshIds)
+  // Persist the seen set so the next cycle dedupes against it.
+  for (const b of fresh) {
+    seen.add(b._id)
+  }
+  await writeJsonFile(seenFile(), [...seen])
 
   return {
     fetched: finished.length,

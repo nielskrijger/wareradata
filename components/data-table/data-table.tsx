@@ -138,6 +138,18 @@ export function DataTable<TData, TValue>({
   const [data, setData] = useState<PageResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
 
+  // Adopt a fresh `initialData` prop (e.g. after revalidatePath) only while the
+  // user hasn't sorted/filtered/paged. This is React's "adjusting state when a
+  // prop changes" pattern:
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevInitialData, setPrevInitialData] = useState(initialData)
+  if (initialData !== prevInitialData) {
+    setPrevInitialData(initialData)
+    if (isAtInitialState) {
+      setData(initialData)
+    }
+  }
+
   // Skip the very first fetch when state matches initialData (no URL params).
   // After any state change, fetch from the server.
   const firstRenderRef = useRef(true)

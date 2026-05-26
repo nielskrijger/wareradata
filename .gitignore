@@ -20,6 +20,9 @@
 # production
 /build
 
+# persisted snapshot + battle archive (local dev volume)
+/.data/
+
 # misc
 .DS_Store
 *.pem

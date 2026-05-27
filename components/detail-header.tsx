@@ -46,8 +46,10 @@ interface Props {
    */
   children: ReactNode
   /**
-   * Optional control pinned to the bottom-right of the header, detached from the
-   * fact rows (e.g. an MU's "last refreshed / refresh" action).
+   * Optional control floated at the top-right of the header, detached from the
+   * fact rows and the normal flow (e.g. an MU's "last refreshed / refresh"
+   * action). It overlays the content rather than reserving space, so it never
+   * shifts the layout; callers must keep it narrow enough to clear the title.
    */
   aside?: ReactNode
 }
@@ -60,10 +62,11 @@ interface Props {
  */
 export function DetailHeader({ emblem, title, bannerStyle, children, aside }: Props) {
   return (
-    <div className="bg-card overflow-hidden rounded-md border">
+    <div className="bg-card relative overflow-hidden rounded-md border">
       {bannerStyle
         ? <div className="h-14" style={bannerStyle} />
         : <div className="from-muted h-14 bg-gradient-to-r to-transparent" />}
+      {aside && <div className="absolute top-0 right-4 z-10 flex h-14 items-center">{aside}</div>}
       <div className="flex items-end gap-3 px-4 pb-4">
         <div className="flex min-w-0 flex-col items-start gap-3">
           {emblem}
@@ -72,7 +75,6 @@ export function DetailHeader({ emblem, title, bannerStyle, children, aside }: Pr
             {children}
           </div>
         </div>
-        {aside && <div className="ml-auto shrink-0">{aside}</div>}
       </div>
     </div>
   )

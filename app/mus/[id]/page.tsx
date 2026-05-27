@@ -102,10 +102,9 @@ export default async function MUDetailPage({ params }: PageProps) {
             members
           </span>
           <TierBadge tier={mu.damageTier} />
-          <ExternalLink href={wareraUrl('mu', mu.id)}>WarEra.io</ExternalLink>
         </FactRow>
-        {mu.leaderName && (
-          <FactRow muted>
+        <FactRow muted>
+          {mu.leaderName && (
             <span className="inline-flex items-center gap-2">
               Leader
               <UserNameCell
@@ -115,8 +114,9 @@ export default async function MUDetailPage({ params }: PageProps) {
                 colorScheme={mu.leaderColorScheme}
               />
             </span>
-          </FactRow>
-        )}
+          )}
+          <ExternalLink href={wareraUrl('mu', mu.id)}>WarEra.io</ExternalLink>
+        </FactRow>
       </DetailHeader>
 
       <PointsBreakdownPanel

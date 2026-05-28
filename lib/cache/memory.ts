@@ -137,18 +137,14 @@ export async function initSnapshot(): Promise<void> {
  * this module instance yet. A missing file yields the empty snapshot (pages
  * render a "no data" state).
  *
- * During `next build` it never reads the file, so prerendering always sees the
- * empty state; real data is served at request time on the running server.
+ * All pages that read this go through `await connection()` first, so prerender
+ * (where the snapshot is empty) is never reached — this is only called for
+ * request-time renders.
  */
 export function getSnapshot(): Promise<Snapshot> {
   const s = store()
   if (s.current) {
     return Promise.resolve(s.current)
-  }
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
-    // Throwaway prerender snapshot — pass 0 for nowMs so the build path never
-    // reads the wall clock (would trip the cacheComponents current-time check).
-    return Promise.resolve(buildSnapshot(emptyRawSnapshot(), 0))
   }
   if (!s.loading) {
     s.loading = readRawSnapshot()

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 
+import { connection } from 'next/server'
+
 import { NoDataPage } from '@/components/no-data-page'
 import { PageShell } from '@/components/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -13,6 +15,10 @@ export const metadata: Metadata = {
 }
 
 export default async function UsersPage() {
+  // Marks the page as request-time dynamic under cacheComponents. Without
+  // this, Next prerenders at build time against an empty snapshot and serves
+  // that static HTML forever — the in-memory snapshot is never read.
+  await connection()
   const { users } = await getSnapshot()
 
   if (!users.length) {

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
+import { connection } from 'next/server'
 
 import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
@@ -68,6 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function MUDetailPage({ params }: PageProps) {
+  await connection()
   const { id } = await params
   const result = await getMU(id)
   if (!result) {

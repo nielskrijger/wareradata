@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 
+import { connection } from 'next/server'
+
 import { NoDataPage } from '@/components/no-data-page'
 import { PageShell } from '@/components/page-shell'
 import { withActiveBattleCounts } from '@/lib/cache/live-battles'
@@ -14,6 +16,7 @@ export const metadata: Metadata = {
 }
 
 export default async function CountriesPage() {
+  await connection()
   const { countries } = await getSnapshot()
 
   if (!countries.length) {

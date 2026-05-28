@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 
+import { connection } from 'next/server'
+
 import { NoDataPage } from '@/components/no-data-page'
 import { PageShell } from '@/components/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -13,6 +15,7 @@ export const metadata: Metadata = {
 }
 
 export default async function MUsPage() {
+  await connection()
   const { mus } = await getSnapshot()
 
   if (!mus.length) {

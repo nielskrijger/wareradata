@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
+import { connection } from 'next/server'
 
 import { BattleCountBadge } from '@/components/battle-count-badge'
 import { CompactNumber } from '@/components/compact-number'
@@ -84,6 +85,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CountryDetailPage({ params }: PageProps) {
+  await connection()
   const { id } = await params
   const result = await getCountry(id)
   if (!result) {

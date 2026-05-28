@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
+import { connection } from 'next/server'
 
 import { Avatar } from '@/components/avatar'
 import { CompactNumber } from '@/components/compact-number'
@@ -57,6 +58,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function UserDetailPage({ params }: PageProps) {
+  await connection()
   const { id } = await params
   const result = await getUser(id)
   if (!result) {

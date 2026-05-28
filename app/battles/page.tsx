@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 
+import { connection } from 'next/server'
+
 import { NoDataPage } from '@/components/no-data-page'
 import { PageShell } from '@/components/page-shell'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
@@ -14,6 +16,7 @@ export const metadata: Metadata = {
 }
 
 export default async function BattlesPage() {
+  await connection()
   const [{ battles }, liveActive] = await Promise.all([getSnapshot(), getLiveActiveBattles()])
 
   const finishedBattles = battles.filter(b => !b.isActive)

@@ -4,6 +4,7 @@ import type { BattleSide } from '@/lib/rows'
 
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { connection } from 'next/server'
 
 import { Avatar } from '@/components/avatar'
 import { BattleTypeBadge } from '@/components/battle-type-badge'
@@ -89,6 +90,7 @@ function BattleSideEmblem({ side, won }: { side: BattleSide, won: boolean }) {
 }
 
 export default async function BattleDetailPage({ params }: PageProps) {
+  await connection()
   const { id } = await params
   const b = await getBattle(id)
   if (!b) {

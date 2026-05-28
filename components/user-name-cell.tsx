@@ -26,7 +26,7 @@ export function UserNameCell({ userId, name, avatarUrl, colorScheme }: Props) {
       <Avatar src={avatarUrl} name={name} size={22} colorScheme={colorScheme} />
       {userId
         ? (
-            <InternalLink href={`/users/${userId}`} bold title={name} className="truncate">
+            <InternalLink href={`/users/${userId}`} bold className="truncate">
               {name}
             </InternalLink>
           )

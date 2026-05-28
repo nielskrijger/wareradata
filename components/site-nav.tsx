@@ -28,6 +28,16 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
+/**
+ * Silhouette of the nav at the same height as the live version, for use as
+ * the Suspense fallback at the layout level — SiteNav reads usePathname() and
+ * is dynamic per request, so under cacheComponents it can't render in the
+ * static shell.
+ */
+export function SiteNavFallback() {
+  return <div className="bg-background sticky top-0 z-30 h-[57px] border-b" />
+}
+
 export function SiteNav() {
   const pathname = usePathname()
   return (

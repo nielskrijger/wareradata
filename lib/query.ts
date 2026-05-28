@@ -52,7 +52,7 @@ export interface PagedResult<T> {
  * rows themselves (any key that is numeric on at least one row), so callers
  * don't have to enumerate columns — the client picks whichever it heat-tints.
  */
-function computeRanges<T extends object>(rows: T[]): Record<string, Range> {
+export function computeRanges<T extends object>(rows: T[]): Record<string, Range> {
   if (!rows.length) {
     return {}
   }

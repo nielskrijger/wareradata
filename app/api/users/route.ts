@@ -31,8 +31,6 @@ const tierIndex: Record<string, number> = Object.fromEntries(
   RANKING_TIERS.map((t, i) => [t, i]),
 )
 
-export const dynamic = 'force-dynamic'
-
 /**
  * Maps a column id from the client to a comparable value on the row.
  */

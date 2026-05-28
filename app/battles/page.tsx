@@ -8,10 +8,6 @@ import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 
 import { BattleTabs } from './battle-tabs'
 
-// Active battles are fetched live (60s cache) so the page can't be statically
-// cached; finished battles still come from the hourly snapshot.
-export const dynamic = 'force-dynamic'
-
 export const metadata: Metadata = {
   title: 'Battles',
   description: 'Active and recent battles in WarEra.io.',

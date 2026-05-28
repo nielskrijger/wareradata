@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { ExternalLink } from '@/components/external-link'
+import { ExternalLink } from '@/components/links'
 import { PageTitle } from '@/components/page-title'
 import { Paragraph } from '@/components/paragraph'
 

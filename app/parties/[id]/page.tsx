@@ -6,19 +6,16 @@ import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
-import { ExternalLink } from '@/components/external-link'
+import { ExternalLink } from '@/components/links'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { ScaleBadge } from '@/components/scale-badge'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
+import { UserHoverCard } from '@/components/user-hover-card'
 import { UserNameCell } from '@/components/user-name-cell'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
-
-// Served from the warm in-memory snapshot (sub-ms). force-dynamic, not ISR, so
-// a request that lands before the scraper's first cycle can't cache a notFound.
-export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -97,12 +94,14 @@ export default async function PartyDetailPage({ params }: PageProps) {
           {p.leaderName && (
             <span className="inline-flex items-center gap-2">
               Leader
-              <UserNameCell
-                userId={p.leaderId}
-                name={p.leaderName}
-                avatarUrl={p.leaderAvatarUrl}
-                colorScheme={p.leaderColorScheme}
-              />
+              <UserHoverCard userId={p.leaderId}>
+                <UserNameCell
+                  userId={p.leaderId}
+                  name={p.leaderName}
+                  avatarUrl={p.leaderAvatarUrl}
+                  colorScheme={p.leaderColorScheme}
+                />
+              </UserHoverCard>
             </span>
           )}
           <span className="inline-flex items-center gap-1">Militarism <ScaleBadge value={p.militarism} /></span>

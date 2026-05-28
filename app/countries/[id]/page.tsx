@@ -5,8 +5,8 @@ import { notFound } from 'next/navigation'
 import { BattleCountBadge } from '@/components/battle-count-badge'
 import { CompactNumber } from '@/components/compact-number'
 import { DetailHeader, FactRow } from '@/components/detail-header'
-import { ExternalLink } from '@/components/external-link'
 import { Flag } from '@/components/flag'
+import { ExternalLink } from '@/components/links'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { ReadinessPillCard } from '@/components/readiness-pill-bar'
 import { StatCard } from '@/components/stat-card'
@@ -19,9 +19,6 @@ import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 import { CountryTables } from './country-tables'
-
-// Active battles are fetched live (60s cache), so this page can't be static.
-export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>

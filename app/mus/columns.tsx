@@ -6,7 +6,7 @@ import type { MURow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
-import { ExternalLink } from '@/components/external-link'
+import { ExternalLink } from '@/components/links'
 import { MUCell } from '@/components/mu-cell'
 import { PercentBar } from '@/components/percent-bar'
 import { PointsBreakdownCell } from '@/components/points-breakdown-cell'

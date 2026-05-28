@@ -6,7 +6,7 @@ import { Avatar } from '@/components/avatar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
-import { ExternalLink } from '@/components/external-link'
+import { ExternalLink } from '@/components/links'
 import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
@@ -22,10 +22,6 @@ import { EMPTY } from '@/lib/format'
 import { applyQuery } from '@/lib/query'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
-
-// Served from the warm in-memory snapshot (sub-ms). force-dynamic, not ISR, so
-// a request that lands before the scraper's first cycle can't cache a notFound.
-export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>

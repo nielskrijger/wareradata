@@ -2,7 +2,7 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { recordBattleHistory } from '@/lib/cache/archive'
 import { readRawSnapshot, writeRawSnapshot } from '@/lib/cache/file-store'
-import { buildSnapshot, swapSnapshot } from '@/lib/cache/memory'
+import { buildSnapshotNow, swapSnapshot } from '@/lib/cache/memory'
 import { getMuMembers, getUserLiteUrgent } from '@/lib/warera/api'
 import { scrapeRawSnapshot } from '@/lib/warera/scrape'
 
@@ -37,7 +37,7 @@ let started = false
 async function publish(raw: RawSnapshot): Promise<void> {
   store().currentRaw = raw
   await writeRawSnapshot(raw)
-  swapSnapshot(buildSnapshot(raw))
+  swapSnapshot(buildSnapshotNow(raw, 'scrape'))
 }
 
 /**
@@ -128,7 +128,7 @@ async function doRefreshMuMembers(muId: string): Promise<void> {
   // In-memory only: update currentRaw and the served snapshot, but do not
   // persist (the scrape loop owns the file).
   s.currentRaw = patched
-  swapSnapshot(buildSnapshot(patched))
+  swapSnapshot(buildSnapshotNow(patched, `mu-refresh ${muId}`))
   console.info(`[scraper] MU ${muId} refreshed on demand (${fresh.length} members)`)
 }
 

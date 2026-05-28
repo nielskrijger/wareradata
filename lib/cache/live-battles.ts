@@ -1,5 +1,7 @@
 import type { ActiveBattleSummary, BattleRow, CountryRow } from '@/lib/rows'
 
+import { cacheLife } from 'next/cache'
+
 import { buildBattleRows } from '@/lib/rows/build-battles'
 import { getActiveBattles } from '@/lib/warera/api'
 
@@ -8,51 +10,29 @@ import { getSnapshot } from './memory'
 // Build-time guard: holds the WarEra API key path; server-only.
 import 'server-only'
 
-// Active battles are fetched live on demand (not from the hourly snapshot) so
-// the score / round damage / top dealers stay current. A short in-process TTL
-// means concurrent viewers and rapid refreshes share a single API hit; the
-// WarEra battle endpoint is cheap (~15 active battles, one page) so this is the
-// only freshness layer we need.
-const TTL_MS = 60 * 1000
-
-interface CacheEntry {
-  loadedAt: number
-  promise: Promise<BattleRow[]>
-}
-
-let cache: CacheEntry | null = null
-
-async function load(): Promise<BattleRow[]> {
-  // Enrich the raw live battles against the warm snapshot lookups (country / MU
-  // / region names, tournament team → MU), exactly as the hourly rows are.
-  const [battles, snapshot] = await Promise.all([getActiveBattles(), getSnapshot()])
-  return buildBattleRows(battles, snapshot.tournament, snapshot.lookups)
-}
-
 /**
- * Live active battles as enriched {@link BattleRow}s, cached for {@link TTL_MS}.
- * Backs both the /battles active tab and the active-battle detail page, so a
- * click-through stays consistent within the cache window.
+ * Live active battles as enriched {@link BattleRow}s, cached for 60s via
+ * Cache Components. Backs both the /battles active tab and the active-battle
+ * detail page, so a click-through stays consistent within the cache window.
  *
  * The live layer is an enhancement, not load-bearing: if the WarEra API is
  * down (it 503s under load), we degrade to an empty list rather than crashing
- * every page that shows the ⚔ pill. A failure isn't cached, so the next caller
- * retries instead of serving empty for the whole TTL window.
+ * every page that shows the ⚔ pill. The empty list itself gets cached for the
+ * full 60s window — acceptable trade for letting the framework own the TTL.
  */
-export function getLiveActiveBattles(): Promise<BattleRow[]> {
-  const now = Date.now()
-  if (cache && now - cache.loadedAt < TTL_MS) {
-    return cache.promise
-  }
-  const promise = load().catch((err) => {
+export async function getLiveActiveBattles(): Promise<BattleRow[]> {
+  'use cache'
+  cacheLife({ stale: 0, revalidate: 60, expire: 60 })
+  try {
+    // Enrich the raw live battles against the warm snapshot lookups (country
+    // / MU / region names, tournament team → MU), exactly as the hourly rows
+    // are.
+    const [battles, snapshot] = await Promise.all([getActiveBattles(), getSnapshot()])
+    return buildBattleRows(battles, snapshot.tournament, snapshot.lookups)
+  } catch (err) {
     console.warn('[live-battles] active-battle fetch failed, serving empty:', err)
-    if (cache?.promise === promise) {
-      cache = null
-    }
-    return [] as BattleRow[]
-  })
-  cache = { loadedAt: now, promise }
-  return promise
+    return []
+  }
 }
 
 /**

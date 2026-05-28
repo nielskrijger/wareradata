@@ -4,8 +4,6 @@ import type { RegionRow } from '@/lib/rows'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyStructuredQuery, parseQuery } from '@/lib/query'
 
-export const dynamic = 'force-dynamic'
-
 /**
  * Friendly field names for the advanced filter. Keep in sync with the
  * popover cheatsheet in `regions-table.tsx`.

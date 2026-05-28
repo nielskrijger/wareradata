@@ -8,16 +8,12 @@ import { notFound } from 'next/navigation'
 import { Avatar } from '@/components/avatar'
 import { BattleTypeBadge } from '@/components/battle-type-badge'
 import { CompactNumber } from '@/components/compact-number'
-import { ExternalLink } from '@/components/external-link'
 import { Flag } from '@/components/flag'
-import { InternalLink } from '@/components/internal-link'
+import { ExternalLink, InternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
-
-// Active battles are fetched live (60s cache), so this page can't be static.
-export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>

@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { Avatar } from '@/components/avatar'
 import { EmptyDash } from '@/components/empty-dash'
 import { Flag } from '@/components/flag'
-import { InternalLink } from '@/components/internal-link'
+import { InternalLink } from '@/components/links'
 
 interface Props {
   battleId: string

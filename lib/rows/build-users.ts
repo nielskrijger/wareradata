@@ -7,9 +7,7 @@ import { computePoints } from '@/lib/scoring'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-export function buildUserRows(users: UserLite[], lookups: Lookups): UserRow[] {
-  const nowMs = Date.now()
-
+export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number): UserRow[] {
   const rows = users
     .map((u) => {
       const country = lookups.countryById.get(u.country)

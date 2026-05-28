@@ -36,7 +36,7 @@ export function PointsBreakdownCell({ total, level, damage, wealth }: Props) {
   return (
     <Tooltip>
       <TooltipTrigger
-        className="hover:text-foreground underline decoration-dotted decoration-1 underline-offset-2"
+        className="hover:text-foreground cursor-default underline decoration-dotted decoration-1 underline-offset-2"
       >
         {total.toLocaleString()}
       </TooltipTrigger>

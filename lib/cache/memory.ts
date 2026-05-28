@@ -1,9 +1,11 @@
 import type { RawSnapshot } from './file-store'
+import type { Range } from '@/lib/query'
 import type { BattleRow, CountryRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 
 import type { TournamentSnapshot } from '@/lib/warera/api'
 
+import { computeRanges } from '@/lib/query'
 import { buildBattleRows } from '@/lib/rows/build-battles'
 import { buildCountryRows } from '@/lib/rows/build-countries'
 import { buildMURows } from '@/lib/rows/build-mus'
@@ -31,6 +33,11 @@ import 'server-only'
 
 export interface Snapshot {
   users: UserRow[]
+  // [min, max, median] per numeric UserRow field across the full user set.
+  // Precomputed in buildSnapshot() so detail pages and the user-hover-card
+  // tooltip can heat-tint stats against the leaderboard without re-walking
+  // 16k rows per request.
+  userRanges: Record<string, Range>
   countries: CountryRow[]
   mus: MURow[]
   parties: PartyRow[]
@@ -69,20 +76,31 @@ function store(): SnapshotStore {
  * builders never mutate their input), so the result is a new immutable snapshot
  * safe to publish while readers still hold an older one.
  */
-export function buildSnapshot(raw: RawSnapshot): Snapshot {
-  const start = Date.now()
-
+export function buildSnapshot(raw: RawSnapshot, nowMs: number): Snapshot {
   const lookups = buildLookups(raw.countries, raw.mus, raw.regions, raw.users, raw.parties)
-  const userRows = buildUserRows(raw.users, lookups)
+  const userRows = buildUserRows(raw.users, lookups, nowMs)
   const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups)
   const muRows = buildMURows(raw.mus, userRows, lookups)
   const partyRows = buildPartyRows(raw.parties, userRows, lookups)
   const regionRows = buildRegionRows(raw.regions, lookups)
   const battleRows = buildBattleRows(raw.battles, raw.tournament, lookups)
+  const userRanges = computeRanges(userRows)
 
-  console.info(`[snapshot] built rows in ${Date.now() - start}ms (${userRows.length} users)`)
+  return { users: userRows, userRanges, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament }
+}
 
-  return { users: userRows, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament }
+/**
+ * Builds a snapshot at the current time and logs the duration. Use at the
+ * boot / scrape paths (worker context, never during prerender) — keeping the
+ * Date.now() and timing log out of {@link buildSnapshot} itself lets that
+ * function be called from a prerender path without tripping the
+ * cacheComponents current-time check.
+ */
+export function buildSnapshotNow(raw: RawSnapshot, label: string): Snapshot {
+  const start = Date.now()
+  const snapshot = buildSnapshot(raw, start)
+  console.info(`[snapshot] ${label}: built rows in ${Date.now() - start}ms (${snapshot.users.length} users)`)
+  return snapshot
 }
 
 /**
@@ -109,7 +127,7 @@ export async function initSnapshot(): Promise<void> {
   if (!raw) {
     console.info('[snapshot] boot: no persisted data, starting empty until the scraper completes its first cycle')
   }
-  s.current = buildSnapshot(raw ?? emptyRawSnapshot())
+  s.current = buildSnapshotNow(raw ?? emptyRawSnapshot(), 'boot')
   console.info(`[snapshot] boot: ready with ${s.current.users.length} users`)
 }
 
@@ -128,11 +146,13 @@ export function getSnapshot(): Promise<Snapshot> {
     return Promise.resolve(s.current)
   }
   if (process.env.NEXT_PHASE === 'phase-production-build') {
-    return Promise.resolve(buildSnapshot(emptyRawSnapshot()))
+    // Throwaway prerender snapshot — pass 0 for nowMs so the build path never
+    // reads the wall clock (would trip the cacheComponents current-time check).
+    return Promise.resolve(buildSnapshot(emptyRawSnapshot(), 0))
   }
   if (!s.loading) {
     s.loading = readRawSnapshot()
-      .then(raw => buildSnapshot(raw ?? emptyRawSnapshot()))
+      .then(raw => buildSnapshotNow(raw ?? emptyRawSnapshot(), 'lazy-load'))
       .then((snapshot) => {
         s.current ??= snapshot
         s.loading = null

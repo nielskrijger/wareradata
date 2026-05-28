@@ -6,8 +6,8 @@ import type { UserRow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
-import { ExternalLink } from '@/components/external-link'
 import { InfoTooltip } from '@/components/info-tooltip'
+import { ExternalLink } from '@/components/links'
 import { MUCell } from '@/components/mu-cell'
 import { PartyCell } from '@/components/party-cell'
 import { PercentBar } from '@/components/percent-bar'
@@ -16,6 +16,7 @@ import { ReadinessBadge } from '@/components/readiness-badge'
 import { RelativeTime } from '@/components/relative-time'
 import { TierBadge } from '@/components/tier-badge'
 import { Badge } from '@/components/ui/badge'
+import { UserHoverCard } from '@/components/user-hover-card'
 import { UserNameCell } from '@/components/user-name-cell'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -27,7 +28,9 @@ export const userColumns: ColumnDef<UserRow>[] = [
     header: 'User',
     cell: ({ row }) => (
       <div className="flex min-w-0 items-center gap-2">
-        <UserNameCell userId={row.original.id} name={row.original.username} avatarUrl={row.original.avatarUrl} colorScheme={row.original.colorScheme} />
+        <UserHoverCard userId={row.original.id}>
+          <UserNameCell userId={row.original.id} name={row.original.username} avatarUrl={row.original.avatarUrl} colorScheme={row.original.colorScheme} />
+        </UserHoverCard>
         {row.original.isBanned && <Badge className="shrink-0 bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
       </div>
     ),

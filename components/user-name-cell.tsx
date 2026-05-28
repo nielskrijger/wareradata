@@ -1,5 +1,5 @@
 import { Avatar } from '@/components/avatar'
-import { InternalLink } from '@/components/internal-link'
+import { InternalLink } from '@/components/links'
 
 interface Props {
   /**

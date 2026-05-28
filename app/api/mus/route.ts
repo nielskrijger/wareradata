@@ -14,8 +14,6 @@ const tierIndex: Record<string, number> = Object.fromEntries(
   RANKING_TIERS.map((t, i) => [t, i]),
 )
 
-export const dynamic = 'force-dynamic'
-
 /**
  * Friendly field names for the advanced filter. Keep in sync with the
  * popover cheatsheet in `mus-table.tsx`.

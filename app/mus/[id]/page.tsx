@@ -7,12 +7,13 @@ import { Avatar } from '@/components/avatar'
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
 import { DetailHeader, FactRow } from '@/components/detail-header'
-import { ExternalLink } from '@/components/external-link'
+import { ExternalLink } from '@/components/links'
 import { PointsBreakdownPanel } from '@/components/points-breakdown-panel'
 import { ReadinessPillCard } from '@/components/readiness-pill-bar'
 import { StatCard } from '@/components/stat-card'
 import { StatCardGrid } from '@/components/stat-card-grid'
 import { TierBadge } from '@/components/tier-badge'
+import { UserHoverCard } from '@/components/user-hover-card'
 import { UserNameCell } from '@/components/user-name-cell'
 import { VitalCard } from '@/components/vital-card'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -20,10 +21,6 @@ import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 import { RefreshButton } from './refresh-button'
-
-// Served from the warm in-memory snapshot (sub-ms). force-dynamic, not ISR, so
-// a request that lands before the scraper's first cycle can't cache a notFound.
-export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -107,12 +104,14 @@ export default async function MUDetailPage({ params }: PageProps) {
           {mu.leaderName && (
             <span className="inline-flex items-center gap-2">
               Leader
-              <UserNameCell
-                userId={mu.leaderId}
-                name={mu.leaderName}
-                avatarUrl={mu.leaderAvatarUrl}
-                colorScheme={mu.leaderColorScheme}
-              />
+              <UserHoverCard userId={mu.leaderId}>
+                <UserNameCell
+                  userId={mu.leaderId}
+                  name={mu.leaderName}
+                  avatarUrl={mu.leaderAvatarUrl}
+                  colorScheme={mu.leaderColorScheme}
+                />
+              </UserHoverCard>
             </span>
           )}
           <ExternalLink href={wareraUrl('mu', mu.id)}>WarEra.io</ExternalLink>

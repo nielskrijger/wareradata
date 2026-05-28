@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { Bebas_Neue, Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { Suspense } from 'react'
 
 import { SiteFooter } from '@/components/site-footer'
-import { SiteNav } from '@/components/site-nav'
+import { SiteNav, SiteNavFallback } from '@/components/site-nav'
 import { ThemeProvider } from '@/components/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
@@ -67,7 +68,9 @@ export default function RootLayout({ children }: Props) {
         >
           <NuqsAdapter>
             <TooltipProvider>
-              <SiteNav />
+              <Suspense fallback={<SiteNavFallback />}>
+                <SiteNav />
+              </Suspense>
               {children}
               <SiteFooter />
             </TooltipProvider>

@@ -6,6 +6,7 @@ import type { UserRow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/compact-number'
 import { CountryCell } from '@/components/country-cell'
+import { GearScorePill } from '@/components/gear-score-pill'
 import { InfoTooltip } from '@/components/info-tooltip'
 import { ExternalLink } from '@/components/links'
 import { MUCell } from '@/components/mu-cell'
@@ -83,6 +84,14 @@ export const userColumns: ColumnDef<UserRow>[] = [
     header: 'Status',
     cell: ({ row }) => <ReadinessBadge status={row.original.readinessStatus} />,
     meta: { width: 100 },
+  },
+  {
+    accessorKey: 'gearScore',
+    header: 'Gear',
+    cell: ({ row }) => <GearScorePill score={row.original.gearScore} />,
+    sortDescFirst: true,
+    sortUndefined: 'last',
+    meta: { align: 'right', width: 100 },
   },
   {
     accessorKey: 'levelRank',

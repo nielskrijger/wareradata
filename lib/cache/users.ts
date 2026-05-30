@@ -1,5 +1,6 @@
 import type { Range } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
+import type { Equipment } from '@/lib/warera/api'
 
 import { getSnapshot } from './memory'
 
@@ -12,6 +13,10 @@ export interface UserDetails {
   // against the same baseline.
   ranges: Record<string, Range>
   total: number
+  // Currently-equipped gear from the latest scrape. Empty object when the
+  // user stripped between battles (the scraper captured no slots) or when
+  // the snapshot pre-dates the equipment scrape phase.
+  equipment: Equipment
 }
 
 /**
@@ -20,10 +25,10 @@ export interface UserDetails {
  * Ranges are precomputed on the Snapshot, so this is O(n) on the find only.
  */
 export async function getUserById(id: string): Promise<UserDetails | null> {
-  const { users, userRanges } = await getSnapshot()
+  const { users, userRanges, equipment } = await getSnapshot()
   const user = users.find(u => u.id === id)
   if (!user) {
     return null
   }
-  return { user, ranges: userRanges, total: users.length }
+  return { user, ranges: userRanges, total: users.length, equipment: equipment[id] ?? {} }
 }

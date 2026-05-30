@@ -3,7 +3,7 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 import { recordBattleHistory } from '@/lib/cache/archive'
 import { readRawSnapshot, writeRawSnapshot } from '@/lib/cache/file-store'
 import { buildSnapshotNow, swapSnapshot } from '@/lib/cache/memory'
-import { getMuMembers, getUserLiteUrgent } from '@/lib/warera/api'
+import { getEquipmentUrgent, getMuMembers, getUserLiteUrgent } from '@/lib/warera/api'
 import { scrapeRawSnapshot } from '@/lib/warera/scrape'
 
 import 'server-only'
@@ -111,17 +111,26 @@ async function doRefreshMuMembers(muId: string): Promise<void> {
     return
   }
 
-  const fresh = await getUserLiteUrgent(userIds)
+  const [fresh, freshEquipment] = await Promise.all([
+    getUserLiteUrgent(userIds),
+    getEquipmentUrgent(userIds),
+  ])
 
   const byId = new Map(s.currentRaw.users.map(u => [u._id, u]))
   for (const u of fresh) {
     byId.set(u._id, u)
   }
 
+  const equipment = { ...s.currentRaw.equipment }
+  for (let i = 0; i < userIds.length; i++) {
+    equipment[userIds[i]] = freshEquipment[i]
+  }
+
   const now = new Date().toISOString()
   const patched: RawSnapshot = {
     ...s.currentRaw,
     users: [...byId.values()],
+    equipment,
     mus: s.currentRaw.mus.map(m => (m._id === muId ? { ...m, members: userIds, lastRefreshedAt: now } : m)),
   }
 

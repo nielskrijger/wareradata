@@ -1,4 +1,4 @@
-import type { Battle, Country, MU, Party, Region, SnapshotMeta, TournamentSnapshot, UserLite } from '@/lib/warera/api'
+import type { Battle, Country, Equipment, MU, Party, Region, SnapshotMeta, TournamentSnapshot, UserLite } from '@/lib/warera/api'
 
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
@@ -10,6 +10,10 @@ import path from 'node:path'
  */
 export interface RawSnapshot {
   users: UserLite[]
+  // Currently-equipped gear keyed by user id. A user may be absent (no equipment
+  // captured) or present with `{}` (stripped between battles); both render the
+  // same in the UI.
+  equipment: Record<string, Equipment>
   countries: Country[]
   mus: MU[]
   regions: Region[]
@@ -63,6 +67,7 @@ export async function writeJsonFile(filePath: string, data: unknown): Promise<vo
 export function emptyRawSnapshot(): RawSnapshot {
   return {
     users: [],
+    equipment: {},
     countries: [],
     mus: [],
     regions: [],

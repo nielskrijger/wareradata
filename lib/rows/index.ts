@@ -21,6 +21,8 @@ export interface UserRow {
   damagePoints: number
   healthPercent: number | null
   hungerPercent: number | null
+  gearScore: number | null
+  gearScoreRank: number | null
   gemsPurchased: number | null
   gemsPurchasedRank: number | null
   id: string

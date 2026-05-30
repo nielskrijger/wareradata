@@ -3,7 +3,7 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { writeRawSnapshot } from '@/lib/cache/file-store'
 
-import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getTournamentInfo, getUserIdsForCountry, getUserLite } from './api'
+import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getTournamentInfo, getUserIdsForCountry, getUserLite } from './api'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
@@ -59,6 +59,17 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   const users = await getUserLite(userIds)
   console.info(`[scrape] hydrated ${users.length} users`)
 
+  // 3b. Per-user equipment. One HTTP call per user, batched by the tRPC client
+  // up to 50 ops. Many entries come back `{}` (player stripped gear between
+  // battles); kept in the snapshot as-is so readers can distinguish "captured,
+  // none equipped" from "not captured".
+  const equipmentList = await getEquipment(userIds)
+  const equipment: Record<string, RawSnapshot['equipment'][string]> = {}
+  for (let i = 0; i < userIds.length; i++) {
+    equipment[userIds[i]] = equipmentList[i]
+  }
+  console.info(`[scrape] fetched equipment for ${equipmentList.length} users`)
+
   // 4. MUs: single cursor-paginated stream. Stamp each with the capture time so
   // the MU page can show data freshness; an on-demand refresh bumps it later.
   const musRaw = await getAllMUs()
@@ -103,7 +114,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { users, countries, mus, regions, parties, battles, tournament: tournamentSnapshot, meta }
+  return { users, equipment, countries, mus, regions, parties, battles, tournament: tournamentSnapshot, meta }
 }
 
 /**

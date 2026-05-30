@@ -64,6 +64,7 @@ function userSortValue(row: UserRow, sort: string): number | string | null {
     case 'healthPercent': return row.healthPercent
     case 'hungerPercent': return row.hungerPercent
     case 'readinessStatus': return row.readinessStatus
+    case 'gearScore': return row.gearScore
     default: return row.levelRank
   }
 }

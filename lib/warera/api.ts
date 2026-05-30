@@ -2,6 +2,7 @@ import type {
   BattleGetBattlesResponse,
   BattleListItem,
   CountryListItem,
+  InventoryFetchCurrentEquipmentResponse,
   MuListItem,
   MuMemberListItem,
   MuRankingsOptional,
@@ -47,6 +48,9 @@ export type UserLite = UserGetUserLiteResponse & {
   infos?: { isBanned?: boolean, colorScheme?: string }
   dates?: { lastConnectionAt?: string }
 }
+// One user's currently-equipped gear. Each slot is optional: players strip gear
+// between battles to preserve durability, so the response is often `{}`.
+export type Equipment = InventoryFetchCurrentEquipmentResponse
 export type Ranking = RankingGetRankingResponse
 
 export const RANKING_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'] as const
@@ -138,6 +142,30 @@ export function getUserLite(userIds: string[], _options: ScrapeRequestOptions = 
  */
 export function getUserLiteUrgent(userIds: string[]): Promise<UserLite[]> {
   return hydrateUsers(urgentClient, userIds)
+}
+
+function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<Equipment[]> {
+  return Promise.all(userIds.map(userId => client.inventory.fetchCurrentEquipment({ userId })))
+}
+
+/**
+ * Fetches each user's currently-equipped gear. Same per-user fan-out shape as
+ * {@link getUserLite} — one HTTP call per id, batched by the tRPC client up to
+ * 50 ops per request and paced by the rate limiter.
+ *
+ * Equipment is the most volatile field on a user (durability ticks down per
+ * hit, items get swapped between battles), so the per-cycle freshness is only
+ * a rough snapshot of what someone happened to be wearing at scrape time.
+ */
+export function getEquipment(userIds: string[], _options: ScrapeRequestOptions = {}): Promise<Equipment[]> {
+  return fetchEquipmentBatch(scrapeClient, userIds)
+}
+
+/**
+ * Urgent variant for piecemeal on-demand refreshes (mirrors getUserLiteUrgent).
+ */
+export function getEquipmentUrgent(userIds: string[]): Promise<Equipment[]> {
+  return fetchEquipmentBatch(urgentClient, userIds)
 }
 
 export async function getAllRegions(_options: ScrapeRequestOptions = {}): Promise<Region[]> {

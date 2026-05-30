@@ -1,13 +1,14 @@
 import type { UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
-import type { UserLite } from '@/lib/warera/api'
+import type { Equipment, UserLite } from '@/lib/warera/api'
 
+import { computeGearScore } from '@/lib/gear/score'
 import { assignRank, toTier } from '@/lib/rows/lookups'
 import { computePoints } from '@/lib/scoring'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number): UserRow[] {
+export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number, equipment: Record<string, Equipment>): UserRow[] {
   const rows = users
     .map((u) => {
       const country = lookups.countryById.get(u.country)
@@ -28,6 +29,8 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
       const healthPercent = barPercent(skills?.health)
       const hungerPercent = barPercent(skills?.hunger)
       const readinessStatus = toReadinessStatus(skills?.attack)
+      const gear = equipment[u._id]
+      const gearScore = gear ? computeGearScore(gear) : null
 
       return {
         avatarUrl: u.avatarUrl ?? null,
@@ -43,6 +46,8 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
         damagePoints: pts.damage,
         damageRank: damageRanking?.rank ?? null,
         damage,
+        gearScore,
+        gearScoreRank: null,
         gemsPurchased: r?.userGemsPurchased?.value ?? null,
         gemsPurchasedRank: null,
         healthPercent,
@@ -89,6 +94,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
   // higher value = better (rank #1). Rows with a null value get a null rank.
   assignRank(rows, 'bounty', 'bountyRank')
   assignRank(rows, 'casesOpened', 'casesOpenedRank')
+  assignRank(rows, 'gearScore', 'gearScoreRank')
   assignRank(rows, 'gemsPurchased', 'gemsPurchasedRank')
   assignRank(rows, 'militaryRank', 'militaryRankPos')
   assignRank(rows, 'premiumGifts', 'premiumGiftsRank')

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 
 import type { Range } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
+import type { Equipment } from '@/lib/warera/api'
 
 import { Clock, Coins, Drumstick, Heart, Swords, Trophy } from 'lucide-react'
 import { useState } from 'react'
@@ -11,6 +12,8 @@ import { useState } from 'react'
 import { Avatar } from '@/components/avatar'
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { Flag } from '@/components/flag'
+import { GearScorePill } from '@/components/gear-score-pill'
+import { GearStrip } from '@/components/gear-strip'
 import { ReadinessBadge } from '@/components/readiness-badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatRelativeTime } from '@/lib/format'
@@ -28,6 +31,7 @@ interface FetchedData {
   user: UserRow
   ranges: Record<string, Range>
   total: number
+  equipment: Equipment
 }
 
 type Status = 'idle' | 'loading' | 'ready' | 'error'
@@ -92,7 +96,7 @@ export function UserHoverCard({ userId, children }: Props) {
   return (
     <Tooltip onOpenChange={handleOpenChange}>
       <TooltipTrigger render={<span />}>{children}</TooltipTrigger>
-      <TooltipContent side="top" className="w-72 p-0">
+      <TooltipContent side="top" className="w-80 p-0">
         {status === 'ready' && data ? <Body data={data} /> : <Placeholder status={status} />}
       </TooltipContent>
     </Tooltip>
@@ -102,7 +106,7 @@ export function UserHoverCard({ userId, children }: Props) {
 const ICON_CLS = 'size-3 text-neutral-50/70'
 
 function Body({ data }: { data: FetchedData }) {
-  const { user, ranges } = data
+  const { user, ranges, equipment } = data
   return (
     <>
       <div className="px-3 py-2">
@@ -131,6 +135,7 @@ function Body({ data }: { data: FetchedData }) {
           </span>
         </div>
       </div>
+
       <div className="border-y border-neutral-50/15 px-3 py-2">
         <div className="mb-1.5 flex items-center justify-between">
           <span className="text-[10px] uppercase tracking-wide text-neutral-50/50">Vitals</span>
@@ -147,6 +152,15 @@ function Body({ data }: { data: FetchedData }) {
           </div>
         </div>
       </div>
+
+      <div className="border-b border-neutral-50/15 px-3 py-2">
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-wide text-neutral-50/50">Gear score</span>
+          {user.gearScore != null && <GearScorePill score={user.gearScore} />}
+        </div>
+        <GearStrip equipment={equipment} />
+      </div>
+
       <div className="px-3 py-2">
         <div className="mb-1 text-[10px] uppercase tracking-wide text-neutral-50/50">Performance</div>
         <div className="space-y-0.5 text-[11px]">
@@ -222,6 +236,15 @@ function Placeholder({ status }: { status: Status }) {
       <div className="space-y-2 border-y border-neutral-50/15 px-3 py-3">
         <span className="block h-1.5 rounded bg-white/10" />
         <span className="block h-1.5 rounded bg-white/10" />
+      </div>
+      <div className="flex items-end gap-1.5 border-b border-neutral-50/15 px-3 py-2">
+        {Array.from({ length: 7 }).map((_, i) => (
+          // eslint-disable-next-line react/no-array-index-key -- 7 fixed slots
+          <div key={i} className="flex w-9 flex-col items-center gap-0.5">
+            <span className="size-9 rounded-md bg-white/10" />
+            <span className="h-3" />
+          </div>
+        ))}
       </div>
       <div className="space-y-1.5 px-3 py-3">
         <span className="block h-2.5 w-full rounded bg-white/10" />

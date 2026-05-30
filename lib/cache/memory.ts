@@ -3,7 +3,7 @@ import type { Range } from '@/lib/query'
 import type { BattleRow, CountryRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 
-import type { TournamentSnapshot } from '@/lib/warera/api'
+import type { Equipment, TournamentSnapshot } from '@/lib/warera/api'
 
 import { computeRanges } from '@/lib/query'
 import { buildBattleRows } from '@/lib/rows/build-battles'
@@ -38,6 +38,10 @@ export interface Snapshot {
   // tooltip can heat-tint stats against the leaderboard without re-walking
   // 16k rows per request.
   userRanges: Record<string, Range>
+  // Currently-equipped gear per user id, captured by the equipment scrape
+  // phase. Pass-through from RawSnapshot — the row builders don't need it,
+  // but per-user views (hover-card, detail page) read it directly.
+  equipment: Record<string, Equipment>
   countries: CountryRow[]
   mus: MURow[]
   parties: PartyRow[]
@@ -78,7 +82,7 @@ function store(): SnapshotStore {
  */
 export function buildSnapshot(raw: RawSnapshot, nowMs: number): Snapshot {
   const lookups = buildLookups(raw.countries, raw.mus, raw.regions, raw.users, raw.parties)
-  const userRows = buildUserRows(raw.users, lookups, nowMs)
+  const userRows = buildUserRows(raw.users, lookups, nowMs, raw.equipment)
   const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups)
   const muRows = buildMURows(raw.mus, userRows, lookups)
   const partyRows = buildPartyRows(raw.parties, userRows, lookups)
@@ -86,7 +90,7 @@ export function buildSnapshot(raw: RawSnapshot, nowMs: number): Snapshot {
   const battleRows = buildBattleRows(raw.battles, raw.tournament, lookups)
   const userRanges = computeRanges(userRows)
 
-  return { users: userRows, userRanges, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament }
+  return { users: userRows, userRanges, equipment: raw.equipment, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament }
 }
 
 /**

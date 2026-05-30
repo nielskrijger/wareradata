@@ -5,8 +5,8 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { RegionRow } from '@/lib/rows'
 
 import { BoolCell } from '@/components/cells/bool-cell'
-import { CountryCell } from '@/components/cells/country-cell'
 import { TruncatedCell } from '@/components/cells/truncated-cell'
+import { countryColumn } from '@/components/data-table/column-factories'
 import { InfoTooltip } from '@/components/info-tooltip'
 
 export type { RegionRow }
@@ -31,18 +31,7 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
     ),
     meta: { width: 200 },
   },
-  {
-    accessorKey: 'countryName',
-    header: 'Country',
-    cell: ({ row }) => (
-      <CountryCell
-        countryCode={row.original.countryCode}
-        countryName={row.original.countryName}
-        countryId={row.original.countryId}
-      />
-    ),
-    meta: { width: 180 },
-  },
+  countryColumn<RegionRow>(),
   {
     accessorKey: 'development',
     header: 'Development',

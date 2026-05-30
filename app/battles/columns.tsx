@@ -6,9 +6,9 @@ import type { BattleRow } from '@/lib/rows'
 
 import { BattleTypeBadge } from '@/components/badges/battle-type-badge'
 import { BattleMatchupCell } from '@/components/cells/battle-matchup-cell'
-import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
 import { MUCell } from '@/components/cells/mu-cell'
+import { compactNumberColumn } from '@/components/data-table/column-factories'
 import { ExternalLink, InternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 
@@ -108,34 +108,10 @@ export const activeBattleColumns: ColumnDef<BattleRow>[] = [
     sortDescFirst: true,
     meta: { align: 'right', width: 110 },
   },
-  {
-    accessorKey: 'roundAttackerDamage',
-    header: 'Round Dmg (Atk)',
-    cell: ({ row }) => <CompactNumber value={row.original.roundAttackerDamage} />,
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 140 },
-  },
-  {
-    accessorKey: 'roundDefenderDamage',
-    header: 'Round Dmg (Def)',
-    cell: ({ row }) => <CompactNumber value={row.original.roundDefenderDamage} />,
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 140 },
-  },
-  {
-    accessorKey: 'totalDamage',
-    header: 'Total Damage',
-    cell: ({ row }) => <CompactNumber value={row.original.totalDamage} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 130 },
-  },
-  {
-    accessorKey: 'moneyPool',
-    header: 'Money Pool',
-    cell: ({ row }) => <CompactNumber value={row.original.moneyPool} />,
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 120 },
-  },
+  compactNumberColumn<BattleRow>('roundAttackerDamage', 'Round Dmg (Atk)', { heat: 'ramp', width: 140 }),
+  compactNumberColumn<BattleRow>('roundDefenderDamage', 'Round Dmg (Def)', { heat: 'ramp', width: 140 }),
+  compactNumberColumn<BattleRow>('totalDamage', 'Total Damage', { heat: 'median', width: 130 }),
+  compactNumberColumn<BattleRow>('moneyPool', 'Money Pool', { heat: 'ramp', width: 120 }),
   wareraColumn,
 ]
 
@@ -156,13 +132,7 @@ export const finishedBattleColumns: ColumnDef<BattleRow>[] = [
     sortDescFirst: true,
     meta: { align: 'right', width: 110 },
   },
-  {
-    accessorKey: 'totalDamage',
-    header: 'Total Damage',
-    cell: ({ row }) => <CompactNumber value={row.original.totalDamage} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 130 },
-  },
+  compactNumberColumn<BattleRow>('totalDamage', 'Total Damage', { heat: 'median', width: 130 }),
   {
     accessorKey: 'endedAt',
     header: 'Ended',

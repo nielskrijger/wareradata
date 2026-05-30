@@ -110,6 +110,8 @@ export interface CountryRow {
   activePopulationRank: number | null
   alliesCount: number
   alliesCountRank: number | null
+  avgGearScore: number | null
+  avgGearScoreRank: number | null
   avgHealth: number | null
   avgHealthRank: number | null
   avgHunger: number | null
@@ -168,6 +170,8 @@ export interface CountryRow {
  */
 export interface MURow {
   avatarUrl: string | null
+  avgGearScore: number | null
+  avgGearScoreRank: number | null
   avgHealth: number | null
   avgHealthRank: number | null
   avgHunger: number | null

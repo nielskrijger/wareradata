@@ -5,6 +5,8 @@ export interface MemberAgg {
   count: number
   damage: number
   debuffCount: number
+  gearScoreCount: number
+  gearScoreSum: number
   gemsPurchasedTotal: number
   healthCount: number
   healthSum: number
@@ -26,6 +28,8 @@ function emptyAgg(): MemberAgg {
     count: 0,
     damage: 0,
     debuffCount: 0,
+    gearScoreCount: 0,
+    gearScoreSum: 0,
     gemsPurchasedTotal: 0,
     healthCount: 0,
     healthSum: 0,
@@ -49,7 +53,7 @@ function emptyAgg(): MemberAgg {
  *
  * Aggregates kept in one helper so callers do a single pass: points sums
  * (level / damage / wealth / total), member count, premium spend totals
- * (gems / months / gifts), level / health / hunger sums + counts for averages,
+ * (gems / months / gifts), level / health / hunger / gear sums + counts for averages,
  * and buff / ready / debuff counts for the readiness pill.
  */
 export function aggregateMembers(
@@ -83,6 +87,10 @@ export function aggregateMembers(
     if (u.hungerPercent !== null) {
       entry.hungerSum += u.hungerPercent
       entry.hungerCount += 1
+    }
+    if (u.gearScore !== null) {
+      entry.gearScoreSum += u.gearScore
+      entry.gearScoreCount += 1
     }
     if (u.readinessStatus === 'buff') {
       entry.buffCount += 1

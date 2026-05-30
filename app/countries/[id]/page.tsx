@@ -146,6 +146,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
         <StatCard label="Active Pop." value={c.activePopulation} range={ranges.activePopulation} heat="ramp" rank={c.activePopulationRank} total={total} />
         <StatCard label="Avg Level" value={c.avgLevel} range={ranges.avgLevel} heat="median" rank={c.avgLevelRank} total={total} />
         <StatCard label="Avg Points" value={c.avgPoints} range={ranges.avgPoints} heat="median" rank={c.avgPointsRank} total={total} />
+        <StatCard label="Avg Gear" value={c.avgGearScore} range={ranges.avgGearScore} heat="median" rank={c.avgGearScoreRank} total={total} />
         <StatCard label="Total Damage" value={c.damage} display={<CompactNumber value={c.damage} />} range={ranges.damage} heat="median" rank={c.damageRank} total={total} />
         <StatCard label="Weekly Damage" value={c.weeklyDamage} display={<CompactNumber value={c.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={c.weeklyDamageRank} total={total} />
         <StatCard label="Weekly / Citizen" value={c.weeklyDamagePerCitizen} display={<CompactNumber value={c.weeklyDamagePerCitizen} />} range={ranges.weeklyDamagePerCitizen} heat="median" rank={c.weeklyDamagePerCitizenRank} total={total} />

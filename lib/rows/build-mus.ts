@@ -2,7 +2,7 @@ import type { MURow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { MU } from '@/lib/warera/api'
 
-import { assignRank, toTier } from '@/lib/rows/lookups'
+import { rankAll, toTier } from '@/lib/rows/lookups'
 import { aggMean, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): MURow[] {
@@ -29,6 +29,8 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
 
       return {
         avatarUrl: m.avatarUrl ?? null,
+        avgGearScore: agg ? aggMean(agg.gearScoreSum, agg.gearScoreCount) : null,
+        avgGearScoreRank: null,
         avgHealth: agg ? aggMean(agg.healthSum, agg.healthCount) : null,
         avgHealthRank: null,
         avgHunger: agg ? aggMean(agg.hungerSum, agg.hungerCount) : null,
@@ -90,24 +92,27 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
   // "#X of N" line on the detail page shares the same N. We recompute the
   // damage/wealth ranks the API also provides, trading its global denominator
   // for one consistent with the rest of the card grid.
-  assignRank(rows, 'totalPoints', 'totalPointsRank')
-  assignRank(rows, 'avgPoints', 'avgPointsRank')
-  assignRank(rows, 'avgLevel', 'avgLevelRank')
-  assignRank(rows, 'avgHealth', 'avgHealthRank')
-  assignRank(rows, 'avgHunger', 'avgHungerRank')
-  assignRank(rows, 'damage', 'damageRank')
-  assignRank(rows, 'weeklyDamage', 'weeklyDamageRank')
-  assignRank(rows, 'bounty', 'bountyRank')
-  assignRank(rows, 'wealth', 'wealthRank')
-  assignRank(rows, 'terrain', 'terrainRank')
-  assignRank(rows, 'reputation', 'reputationRank')
-  assignRank(rows, 'memberCount', 'memberCountRank')
-  assignRank(rows, 'investedMoney', 'investedMoneyRank')
-  assignRank(rows, 'dormitoriesLevel', 'dormitoriesLevelRank')
-  assignRank(rows, 'headquartersLevel', 'headquartersLevelRank')
-  assignRank(rows, 'gemsPurchasedTotal', 'gemsPurchasedTotalRank')
-  assignRank(rows, 'premiumMonthsTotal', 'premiumMonthsTotalRank')
-  assignRank(rows, 'premiumGiftsTotal', 'premiumGiftsTotalRank')
+  rankAll(rows, [
+    'totalPoints',
+    'avgPoints',
+    'avgLevel',
+    'avgHealth',
+    'avgHunger',
+    'avgGearScore',
+    'damage',
+    'weeklyDamage',
+    'bounty',
+    'wealth',
+    'terrain',
+    'reputation',
+    'memberCount',
+    'investedMoney',
+    'dormitoriesLevel',
+    'headquartersLevel',
+    'gemsPurchasedTotal',
+    'premiumMonthsTotal',
+    'premiumGiftsTotal',
+  ])
 
   return rows
 }

@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Equipment, UserLite } from '@/lib/warera/api'
 
 import { computeGearScore } from '@/lib/gear/score'
-import { assignRank, toTier } from '@/lib/rows/lookups'
+import { rankAll, toTier } from '@/lib/rows/lookups'
 import { computePoints } from '@/lib/scoring'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -92,16 +92,18 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
   // Leaderboard position for stats the API doesn't rank for us. Standard
   // competition rank (ties share a rank, gaps after) over non-null values;
   // higher value = better (rank #1). Rows with a null value get a null rank.
-  assignRank(rows, 'bounty', 'bountyRank')
-  assignRank(rows, 'casesOpened', 'casesOpenedRank')
-  assignRank(rows, 'gearScore', 'gearScoreRank')
-  assignRank(rows, 'gemsPurchased', 'gemsPurchasedRank')
-  assignRank(rows, 'militaryRank', 'militaryRankPos')
-  assignRank(rows, 'premiumGifts', 'premiumGiftsRank')
-  assignRank(rows, 'premiumMonths', 'premiumMonthsRank')
-  assignRank(rows, 'referrals', 'referralsRank')
-  assignRank(rows, 'terrain', 'terrainRank')
-  assignRank(rows, 'weeklyDamage', 'weeklyDamageRank')
+  rankAll(rows, [
+    'bounty',
+    'casesOpened',
+    'gearScore',
+    'gemsPurchased',
+    'militaryRank',
+    'premiumGifts',
+    'premiumMonths',
+    'referrals',
+    'terrain',
+    'weeklyDamage',
+  ], { militaryRank: 'militaryRankPos' })
 
   return rows
 }

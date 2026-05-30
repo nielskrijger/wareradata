@@ -3,17 +3,9 @@ import type { CountryRow } from '@/lib/rows'
 
 import { withActiveBattleCounts } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyStructuredQuery, parseQuery } from '@/lib/query'
+import { createTableRoute, makeSortValue } from '@/lib/query'
 import { readinessScore } from '@/lib/rows'
-import { RANKING_TIERS } from '@/lib/warera/api'
-
-/**
- * Tier rank lookup so sorting follows progression
- * (bronze → master), not alphabetical order.
- */
-const tierIndex: Record<string, number> = Object.fromEntries(
-  RANKING_TIERS.map((t, i) => [t, i]),
-)
+import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
  * Friendly field names for the advanced filter. Keep in sync with the
@@ -33,57 +25,54 @@ const countryFieldAliases: FieldAliases = {
   wars: 'warsCount',
 }
 
-/**
- * Maps a column id from the client to a comparable value on the row.
- */
-function countrySortValue(row: CountryRow, sort: string): number | string | null {
-  switch (sort) {
-    case 'activePopulation': return row.activePopulation
-    case 'alliesCount': return row.alliesCount
-    case 'avgHealth': return row.avgHealth
-    case 'avgHunger': return row.avgHunger
-    case 'avgLevel': return row.avgLevel
-    case 'avgPoints': return row.avgPoints
-    case 'bounty': return row.bounty
-    case 'code': return row.code
-    case 'damageRank': return row.damageRank
-    case 'damageTier': return row.damageTier ? tierIndex[row.damageTier] : null
-    case 'damage': return row.damage
-    case 'development': return row.development
-    case 'gemsPurchasedTotal': return row.gemsPurchasedTotal
-    case 'money': return row.money
-    case 'musCount': return row.musCount
-    case 'name': return row.name.toLowerCase()
-    case 'partyCount': return row.partyCount
-    case 'premiumGiftsTotal': return row.premiumGiftsTotal
-    case 'premiumMonthsTotal': return row.premiumMonthsTotal
-    case 'productionBonus': return row.productionBonus
-    case 'readinessScore': return readinessScore(row.readinessPill)
-    case 'specializedItem': return row.specializedItem
-    case 'taxIncome': return row.taxIncome
-    case 'taxMarket': return row.taxMarket
-    case 'taxSelfWork': return row.taxSelfWork
-    case 'totalPoints': return row.totalPoints
-    case 'unrestPercent': return row.unrestPercent
-    case 'warsCount': return row.warsCount
-    case 'wealthRank': return row.wealthRank
-    case 'wealth': return row.wealth
-    case 'weeklyDamagePerCitizen': return row.weeklyDamagePerCitizen
-    case 'weeklyDamage': return row.weeklyDamage
-    default: return row.damageRank
-  }
-}
+const countrySortValue = makeSortValue<CountryRow>({
+  passthrough: [
+    'totalPoints',
+    'avgPoints',
+    'avgLevel',
+    'avgHealth',
+    'avgHunger',
+    'avgGearScore',
+    'damage',
+    'damageRank',
+    'weeklyDamage',
+    'weeklyDamagePerCitizen',
+    'wealth',
+    'wealthRank',
+    'bounty',
+    'money',
+    'development',
+    'productionBonus',
+    'activePopulation',
+    'musCount',
+    'partyCount',
+    'alliesCount',
+    'warsCount',
+    'gemsPurchasedTotal',
+    'premiumMonthsTotal',
+    'premiumGiftsTotal',
+    'code',
+    'specializedItem',
+    'taxIncome',
+    'taxMarket',
+    'taxSelfWork',
+    'unrestPercent',
+  ],
+  text: ['name'],
+  custom: {
+    damageTier: row => (row.damageTier ? TIER_INDEX[row.damageTier] : null),
+    readinessScore: row => readinessScore(row.readinessPill),
+  },
+  default: 'damageRank',
+})
 
 /**
  * Driven by the client DataTable on /countries. Reads from the in-process
- * snapshot cache (warm worker = sub-ms) and applies pagination, sorting, and
- * filtering in memory. Returns `{rows, total}`.
+ * snapshot cache and stamps on live active-battle counts before filtering,
+ * sorting, and paginating in memory. Returns `{rows, total}`.
  */
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const query = parseQuery(searchParams)
-  const { countries } = await getSnapshot()
-  const withCounts = await withActiveBattleCounts(countries)
-  const result = applyStructuredQuery(withCounts, query, countrySortValue, countryFieldAliases)
-  return Response.json(result)
-}
+export const GET = createTableRoute<CountryRow>(
+  async () => withActiveBattleCounts((await getSnapshot()).countries),
+  countrySortValue,
+  countryFieldAliases,
+)

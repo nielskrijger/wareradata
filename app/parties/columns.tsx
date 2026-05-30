@@ -4,14 +4,10 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { PartyRow } from '@/lib/rows'
 
-import { ScaleBadge } from '@/components/badges/scale-badge'
-import { CountryCell } from '@/components/cells/country-cell'
 import { PartyCell } from '@/components/cells/party-cell'
-import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
-import { ExternalLink } from '@/components/links'
+import { countryColumn, localeNumberColumn, pointsBreakdownColumn, scaleBadgeColumn, wareraLinkColumn } from '@/components/data-table/column-factories'
 import { UserHoverCard } from '@/components/user-hover-card'
-import { wareraUrl } from '@/lib/warera/urls'
 
 export type { PartyRow }
 
@@ -36,27 +32,8 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
     ),
     meta: { width: 240 },
   },
-  {
-    accessorKey: 'totalPoints',
-    header: 'Total Points',
-    cell: ({ row }) => (
-      <PointsBreakdownCell
-        total={row.original.totalPoints}
-        level={row.original.levelPoints}
-        damage={row.original.damagePoints}
-        wealth={row.original.wealthPoints}
-      />
-    ),
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'avgPoints',
-    header: 'Avg Points',
-    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 110 },
-  },
+  pointsBreakdownColumn<PartyRow>('totalPoints', 'Total Points'),
+  localeNumberColumn<PartyRow>('avgPoints', 'Avg Points', { heat: 'median', width: 110 }),
   {
     accessorKey: 'avgLevel',
     header: 'Avg Level',
@@ -64,25 +41,8 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
   },
-  {
-    accessorKey: 'countryName',
-    header: 'Country',
-    cell: ({ row }) => (
-      <CountryCell
-        countryCode={row.original.countryCode}
-        countryName={row.original.countryName}
-        countryId={row.original.countryId}
-      />
-    ),
-    meta: { width: 180 },
-  },
-  {
-    accessorKey: 'memberCount',
-    header: 'Members',
-    cell: ({ row }) => row.original.memberCount.toLocaleString(),
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 100 },
-  },
+  countryColumn<PartyRow>(),
+  localeNumberColumn<PartyRow>('memberCount', 'Members', { heat: 'ramp', width: 100 }),
   {
     accessorKey: 'leaderName',
     header: 'Leader',
@@ -98,55 +58,13 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
     ),
     meta: { width: 220 },
   },
-  {
-    accessorKey: 'militarism',
-    header: 'Militarism',
-    cell: ({ row }) => <ScaleBadge value={row.original.militarism} />,
-    sortDescFirst: true,
-    meta: { align: 'right', width: 110 },
-  },
-  {
-    accessorKey: 'isolationism',
-    header: 'Isolationism',
-    cell: ({ row }) => <ScaleBadge value={row.original.isolationism} />,
-    sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'imperialism',
-    header: 'Imperialism',
-    cell: ({ row }) => <ScaleBadge value={row.original.imperialism} />,
-    sortDescFirst: true,
-    meta: { align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'industrialism',
-    header: 'Industrialism',
-    cell: ({ row }) => <ScaleBadge value={row.original.industrialism} />,
-    sortDescFirst: true,
-    meta: { align: 'right', width: 130 },
-  },
-  {
-    accessorKey: 'gemsPurchasedTotal',
-    header: 'Gems Bought',
-    cell: ({ row }) => row.original.gemsPurchasedTotal.toLocaleString(),
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'premiumMonthsTotal',
-    header: 'Premium Mo.',
-    cell: ({ row }) => row.original.premiumMonthsTotal.toLocaleString(),
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'premiumGiftsTotal',
-    header: 'Premium Gifts',
-    cell: ({ row }) => row.original.premiumGiftsTotal.toLocaleString(),
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 130 },
-  },
+  scaleBadgeColumn<PartyRow>('militarism', 'Militarism', { width: 110 }),
+  scaleBadgeColumn<PartyRow>('isolationism', 'Isolationism', { width: 120 }),
+  scaleBadgeColumn<PartyRow>('imperialism', 'Imperialism', { width: 120 }),
+  scaleBadgeColumn<PartyRow>('industrialism', 'Industrialism', { width: 130 }),
+  localeNumberColumn<PartyRow>('gemsPurchasedTotal', 'Gems Bought', { heat: 'ramp', width: 120 }),
+  localeNumberColumn<PartyRow>('premiumMonthsTotal', 'Premium Mo.', { heat: 'ramp', width: 120 }),
+  localeNumberColumn<PartyRow>('premiumGiftsTotal', 'Premium Gifts', { heat: 'ramp', width: 130 }),
   {
     accessorKey: 'createdAt',
     header: 'Founded',
@@ -154,15 +72,5 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
     sortDescFirst: true,
     meta: { width: 110 },
   },
-  {
-    id: 'warera',
-    header: 'Link',
-    enableSorting: false,
-    cell: ({ row }) => (
-      <ExternalLink href={wareraUrl('party', row.original.id)}>
-        WarEra.io
-      </ExternalLink>
-    ),
-    meta: { width: 110 },
-  },
+  wareraLinkColumn<PartyRow>('party'),
 ]

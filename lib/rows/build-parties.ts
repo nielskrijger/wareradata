@@ -2,7 +2,7 @@ import type { PartyRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { Party } from '@/lib/warera/api'
 
-import { assignRank } from '@/lib/rows/lookups'
+import { rankAll } from '@/lib/rows/lookups'
 import { aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: Lookups): PartyRow[] {
@@ -60,13 +60,15 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
   // Rank parties against each other on the aggregate stats (standard
   // competition rank over the snapshot). Ethics are a -2..+2 policy scale, not
   // a leaderboard, so they get no rank.
-  assignRank(rows, 'totalPoints', 'totalPointsRank')
-  assignRank(rows, 'avgPoints', 'avgPointsRank')
-  assignRank(rows, 'avgLevel', 'avgLevelRank')
-  assignRank(rows, 'memberCount', 'memberCountRank')
-  assignRank(rows, 'gemsPurchasedTotal', 'gemsPurchasedTotalRank')
-  assignRank(rows, 'premiumMonthsTotal', 'premiumMonthsTotalRank')
-  assignRank(rows, 'premiumGiftsTotal', 'premiumGiftsTotalRank')
+  rankAll(rows, [
+    'totalPoints',
+    'avgPoints',
+    'avgLevel',
+    'memberCount',
+    'gemsPurchasedTotal',
+    'premiumMonthsTotal',
+    'premiumGiftsTotal',
+  ])
 
   return rows
 }

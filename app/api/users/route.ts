@@ -2,8 +2,8 @@ import type { FieldAliases } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyStructuredQuery, parseQuery } from '@/lib/query'
-import { RANKING_TIERS } from '@/lib/warera/api'
+import { createTableRoute, makeSortValue } from '@/lib/query'
+import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
  * Friendly field names for the advanced filter. Underlying row keys still
@@ -23,61 +23,46 @@ const userFieldAliases: FieldAliases = {
   status: 'readinessStatus',
 }
 
+const userSortValue = makeSortValue<UserRow>({
+  passthrough: [
+    'countryCode',
+    'level',
+    'levelRank',
+    'wealthRank',
+    'wealth',
+    'damageRank',
+    'damage',
+    'weeklyDamage',
+    'bounty',
+    'terrain',
+    'referrals',
+    'premiumMonths',
+    'premiumGifts',
+    'casesOpened',
+    'gemsPurchased',
+    'militaryRank',
+    'lastConnectionAt',
+    'createdAt',
+    'points',
+    'pointsPerDay',
+    'healthPercent',
+    'hungerPercent',
+    'readinessStatus',
+    'gearScore',
+  ],
+  text: ['username', 'muName', 'partyName'],
+  boolean: ['isBanned'],
+  custom: { levelTier: row => (row.levelTier ? TIER_INDEX[row.levelTier] : null) },
+  default: 'levelRank',
+})
+
 /**
- * Tier rank lookup so sorting follows progression
- * (bronze → master), not alphabetical order.
+ * Driven by the client DataTable on /users. Reads from the in-process snapshot
+ * cache (warm worker = sub-ms) and applies pagination, sorting, and filtering
+ * in memory. Returns `{rows, total}`.
  */
-const tierIndex: Record<string, number> = Object.fromEntries(
-  RANKING_TIERS.map((t, i) => [t, i]),
+export const GET = createTableRoute<UserRow>(
+  async () => (await getSnapshot()).users,
+  userSortValue,
+  userFieldAliases,
 )
-
-/**
- * Maps a column id from the client to a comparable value on the row.
- */
-function userSortValue(row: UserRow, sort: string): number | string | null {
-  switch (sort) {
-    case 'username': return row.username.toLowerCase()
-    case 'countryCode': return row.countryCode
-    case 'level': return row.level
-    case 'levelRank': return row.levelRank
-    case 'levelTier': return row.levelTier ? tierIndex[row.levelTier] : null
-    case 'wealthRank': return row.wealthRank
-    case 'wealth': return row.wealth
-    case 'damageRank': return row.damageRank
-    case 'damage': return row.damage
-    case 'weeklyDamage': return row.weeklyDamage
-    case 'bounty': return row.bounty
-    case 'terrain': return row.terrain
-    case 'referrals': return row.referrals
-    case 'premiumMonths': return row.premiumMonths
-    case 'premiumGifts': return row.premiumGifts
-    case 'casesOpened': return row.casesOpened
-    case 'gemsPurchased': return row.gemsPurchased
-    case 'militaryRank': return row.militaryRank
-    case 'muName': return row.muName?.toLowerCase() ?? null
-    case 'partyName': return row.partyName?.toLowerCase() ?? null
-    case 'lastConnectionAt': return row.lastConnectionAt
-    case 'createdAt': return row.createdAt
-    case 'isBanned': return row.isBanned ? 1 : 0
-    case 'points': return row.points
-    case 'pointsPerDay': return row.pointsPerDay
-    case 'healthPercent': return row.healthPercent
-    case 'hungerPercent': return row.hungerPercent
-    case 'readinessStatus': return row.readinessStatus
-    case 'gearScore': return row.gearScore
-    default: return row.levelRank
-  }
-}
-
-/**
- * Driven by the client DataTable on /users. Reads from the in-process
- * snapshot cache (warm worker = sub-ms) and applies pagination, sorting, and
- * filtering in memory. Returns `{rows, total}`.
- */
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const query = parseQuery(searchParams)
-  const { users } = await getSnapshot()
-  const result = applyStructuredQuery(users, query, userSortValue, userFieldAliases)
-  return Response.json(result)
-}

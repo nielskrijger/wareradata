@@ -4,17 +4,19 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { MURow } from '@/lib/rows'
 
-import { TierBadge } from '@/components/badges/tier-badge'
-import { CompactNumber } from '@/components/cells/compact-number'
-import { CountryCell } from '@/components/cells/country-cell'
 import { MUCell } from '@/components/cells/mu-cell'
-import { PercentBar } from '@/components/cells/percent-bar'
-import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
-import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
-import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
-import { ExternalLink } from '@/components/links'
-import { readinessScore } from '@/lib/rows'
-import { wareraUrl } from '@/lib/warera/urls'
+import {
+  compactNumberColumn,
+  countryColumn,
+  gearColumn,
+  localeNumberColumn,
+  percentBarColumn,
+  pointsBreakdownColumn,
+  rankTooltipColumn,
+  readinessColumn,
+  tierColumn,
+  wareraLinkColumn,
+} from '@/components/data-table/column-factories'
 
 export type { MURow }
 
@@ -32,27 +34,8 @@ export const muColumns: ColumnDef<MURow>[] = [
     ),
     meta: { width: 220 },
   },
-  {
-    accessorKey: 'totalPoints',
-    header: 'Total Points',
-    cell: ({ row }) => (
-      <PointsBreakdownCell
-        total={row.original.totalPoints}
-        level={row.original.levelPoints}
-        damage={row.original.damagePoints}
-        wealth={row.original.wealthPoints}
-      />
-    ),
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'avgPoints',
-    header: 'Avg Points',
-    cell: ({ row }) => row.original.avgPoints?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 110 },
-  },
+  pointsBreakdownColumn<MURow>('totalPoints', 'Total Points'),
+  localeNumberColumn<MURow>('avgPoints', 'Avg Points', { heat: 'median', width: 110 }),
   {
     accessorKey: 'avgLevel',
     header: 'Avg Level',
@@ -60,123 +43,26 @@ export const muColumns: ColumnDef<MURow>[] = [
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 100 },
   },
-  {
-    accessorKey: 'avgHealth',
-    header: 'Avg Health',
-    cell: ({ row }) => <PercentBar value={row.original.avgHealth} />,
-    sortDescFirst: true,
-    sortUndefined: 'last',
-    meta: { width: 130 },
-  },
-  {
-    accessorKey: 'avgHunger',
-    header: 'Avg Hunger',
-    cell: ({ row }) => <PercentBar value={row.original.avgHunger} />,
-    sortDescFirst: true,
-    sortUndefined: 'last',
-    meta: { width: 130 },
-  },
-  {
-    id: 'readinessScore',
-    header: 'Readiness',
-    // accessorFn enables the sortable header; the actual ordering is done
-    // server-side (manualSorting) via the matching `readinessScore` sort case.
-    accessorFn: row => readinessScore(row.readinessPill),
-    cell: ({ row }) => <ReadinessPillBar mix={row.original.readinessPill} />,
-    sortDescFirst: true,
-    sortUndefined: 'last',
-    meta: { width: 120 },
-  },
-  {
-    accessorKey: 'countryName',
-    header: 'Country',
-    cell: ({ row }) => (
-      <CountryCell
-        countryCode={row.original.countryCode}
-        countryName={row.original.countryName}
-        countryId={row.original.countryId}
-      />
-    ),
-    meta: { width: 180 },
-  },
+  gearColumn<MURow>('avgGearScore', 'Avg Gear', { width: 110 }),
+  percentBarColumn<MURow>('avgHealth', 'Avg Health'),
+  percentBarColumn<MURow>('avgHunger', 'Avg Hunger'),
+  readinessColumn<MURow>(),
+  countryColumn<MURow>(),
   {
     accessorKey: 'regionName',
     header: 'Region',
     cell: ({ row }) => row.original.regionName ?? null,
     meta: { width: 140 },
   },
-  {
-    accessorKey: 'memberCount',
-    header: 'Members',
-    cell: ({ row }) => row.original.memberCount.toLocaleString(),
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 100 },
-  },
-  {
-    accessorKey: 'damageTier',
-    header: 'Tier',
-    cell: ({ row }) => <TierBadge tier={row.original.damageTier} />,
-    meta: { width: 90 },
-  },
-  {
-    accessorKey: 'damageRank',
-    header: 'Total Damage',
-    cell: ({ row }) => (
-      <ValueWithRankTooltip rank={row.original.damageRank}>
-        <CompactNumber value={row.original.damage} />
-      </ValueWithRankTooltip>
-    ),
-    sortDescFirst: false,
-    sortUndefined: 'last',
-    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 130 },
-  },
-  {
-    accessorKey: 'weeklyDamage',
-    header: 'Weekly Damage',
-    cell: ({ row }) => <CompactNumber value={row.original.weeklyDamage} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 140 },
-  },
-  {
-    accessorKey: 'bounty',
-    header: 'Bounty',
-    cell: ({ row }) => <CompactNumber value={row.original.bounty} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 90 },
-  },
-  {
-    accessorKey: 'wealthRank',
-    header: 'Wealth',
-    cell: ({ row }) => (
-      <ValueWithRankTooltip rank={row.original.wealthRank}>
-        <CompactNumber value={row.original.wealth} />
-      </ValueWithRankTooltip>
-    ),
-    sortDescFirst: false,
-    sortUndefined: 'last',
-    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 110 },
-  },
-  {
-    accessorKey: 'terrain',
-    header: 'Terrain',
-    cell: ({ row }) => row.original.terrain?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 100 },
-  },
-  {
-    accessorKey: 'reputation',
-    header: 'Reputation',
-    cell: ({ row }) => row.original.reputation?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'median', heatCenter: 0, align: 'right', width: 110 },
-  },
-  {
-    accessorKey: 'investedMoney',
-    header: 'Invested',
-    cell: ({ row }) => <CompactNumber value={row.original.investedMoney} />,
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 100 },
-  },
+  localeNumberColumn<MURow>('memberCount', 'Members', { heat: 'median', width: 100 }),
+  tierColumn<MURow>('damageTier'),
+  rankTooltipColumn<MURow>('damage', 'damageRank', 'Total Damage', { width: 130 }),
+  compactNumberColumn<MURow>('weeklyDamage', 'Weekly Damage', { heat: 'median', width: 140 }),
+  compactNumberColumn<MURow>('bounty', 'Bounty', { heat: 'median', width: 90 }),
+  rankTooltipColumn<MURow>('wealth', 'wealthRank', 'Wealth', { width: 110 }),
+  localeNumberColumn<MURow>('terrain', 'Terrain', { heat: 'median', width: 100 }),
+  localeNumberColumn<MURow>('reputation', 'Reputation', { heat: 'median', center: 0, width: 110 }),
+  compactNumberColumn<MURow>('investedMoney', 'Invested', { heat: 'ramp', width: 100 }),
   {
     accessorKey: 'dormitoriesLevel',
     header: 'Dorms',
@@ -191,36 +77,8 @@ export const muColumns: ColumnDef<MURow>[] = [
     sortDescFirst: true,
     meta: { heat: 'median', heatCenter: 2.5, align: 'right', width: 70 },
   },
-  {
-    accessorKey: 'gemsPurchasedTotal',
-    header: 'Gems Bought',
-    cell: ({ row }) => row.original.gemsPurchasedTotal.toLocaleString(),
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'premiumMonthsTotal',
-    header: 'Premium Mo.',
-    cell: ({ row }) => row.original.premiumMonthsTotal.toLocaleString(),
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'premiumGiftsTotal',
-    header: 'Premium Gifts',
-    cell: ({ row }) => row.original.premiumGiftsTotal.toLocaleString(),
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 130 },
-  },
-  {
-    id: 'warera',
-    header: 'Link',
-    enableSorting: false,
-    cell: ({ row }) => (
-      <ExternalLink href={wareraUrl('mu', row.original.id)}>
-        WarEra.io
-      </ExternalLink>
-    ),
-    meta: { width: 110 },
-  },
+  localeNumberColumn<MURow>('gemsPurchasedTotal', 'Gems Bought', { heat: 'ramp', width: 120 }),
+  localeNumberColumn<MURow>('premiumMonthsTotal', 'Premium Mo.', { heat: 'ramp', width: 120 }),
+  localeNumberColumn<MURow>('premiumGiftsTotal', 'Premium Gifts', { heat: 'ramp', width: 130 }),
+  wareraLinkColumn<MURow>('mu'),
 ]

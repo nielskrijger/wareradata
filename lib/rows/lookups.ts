@@ -80,3 +80,20 @@ export function assignRank<T extends Record<string, unknown>>(
     lastRank = rank
   })
 }
+
+/**
+ * Convenience over {@link assignRank}: rank every listed value key into its
+ * conventional `${key}Rank` sibling in one call. Pass `overrides` for the rare
+ * value key whose rank field breaks the convention (e.g. users'
+ * `militaryRank` → `militaryRankPos`). Mutates rows in place.
+ */
+export function rankAll<T extends Record<string, unknown>>(
+  rows: T[],
+  valueKeys: (keyof T)[],
+  overrides?: Partial<Record<keyof T, keyof T>>,
+): void {
+  for (const valueKey of valueKeys) {
+    const rankKey = overrides?.[valueKey] ?? (`${String(valueKey)}Rank` as keyof T)
+    assignRank(rows, valueKey, rankKey)
+  }
+}

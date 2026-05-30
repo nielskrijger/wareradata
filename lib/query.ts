@@ -80,29 +80,23 @@ export function computeRanges<T extends object>(rows: T[]): Record<string, Range
 }
 
 /**
- * Filter → sort → paginate. `getFilterHaystack` returns the lowercased text the
- * filter substring is matched against (concat of fields that should be searchable).
- * `sortValue` returns the comparable value for a given column id, or undefined if
- * the column isn't sortable / unknown.
+ * Shared tail of {@link applyQuery} / {@link applyStructuredQuery}: heat ranges
+ * over the already-filtered rows, then sort by the requested column (nulls
+ * always last, regardless of direction), then paginate. The two public entry
+ * points differ only in how they produce `filtered` (substring vs liqe).
  */
-export function applyQuery<T extends object>(
-  rows: T[],
+function sortAndPaginate<T extends object>(
+  filtered: T[],
   query: QueryParams,
-  getFilterHaystack: (row: T) => string,
   sortValue: (row: T, sort: string) => number | string | null,
 ): PagedResult<T> {
-  let filtered = rows
-  if (query.filter) {
-    const needle = query.filter.toLowerCase()
-    filtered = rows.filter(r => getFilterHaystack(r).includes(needle))
-  }
-
   const ranges = computeRanges(filtered)
 
+  let sorted = filtered
   if (query.sort) {
     const sortField = query.sort
     const dirMul = query.dir === 'desc' ? -1 : 1
-    filtered = [...filtered].sort((a, b) => {
+    sorted = [...filtered].sort((a, b) => {
       const av = sortValue(a, sortField)
       const bv = sortValue(b, sortField)
       // Nulls always sort last regardless of direction.
@@ -124,10 +118,30 @@ export function applyQuery<T extends object>(
 
   const start = query.page * query.pageSize
   return {
-    rows: filtered.slice(start, start + query.pageSize),
-    total: filtered.length,
+    rows: sorted.slice(start, start + query.pageSize),
+    total: sorted.length,
     ranges,
   }
+}
+
+/**
+ * Filter → sort → paginate. `getFilterHaystack` returns the lowercased text the
+ * filter substring is matched against (concat of fields that should be searchable).
+ * `sortValue` returns the comparable value for a given column id, or undefined if
+ * the column isn't sortable / unknown.
+ */
+export function applyQuery<T extends object>(
+  rows: T[],
+  query: QueryParams,
+  getFilterHaystack: (row: T) => string,
+  sortValue: (row: T, sort: string) => number | string | null,
+): PagedResult<T> {
+  let filtered = rows
+  if (query.filter) {
+    const needle = query.filter.toLowerCase()
+    filtered = rows.filter(r => getFilterHaystack(r).includes(needle))
+  }
+  return sortAndPaginate(filtered, query, sortValue)
 }
 
 /**
@@ -190,35 +204,85 @@ export function applyStructuredQuery<T extends object>(
       filtered = rows
     }
   }
+  return sortAndPaginate(filtered, query, sortValue)
+}
 
-  const ranges = computeRanges(filtered)
+/**
+ * Declarative spec for {@link makeSortValue}. Each field lists the sort ids that
+ * share one handling rule, so a route states *what kind* each column is instead
+ * of writing one switch arm per column.
+ */
+export interface SortSpec<T> {
+  /**
+   * Returned as-is: numbers, country codes, ISO date strings, enum strings.
+   */
+  passthrough?: (keyof T)[]
+  /**
+   * Lowercased for case-insensitive ordering (display names).
+   */
+  text?: (keyof T)[]
+  /**
+   * Booleans mapped to 1 / 0 so `true` sorts after `false`.
+   */
+  boolean?: (keyof T)[]
+  /**
+   * Bespoke comparators keyed by sort id (tier lookups, derived scores).
+   */
+  custom?: Record<string, (row: T) => number | string | null>
+  /**
+   * Used when the sort id matches nothing above (the table's natural order).
+   */
+  default: keyof T | ((row: T) => number | string | null)
+}
 
-  if (query.sort) {
-    const sortField = query.sort
-    const dirMul = query.dir === 'desc' ? -1 : 1
-    filtered = [...filtered].sort((a, b) => {
-      const av = sortValue(a, sortField)
-      const bv = sortValue(b, sortField)
-      if (av === null || av === undefined) {
-        return 1
-      }
-      if (bv === null || bv === undefined) {
-        return -1
-      }
-      if (av < bv) {
-        return -1 * dirMul
-      }
-      if (av > bv) {
-        return 1 * dirMul
-      }
-      return 0
-    })
+/**
+ * Turns a {@link SortSpec} into the `(row, sort) => comparable` function that
+ * {@link applyStructuredQuery} expects, replacing the per-route switch that
+ * mapped each column id to a row value. Columns needing special handling
+ * (tier progression, readiness score) go in `custom`.
+ */
+export function makeSortValue<T>(
+  spec: SortSpec<T>,
+): (row: T, sort: string) => number | string | null {
+  const passthrough = new Set<keyof T>(spec.passthrough)
+  const text = new Set<keyof T>(spec.text)
+  const boolean = new Set<keyof T>(spec.boolean)
+  return (row, sort) => {
+    if (spec.custom && sort in spec.custom) {
+      return spec.custom[sort](row)
+    }
+    const key = sort as keyof T
+    const value = (row as Record<string, unknown>)[sort]
+    if (text.has(key)) {
+      return typeof value === 'string' ? value.toLowerCase() : null
+    }
+    if (boolean.has(key)) {
+      return value ? 1 : 0
+    }
+    if (passthrough.has(key)) {
+      return value as number | string | null
+    }
+    if (typeof spec.default === 'function') {
+      return spec.default(row)
+    }
+    return (row as Record<string, unknown>)[spec.default as string] as number | string | null
   }
+}
 
-  const start = query.page * query.pageSize
-  return {
-    rows: filtered.slice(start, start + query.pageSize),
-    total: filtered.length,
-    ranges,
+/**
+ * Builds the GET handler shared by every `/api/<entity>` table route: parse the
+ * query, load the rows (`loadRows` is route-specific — usually a snapshot slice,
+ * sometimes enriched/merged), then filter / sort / paginate via
+ * {@link applyStructuredQuery}. Collapses the boilerplate each route repeated.
+ */
+export function createTableRoute<T extends object>(
+  loadRows: () => Promise<T[]>,
+  sortValue: (row: T, sort: string) => number | string | null,
+  aliases?: FieldAliases,
+): (req: Request) => Promise<Response> {
+  return async (req) => {
+    const query = parseQuery(new URL(req.url).searchParams)
+    const rows = await loadRows()
+    return Response.json(applyStructuredQuery(rows, query, sortValue, aliases))
   }
 }

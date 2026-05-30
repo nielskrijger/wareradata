@@ -2,7 +2,7 @@ import type { CountryRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { Country, MU } from '@/lib/warera/api'
 
-import { assignRank, toTier } from '@/lib/rows/lookups'
+import { rankAll, toTier } from '@/lib/rows/lookups'
 import { aggMean, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildCountryRows(
@@ -29,6 +29,8 @@ export function buildCountryRows(
         activePopulationRank: null,
         alliesCount: c.allies?.length ?? 0,
         alliesCountRank: null,
+        avgGearScore: agg ? aggMean(agg.gearScoreSum, agg.gearScoreCount) : null,
+        avgGearScoreRank: null,
         avgHealth: agg ? aggMean(agg.healthSum, agg.healthCount) : null,
         avgHealthRank: null,
         avgHunger: agg ? aggMean(agg.hungerSum, agg.hungerCount) : null,
@@ -89,27 +91,30 @@ export function buildCountryRows(
   // "#X of N" on the detail page shares one denominator. Taxes and unrest are
   // policy settings (lower isn't "better" in a leaderboard sense), so they get
   // no rank.
-  assignRank(rows, 'totalPoints', 'totalPointsRank')
-  assignRank(rows, 'avgPoints', 'avgPointsRank')
-  assignRank(rows, 'avgLevel', 'avgLevelRank')
-  assignRank(rows, 'avgHealth', 'avgHealthRank')
-  assignRank(rows, 'avgHunger', 'avgHungerRank')
-  assignRank(rows, 'damage', 'damageRank')
-  assignRank(rows, 'weeklyDamage', 'weeklyDamageRank')
-  assignRank(rows, 'weeklyDamagePerCitizen', 'weeklyDamagePerCitizenRank')
-  assignRank(rows, 'wealth', 'wealthRank')
-  assignRank(rows, 'bounty', 'bountyRank')
-  assignRank(rows, 'money', 'moneyRank')
-  assignRank(rows, 'development', 'developmentRank')
-  assignRank(rows, 'productionBonus', 'productionBonusRank')
-  assignRank(rows, 'activePopulation', 'activePopulationRank')
-  assignRank(rows, 'musCount', 'musCountRank')
-  assignRank(rows, 'partyCount', 'partyCountRank')
-  assignRank(rows, 'alliesCount', 'alliesCountRank')
-  assignRank(rows, 'warsCount', 'warsCountRank')
-  assignRank(rows, 'gemsPurchasedTotal', 'gemsPurchasedTotalRank')
-  assignRank(rows, 'premiumMonthsTotal', 'premiumMonthsTotalRank')
-  assignRank(rows, 'premiumGiftsTotal', 'premiumGiftsTotalRank')
+  rankAll(rows, [
+    'totalPoints',
+    'avgPoints',
+    'avgLevel',
+    'avgHealth',
+    'avgHunger',
+    'avgGearScore',
+    'damage',
+    'weeklyDamage',
+    'weeklyDamagePerCitizen',
+    'wealth',
+    'bounty',
+    'money',
+    'development',
+    'productionBonus',
+    'activePopulation',
+    'musCount',
+    'partyCount',
+    'alliesCount',
+    'warsCount',
+    'gemsPurchasedTotal',
+    'premiumMonthsTotal',
+    'premiumGiftsTotal',
+  ])
 
   return rows
 }

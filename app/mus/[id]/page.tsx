@@ -134,6 +134,7 @@ export default async function MUDetailPage({ params }: PageProps) {
         <StatCard label="Members" value={mu.memberCount} range={ranges.memberCount} heat="ramp" rank={mu.memberCountRank} total={total} />
         <StatCard label="Avg Level" value={mu.avgLevel} range={ranges.avgLevel} heat="median" rank={mu.avgLevelRank} total={total} />
         <StatCard label="Avg Points" value={mu.avgPoints} range={ranges.avgPoints} heat="median" rank={mu.avgPointsRank} total={total} />
+        <StatCard label="Avg Gear" value={mu.avgGearScore} range={ranges.avgGearScore} heat="median" rank={mu.avgGearScoreRank} total={total} />
         <StatCard label="Total Damage" value={mu.damage} display={<CompactNumber value={mu.damage} />} range={ranges.damage} heat="median" rank={mu.damageRank} total={total} />
         <StatCard label="Weekly Damage" value={mu.weeklyDamage} display={<CompactNumber value={mu.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={mu.weeklyDamageRank} total={total} />
         <StatCard label="Wealth" value={mu.wealth} display={<CompactNumber value={mu.wealth} />} range={ranges.wealth} heat="median" rank={mu.wealthRank} total={total} />

@@ -56,6 +56,15 @@ export type Ranking = RankingGetRankingResponse
 export const RANKING_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'] as const
 export type RankingTier = (typeof RANKING_TIERS)[number]
 
+/**
+ * Progression index of each ranking tier (bronze = 0 … master = 5), so tier
+ * columns sort by strength instead of alphabetically. Derived once from
+ * {@link RANKING_TIERS}; shared by the table sort specs.
+ */
+export const TIER_INDEX: Record<string, number> = Object.fromEntries(
+  RANKING_TIERS.map((t, i) => [t, i]),
+)
+
 export const RANKING_TYPES = [
   'weeklyCountryDamages',
   'weeklyCountryDamagesPerCitizen',

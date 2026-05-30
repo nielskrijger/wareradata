@@ -4,23 +4,25 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { UserRow } from '@/lib/rows'
 
-import { GearScorePill } from '@/components/badges/gear-score-pill'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
-import { TierBadge } from '@/components/badges/tier-badge'
-import { CompactNumber } from '@/components/cells/compact-number'
-import { CountryCell } from '@/components/cells/country-cell'
 import { MUCell } from '@/components/cells/mu-cell'
 import { PartyCell } from '@/components/cells/party-cell'
-import { PercentBar } from '@/components/cells/percent-bar'
-import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
+import {
+  compactNumberColumn,
+  countryColumn,
+  gearColumn,
+  localeNumberColumn,
+  percentBarColumn,
+  pointsBreakdownColumn,
+  rankTooltipColumn,
+  wareraLinkColumn,
+} from '@/components/data-table/column-factories'
 import { InfoTooltip } from '@/components/info-tooltip'
-import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { UserHoverCard } from '@/components/user-hover-card'
-import { wareraUrl } from '@/lib/warera/urls'
 
 export type { UserRow }
 
@@ -36,64 +38,13 @@ export const userColumns: ColumnDef<UserRow>[] = [
         {row.original.isBanned && <Badge className="shrink-0 bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
       </div>
     ),
-    meta: { width: 220 },
+    meta: { width: 250 },
   },
-  {
-    accessorKey: 'points',
-    header: 'Points',
-    cell: ({ row }) => (
-      <PointsBreakdownCell
-        total={row.original.points}
-        level={row.original.levelPoints}
-        damage={row.original.damagePoints}
-        wealth={row.original.wealthPoints}
-      />
-    ),
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 90 },
-  },
-  {
-    accessorKey: 'countryCode',
-    header: 'Country',
-    cell: ({ row }) => (
-      <CountryCell
-        countryCode={row.original.countryCode}
-        countryName={row.original.countryName}
-        countryId={row.original.countryId}
-      />
-    ),
-    meta: { width: 180 },
-  },
-  {
-    accessorKey: 'healthPercent',
-    header: 'Health',
-    cell: ({ row }) => <PercentBar value={row.original.healthPercent} />,
-    sortDescFirst: true,
-    sortUndefined: 'last',
-    meta: { width: 120 },
-  },
-  {
-    accessorKey: 'hungerPercent',
-    header: 'Hunger',
-    cell: ({ row }) => <PercentBar value={row.original.hungerPercent} />,
-    sortDescFirst: true,
-    sortUndefined: 'last',
-    meta: { width: 120 },
-  },
-  {
-    accessorKey: 'readinessStatus',
-    header: 'Status',
-    cell: ({ row }) => <ReadinessBadge status={row.original.readinessStatus} />,
-    meta: { width: 100 },
-  },
-  {
-    accessorKey: 'gearScore',
-    header: 'Gear',
-    cell: ({ row }) => <GearScorePill score={row.original.gearScore} />,
-    sortDescFirst: true,
-    sortUndefined: 'last',
-    meta: { align: 'right', width: 100 },
-  },
+  pointsBreakdownColumn<UserRow>('points', 'Points', { width: 90 }),
+  countryColumn<UserRow>({ sortKey: 'countryCode' }),
+  percentBarColumn<UserRow>('healthPercent', 'Health', { width: 120 }),
+  percentBarColumn<UserRow>('hungerPercent', 'Hunger', { width: 120 }),
+  gearColumn<UserRow>('gearScore', 'Gear'),
   {
     accessorKey: 'levelRank',
     header: 'Level',
@@ -107,42 +58,14 @@ export const userColumns: ColumnDef<UserRow>[] = [
     meta: { heat: 'invert', sortInvert: true, align: 'right', width: 90 },
   },
   {
-    accessorKey: 'levelTier',
-    header: 'Tier',
-    cell: ({ row }) => <TierBadge tier={row.original.levelTier} />,
-    meta: { width: 90 },
+    accessorKey: 'readinessStatus',
+    header: 'Status',
+    cell: ({ row }) => <ReadinessBadge status={row.original.readinessStatus} />,
+    meta: { width: 100 },
   },
-  {
-    accessorKey: 'damageRank',
-    header: 'Total Damage',
-    cell: ({ row }) => (
-      <ValueWithRankTooltip rank={row.original.damageRank}>
-        <CompactNumber value={row.original.damage} />
-      </ValueWithRankTooltip>
-    ),
-    sortDescFirst: false,
-    sortUndefined: 'last',
-    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 130 },
-  },
-  {
-    accessorKey: 'weeklyDamage',
-    header: 'Weekly Damage',
-    cell: ({ row }) => <CompactNumber value={row.original.weeklyDamage} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 140 },
-  },
-  {
-    accessorKey: 'wealthRank',
-    header: 'Wealth',
-    cell: ({ row }) => (
-      <ValueWithRankTooltip rank={row.original.wealthRank}>
-        <CompactNumber value={row.original.wealth} />
-      </ValueWithRankTooltip>
-    ),
-    sortDescFirst: false,
-    sortUndefined: 'last',
-    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 100 },
-  },
+  rankTooltipColumn<UserRow>('damage', 'damageRank', 'Total Damage', { width: 130 }),
+  compactNumberColumn<UserRow>('weeklyDamage', 'Weekly Damage', { heat: 'median', width: 140 }),
+  rankTooltipColumn<UserRow>('wealth', 'wealthRank', 'Wealth', { width: 100 }),
   {
     accessorKey: 'militaryRank',
     header: 'Mil. Rank',
@@ -186,55 +109,13 @@ export const userColumns: ColumnDef<UserRow>[] = [
     sortDescFirst: true,
     meta: { width: 110 },
   },
-  {
-    accessorKey: 'bounty',
-    header: 'Bounty',
-    cell: ({ row }) => <CompactNumber value={row.original.bounty} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 90 },
-  },
-  {
-    accessorKey: 'terrain',
-    header: 'Terrain',
-    cell: ({ row }) => row.original.terrain?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 90 },
-  },
-  {
-    accessorKey: 'referrals',
-    header: 'Referrals',
-    cell: ({ row }) => row.original.referrals?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 100 },
-  },
-  {
-    accessorKey: 'premiumMonths',
-    header: 'Premium Mo.',
-    cell: ({ row }) => row.original.premiumMonths?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'premiumGifts',
-    header: 'Premium Gifts',
-    cell: ({ row }) => row.original.premiumGifts?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 130 },
-  },
-  {
-    accessorKey: 'casesOpened',
-    header: 'Cases Opened',
-    cell: ({ row }) => row.original.casesOpened?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'median', heatLog: true, align: 'right', width: 130 },
-  },
-  {
-    accessorKey: 'gemsPurchased',
-    header: 'Gems Purchased',
-    cell: ({ row }) => row.original.gemsPurchased?.toLocaleString() ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'ramp', align: 'right', width: 150 },
-  },
+  compactNumberColumn<UserRow>('bounty', 'Bounty', { heat: 'median', width: 90 }),
+  localeNumberColumn<UserRow>('terrain', 'Terrain', { heat: 'median', width: 90 }),
+  localeNumberColumn<UserRow>('referrals', 'Referrals', { heat: 'ramp', width: 100 }),
+  localeNumberColumn<UserRow>('premiumMonths', 'Premium Mo.', { heat: 'ramp', width: 120 }),
+  localeNumberColumn<UserRow>('premiumGifts', 'Premium Gifts', { heat: 'ramp', width: 130 }),
+  localeNumberColumn<UserRow>('casesOpened', 'Cases Opened', { heat: 'median', log: true, width: 130 }),
+  localeNumberColumn<UserRow>('gemsPurchased', 'Gems Purchased', { heat: 'ramp', width: 150 }),
   {
     accessorKey: 'pointsPerDay',
     header: 'Points / day',
@@ -259,15 +140,5 @@ export const userColumns: ColumnDef<UserRow>[] = [
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 110 },
   },
-  {
-    id: 'warera',
-    header: 'Link',
-    enableSorting: false,
-    cell: ({ row }) => (
-      <ExternalLink href={wareraUrl('user', row.original.id)}>
-        WarEra.io
-      </ExternalLink>
-    ),
-    meta: { width: 110 },
-  },
+  wareraLinkColumn<UserRow>('user'),
 ]

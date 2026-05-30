@@ -1,31 +1,13 @@
 'use client'
 
-import type { PageRequest, PageResult } from '@/components/data-table/data-table'
+import type { PageResult } from '@/components/data-table/data-table'
 import type { RegionRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
+import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 import { regionColumns } from './columns'
-
-async function fetchRegions(req: PageRequest): Promise<PageResult<RegionRow>> {
-  const params = new URLSearchParams({
-    page: String(req.page),
-    pageSize: String(req.pageSize),
-    dir: req.dir,
-  })
-  if (req.sort) {
-    params.set('sort', req.sort)
-  }
-  if (req.filter) {
-    params.set('filter', req.filter)
-  }
-  const res = await fetch(`/api/regions?${params.toString()}`)
-  if (!res.ok) {
-    throw new Error(`Regions fetch failed: ${res.status}`)
-  }
-  return res.json() as Promise<PageResult<RegionRow>>
-}
 
 interface Props {
   initial: PageResult<RegionRow>
@@ -37,7 +19,7 @@ export function RegionsTable({ initial }: Props) {
       columns={regionColumns}
       initialData={initial}
       initialSort={{ id: 'development', desc: true }}
-      fetchPage={fetchRegions}
+      fetchPage={req => fetchPaginated<RegionRow>('/api/regions', req)}
       searchPlaceholder="Filter by region, country, city, or resource…"
       searchHint={(
         <AdvancedSearchHint

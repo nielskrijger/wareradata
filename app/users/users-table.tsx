@@ -6,30 +6,10 @@ import type { UserRow } from '@/lib/rows'
 import { useCallback } from 'react'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
-import { combineFilter } from '@/components/data-table/combine-filter'
 import { DataTable } from '@/components/data-table/data-table'
+import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 import { userColumns } from './columns'
-
-async function fetchUsers(req: PageRequest, baseFilter?: string): Promise<PageResult<UserRow>> {
-  const params = new URLSearchParams({
-    page: String(req.page),
-    pageSize: String(req.pageSize),
-    dir: req.dir,
-  })
-  if (req.sort) {
-    params.set('sort', req.sort)
-  }
-  const filter = combineFilter(baseFilter, req.filter)
-  if (filter) {
-    params.set('filter', filter)
-  }
-  const res = await fetch(`/api/users?${params.toString()}`)
-  if (!res.ok) {
-    throw new Error(`Users fetch failed: ${res.status}`)
-  }
-  return res.json() as Promise<PageResult<UserRow>>
-}
 
 interface Props {
   initial: PageResult<UserRow>
@@ -42,7 +22,7 @@ interface Props {
 
 export function UsersTable({ initial, baseFilter }: Props) {
   const fetchPage = useCallback(
-    (req: PageRequest) => fetchUsers(req, baseFilter),
+    (req: PageRequest) => fetchPaginated<UserRow>('/api/users', req, baseFilter),
     [baseFilter],
   )
 

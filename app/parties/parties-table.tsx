@@ -6,30 +6,10 @@ import type { PartyRow } from '@/lib/rows'
 import { useCallback } from 'react'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
-import { combineFilter } from '@/components/data-table/combine-filter'
 import { DataTable } from '@/components/data-table/data-table'
+import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 import { partyColumns } from './columns'
-
-async function fetchParties(req: PageRequest, baseFilter?: string): Promise<PageResult<PartyRow>> {
-  const params = new URLSearchParams({
-    page: String(req.page),
-    pageSize: String(req.pageSize),
-    dir: req.dir,
-  })
-  if (req.sort) {
-    params.set('sort', req.sort)
-  }
-  const filter = combineFilter(baseFilter, req.filter)
-  if (filter) {
-    params.set('filter', filter)
-  }
-  const res = await fetch(`/api/parties?${params.toString()}`)
-  if (!res.ok) {
-    throw new Error(`Parties fetch failed: ${res.status}`)
-  }
-  return res.json() as Promise<PageResult<PartyRow>>
-}
 
 interface Props {
   initial: PageResult<PartyRow>
@@ -42,7 +22,7 @@ interface Props {
 
 export function PartiesTable({ initial, baseFilter }: Props) {
   const fetchPage = useCallback(
-    (req: PageRequest) => fetchParties(req, baseFilter),
+    (req: PageRequest) => fetchPaginated<PartyRow>('/api/parties', req, baseFilter),
     [baseFilter],
   )
 

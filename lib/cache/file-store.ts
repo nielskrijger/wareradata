@@ -99,6 +99,10 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   }
   const readMs = Date.now() - start
   const parsed = JSON.parse(raw) as RawSnapshot
+  // Backfill fields added to RawSnapshot after the persisted file was written,
+  // so a deploy that adds a new key doesn't crash on the first boot reading a
+  // legacy on-disk snapshot. The next scrape cycle will populate them properly.
+  parsed.equipment ??= {}
   const sizeMb = (raw.length / 1_000_000).toFixed(1)
   console.info(
     `[file-store] read snapshot from ${path}: ${sizeMb}MB, ${parsed.users?.length ?? 0} users in ${readMs}ms`,

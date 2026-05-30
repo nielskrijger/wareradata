@@ -37,10 +37,19 @@ function tierOf(slot: Slot, code: string): number {
   return m ? Number(m[1]) : 1
 }
 
+// Two surfaces this strip renders on:
+//  - 'dark': the user hover-card, whose TooltipContent is fixed dark in both
+//    themes, so white-alpha chrome reads correctly.
+//  - 'card': a theme-variable detail-page card (bg-card), where white-alpha
+//    tiles and the neutral tier-1 ring would vanish in light mode, so we swap
+//    to theme tokens (bg-muted / ring-border) that adapt.
+type Surface = 'dark' | 'card'
+
 // Tailwind ring classes mirror the RARITY_HEX palette. Kept as classes (not
 // inline style) so Tailwind's compiler can scope them properly; the matching
 // hex is imported from lib/gear/rarity for the inline-style consumers
-// (durability fill, bonus text, score pill).
+// (durability fill, bonus text, score pill). Only the tier-1 (neutral) ring is
+// surface-dependent; the colored rings read on both light and dark cards.
 const RARITY_RING = [
   'ring-1 ring-neutral-50/15',
   'ring-1 ring-emerald-400/40',
@@ -50,8 +59,12 @@ const RARITY_RING = [
   'ring-1 ring-red-400/60',
 ]
 
-function rarityRing(t: number): string {
-  return RARITY_RING[Math.max(0, Math.min(5, t - 1))]
+function rarityRing(t: number, surface: Surface): string {
+  const i = Math.max(0, Math.min(5, t - 1))
+  if (i === 0 && surface === 'card') {
+    return 'ring-1 ring-border'
+  }
+  return RARITY_RING[i]
 }
 
 // Base icon filename. Armor pieces of all 6 tiers share one icon per
@@ -139,6 +152,10 @@ function SlotIcon({ slot, className }: { slot: Slot, className?: string }) {
 interface Props {
   equipment: Equipment | undefined
   className?: string
+  // The backdrop this strip sits on; see {@link Surface}. Defaults to 'dark'
+  // (the hover-card tooltip). The detail page passes 'card' so tiles stay
+  // visible on a light theme.
+  surface?: Surface
 }
 
 /**
@@ -153,16 +170,27 @@ interface Props {
  * Item icons come from `app.warera.io/images/items/<slot|code>.png`; skin
  * overrides from `equippedSkinKeys` are not applied here.
  */
-export function GearStrip({ equipment, className }: Props) {
+export function GearStrip({ equipment, className, surface = 'dark' }: Props) {
   const g = equipment ?? {}
+  const tileBg = surface === 'card' ? 'bg-muted' : 'bg-white/5'
+  const emptyBg = surface === 'card' ? 'bg-muted/50' : 'bg-white/[0.03]'
+  const emptyIcon = surface === 'card' ? 'text-muted-foreground/40' : 'text-foreground/20'
+  // On the detail-page card the strip carries an extra leading score tile, so 8
+  // tiles must fit a phone's width: shrink to 32px tiles with tighter gaps on
+  // mobile, back to 36px from `sm` up. The fixed-width dark tooltip is never
+  // width-constrained, so it stays at 36px in both breakpoints.
+  const rowGap = surface === 'card' ? 'gap-1 sm:gap-1.5' : 'gap-1.5'
+  const tileW = surface === 'card' ? 'w-8 sm:w-9' : 'w-9'
+  const tileSize = surface === 'card' ? 'size-8 sm:size-9' : 'size-9'
+  const imgSize = surface === 'card' ? 'size-6 sm:size-7' : 'size-7'
   return (
-    <div className={cn('flex items-end gap-1.5', className)}>
+    <div className={cn('flex items-end', rowGap, className)}>
       {SLOT_ORDER.map((slot) => {
         const v = g[slot]
         if (!v) {
           return (
-            <div key={slot} className="flex w-9 flex-col items-center gap-0.5">
-              <div className="text-foreground/20 flex size-9 items-center justify-center rounded-md bg-white/[0.03]">
+            <div key={slot} className={cn('flex flex-col items-center gap-0.5', tileW)}>
+              <div className={cn('flex items-center justify-center rounded-md', tileSize, emptyBg, emptyIcon)}>
                 <SlotIcon slot={slot} />
               </div>
               <span className="h-3" />
@@ -181,9 +209,9 @@ export function GearStrip({ equipment, className }: Props) {
         const rgb = rarityHex(t)
 
         return (
-          <div key={slot} className="flex w-9 flex-col items-center gap-0.5">
-            <div className={cn('relative flex size-9 items-center justify-center overflow-hidden rounded-md bg-white/5', rarityRing(t))}>
-              <Image src={iconUrl(slot, code)} alt={code} width={28} height={28} className="size-7 object-contain" unoptimized />
+          <div key={slot} className={cn('flex flex-col items-center gap-0.5', tileW)}>
+            <div className={cn('relative flex items-center justify-center overflow-hidden rounded-md', tileSize, tileBg, rarityRing(t, surface))}>
+              <Image src={iconUrl(slot, code)} alt={code} width={28} height={28} className={cn('object-contain', imgSize)} unoptimized />
               <div className="absolute inset-x-0.5 bottom-0.5 h-0.5 overflow-hidden rounded-sm bg-black/40">
                 <div className="h-full rounded-sm" style={{ width: `${dur}%`, background: rgb }} />
               </div>

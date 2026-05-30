@@ -11,6 +11,7 @@ import { CountryCell } from '@/components/cells/country-cell'
 import { MUCell } from '@/components/cells/mu-cell'
 import { PartyCell } from '@/components/cells/party-cell'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
+import { GearBand } from '@/components/detail/gear-band'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
 import { StatCard } from '@/components/detail/stat-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
@@ -29,7 +30,7 @@ interface PageProps {
 }
 
 async function getUser(id: string) {
-  const { users } = await getSnapshot()
+  const { users, equipment } = await getSnapshot()
   const user = users.find(u => u.id === id)
   if (!user) {
     return null
@@ -42,7 +43,7 @@ async function getUser(id: string) {
     () => '',
     () => null,
   )
-  return { user, ranges: ranges ?? {}, total }
+  return { user, ranges: ranges ?? {}, total, equipment: equipment[id] ?? {} }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -64,14 +65,25 @@ export default async function UserDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
-  const { user, ranges, total } = result
+  const { user, ranges, total, equipment } = result
 
   const rgb = schemeRgb(user.colorScheme)
+  // Show the gear section whenever we captured this user's equipment, even if
+  // they're wearing nothing (score 0) — the empty placeholder slots make "not
+  // equipped" legible. A null score means we never scraped their gear, so the
+  // section stays hidden rather than implying an empty loadout.
+  const hasGearData = user.gearScore != null
 
   return (
     <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={user.username}
+        titleSuffix={(
+          <>
+            {user.levelTier && <TierBadge tier={user.levelTier} />}
+            {user.readinessStatus != null && <ReadinessBadge status={user.readinessStatus} />}
+          </>
+        )}
         bannerStyle={{ background: `linear-gradient(100deg, rgba(${rgb}, 0.38), rgba(${rgb}, 0.06))` }}
         emblem={(
           <Avatar
@@ -82,6 +94,7 @@ export default async function UserDetailPage({ params }: PageProps) {
             style={{ boxShadow: `0 0 0 4px var(--card), 0 0 0 5px rgb(${rgb})` }}
           />
         )}
+        footer={hasGearData ? <GearBand score={user.gearScore} equipment={equipment} /> : undefined}
       >
         <FactRow>
           <CountryCell countryCode={user.countryCode} countryName={user.countryName} countryId={user.countryId} />
@@ -90,17 +103,11 @@ export default async function UserDetailPage({ params }: PageProps) {
               Level <span className="text-foreground font-medium">{user.level}</span>
             </span>
           )}
-          <TierBadge tier={user.levelTier} />
           {user.isBanned && (
             <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>
           )}
           <ExternalLink href={wareraUrl('user', user.id)}>WarEra.io</ExternalLink>
         </FactRow>
-        {user.readinessStatus != null && (
-          <FactRow muted>
-            <ReadinessBadge status={user.readinessStatus} />
-          </FactRow>
-        )}
         <FactRow muted>
           {user.muName && (
             <span className="inline-flex items-center gap-1">MU <MUCell muName={user.muName} muId={user.muId} /></span>

@@ -36,6 +36,11 @@ interface Props {
   emblem: ReactNode
   title: string
   /**
+   * Optional node rendered inline to the right of the title, vertically centered
+   * against it (e.g. a user's level-tier badge). Omitted, the title sits alone.
+   */
+  titleSuffix?: ReactNode
+  /**
    * Banner background. Defaults to the neutral muted gradient (MUs, countries);
    * the user page passes its color-scheme gradient via `style`.
    */
@@ -45,6 +50,13 @@ interface Props {
    * by the caller; the header just stacks them.
    */
   children: ReactNode
+  /**
+   * Optional full-width band below the fact rows, separated by a border that
+   * spans the whole card edge to edge (the user page's equipped-gear strip).
+   * Unlike {@link children}, it sits outside the padded content column so its
+   * top divider reaches both side borders; it supplies its own padding.
+   */
+  footer?: ReactNode
   /**
    * Optional control floated at the top-right of the header, detached from the
    * fact rows and the normal flow (e.g. an MU's "last refreshed / refresh"
@@ -60,7 +72,7 @@ interface Props {
  * rows. The emblem and banner differ per entity (avatar+scheme vs flag+neutral)
  * so both are passed in.
  */
-export function DetailHeader({ emblem, title, bannerStyle, children, aside }: Props) {
+export function DetailHeader({ emblem, title, titleSuffix, bannerStyle, children, footer, aside }: Props) {
   return (
     <div className="bg-card relative overflow-hidden rounded-md border">
       {bannerStyle
@@ -71,11 +83,15 @@ export function DetailHeader({ emblem, title, bannerStyle, children, aside }: Pr
         <div className="flex min-w-0 flex-col items-start gap-3">
           {emblem}
           <div className="space-y-1.5">
-            <h1 className="font-brand text-[28px] leading-none tracking-wide">{title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-brand text-[28px] leading-none tracking-wide">{title}</h1>
+              {titleSuffix}
+            </div>
             {children}
           </div>
         </div>
       </div>
+      {footer && <div className="border-t px-4 pt-4 pb-3">{footer}</div>}
     </div>
   )
 }

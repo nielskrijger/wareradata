@@ -43,28 +43,30 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, pointsPerDa
           <div className="text-muted-foreground text-xs">{pointsPerDay.toLocaleString()} points/day</div>
         )}
       </div>
-      <dl className="space-y-2">
+      <dl className="space-y-2.5">
         {slices.map((s) => {
           const pct = total > 0 ? Math.round((s.value / total) * 100) : 0
           const { color, icon: Icon } = SLICE_META[s.label]
           return (
-            <div key={s.label} className="grid grid-cols-[6rem_1fr_8rem] items-center gap-3">
-              <dt className="flex items-center gap-2 text-sm">
-                <Icon className="size-3.5 shrink-0" style={{ color }} />
-                {s.label}
-              </dt>
-              <div className="bg-muted h-2 overflow-hidden rounded-full">
+            <div key={s.label}>
+              <div className="flex items-baseline justify-between gap-2 text-sm">
+                <dt className="flex items-center gap-2">
+                  <Icon className="size-3.5 shrink-0" style={{ color }} />
+                  {s.label}
+                </dt>
+                <dd className="tabular-nums">
+                  {s.value.toLocaleString()}
+                  {' '}
+                  <span className="text-muted-foreground text-xs">
+                    (
+                    {pct}
+                    %)
+                  </span>
+                </dd>
+              </div>
+              <div className="bg-muted mt-1 h-2 overflow-hidden rounded-full">
                 <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
               </div>
-              <dd className="text-right text-sm tabular-nums">
-                {s.value.toLocaleString()}
-                {' '}
-                <span className="text-muted-foreground">
-                  (
-                  {pct}
-                  %)
-                </span>
-              </dd>
             </div>
           )
         })}

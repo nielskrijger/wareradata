@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 
 import { connection } from 'next/server'
 
-import { NoDataPage } from '@/components/no-data-page'
-import { PageShell } from '@/components/page-shell'
+import { NoDataPage } from '@/components/layout/no-data-page'
+import { PageShell } from '@/components/layout/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 

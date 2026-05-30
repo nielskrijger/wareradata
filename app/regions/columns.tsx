@@ -4,10 +4,10 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { RegionRow } from '@/lib/rows'
 
-import { BoolCell } from '@/components/bool-cell'
-import { CountryCell } from '@/components/country-cell'
+import { BoolCell } from '@/components/cells/bool-cell'
+import { CountryCell } from '@/components/cells/country-cell'
+import { TruncatedCell } from '@/components/cells/truncated-cell'
 import { InfoTooltip } from '@/components/info-tooltip'
-import { TruncatedCell } from '@/components/truncated-cell'
 
 export type { RegionRow }
 

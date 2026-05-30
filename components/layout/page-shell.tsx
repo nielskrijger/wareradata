@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { PageTitle } from '@/components/page-title'
+import { PageTitle } from './page-title'
 
 interface Props {
   title: ReactNode

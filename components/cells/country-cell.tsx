@@ -1,6 +1,6 @@
 import type { ActiveBattleSummary } from '@/lib/rows'
 
-import { BattleCountBadge } from '@/components/battle-count-badge'
+import { BattleCountBadge } from '@/components/badges/battle-count-badge'
 import { EmptyDash } from '@/components/empty-dash'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/links'

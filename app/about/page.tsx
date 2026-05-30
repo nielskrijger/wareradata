@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
+import { PageTitle } from '@/components/layout/page-title'
 import { ExternalLink } from '@/components/links'
-import { PageTitle } from '@/components/page-title'
 import { Paragraph } from '@/components/paragraph'
 
 export const metadata: Metadata = {

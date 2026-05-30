@@ -1,4 +1,4 @@
-import { PageShell } from '@/components/page-shell'
+import { PageShell } from './page-shell'
 
 /**
  * Full-page placeholder shown when a page has no data to render — typically

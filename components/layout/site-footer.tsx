@@ -1,7 +1,7 @@
+import { MUCell } from '@/components/cells/mu-cell'
+import { UserNameCell } from '@/components/cells/user-name-cell'
 import { ExternalLink } from '@/components/links'
-import { MUCell } from '@/components/mu-cell'
 import { UserHoverCard } from '@/components/user-hover-card'
-import { UserNameCell } from '@/components/user-name-cell'
 
 const HUZAREN_ID = '6980b01819decffdc7848ef9'
 const HUZAREN_AVATAR = 'https://media.warera.io/avatars/mu/mu-6980b01819decffdc7848ef9-1770821860524-yd1m6m7w.png'

@@ -4,9 +4,9 @@ import { Bebas_Neue, Geist, Geist_Mono } from 'next/font/google'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { Suspense } from 'react'
 
-import { SiteFooter } from '@/components/site-footer'
-import { SiteNav, SiteNavFallback } from '@/components/site-nav'
-import { ThemeProvider } from '@/components/theme-provider'
+import { SiteFooter } from '@/components/layout/site-footer'
+import { SiteNav, SiteNavFallback } from '@/components/layout/site-nav'
+import { ThemeProvider } from '@/components/layout/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 import 'flag-icons/css/flag-icons.min.css'

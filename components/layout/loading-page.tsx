@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react'
 
-import { PageShell } from '@/components/page-shell'
+import { PageShell } from './page-shell'
 
 interface Props {
   title: string

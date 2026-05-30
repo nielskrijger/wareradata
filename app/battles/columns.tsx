@@ -4,12 +4,12 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { BattleRow } from '@/lib/rows'
 
-import { BattleMatchupCell } from '@/components/battle-matchup-cell'
-import { BattleTypeBadge } from '@/components/battle-type-badge'
-import { CompactNumber } from '@/components/compact-number'
-import { CountryCell } from '@/components/country-cell'
+import { BattleTypeBadge } from '@/components/badges/battle-type-badge'
+import { BattleMatchupCell } from '@/components/cells/battle-matchup-cell'
+import { CompactNumber } from '@/components/cells/compact-number'
+import { CountryCell } from '@/components/cells/country-cell'
+import { MUCell } from '@/components/cells/mu-cell'
 import { ExternalLink, InternalLink } from '@/components/links'
-import { MUCell } from '@/components/mu-cell'
 import { RelativeTime } from '@/components/relative-time'
 
 export type { BattleRow }

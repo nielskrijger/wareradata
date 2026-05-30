@@ -4,13 +4,13 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { PartyRow } from '@/lib/rows'
 
-import { CountryCell } from '@/components/country-cell'
+import { ScaleBadge } from '@/components/badges/scale-badge'
+import { CountryCell } from '@/components/cells/country-cell'
+import { PartyCell } from '@/components/cells/party-cell'
+import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
+import { UserNameCell } from '@/components/cells/user-name-cell'
 import { ExternalLink } from '@/components/links'
-import { PartyCell } from '@/components/party-cell'
-import { PointsBreakdownCell } from '@/components/points-breakdown-cell'
-import { ScaleBadge } from '@/components/scale-badge'
 import { UserHoverCard } from '@/components/user-hover-card'
-import { UserNameCell } from '@/components/user-name-cell'
 import { wareraUrl } from '@/lib/warera/urls'
 
 export type { PartyRow }

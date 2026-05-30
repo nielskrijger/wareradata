@@ -76,6 +76,15 @@ declare module '@tanstack/react-table' {
      * instead of everything reading neutral until the lone outlier.
      */
     heatLog?: boolean
+
+    /**
+     * Flip the sort-direction indicator. For rank columns sorted ascending
+     * (rank #1 first), the up-arrow reads as "smallest first" → confusing
+     * since "smallest" is actually the best. Setting this true shows the
+     * down-arrow on asc and up-arrow on desc so the icon points toward the
+     * "less good" end of the column.
+     */
+    sortInvert?: boolean
   }
 
   // eslint-disable-next-line unused-imports/no-unused-vars

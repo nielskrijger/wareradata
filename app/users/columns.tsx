@@ -14,6 +14,7 @@ import { PartyCell } from '@/components/cells/party-cell'
 import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
+import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
 import { InfoTooltip } from '@/components/info-tooltip'
 import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
@@ -95,17 +96,15 @@ export const userColumns: ColumnDef<UserRow>[] = [
   },
   {
     accessorKey: 'levelRank',
-    header: 'Level Rank',
-    cell: ({ row }) => row.original.levelRank ?? null,
-    sortUndefined: 'last',
-    meta: { heat: 'invert', align: 'right', width: 110 },
-  },
-  {
-    accessorKey: 'level',
     header: 'Level',
-    cell: ({ row }) => row.original.level ?? null,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 70 },
+    cell: ({ row }) => (
+      <ValueWithRankTooltip rank={row.original.levelRank}>
+        {row.original.level ?? null}
+      </ValueWithRankTooltip>
+    ),
+    sortDescFirst: false,
+    sortUndefined: 'last',
+    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 90 },
   },
   {
     accessorKey: 'levelTier',
@@ -115,16 +114,15 @@ export const userColumns: ColumnDef<UserRow>[] = [
   },
   {
     accessorKey: 'damageRank',
-    header: 'Damage Rank',
-    cell: ({ row }) => row.original.damageRank ?? null,
-    meta: { heat: 'invert', align: 'right', width: 130 },
-  },
-  {
-    accessorKey: 'damage',
     header: 'Total Damage',
-    cell: ({ row }) => <CompactNumber value={row.original.damage} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 130 },
+    cell: ({ row }) => (
+      <ValueWithRankTooltip rank={row.original.damageRank}>
+        <CompactNumber value={row.original.damage} />
+      </ValueWithRankTooltip>
+    ),
+    sortDescFirst: false,
+    sortUndefined: 'last',
+    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 130 },
   },
   {
     accessorKey: 'weeklyDamage',
@@ -135,16 +133,15 @@ export const userColumns: ColumnDef<UserRow>[] = [
   },
   {
     accessorKey: 'wealthRank',
-    header: 'Wealth Rank',
-    cell: ({ row }) => row.original.wealthRank ?? null,
-    meta: { heat: 'invert', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'wealth',
     header: 'Wealth',
-    cell: ({ row }) => <CompactNumber value={row.original.wealth} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 90 },
+    cell: ({ row }) => (
+      <ValueWithRankTooltip rank={row.original.wealthRank}>
+        <CompactNumber value={row.original.wealth} />
+      </ValueWithRankTooltip>
+    ),
+    sortDescFirst: false,
+    sortUndefined: 'last',
+    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 100 },
   },
   {
     accessorKey: 'militaryRank',

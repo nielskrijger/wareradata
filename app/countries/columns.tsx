@@ -10,6 +10,7 @@ import { CountryCell } from '@/components/cells/country-cell'
 import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
+import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
 import { ExternalLink, InternalLink } from '@/components/links'
 import { readinessScore } from '@/lib/rows'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -87,24 +88,22 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     meta: { width: 120 },
   },
   {
-    accessorKey: 'damageRank',
-    header: 'Damage Rank',
-    cell: ({ row }) => row.original.damageRank ?? null,
-    sortUndefined: 'last',
-    meta: { heat: 'invert', align: 'right', width: 130 },
-  },
-  {
     accessorKey: 'damageTier',
     header: 'Tier',
     cell: ({ row }) => <TierBadge tier={row.original.damageTier} />,
     meta: { width: 90 },
   },
   {
-    accessorKey: 'damage',
+    accessorKey: 'damageRank',
     header: 'Total Damage',
-    cell: ({ row }) => <CompactNumber value={row.original.damage} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 130 },
+    cell: ({ row }) => (
+      <ValueWithRankTooltip rank={row.original.damageRank}>
+        <CompactNumber value={row.original.damage} />
+      </ValueWithRankTooltip>
+    ),
+    sortDescFirst: false,
+    sortUndefined: 'last',
+    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 130 },
   },
   {
     accessorKey: 'weeklyDamage',
@@ -122,16 +121,15 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   },
   {
     accessorKey: 'wealthRank',
-    header: 'Wealth Rank',
-    cell: ({ row }) => row.original.wealthRank ?? null,
-    meta: { heat: 'invert', align: 'right', width: 120 },
-  },
-  {
-    accessorKey: 'wealth',
     header: 'Wealth',
-    cell: ({ row }) => <CompactNumber value={row.original.wealth} />,
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 100 },
+    cell: ({ row }) => (
+      <ValueWithRankTooltip rank={row.original.wealthRank}>
+        <CompactNumber value={row.original.wealth} />
+      </ValueWithRankTooltip>
+    ),
+    sortDescFirst: false,
+    sortUndefined: 'last',
+    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 110 },
   },
   {
     accessorKey: 'development',
@@ -225,7 +223,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
     cell: ({ row }) =>
       row.original.taxMarket !== null ? `${row.original.taxMarket}%` : null,
     sortDescFirst: true,
-    meta: { heat: 'invert', align: 'right', width: 110 },
+    meta: { heat: 'invert', sortInvert: true, align: 'right', width: 110 },
   },
   {
     accessorKey: 'taxSelfWork',

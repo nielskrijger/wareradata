@@ -1,7 +1,7 @@
 import type { ReadinessPill } from '@/lib/rows'
 
 import { EmptyDash } from '@/components/empty-dash'
-import { GREEN, pct, RED, SKY } from '@/components/readiness-pill-colors'
+import { GREEN, pct, RED, SLATE } from '@/components/readiness-pill-colors'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
@@ -35,7 +35,7 @@ function BreakdownRow({ label, n, total, color }: { label: string, n: number, to
 /**
  * Compact stacked bar of an entity's members by readiness status (buff / ready
  * / debuff), with a hover tooltip breaking the mix down by named status.
- * Segments are split by a hairline seam so the green/sky boundary stays legible.
+ * Segments are split by a hairline seam so the green/slate boundary stays legible.
  * Renders an em-dash when no member has a known status.
  */
 export function ReadinessPillBar({ mix, width = 96 }: Props) {
@@ -54,7 +54,7 @@ export function ReadinessPillBar({ mix, width = 96 }: Props) {
               className="h-1.5 w-full"
               segments={[
                 { key: 'buff', value: mix.buff, color: GREEN },
-                { key: 'ready', value: mix.ready, color: SKY },
+                { key: 'ready', value: mix.ready, color: SLATE },
                 { key: 'debuff', value: mix.debuff, color: RED },
               ]}
             />
@@ -64,7 +64,7 @@ export function ReadinessPillBar({ mix, width = 96 }: Props) {
       <TooltipContent side="top" className="w-max">
         <div className="flex flex-col gap-1">
           <BreakdownRow label="Buff" n={mix.buff} total={total} color={GREEN} />
-          <BreakdownRow label="Ready" n={mix.ready} total={total} color={SKY} />
+          <BreakdownRow label="Ready" n={mix.ready} total={total} color={SLATE} />
           <BreakdownRow label="Debuff" n={mix.debuff} total={total} color={RED} />
         </div>
       </TooltipContent>

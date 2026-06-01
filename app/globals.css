@@ -69,13 +69,17 @@
   --destructive: oklch(0.577 0.245 27.325);
   --heat-green: oklch(0.72 0.19 145);
   --heat-red: oklch(0.63 0.24 27);
-  /* Categorical accent hues (level purple, wealth gold, ready/defender blue)
-     sharing the heat family's saturated, theme-aware treatment: tuned for light
-     surfaces here, brightened in .dark for dark cards and the fixed-dark
-     tooltips (where the cell breakdown used to hardcode brighter values). */
+  /* Categorical accent hues (level purple, wealth gold, defender/rare blue)
+     sharing the heat family's theme-aware treatment: tuned for light surfaces
+     here, brightened in .dark for dark cards and the fixed-dark tooltips (where
+     the cell breakdown used to hardcode brighter values). --heat-slate is the
+     readiness "Ready" neutral: the gear common-tier grey (#a3a3a3 from the
+     rarity palette), reused so "neutral" reads consistently. Kept the same in
+     light and dark by design — a plain mid grey sits fine on both surfaces. */
   --heat-purple: oklch(0.62 0.2 295);
   --heat-gold: oklch(0.74 0.15 80);
   --heat-blue: oklch(0.62 0.15 240);
+  --heat-slate: #a3a3a3;
   /* Brand orange (matches the logo) for the active nav pill. */
   --fire: oklch(0.66 0.21 50);
   /* Opaque equivalent of the table fill, for sticky cells that can't be
@@ -125,6 +129,7 @@
   --heat-purple: oklch(0.7 0.2 295);
   --heat-gold: oklch(0.82 0.15 80);
   --heat-blue: oklch(0.68 0.15 240);
+  --heat-slate: #a3a3a3; /* gear common-tier grey; theme-invariant by design */
   --fire: oklch(0.79 0.19 55);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);

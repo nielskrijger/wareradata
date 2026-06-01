@@ -124,7 +124,7 @@ export default async function MUDetailPage({ params }: PageProps) {
 
       <StatCardGrid>
         <PointsBreakdownPanel
-          className="col-span-2"
+          className="sm:col-span-2"
           total={mu.totalPoints}
           level={mu.levelPoints}
           damage={mu.damagePoints}

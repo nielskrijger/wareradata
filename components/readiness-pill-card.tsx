@@ -26,7 +26,8 @@ function CardRow({ icon, label, n, total, color }: { icon: ReactNode, label: str
 /**
  * Detail-page card form of the readiness mix: an icon-led breakdown (buff up /
  * ready dash / debuff down) with a per-state bar and member count. Spans two
- * StatCard columns. Renders nothing when no member has a known status.
+ * StatCard columns from `sm` up (full width in the single mobile column).
+ * Renders nothing when no member has a known status.
  */
 export function ReadinessPillCard({ mix }: { mix: ReadinessPill }) {
   const total = mix.buff + mix.ready + mix.debuff
@@ -34,7 +35,7 @@ export function ReadinessPillCard({ mix }: { mix: ReadinessPill }) {
     return null
   }
   return (
-    <div className="bg-card col-span-2 flex flex-col gap-2 rounded-md border p-3">
+    <div className="bg-card flex flex-col gap-2 rounded-md border p-3 sm:col-span-2">
       <span className="text-xs font-medium">Readiness</span>
       <div className="flex flex-col gap-1.5">
         <CardRow icon={<ArrowUp className="size-3.5" />} label="Buff" n={mix.buff} total={total} color={GREEN} />

@@ -13,8 +13,8 @@ interface Props {
   // average (a country's points/citizen, an MU's points/member). Hidden when
   // the value is null.
   caption?: { value: number | null, unit: string }
-  // Grid placement from the caller (e.g. `col-span-2`), since this sits as the
-  // headline cell inside the detail page's StatCardGrid.
+  // Grid placement from the caller (e.g. `sm:col-span-2`), since this sits as
+  // the headline cell inside the detail page's StatCardGrid.
   className?: string
 }
 

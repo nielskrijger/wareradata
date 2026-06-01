@@ -140,7 +140,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
 
       <StatCardGrid>
         <PointsBreakdownPanel
-          className="col-span-2"
+          className="sm:col-span-2"
           total={c.totalPoints}
           level={c.levelPoints}
           damage={c.damagePoints}

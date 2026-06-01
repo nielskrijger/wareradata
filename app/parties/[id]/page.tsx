@@ -116,7 +116,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
 
       <StatCardGrid>
         <PointsBreakdownPanel
-          className="col-span-2"
+          className="sm:col-span-2"
           total={p.totalPoints}
           level={p.levelPoints}
           damage={p.damagePoints}

@@ -8,7 +8,6 @@ import type {
   MuMemberListItem,
   MuRankingsOptional,
   PartyGetManyPaginatedResponse,
-  RankingGetRankingResponse,
   RankingValueTier,
   RegionsObjectItem,
   UserGetUserLiteResponse,
@@ -69,7 +68,6 @@ export type User = UserGetUserLiteResponse & {
 // One user's currently-equipped gear. Each slot is optional: players strip gear
 // between battles to preserve durability, so the response is often `{}`.
 export type Equipment = InventoryFetchCurrentEquipmentResponse
-export type Ranking = RankingGetRankingResponse
 // The game's static config (item catalog, skill cost curves, upgrade tiers, …).
 // Scraped once per cycle so derived constants (e.g. gear roll bounds, skill
 // point costs) can read from live data instead of being hardcoded.
@@ -86,19 +84,6 @@ export type RankingTier = (typeof RANKING_TIERS)[number]
 export const TIER_INDEX: Record<string, number> = Object.fromEntries(
   RANKING_TIERS.map((t, i) => [t, i]),
 )
-
-export const RANKING_TYPES = [
-  'weeklyCountryDamages',
-  'weeklyCountryDamagesPerCitizen',
-  'countryRegionDiff',
-  'countryDevelopment',
-  'countryActivePopulation',
-  'countryDamages',
-  'countryWealth',
-  'countryProductionBonus',
-  'countryBounty',
-] as const
-export type RankingType = (typeof RANKING_TYPES)[number]
 
 export interface SnapshotMeta {
   entityCounts?: Record<string, number>
@@ -138,10 +123,6 @@ type Client = typeof scrapeClient
 
 export function getAllCountries(_options: ScrapeRequestOptions = {}): Promise<Country[]> {
   return scrapeClient.country.getAllCountries()
-}
-
-export function getRanking(rankingType: RankingType): Promise<Ranking> {
-  return scrapeClient.ranking.getRanking({ rankingType })
 }
 
 /**

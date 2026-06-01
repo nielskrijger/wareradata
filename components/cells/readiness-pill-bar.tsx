@@ -1,7 +1,8 @@
 import type { ReadinessPill } from '@/lib/rows'
 
 import { EmptyDash } from '@/components/empty-dash'
-import { GREEN, pct, RED, SEAM, SKY } from '@/components/readiness-pill-colors'
+import { GREEN, pct, RED, SKY } from '@/components/readiness-pill-colors'
+import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
@@ -49,11 +50,14 @@ export function ReadinessPillBar({ mix, width = 96 }: Props) {
           // Pad the trigger vertically so the hover/hit area covers the full
           // row height, not just the 1.5px-tall bar (which is hard to target).
           <div className="flex cursor-default items-center py-2" style={{ width }}>
-            <div className="flex h-1.5 w-full overflow-hidden rounded-full">
-              {mix.buff > 0 && <div style={{ width: `${pct(mix.buff, total)}%`, backgroundColor: GREEN }} />}
-              {mix.ready > 0 && <div style={{ width: `${pct(mix.ready, total)}%`, backgroundColor: SKY, borderLeft: mix.buff > 0 ? SEAM : undefined }} />}
-              {mix.debuff > 0 && <div style={{ width: `${pct(mix.debuff, total)}%`, backgroundColor: RED, borderLeft: (mix.buff > 0 || mix.ready > 0) ? SEAM : undefined }} />}
-            </div>
+            <StackedBar
+              className="h-1.5 w-full"
+              segments={[
+                { key: 'buff', value: mix.buff, color: GREEN },
+                { key: 'ready', value: mix.ready, color: SKY },
+                { key: 'debuff', value: mix.debuff, color: RED },
+              ]}
+            />
           </div>
         )}
       />

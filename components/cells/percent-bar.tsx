@@ -1,4 +1,5 @@
 import { EmptyDash } from '@/components/empty-dash'
+import { StackedBar } from '@/components/stacked-bar'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
@@ -24,8 +25,12 @@ export function PercentBar({ value, width = 64 }: Props) {
         {value}
         %
       </span>
-      <div className="bg-muted h-1.5 overflow-hidden rounded-full" style={{ width }}>
-        <div className="h-full rounded-full" style={{ width: `${value}%`, backgroundColor: color }} />
+      <div style={{ width }}>
+        <StackedBar
+          className="h-1.5 w-full bg-muted"
+          total={100}
+          segments={[{ key: 'value', value, color }]}
+        />
       </div>
     </div>
   )

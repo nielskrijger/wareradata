@@ -1,8 +1,10 @@
-// Buff = green, ready = sky, debuff = red. Saturated mid-lightness so each
-// reads on both themes; a thin card-coloured seam separates adjacent segments.
-export const GREEN = 'oklch(0.68 0.19 145)'
-export const SKY = 'oklch(0.68 0.15 240)'
-export const RED = 'oklch(0.63 0.21 27)'
+// Buff = green, ready = sky-blue, debuff = red, all from the shared --heat-*
+// tokens so good / neutral / bad read consistently across the app (war/eco,
+// damage, readiness). The tokens are theme-aware and still legible on the dark
+// tooltip; a thin card-coloured seam separates adjacent segments.
+export const GREEN = 'var(--heat-green)'
+export const SKY = 'var(--heat-blue)'
+export const RED = 'var(--heat-red)'
 export const SEAM = '2px solid var(--card)'
 
 export function pct(n: number, t: number): number {

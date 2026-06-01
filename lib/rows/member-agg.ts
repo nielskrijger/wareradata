@@ -25,6 +25,14 @@ export interface MemberAgg {
   // null-handling as the gear/health/hunger means.
   warShareSum: number
   warShareCount: number
+  // Sum of members' point-scored wealth (feeds each entity's wealthPoints and
+  // the points total). Equal to `wealth` today because WEALTH_DIVISOR is 1
+  // gold/point.
+  wealthPoints: number
+  // Sum of members' actual wealth in gold, mirroring UserRow.wealth. Tracked
+  // apart from wealthPoints so the Member/Citizen Wealth column reflects real
+  // holdings rather than the points derivative, which would diverge if the
+  // scoring divisor ever changed.
   wealth: number
 }
 
@@ -50,6 +58,7 @@ function emptyAgg(): MemberAgg {
     total: 0,
     warShareSum: 0,
     warShareCount: 0,
+    wealthPoints: 0,
     wealth: 0,
   }
 }
@@ -60,9 +69,10 @@ function emptyAgg(): MemberAgg {
  * ignore unassigned users.
  *
  * Aggregates kept in one helper so callers do a single pass: points sums
- * (level / damage / wealth / total), member count, premium spend totals
- * (gems / months / gifts), level / health / hunger / gear sums + counts for averages,
- * and buff / ready / debuff counts for the readiness pill.
+ * (level / damage / wealthPoints / total), raw member wealth (wealth),
+ * member count, premium spend totals (gems / months / gifts),
+ * level / health / hunger / gear sums + counts for averages, and
+ * buff / ready / debuff counts for the readiness pill.
  */
 export function aggregateMembers(
   userRows: UserRow[],
@@ -79,7 +89,8 @@ export function aggregateMembers(
     entry.total += u.points
     entry.level += u.levelPoints
     entry.damage += u.damagePoints
-    entry.wealth += u.wealthPoints
+    entry.wealthPoints += u.wealthPoints
+    entry.wealth += u.wealth ?? 0
     entry.count += 1
     entry.gemsPurchasedTotal += u.gemsPurchased ?? 0
     entry.premiumMonthsTotal += u.premiumMonths ?? 0

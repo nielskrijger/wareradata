@@ -64,6 +64,16 @@ export type User = UserGetUserLiteResponse & {
   // Not from the API: stamped by the scraper at capture time, and updated by an
   // on-demand refresh, so the user page can show how fresh the data is.
   lastRefreshedAt?: string
+  // Active drug effect (cocaine: +60% attack for 8h, then -60% for 16h). Present
+  // in the getUserById payload but absent from the SDK types, so we widen it
+  // here. Only the buff* or the debuff* pair is set at a time; the whole object
+  // is absent when no effect is active.
+  buffs?: {
+    buffCodes?: string[]
+    buffEndAt?: string
+    debuffCodes?: string[]
+    debuffEndAt?: string
+  }
 }
 // One user's currently-equipped gear. Each slot is optional: players strip gear
 // between battles to preserve durability, so the response is often `{}`.

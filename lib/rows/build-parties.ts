@@ -44,6 +44,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         levelPoints: agg?.level ?? 0,
         memberCount: p.members?.length ?? 0,
         memberCountRank: null,
+        memberWealth: agg?.wealth ?? 0,
         militarism: ethics?.militarism ?? null,
         name: p.name,
         premiumGiftsTotal: agg?.premiumGiftsTotal ?? 0,
@@ -52,7 +53,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         premiumMonthsTotalRank: null,
         totalPoints: agg?.total ?? 0,
         totalPointsRank: null,
-        wealthPoints: agg?.wealth ?? 0,
+        wealthPoints: agg?.wealthPoints ?? 0,
       } satisfies PartyRow
     })
     .sort((a, b) => b.totalPoints - a.totalPoints)

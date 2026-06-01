@@ -54,6 +54,10 @@ export interface UserRow {
   premiumMonths: number | null
   premiumMonthsRank: number | null
   readinessStatus: 'buff' | 'debuff' | 'neither' | null
+  // ISO timestamp when the active buff/debuff ends (buffs.buffEndAt /
+  // debuffEndAt from the scrape), or null when no effect is active. Drives the
+  // live countdown on the Buff column.
+  readinessEndsAt: string | null
   referrals: number | null
   referralsRank: number | null
   terrain: number | null
@@ -136,6 +140,10 @@ export interface CountryRow {
   avgPointsRank: number | null
   bounty: number | null
   bountyRank: number | null
+  // Sum of citizens' actual wealth in gold (real holdings, not the wealthPoints
+  // points derivative). Surfaced as the "Citizen Wealth" column.
+  citizenWealth: number
+  citizenWealthRank: number | null
   code: string
   damageRank: number | null
   damageTier: RankingTier | null
@@ -222,6 +230,10 @@ export interface MURow {
   levelPoints: number
   memberCount: number
   memberCountRank: number | null
+  // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
+  // points derivative). Surfaced as the "Member Wealth" column.
+  memberWealth: number
+  memberWealthRank: number | null
   name: string
   premiumGiftsTotal: number
   premiumGiftsTotalRank: number | null
@@ -349,6 +361,9 @@ export interface PartyRow {
   levelPoints: number
   memberCount: number
   memberCountRank: number | null
+  // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
+  // points derivative). Surfaced as the "Member Wealth" column.
+  memberWealth: number
   militarism: number | null
   name: string
   premiumGiftsTotal: number

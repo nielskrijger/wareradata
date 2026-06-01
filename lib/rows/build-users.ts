@@ -38,6 +38,7 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
       const healthPercent = barPercent(skills?.health)
       const hungerPercent = barPercent(skills?.hunger)
       const readinessStatus = toReadinessStatus(skills?.attack)
+      const readinessEndsAt = u.buffs?.buffEndAt ?? u.buffs?.debuffEndAt ?? null
       const gear = equipment[u._id]
       const gearScore = gear ? computeGearScore(gear, slotSpecs, gearLookup) : null
       const warPoints = skillPoints(skills, WAR_SKILLS, skillCost)
@@ -97,6 +98,7 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
         premiumMonths: r?.userPremiumMonths?.value ?? null,
         premiumMonthsRank: null,
         readinessStatus,
+        readinessEndsAt,
         referrals: r?.userReferrals?.value ?? null,
         referralsRank: null,
         terrain: r?.userTerrain?.value ?? null,

@@ -122,15 +122,15 @@ export default async function MUDetailPage({ params }: PageProps) {
         </FactRow>
       </DetailHeader>
 
-      <PointsBreakdownPanel
-        total={mu.totalPoints}
-        level={mu.levelPoints}
-        damage={mu.damagePoints}
-        wealth={mu.wealthPoints}
-        caption={{ value: mu.avgPoints, unit: 'points/member' }}
-      />
-
       <StatCardGrid>
+        <PointsBreakdownPanel
+          className="col-span-2"
+          total={mu.totalPoints}
+          level={mu.levelPoints}
+          damage={mu.damagePoints}
+          wealth={mu.wealthPoints}
+          caption={{ value: mu.avgPoints, unit: 'points/member' }}
+        />
         <ReadinessPillCard mix={mu.readinessPill} />
         <CombatModeCard avgWarShare={mu.avgWarShare} rank={mu.avgWarShareRank} total={total} />
         <VitalsCard average health={mu.avgHealth} hunger={mu.avgHunger} />

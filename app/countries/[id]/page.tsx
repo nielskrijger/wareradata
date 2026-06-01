@@ -138,15 +138,15 @@ export default async function CountryDetailPage({ params }: PageProps) {
         </FactRow>
       </DetailHeader>
 
-      <PointsBreakdownPanel
-        total={c.totalPoints}
-        level={c.levelPoints}
-        damage={c.damagePoints}
-        wealth={c.wealthPoints}
-        caption={{ value: c.avgPoints, unit: 'points/citizen' }}
-      />
-
       <StatCardGrid>
+        <PointsBreakdownPanel
+          className="col-span-2"
+          total={c.totalPoints}
+          level={c.levelPoints}
+          damage={c.damagePoints}
+          wealth={c.wealthPoints}
+          caption={{ value: c.avgPoints, unit: 'points/citizen' }}
+        />
         <ReadinessPillCard mix={c.readinessPill} />
         <CombatModeCard avgWarShare={c.avgWarShare} rank={c.avgWarShareRank} total={total} />
         <VitalsCard average health={c.avgHealth} hunger={c.avgHunger} />

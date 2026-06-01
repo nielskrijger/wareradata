@@ -17,6 +17,7 @@ import { GearBand } from '@/components/detail/gear-band'
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
 import { RefreshButton } from '@/components/detail/refresh-button'
+import { SkillSplitCard } from '@/components/detail/skill-split-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { VitalsCard } from '@/components/detail/vitals-card'
 import { ExternalLink } from '@/components/links'
@@ -146,16 +147,23 @@ export default async function UserDetailPage({ params }: PageProps) {
         </FactRow>
       </DetailHeader>
 
-      <PointsBreakdownPanel
-        total={user.points}
-        level={user.levelPoints}
-        damage={user.damagePoints}
-        wealth={user.wealthPoints}
-        caption={{ value: user.pointsPerDay, unit: 'points/day' }}
-      />
-
       <StatCardGrid>
+        <PointsBreakdownPanel
+          className="col-span-2"
+          total={user.points}
+          level={user.levelPoints}
+          damage={user.damagePoints}
+          wealth={user.wealthPoints}
+          caption={{ value: user.pointsPerDay, unit: 'points/day' }}
+        />
         <VitalsCard health={user.healthPercent} hunger={user.hungerPercent} />
+        <SkillSplitCard
+          mode={user.combatMode}
+          warPoints={user.warPoints}
+          ecoPoints={user.ecoPoints}
+          warPointsRank={user.warPointsRank}
+          ecoPointsRank={user.ecoPointsRank}
+        />
         <MultiStatCard
           label="Damage"
           total={total}

@@ -2,6 +2,7 @@ import { Trophy } from 'lucide-react'
 
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
+import { cn } from '@/lib/utils'
 
 interface Props {
   total: number
@@ -12,6 +13,9 @@ interface Props {
   // average (a country's points/citizen, an MU's points/member). Hidden when
   // the value is null.
   caption?: { value: number | null, unit: string }
+  // Grid placement from the caller (e.g. `col-span-2`), since this sits as the
+  // headline cell inside the detail page's StatCardGrid.
+  className?: string
 }
 
 /**
@@ -22,7 +26,7 @@ interface Props {
  * Unlike the table's PointsBreakdownCell (a hover tooltip), this shows the
  * breakdown inline since the detail page has the room for it.
  */
-export function PointsBreakdownPanel({ total, level, damage, wealth, caption }: Props) {
+export function PointsBreakdownPanel({ total, level, damage, wealth, caption, className }: Props) {
   const slices = [
     { label: 'Level' as const, value: level },
     { label: 'Damage' as const, value: damage },
@@ -30,13 +34,13 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, caption }: 
   ].sort((a, b) => b.value - a.value)
 
   return (
-    <section className="bg-card grid grid-cols-1 gap-6 rounded-md border p-5 sm:grid-cols-[auto_1fr] sm:items-center">
+    <section className={cn('bg-card grid grid-cols-1 gap-6 rounded-md border p-3 sm:grid-cols-[auto_1fr] sm:items-center', className)}>
       <div className="sm:border-r sm:pr-6">
         <div className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
           <Trophy className="size-3.5" />
           Total points
         </div>
-        <div className="text-4xl leading-tight tabular-nums">{total.toLocaleString()}</div>
+        <div className="text-2xl leading-tight tabular-nums">{total.toLocaleString()}</div>
         {caption?.value != null && (
           <div className="text-muted-foreground text-xs">
             {caption.value.toLocaleString()}
@@ -45,7 +49,7 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, caption }: 
           </div>
         )}
       </div>
-      <dl className="space-y-2.5">
+      <dl className="space-y-1">
         {slices.map((s) => {
           const pct = total > 0 ? Math.round((s.value / total) * 100) : 0
           const { color, icon: Icon } = POINTS_LEGEND[s.label]
@@ -67,7 +71,7 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, caption }: 
                 </dd>
               </div>
               <StackedBar
-                className="mt-1 h-2 bg-muted"
+                className="mt-0.5 h-1.5 bg-muted"
                 total={total}
                 segments={[{ key: s.label, value: s.value, color }]}
               />

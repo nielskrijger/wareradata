@@ -15,9 +15,9 @@ import { Logo } from './logo'
 import { ThemeToggle } from './theme-toggle'
 
 const links = [
-  { href: '/users', label: 'Users' },
   { href: '/countries', label: 'Countries' },
   { href: '/mus', label: 'MUs' },
+  { href: '/users', label: 'Users' },
   { href: '/parties', label: 'Parties' },
   { href: '/regions', label: 'Regions' },
   { href: '/battles', label: 'Battles' },
@@ -43,7 +43,7 @@ export function SiteNav() {
   return (
     <nav className="bg-background sticky top-0 z-30 border-b">
       <div className="flex items-center gap-3 px-6 py-3 sm:gap-6 sm:px-8 lg:px-12">
-        <Link href="/users" className="font-brand flex items-center gap-2 text-[20px] tracking-wide">
+        <Link href="/countries" className="font-brand flex items-center gap-2 text-[20px] tracking-wide">
           <Logo />
           {/* Drop the wordmark below lg so the seven inline links keep their
               room down to the md breakpoint; the logo mark alone still brands. */}

@@ -1,30 +1,28 @@
-import { Coins, Swords, TrendingUp, Trophy } from 'lucide-react'
+import { Trophy } from 'lucide-react'
+
+import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
+import { StackedBar } from '@/components/stacked-bar'
 
 interface Props {
   total: number
   level: number
   damage: number
   wealth: number
-  pointsPerDay?: number | null
+  // Optional figure under the total: a per-day rate (user) or a per-capita
+  // average (a country's points/citizen, an MU's points/member). Hidden when
+  // the value is null.
+  caption?: { value: number | null, unit: string }
 }
 
-// Level / Damage / Wealth slice colors (distinct hues so the three
-// contributions read at a glance) paired with an icon.
-const SLICE_META = {
-  Level: { color: 'oklch(0.62 0.2 295)', icon: TrendingUp },
-  Damage: { color: 'oklch(0.63 0.21 27)', icon: Swords },
-  Wealth: { color: 'oklch(0.74 0.15 80)', icon: Coins },
-} as const
-
 /**
- * The user page's points card body: the total on the left, then the three
+ * The detail pages' points card body: the total on the left, then the three
  * score contributions (level, damage, wealth) on the right, sorted highest
  * first, each as a labeled bar with its value and share of the total.
  *
  * Unlike the table's PointsBreakdownCell (a hover tooltip), this shows the
  * breakdown inline since the detail page has the room for it.
  */
-export function PointsBreakdownPanel({ total, level, damage, wealth, pointsPerDay }: Props) {
+export function PointsBreakdownPanel({ total, level, damage, wealth, caption }: Props) {
   const slices = [
     { label: 'Level' as const, value: level },
     { label: 'Damage' as const, value: damage },
@@ -39,14 +37,18 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, pointsPerDa
           Total points
         </div>
         <div className="text-4xl leading-tight tabular-nums">{total.toLocaleString()}</div>
-        {pointsPerDay != null && (
-          <div className="text-muted-foreground text-xs">{pointsPerDay.toLocaleString()} points/day</div>
+        {caption?.value != null && (
+          <div className="text-muted-foreground text-xs">
+            {caption.value.toLocaleString()}
+            {' '}
+            {caption.unit}
+          </div>
         )}
       </div>
       <dl className="space-y-2.5">
         {slices.map((s) => {
           const pct = total > 0 ? Math.round((s.value / total) * 100) : 0
-          const { color, icon: Icon } = SLICE_META[s.label]
+          const { color, icon: Icon } = POINTS_LEGEND[s.label]
           return (
             <div key={s.label}>
               <div className="flex items-baseline justify-between gap-2 text-sm">
@@ -64,9 +66,11 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, pointsPerDa
                   </span>
                 </dd>
               </div>
-              <div className="bg-muted mt-1 h-2 overflow-hidden rounded-full">
-                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-              </div>
+              <StackedBar
+                className="mt-1 h-2 bg-muted"
+                total={total}
+                segments={[{ key: s.label, value: s.value, color }]}
+              />
             </div>
           )
         })}

@@ -6,15 +6,16 @@ import { connection } from 'next/server'
 import { BattleCountBadge } from '@/components/badges/battle-count-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
+import { CombatModeCard } from '@/components/detail/combat-mode-card'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
+import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
-import { StatCard } from '@/components/detail/stat-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
-import { VitalCard } from '@/components/detail/vital-card'
+import { VitalsCard } from '@/components/detail/vitals-card'
 import { Flag } from '@/components/flag'
 import { ExternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
-import { getLiveActiveBattles } from '@/lib/cache/live-battles'
+import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -26,9 +27,10 @@ interface PageProps {
 }
 
 async function getCountry(id: string) {
-  const [{ countries, users, mus, parties }, liveActive] = await Promise.all([
+  const [{ countries, users, mus, parties }, liveActive, activeBattlesByCountry] = await Promise.all([
     getSnapshot(),
     getLiveActiveBattles(),
+    getActiveBattlesByCountry(),
   ])
   const country = countries.find(c => c.id === id)
   if (!country) {
@@ -69,7 +71,11 @@ async function getCountry(id: string) {
     row => row.totalDamage,
   )
 
-  return { country, ranges: ranges ?? {}, total, citizenPage, muPage, partyPage, battlePage }
+  // The matchup list for this country's ⚔ pill tooltip, same shape the table
+  // cell uses (each battle from this country's point of view).
+  const activeBattlesList = activeBattlesByCountry.get(id) ?? []
+
+  return { country, ranges: ranges ?? {}, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -91,12 +97,13 @@ export default async function CountryDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
-  const { country: c, ranges, total, citizenPage, muPage, partyPage, battlePage } = result
+  const { country: c, ranges, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList } = result
 
   return (
     <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={c.name}
+        titleSuffix={c.damageTier ? <TierBadge tier={c.damageTier} /> : undefined}
         emblem={(
           <Flag
             code={c.code}
@@ -126,8 +133,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
             {' '}
             parties
           </span>
-          <TierBadge tier={c.damageTier} />
-          <BattleCountBadge count={battlePage.total} />
+          <BattleCountBadge count={battlePage.total} countryId={c.id} battles={activeBattlesList} />
           <ExternalLink href={wareraUrl('country', c.id)}>WarEra.io</ExternalLink>
         </FactRow>
       </DetailHeader>
@@ -137,34 +143,66 @@ export default async function CountryDetailPage({ params }: PageProps) {
         level={c.levelPoints}
         damage={c.damagePoints}
         wealth={c.wealthPoints}
+        caption={{ value: c.avgPoints, unit: 'points/citizen' }}
       />
 
       <StatCardGrid>
         <ReadinessPillCard mix={c.readinessPill} />
-        <VitalCard kind="health" value={c.avgHealth} rank={c.avgHealthRank} total={total} />
-        <VitalCard kind="hunger" value={c.avgHunger} rank={c.avgHungerRank} total={total} />
-        <StatCard label="Active Pop." value={c.activePopulation} range={ranges.activePopulation} heat="ramp" rank={c.activePopulationRank} total={total} />
-        <StatCard label="Avg Level" value={c.avgLevel} range={ranges.avgLevel} heat="median" rank={c.avgLevelRank} total={total} />
-        <StatCard label="Avg Points" value={c.avgPoints} range={ranges.avgPoints} heat="median" rank={c.avgPointsRank} total={total} />
-        <StatCard label="Avg Gear" value={c.avgGearScore} range={ranges.avgGearScore} heat="median" rank={c.avgGearScoreRank} total={total} />
-        <StatCard label="Total Damage" value={c.damage} display={<CompactNumber value={c.damage} />} range={ranges.damage} heat="median" rank={c.damageRank} total={total} />
-        <StatCard label="Weekly Damage" value={c.weeklyDamage} display={<CompactNumber value={c.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={c.weeklyDamageRank} total={total} />
-        <StatCard label="Weekly / Citizen" value={c.weeklyDamagePerCitizen} display={<CompactNumber value={c.weeklyDamagePerCitizen} />} range={ranges.weeklyDamagePerCitizen} heat="median" rank={c.weeklyDamagePerCitizenRank} total={total} />
-        <StatCard label="Wealth" value={c.wealth} display={<CompactNumber value={c.wealth} />} range={ranges.wealth} heat="median" rank={c.wealthRank} total={total} />
-        <StatCard label="Bounty" value={c.bounty} display={<CompactNumber value={c.bounty} />} range={ranges.bounty} heat="ramp" rank={c.bountyRank} total={total} />
-        <StatCard label="Treasury" value={c.money} display={<CompactNumber value={c.money} />} range={ranges.money} heat="median" rank={c.moneyRank} total={total} />
-        <StatCard label="Development" value={c.development} range={ranges.development} heat="median" rank={c.developmentRank} total={total} />
-        <StatCard label="Prod. Bonus" value={c.productionBonus} display={c.productionBonus != null ? `${c.productionBonus}%` : undefined} range={ranges.productionBonus} heat="median" rank={c.productionBonusRank} total={total} />
-        <StatCard label="MUs" value={c.musCount} range={ranges.musCount} heat="ramp" rank={c.musCountRank} total={total} />
-        <StatCard label="Parties" value={c.partyCount} range={ranges.partyCount} heat="ramp" rank={c.partyCountRank} total={total} />
-        <StatCard label="Allies" value={c.alliesCount} range={ranges.alliesCount} heat="ramp" rank={c.alliesCountRank} total={total} />
-        <StatCard label="Wars" value={c.warsCount} range={ranges.warsCount} heat="invertMedian" rank={c.warsCountRank} total={total} />
-        <StatCard label="Unrest" value={c.unrestPercent} display={c.unrestPercent != null ? `${c.unrestPercent.toFixed(1)}%` : undefined} range={ranges.unrestPercent} heat="invert" />
-        <StatCard label="Income Tax" value={c.taxIncome} display={c.taxIncome != null ? `${c.taxIncome}%` : undefined} range={ranges.taxIncome} heat="invert" center={10} />
-        <StatCard label="Market Tax" value={c.taxMarket} display={c.taxMarket != null ? `${c.taxMarket}%` : undefined} range={ranges.taxMarket} heat="invert" />
-        <StatCard label="Gems Bought" value={c.gemsPurchasedTotal} range={ranges.gemsPurchasedTotal} heat="ramp" rank={c.gemsPurchasedTotalRank} total={total} />
-        <StatCard label="Premium Months" value={c.premiumMonthsTotal} range={ranges.premiumMonthsTotal} heat="ramp" rank={c.premiumMonthsTotalRank} total={total} />
-        <StatCard label="Premium Gifts" value={c.premiumGiftsTotal} range={ranges.premiumGiftsTotal} heat="ramp" rank={c.premiumGiftsTotalRank} total={total} />
+        <CombatModeCard avgWarShare={c.avgWarShare} rank={c.avgWarShareRank} total={total} />
+        <VitalsCard average health={c.avgHealth} hunger={c.avgHunger} />
+        <MultiStatCard
+          label="Damage"
+          total={total}
+          hero={{ label: 'Total', value: c.damage, display: <CompactNumber value={c.damage} />, range: ranges.damage, heat: 'median', rank: c.damageRank }}
+          rows={[
+            { label: 'Weekly', value: c.weeklyDamage, display: <CompactNumber value={c.weeklyDamage} />, range: ranges.weeklyDamage, heat: 'median', rank: c.weeklyDamageRank },
+            { label: 'Per citizen', value: c.weeklyDamagePerCitizen, display: <CompactNumber value={c.weeklyDamagePerCitizen} />, range: ranges.weeklyDamagePerCitizen, heat: 'median', rank: c.weeklyDamagePerCitizenRank },
+            { label: 'Avg gear', value: c.avgGearScore, range: ranges.avgGearScore, heat: 'median', rank: c.avgGearScoreRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Economy"
+          rows={[
+            { label: 'Treasury', value: c.money, display: <CompactNumber value={c.money} />, range: ranges.money, heat: 'median', rank: c.moneyRank },
+            { label: 'Wealth', value: c.wealth, display: <CompactNumber value={c.wealth} />, range: ranges.wealth, heat: 'median', rank: c.wealthRank },
+            { label: 'Bounty', value: c.bounty, display: <CompactNumber value={c.bounty} />, range: ranges.bounty, heat: 'ramp', rank: c.bountyRank },
+            { label: 'Development', value: c.development, range: ranges.development, heat: 'median', rank: c.developmentRank },
+            { label: 'Prod. bonus', value: c.productionBonus, display: c.productionBonus != null ? `${c.productionBonus}%` : undefined, range: ranges.productionBonus, heat: 'median', rank: c.productionBonusRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Society"
+          rows={[
+            { label: 'Active pop.', value: c.activePopulation, range: ranges.activePopulation, heat: 'ramp', rank: c.activePopulationRank },
+            { label: 'Avg level', value: c.avgLevel, range: ranges.avgLevel, heat: 'median', rank: c.avgLevelRank },
+            { label: 'MUs', value: c.musCount, range: ranges.musCount, heat: 'ramp', rank: c.musCountRank },
+            { label: 'Parties', value: c.partyCount, range: ranges.partyCount, heat: 'ramp', rank: c.partyCountRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Relations"
+          rows={[
+            { label: 'Allies', value: c.alliesCount, range: ranges.alliesCount, heat: 'ramp', rank: c.alliesCountRank },
+            { label: 'Wars', value: c.warsCount, range: ranges.warsCount, heat: 'invertMedian', rank: c.warsCountRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Policies"
+          rows={[
+            { label: 'Income tax', value: c.taxIncome, display: c.taxIncome != null ? `${c.taxIncome}%` : undefined, range: ranges.taxIncome, heat: 'invert', center: 10 },
+            { label: 'Market tax', value: c.taxMarket, display: c.taxMarket != null ? `${c.taxMarket}%` : undefined, range: ranges.taxMarket, heat: 'invert' },
+            { label: 'Self-work tax', value: c.taxSelfWork, display: c.taxSelfWork != null ? `${c.taxSelfWork}%` : undefined, range: ranges.taxSelfWork, heat: 'invert', center: 5 },
+            { label: 'Unrest', value: c.unrestPercent, display: c.unrestPercent != null ? `${c.unrestPercent.toFixed(1)}%` : undefined, range: ranges.unrestPercent, heat: 'invert' },
+          ]}
+        />
+        <MultiStatCard
+          label="Premium"
+          rows={[
+            { label: 'Gems bought', value: c.gemsPurchasedTotal, display: <CompactNumber value={c.gemsPurchasedTotal} />, range: ranges.gemsPurchasedTotal, heat: 'ramp', rank: c.gemsPurchasedTotalRank },
+            { label: 'Months', value: c.premiumMonthsTotal, range: ranges.premiumMonthsTotal, heat: 'ramp', rank: c.premiumMonthsTotalRank },
+            { label: 'Gifts', value: c.premiumGiftsTotal, range: ranges.premiumGiftsTotal, heat: 'ramp', rank: c.premiumGiftsTotalRank },
+          ]}
+        />
       </StatCardGrid>
 
       <CountryTables

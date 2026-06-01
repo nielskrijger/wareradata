@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 import { Drumstick, Heart } from 'lucide-react'
 
+import { StackedBar } from '@/components/stacked-bar'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
@@ -52,9 +53,11 @@ export function VitalCard({ kind, value, label, rank, total }: Props) {
           %
         </span>
       </div>
-      <div className="bg-muted h-1.5 w-full overflow-hidden rounded-full">
-        <div className="h-full rounded-full" style={{ width: `${value}%`, backgroundColor: color }} />
-      </div>
+      <StackedBar
+        className="h-1.5 w-full bg-muted"
+        total={100}
+        segments={[{ key: 'value', value, color }]}
+      />
       {rank != null && total != null && (
         <span className="text-muted-foreground text-xs">
           #

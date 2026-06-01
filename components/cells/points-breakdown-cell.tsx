@@ -1,7 +1,8 @@
 'use client'
 
-import { Coins, Swords, TrendingUp } from 'lucide-react'
-
+import type { PointsCategory } from '@/components/points-breakdown-legend'
+import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
+import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
@@ -10,14 +11,6 @@ interface Props {
   damage: number
   wealth: number
 }
-
-// Level / Damage / Wealth slice colors (brightened for the dark popup) paired
-// with an icon, matching the points breakdown panel.
-const SLICE_META = {
-  Level: { color: 'oklch(0.7 0.2 295)', icon: TrendingUp },
-  Damage: { color: 'oklch(0.68 0.21 27)', icon: Swords },
-  Wealth: { color: 'oklch(0.82 0.15 85)', icon: Coins },
-} as const
 
 /**
  * Renders a points total in a table cell with a hover tooltip that breaks
@@ -56,7 +49,7 @@ export function PointsBreakdownCell({ total, level, damage, wealth }: Props) {
 }
 
 interface RowProps {
-  label: keyof typeof SLICE_META
+  label: PointsCategory
   value: number
   total: number
   max: number
@@ -64,7 +57,7 @@ interface RowProps {
 
 function BreakdownRow({ label, value, total, max }: RowProps) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0
-  const { color, icon: Icon } = SLICE_META[label]
+  const { color, icon: Icon } = POINTS_LEGEND[label]
   return (
     <div className="space-y-0.5">
       <div className="flex items-center gap-1.5 tabular-nums">
@@ -76,9 +69,11 @@ function BreakdownRow({ label, value, total, max }: RowProps) {
           %
         </span>
       </div>
-      <div className="h-1 overflow-hidden rounded-full bg-white/10">
-        <div className="h-full rounded-full" style={{ width: `${max > 0 ? (value / max) * 100 : 0}%`, background: color }} />
-      </div>
+      <StackedBar
+        className="h-1 bg-white/10"
+        total={max}
+        segments={[{ key: label, value, color }]}
+      />
     </div>
   )
 }

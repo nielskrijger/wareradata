@@ -9,11 +9,13 @@ import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
+import { CombatModeCard } from '@/components/detail/combat-mode-card'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
+import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
-import { StatCard } from '@/components/detail/stat-card'
+import { RefreshButton } from '@/components/detail/refresh-button'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
-import { VitalCard } from '@/components/detail/vital-card'
+import { VitalsCard } from '@/components/detail/vitals-card'
 import { ExternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { UserHoverCard } from '@/components/user-hover-card'
@@ -21,7 +23,7 @@ import { getSnapshot } from '@/lib/cache/memory'
 import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
-import { RefreshButton } from './refresh-button'
+import { requestMuRefresh } from './actions'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -81,6 +83,7 @@ export default async function MUDetailPage({ params }: PageProps) {
     <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={mu.name}
+        titleSuffix={mu.damageTier ? <TierBadge tier={mu.damageTier} /> : undefined}
         emblem={(
           <Avatar
             src={mu.avatarUrl}
@@ -90,7 +93,7 @@ export default async function MUDetailPage({ params }: PageProps) {
             style={{ boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)' }}
           />
         )}
-        aside={<RefreshButton muId={mu.id} lastRefreshedAt={mu.lastRefreshedAt} />}
+        aside={<RefreshButton id={mu.id} action={requestMuRefresh} lastRefreshedAt={mu.lastRefreshedAt} />}
       >
         <FactRow>
           <CountryCell countryCode={mu.countryCode} countryName={mu.countryName} countryId={mu.countryId} />
@@ -100,7 +103,6 @@ export default async function MUDetailPage({ params }: PageProps) {
             {' '}
             members
           </span>
-          <TierBadge tier={mu.damageTier} />
         </FactRow>
         <FactRow muted>
           {mu.leaderName && (
@@ -125,28 +127,55 @@ export default async function MUDetailPage({ params }: PageProps) {
         level={mu.levelPoints}
         damage={mu.damagePoints}
         wealth={mu.wealthPoints}
+        caption={{ value: mu.avgPoints, unit: 'points/member' }}
       />
 
       <StatCardGrid>
         <ReadinessPillCard mix={mu.readinessPill} />
-        <VitalCard kind="health" value={mu.avgHealth} rank={mu.avgHealthRank} total={total} />
-        <VitalCard kind="hunger" value={mu.avgHunger} rank={mu.avgHungerRank} total={total} />
-        <StatCard label="Members" value={mu.memberCount} range={ranges.memberCount} heat="ramp" rank={mu.memberCountRank} total={total} />
-        <StatCard label="Avg Level" value={mu.avgLevel} range={ranges.avgLevel} heat="median" rank={mu.avgLevelRank} total={total} />
-        <StatCard label="Avg Points" value={mu.avgPoints} range={ranges.avgPoints} heat="median" rank={mu.avgPointsRank} total={total} />
-        <StatCard label="Avg Gear" value={mu.avgGearScore} range={ranges.avgGearScore} heat="median" rank={mu.avgGearScoreRank} total={total} />
-        <StatCard label="Total Damage" value={mu.damage} display={<CompactNumber value={mu.damage} />} range={ranges.damage} heat="median" rank={mu.damageRank} total={total} />
-        <StatCard label="Weekly Damage" value={mu.weeklyDamage} display={<CompactNumber value={mu.weeklyDamage} />} range={ranges.weeklyDamage} heat="median" rank={mu.weeklyDamageRank} total={total} />
-        <StatCard label="Wealth" value={mu.wealth} display={<CompactNumber value={mu.wealth} />} range={ranges.wealth} heat="median" rank={mu.wealthRank} total={total} />
-        <StatCard label="Bounty" value={mu.bounty} display={<CompactNumber value={mu.bounty} />} range={ranges.bounty} heat="median" rank={mu.bountyRank} total={total} />
-        <StatCard label="Terrain" value={mu.terrain} range={ranges.terrain} heat="median" rank={mu.terrainRank} total={total} />
-        <StatCard label="Reputation" value={mu.reputation} range={ranges.reputation} heat="median" center={0} rank={mu.reputationRank} total={total} />
-        <StatCard label="Invested" value={mu.investedMoney} display={<CompactNumber value={mu.investedMoney} />} range={ranges.investedMoney} heat="ramp" rank={mu.investedMoneyRank} total={total} />
-        <StatCard label="Dorms" value={mu.dormitoriesLevel} range={ranges.dormitoriesLevel} heat="median" rank={mu.dormitoriesLevelRank} total={total} />
-        <StatCard label="HQ" value={mu.headquartersLevel} range={ranges.headquartersLevel} heat="median" center={2.5} rank={mu.headquartersLevelRank} total={total} />
-        <StatCard label="Gems Bought" value={mu.gemsPurchasedTotal} range={ranges.gemsPurchasedTotal} heat="ramp" rank={mu.gemsPurchasedTotalRank} total={total} />
-        <StatCard label="Premium Months" value={mu.premiumMonthsTotal} range={ranges.premiumMonthsTotal} heat="ramp" rank={mu.premiumMonthsTotalRank} total={total} />
-        <StatCard label="Premium Gifts" value={mu.premiumGiftsTotal} range={ranges.premiumGiftsTotal} heat="ramp" rank={mu.premiumGiftsTotalRank} total={total} />
+        <CombatModeCard avgWarShare={mu.avgWarShare} rank={mu.avgWarShareRank} total={total} />
+        <VitalsCard average health={mu.avgHealth} hunger={mu.avgHunger} />
+        <MultiStatCard
+          label="Damage"
+          total={total}
+          hero={{ label: 'Total', value: mu.damage, display: <CompactNumber value={mu.damage} />, range: ranges.damage, heat: 'median', rank: mu.damageRank }}
+          rows={[
+            { label: 'Weekly', value: mu.weeklyDamage, display: <CompactNumber value={mu.weeklyDamage} />, range: ranges.weeklyDamage, heat: 'median', rank: mu.weeklyDamageRank },
+            { label: 'Avg gear', value: mu.avgGearScore, range: ranges.avgGearScore, heat: 'median', rank: mu.avgGearScoreRank },
+            { label: 'Terrain', value: mu.terrain, range: ranges.terrain, heat: 'median', rank: mu.terrainRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Economy"
+          rows={[
+            { label: 'Wealth', value: mu.wealth, display: <CompactNumber value={mu.wealth} />, range: ranges.wealth, heat: 'median', rank: mu.wealthRank },
+            { label: 'Bounty', value: mu.bounty, display: <CompactNumber value={mu.bounty} />, range: ranges.bounty, heat: 'median', rank: mu.bountyRank },
+            { label: 'Invested', value: mu.investedMoney, display: <CompactNumber value={mu.investedMoney} />, range: ranges.investedMoney, heat: 'ramp', rank: mu.investedMoneyRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Society"
+          rows={[
+            { label: 'Members', value: mu.memberCount, range: ranges.memberCount, heat: 'ramp', rank: mu.memberCountRank },
+            { label: 'Avg level', value: mu.avgLevel, range: ranges.avgLevel, heat: 'median', rank: mu.avgLevelRank },
+            { label: 'Avg points', value: mu.avgPoints, range: ranges.avgPoints, heat: 'median', rank: mu.avgPointsRank },
+            { label: 'Reputation', value: mu.reputation, range: ranges.reputation, heat: 'median', center: 0, rank: mu.reputationRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Facilities"
+          rows={[
+            { label: 'Dorms', value: mu.dormitoriesLevel, range: ranges.dormitoriesLevel, heat: 'median', rank: mu.dormitoriesLevelRank },
+            { label: 'HQ', value: mu.headquartersLevel, range: ranges.headquartersLevel, heat: 'median', center: 2.5, rank: mu.headquartersLevelRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Premium"
+          rows={[
+            { label: 'Gems bought', value: mu.gemsPurchasedTotal, display: <CompactNumber value={mu.gemsPurchasedTotal} />, range: ranges.gemsPurchasedTotal, heat: 'ramp', rank: mu.gemsPurchasedTotalRank },
+            { label: 'Months', value: mu.premiumMonthsTotal, range: ranges.premiumMonthsTotal, heat: 'ramp', rank: mu.premiumMonthsTotalRank },
+            { label: 'Gifts', value: mu.premiumGiftsTotal, range: ranges.premiumGiftsTotal, heat: 'ramp', rank: mu.premiumGiftsTotalRank },
+          ]}
+        />
       </StatCardGrid>
 
       <section className="space-y-3">

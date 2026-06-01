@@ -1,6 +1,8 @@
 /* eslint-disable react/no-nested-component-definitions, react/static-components -- throwaway preview page, deleted once a variant is chosen */
 import { Drumstick, Heart } from 'lucide-react'
 
+import { heatColor as heat } from '@/lib/utils'
+
 // Temp page: 15 ways to make the Avg Health / Avg Hunger cards more interesting,
 // as nicer single cards or combined. Delete once a direction is chosen.
 // Proposals 1-7 are single-stat treatments (shown for both health & hunger);
@@ -11,12 +13,6 @@ const HUNGER = 54
 const HEALTH_RANK = 94
 const HUNGER_RANK = 58
 const TOTAL = 180
-
-// red -> amber -> green by value, matching PercentBar.
-function heat(pct: number): string {
-  const hue = 27 + (145 - 27) * (Math.min(100, Math.max(0, pct)) / 100)
-  return `oklch(0.68 0.19 ${hue})`
-}
 
 // ---- card shells matching StatCard ----
 function Single({ children }: { children: React.ReactNode }) {

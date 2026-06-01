@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 
+import type { GearLookup } from '@/lib/gear/score'
 import type { Range } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
 import type { Equipment } from '@/lib/warera/api'
@@ -17,6 +18,7 @@ import { GearStrip } from '@/components/detail/gear-strip'
 import { Flag } from '@/components/flag'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatRelativeTime } from '@/lib/format'
+import { computeGearTier } from '@/lib/gear/score'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
@@ -32,6 +34,7 @@ interface FetchedData {
   ranges: Record<string, Range>
   total: number
   equipment: Equipment
+  gearLookup: GearLookup
 }
 
 type Status = 'idle' | 'loading' | 'ready' | 'error'
@@ -95,7 +98,10 @@ export function UserHoverCard({ userId, children }: Props) {
 
   return (
     <Tooltip onOpenChange={handleOpenChange}>
-      <TooltipTrigger render={<span />}>{children}</TooltipTrigger>
+      {/* block min-w-0 so a truncating child (the username link) can shrink:
+          as a flex item this span otherwise keeps its content's min-content
+          width and the inner `truncate` never engages. */}
+      <TooltipTrigger render={<span className="block min-w-0" />}>{children}</TooltipTrigger>
       <TooltipContent side="top" className="w-80 p-0">
         {status === 'ready' && data ? <Body data={data} /> : <Placeholder status={status} />}
       </TooltipContent>
@@ -106,7 +112,7 @@ export function UserHoverCard({ userId, children }: Props) {
 const ICON_CLS = 'size-3 text-neutral-50/70'
 
 function Body({ data }: { data: FetchedData }) {
-  const { user, ranges, equipment } = data
+  const { user, ranges, equipment, gearLookup } = data
   return (
     <>
       <div className="px-3 py-2">
@@ -156,9 +162,9 @@ function Body({ data }: { data: FetchedData }) {
       <div className="border-b border-neutral-50/15 px-3 py-2">
         <div className="mb-1.5 flex items-center justify-between">
           <span className="text-[10px] uppercase tracking-wide text-neutral-50/50">Gear score</span>
-          {user.gearScore != null && <GearScorePill score={user.gearScore} />}
+          {user.gearScore != null && <GearScorePill score={user.gearScore} tier={computeGearTier(equipment, gearLookup)} />}
         </div>
-        <GearStrip equipment={equipment} />
+        <GearStrip equipment={equipment} gearLookup={gearLookup} />
       </div>
 
       <div className="px-3 py-2">

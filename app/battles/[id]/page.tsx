@@ -134,8 +134,8 @@ export default async function BattleDetailPage({ params }: PageProps) {
 
         <div className="w-full max-w-md">
           <div className="flex h-2.5 overflow-hidden rounded-full">
-            <div className="h-full bg-[oklch(0.63_0.21_27)]" style={{ width: `${attackerShare}%` }} />
-            <div className="h-full bg-[oklch(0.62_0.17_250)]" style={{ width: `${defenderShare}%` }} />
+            <div className="h-full bg-[var(--heat-red)]" style={{ width: `${attackerShare}%` }} />
+            <div className="h-full bg-[var(--heat-blue)]" style={{ width: `${defenderShare}%` }} />
           </div>
           <div className="text-muted-foreground mt-1 flex items-center justify-between text-xs tabular-nums">
             <span><CompactNumber value={b.attackerDamage} /> ({attackerShare}%)</span>

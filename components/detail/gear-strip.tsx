@@ -1,41 +1,17 @@
+import type { GearLookup } from '@/lib/gear/score'
 import type { Equipment } from '@/lib/warera/api'
 
 import { Footprints, Hand, HardHat, Shield, Sword, Target } from 'lucide-react'
 import Image from 'next/image'
 
 import { rarityHex } from '@/lib/gear/rarity'
+import { tierOfCode } from '@/lib/gear/score'
 import { cn } from '@/lib/utils'
 
 // Slot order mirrors the in-game UI (weapon, ammo, head, chest, gloves,
 // pants, shoes). Layout downstream depends on this order; do not reshuffle.
 const SLOT_ORDER = ['weapon', 'ammo', 'helmet', 'chest', 'gloves', 'pants', 'boots'] as const
 type Slot = (typeof SLOT_ORDER)[number]
-
-// Tier per slot. Armor pieces carry the tier as a trailing digit in the
-// item code (helmet1..6). Weapons and ammo have categorical tiers we
-// hard-map. Falls back to 1 for anything we don't recognize.
-//
-// Ammo tiers map to the game's rarity colors (uncommon / rare / epic), not
-// a sequential 1/2/3 — the in-game tooltips show lightAmmo bordered green
-// (uncommon), ammo bordered blue (rare), heavyAmmo bordered violet (epic),
-// so we mirror that by mapping to tiers 2/3/4 on the shared palette.
-const WEAPON_TIER: Record<string, number> = { knife: 1, gun: 2, rifle: 3, sniper: 4, tank: 5, jet: 6 }
-const AMMO_TIER: Record<string, number> = { lightAmmo: 2, ammo: 3, heavyAmmo: 4 }
-
-// Flat percentAttack bonus per ammo type, used as the under-tile label so
-// ammo's bonus reads in the same shape as armor pieces (e.g. "+10%").
-const AMMO_PERCENT_ATTACK: Record<string, number> = { lightAmmo: 10, ammo: 20, heavyAmmo: 40 }
-
-function tierOf(slot: Slot, code: string): number {
-  if (slot === 'weapon') {
-    return WEAPON_TIER[code] ?? 1
-  }
-  if (slot === 'ammo') {
-    return AMMO_TIER[code] ?? 1
-  }
-  const m = /(\d+)$/.exec(code)
-  return m ? Number(m[1]) : 1
-}
 
 // Two surfaces this strip renders on:
 //  - 'dark': the user hover-card, whose TooltipContent is fixed dark in both
@@ -151,6 +127,10 @@ function SlotIcon({ slot, className }: { slot: Slot, className?: string }) {
 
 interface Props {
   equipment: Equipment | undefined
+  // The code→tier + ammo-bonus lookup derived from the live config (Snapshot
+  // .gearLookup). Server pages read it from getSnapshot(); the client hover-card
+  // gets it in the /api/users/[id] payload.
+  gearLookup: GearLookup
   className?: string
   // The backdrop this strip sits on; see {@link Surface}. Defaults to 'dark'
   // (the hover-card tooltip). The detail page passes 'card' so tiles stay
@@ -170,7 +150,7 @@ interface Props {
  * Item icons come from `app.warera.io/images/items/<slot|code>.png`; skin
  * overrides from `equippedSkinKeys` are not applied here.
  */
-export function GearStrip({ equipment, className, surface = 'dark' }: Props) {
+export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }: Props) {
   const g = equipment ?? {}
   const tileBg = surface === 'card' ? 'bg-muted' : 'bg-white/5'
   const emptyBg = surface === 'card' ? 'bg-muted/50' : 'bg-white/[0.03]'
@@ -199,12 +179,12 @@ export function GearStrip({ equipment, className, surface = 'dark' }: Props) {
         }
 
         const code = typeof v === 'string' ? v : v.code
-        const t = tierOf(slot, code)
+        const t = tierOfCode(code, gearLookup)
         const dur = typeof v === 'string' ? 100 : Math.round((v.state / v.maxState) * 100)
         // Ammo is a flat string code with no per-piece skills, so we look its
-        // bonus up (+10%/+20%/+40%) instead of pulling it from a roll.
+        // bonus up (+10%/+20%/+40%) from the gear lookup instead of a roll.
         const bonus = typeof v === 'string'
-          ? `+${AMMO_PERCENT_ATTACK[v] ?? 0}%`
+          ? `+${gearLookup.ammoBonusByCode[v] ?? 0}%`
           : primarySkill(v.skills as SkillsBag)
         const rgb = rarityHex(t)
 

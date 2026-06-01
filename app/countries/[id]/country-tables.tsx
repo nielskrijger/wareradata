@@ -4,6 +4,7 @@ import type { PageResult } from '@/components/data-table/data-table'
 import type { BattleRow, MURow, PartyRow, UserRow } from '@/lib/rows'
 
 import { parseAsString, parseAsStringEnum, useQueryState, useQueryStates } from 'nuqs'
+import { useEffect, useRef } from 'react'
 
 import { BattlesTable } from '@/app/battles/battles-table'
 import { activeBattleColumns } from '@/app/battles/columns'
@@ -42,7 +43,28 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
     { shallow: true, history: 'replace' },
   )
 
+  // Scroll the tables into view only when a *non-default* tab is reached via the
+  // URL — a deep-linked `?tab=battles`, or the header's ⚔ pill (which links
+  // here) while already on the page. The default `citizens` tab is the landing
+  // state and never scrolls, so a plain `/countries/[id]` visit (or navigating
+  // back to one) stays at the top. Clicking a tab button in place sets
+  // `skipScroll` so the page doesn't yank when the user is already down here.
+  const tablesRef = useRef<HTMLDivElement>(null)
+  const skipScroll = useRef(false)
+
+  useEffect(() => {
+    if (skipScroll.current) {
+      skipScroll.current = false
+      return
+    }
+    if (tab === 'citizens') {
+      return
+    }
+    tablesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [tab])
+
   function selectTab(next: Tab) {
+    skipScroll.current = true
     // Drop the active table's paging/sort/filter so it doesn't bleed into the
     // table we're switching to.
     setTableState({ q: null, sort: null, dir: null, page: null })
@@ -50,10 +72,10 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
   }
 
   return (
-    <Tabs value={tab} onValueChange={value => selectTab(value as Tab)}>
+    <Tabs ref={tablesRef} value={tab} onValueChange={value => selectTab(value as Tab)} className="scroll-mt-20">
       <TabsList>
         <TabsTab value="citizens">Citizens</TabsTab>
-        <TabsTab value="mus">Military Units</TabsTab>
+        <TabsTab value="mus">MUs</TabsTab>
         <TabsTab value="parties">Parties</TabsTab>
         <TabsTab value="battles">{`Active Battles (${battles.total.toLocaleString()})`}</TabsTab>
       </TabsList>

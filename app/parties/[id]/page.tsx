@@ -6,11 +6,12 @@ import { connection } from 'next/server'
 import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
 import { ScaleBadge } from '@/components/badges/scale-badge'
+import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
+import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
-import { StatCard } from '@/components/detail/stat-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { ExternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
@@ -30,7 +31,7 @@ async function getParty(id: string) {
   }
   // Ranges over the full set, same as the /parties table, so each stat can
   // show where this party sits. No filter/sort; we only want the ranges.
-  const { ranges, total } = applyQuery(
+  const { ranges } = applyQuery(
     parties,
     { page: 0, pageSize: 1, sort: null, dir: 'asc', filter: '' },
     () => '',
@@ -44,7 +45,7 @@ async function getParty(id: string) {
     row => row.points,
   )
 
-  return { party, ranges: ranges ?? {}, total, memberPage }
+  return { party, ranges: ranges ?? {}, memberPage }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -66,7 +67,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
-  const { party: p, ranges, total, memberPage } = result
+  const { party: p, ranges, memberPage } = result
 
   return (
     <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
@@ -118,15 +119,25 @@ export default async function PartyDetailPage({ params }: PageProps) {
         level={p.levelPoints}
         damage={p.damagePoints}
         wealth={p.wealthPoints}
+        caption={{ value: p.avgPoints, unit: 'points/member' }}
       />
 
       <StatCardGrid>
-        <StatCard label="Members" value={p.memberCount} range={ranges.memberCount} heat="ramp" rank={p.memberCountRank} total={total} />
-        <StatCard label="Avg Level" value={p.avgLevel} range={ranges.avgLevel} heat="median" rank={p.avgLevelRank} total={total} />
-        <StatCard label="Avg Points" value={p.avgPoints} range={ranges.avgPoints} heat="median" rank={p.avgPointsRank} total={total} />
-        <StatCard label="Gems Bought" value={p.gemsPurchasedTotal} range={ranges.gemsPurchasedTotal} heat="ramp" rank={p.gemsPurchasedTotalRank} total={total} />
-        <StatCard label="Premium Months" value={p.premiumMonthsTotal} range={ranges.premiumMonthsTotal} heat="ramp" rank={p.premiumMonthsTotalRank} total={total} />
-        <StatCard label="Premium Gifts" value={p.premiumGiftsTotal} range={ranges.premiumGiftsTotal} heat="ramp" rank={p.premiumGiftsTotalRank} total={total} />
+        <MultiStatCard
+          label="Society"
+          rows={[
+            { label: 'Members', value: p.memberCount, range: ranges.memberCount, heat: 'ramp', rank: p.memberCountRank },
+            { label: 'Avg level', value: p.avgLevel, range: ranges.avgLevel, heat: 'median', rank: p.avgLevelRank },
+          ]}
+        />
+        <MultiStatCard
+          label="Premium"
+          rows={[
+            { label: 'Gems bought', value: p.gemsPurchasedTotal, display: <CompactNumber value={p.gemsPurchasedTotal} />, range: ranges.gemsPurchasedTotal, heat: 'ramp', rank: p.gemsPurchasedTotalRank },
+            { label: 'Months', value: p.premiumMonthsTotal, range: ranges.premiumMonthsTotal, heat: 'ramp', rank: p.premiumMonthsTotalRank },
+            { label: 'Gifts', value: p.premiumGiftsTotal, range: ranges.premiumGiftsTotal, heat: 'ramp', rank: p.premiumGiftsTotalRank },
+          ]}
+        />
       </StatCardGrid>
 
       <section className="space-y-3">

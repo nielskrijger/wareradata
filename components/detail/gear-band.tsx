@@ -1,13 +1,17 @@
+import type { GearLookup } from '@/lib/gear/score'
 import type { Equipment } from '@/lib/warera/api'
 
 import { GearStrip } from '@/components/detail/gear-strip'
 import { rarityHex, rarityLabel } from '@/lib/gear/rarity'
-import { gearScoreTier } from '@/lib/gear/score'
+import { computeGearTier, gearScoreTier } from '@/lib/gear/score'
 import { cn } from '@/lib/utils'
 
 interface Props {
   score: number | null | undefined
   equipment: Equipment | undefined
+  // Code→tier lookup from the live config (Snapshot.gearLookup), threaded to the
+  // tier readout and the strip so both resolve rarities from scraped data.
+  gearLookup: GearLookup
 }
 
 /**
@@ -17,8 +21,10 @@ interface Props {
  * {@link GearStrip} tile footprint, so it reads as the head of the strip,
  * followed by the seven equipped slots.
  */
-export function GearBand({ score, equipment }: Props) {
-  const tier = gearScoreTier(score)
+export function GearBand({ score, equipment, gearLookup }: Props) {
+  // Prefer the real item tiers so the score tile matches the gear strip's
+  // rarity rings; fall back to the score band only if equipment is missing.
+  const tier = computeGearTier(equipment, gearLookup) ?? gearScoreTier(score)
   const color = rarityHex(tier)
   return (
     <div className="flex items-end gap-1 sm:gap-2">
@@ -34,7 +40,7 @@ export function GearBand({ score, equipment }: Props) {
         </div>
         <span className="h-3 text-[9px] font-medium leading-none" style={{ color }}>{rarityLabel(tier)}</span>
       </div>
-      <GearStrip equipment={equipment} surface="card" />
+      <GearStrip equipment={equipment} gearLookup={gearLookup} surface="card" />
     </div>
   )
 }

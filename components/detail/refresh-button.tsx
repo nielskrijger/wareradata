@@ -6,24 +6,33 @@ import { useTransition } from 'react'
 import { RelativeTime } from '@/components/relative-time'
 import { Button } from '@/components/ui/button'
 
-import { requestMuRefresh } from './actions'
-
 interface Props {
-  muId: string
+  /**
+   * The entity id handed to {@link action}.
+   */
+  id: string
+  /**
+   * Server action that re-fetches this entity on demand and revalidates its
+   * page. Awaited so the button can show a pending state until fresh data lands.
+   */
+  action: (id: string) => Promise<void>
+  /**
+   * When the entity was last fetched; the "Updated …" label hides if null.
+   */
   lastRefreshedAt: string | null
 }
 
 /**
- * Shows when this MU's members were last fetched and a button to refresh them on
- * demand. The action blocks until the in-memory snapshot is updated, then the
- * page revalidates, so the freshly pending state resolves into fresh data.
+ * A "last updated · refresh" control for detail-page headers (the DetailHeader
+ * `aside` slot). Entity-agnostic: each page supplies its own server `action`
+ * plus the entity `id`. Shared by the MU and user pages, and ready for more.
  */
-export function RefreshButton({ muId, lastRefreshedAt }: Props) {
+export function RefreshButton({ id, action, lastRefreshedAt }: Props) {
   const [pending, startTransition] = useTransition()
 
   function onClick() {
     startTransition(async () => {
-      await requestMuRefresh(muId)
+      await action(id)
     })
   }
 

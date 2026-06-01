@@ -85,7 +85,7 @@ export function DetailHeader({ emblem, title, titleSuffix, bannerStyle, children
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <h1 className="font-brand text-[28px] leading-none tracking-wide">{title}</h1>
-              {titleSuffix}
+              {titleSuffix && <span className="flex items-center gap-2 -translate-y-0.5">{titleSuffix}</span>}
             </div>
             {children}
           </div>

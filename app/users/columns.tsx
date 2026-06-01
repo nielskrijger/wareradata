@@ -59,9 +59,13 @@ export const userColumns: ColumnDef<UserRow>[] = [
     meta: { heat: 'invert', sortInvert: true, align: 'right', width: 90 },
   },
   {
+    // Sorts on the buff/debuff time remaining (see readinessSortValue in the
+    // API route): descending — the default first click — puts the longest buff
+    // on top, "ready" in the middle, and the longest debuff at the bottom.
     accessorKey: 'readinessStatus',
-    header: 'Status',
-    cell: ({ row }) => <ReadinessBadge status={row.original.readinessStatus} />,
+    header: 'Buff',
+    cell: ({ row }) => <ReadinessBadge status={row.original.readinessStatus} endsAt={row.original.readinessEndsAt} />,
+    sortDescFirst: true,
     meta: { width: 100 },
   },
   {

@@ -38,3 +38,26 @@ export function formatRelativeTime(iso: string | null): string {
   }
   return rtf.format(-Math.floor(days / 365), 'year')
 }
+
+/**
+ * Formats a future ISO timestamp as a compact countdown ("3h12m", "12m") for a
+ * live "time remaining" label. Clamps to "0m" once the moment has passed.
+ * Returns the empty placeholder for a null or unparseable input.
+ */
+export function formatCountdown(iso: string | null): string {
+  if (!iso) {
+    return EMPTY
+  }
+  const then = Date.parse(iso)
+  if (Number.isNaN(then)) {
+    return EMPTY
+  }
+
+  const totalMinutes = Math.max(0, Math.round((then - Date.now()) / 60_000))
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  if (hours > 0) {
+    return `${hours}h${String(minutes).padStart(2, '0')}m`
+  }
+  return `${minutes}m`
+}

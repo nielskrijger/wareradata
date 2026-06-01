@@ -95,7 +95,7 @@ export default async function UserDetailPage({ params }: PageProps) {
         titleSuffix={(
           <>
             {user.levelTier && <TierBadge tier={user.levelTier} />}
-            {user.readinessStatus != null && <ReadinessBadge status={user.readinessStatus} />}
+            {user.readinessStatus != null && <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} />}
           </>
         )}
         bannerStyle={{ background: `linear-gradient(100deg, rgba(${rgb}, 0.38), rgba(${rgb}, 0.06))` }}

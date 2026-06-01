@@ -145,7 +145,7 @@ function Body({ data }: { data: FetchedData }) {
       <div className="border-y border-neutral-50/15 px-3 py-2">
         <div className="mb-1.5 flex items-center justify-between">
           <span className="text-[10px] uppercase tracking-wide text-neutral-50/50">Vitals</span>
-          <ReadinessBadge status={user.readinessStatus} />
+          <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} withTooltip={false} />
         </div>
         <div className="space-y-1">
           <div className="flex items-center gap-2">

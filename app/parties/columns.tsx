@@ -6,7 +6,7 @@ import type { PartyRow } from '@/lib/rows'
 
 import { PartyCell } from '@/components/cells/party-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
-import { countryColumn, localeNumberColumn, pointsBreakdownColumn, scaleBadgeColumn, wareraLinkColumn } from '@/components/data-table/column-factories'
+import { compactNumberColumn, countryColumn, localeNumberColumn, pointsBreakdownColumn, scaleBadgeColumn, wareraLinkColumn } from '@/components/data-table/column-factories'
 import { UserHoverCard } from '@/components/user-hover-card'
 
 export type { PartyRow }
@@ -43,6 +43,7 @@ export const partyColumns: ColumnDef<PartyRow>[] = [
   },
   countryColumn<PartyRow>(),
   localeNumberColumn<PartyRow>('memberCount', 'Members', { heat: 'ramp', width: 100 }),
+  compactNumberColumn<PartyRow>('memberWealth', 'Member Wealth', { heat: 'median', width: 140 }),
   {
     accessorKey: 'leaderName',
     header: 'Leader',

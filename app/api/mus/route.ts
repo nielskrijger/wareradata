@@ -38,6 +38,7 @@ const muSortValue = makeSortValue<MURow>({
     'bounty',
     'wealth',
     'wealthRank',
+    'memberWealth',
     'terrain',
     'reputation',
     'memberCount',

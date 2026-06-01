@@ -26,6 +26,7 @@ const partySortValue = makeSortValue<PartyRow>({
     'avgPoints',
     'avgLevel',
     'memberCount',
+    'memberWealth',
     'gemsPurchasedTotal',
     'premiumMonthsTotal',
     'premiumGiftsTotal',

@@ -147,7 +147,8 @@ export default async function MUDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Economy"
           rows={[
-            { label: 'Wealth', value: mu.wealth, display: <CompactNumber value={mu.wealth} />, range: ranges.wealth, heat: 'median', rank: mu.wealthRank },
+            { label: 'MU Wealth', value: mu.wealth, display: <CompactNumber value={mu.wealth} />, range: ranges.wealth, heat: 'median', rank: mu.wealthRank },
+            { label: 'Member Wealth', value: mu.memberWealth, display: <CompactNumber value={mu.memberWealth} />, range: ranges.memberWealth, heat: 'median', rank: mu.memberWealthRank },
             { label: 'Bounty', value: mu.bounty, display: <CompactNumber value={mu.bounty} />, range: ranges.bounty, heat: 'median', rank: mu.bountyRank },
             { label: 'Invested', value: mu.investedMoney, display: <CompactNumber value={mu.investedMoney} />, range: ranges.investedMoney, heat: 'ramp', rank: mu.investedMoneyRank },
           ]}

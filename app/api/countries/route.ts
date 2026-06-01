@@ -40,6 +40,7 @@ const countrySortValue = makeSortValue<CountryRow>({
     'weeklyDamagePerCitizen',
     'wealth',
     'wealthRank',
+    'citizenWealth',
     'bounty',
     'money',
     'development',

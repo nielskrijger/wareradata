@@ -164,7 +164,8 @@ export default async function CountryDetailPage({ params }: PageProps) {
           label="Economy"
           rows={[
             { label: 'Treasury', value: c.money, display: <CompactNumber value={c.money} />, range: ranges.money, heat: 'median', rank: c.moneyRank },
-            { label: 'Wealth', value: c.wealth, display: <CompactNumber value={c.wealth} />, range: ranges.wealth, heat: 'median', rank: c.wealthRank },
+            { label: 'Country Wealth', value: c.wealth, display: <CompactNumber value={c.wealth} />, range: ranges.wealth, heat: 'median', rank: c.wealthRank },
+            { label: 'Citizen Wealth', value: c.citizenWealth, display: <CompactNumber value={c.citizenWealth} />, range: ranges.citizenWealth, heat: 'median', rank: c.citizenWealthRank },
             { label: 'Bounty', value: c.bounty, display: <CompactNumber value={c.bounty} />, range: ranges.bounty, heat: 'ramp', rank: c.bountyRank },
             { label: 'Development', value: c.development, range: ranges.development, heat: 'median', rank: c.developmentRank },
             { label: 'Prod. bonus', value: c.productionBonus, display: c.productionBonus != null ? `${c.productionBonus}%` : undefined, range: ranges.productionBonus, heat: 'median', rank: c.productionBonusRank },

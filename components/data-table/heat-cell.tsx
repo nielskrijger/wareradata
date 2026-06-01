@@ -34,7 +34,7 @@ interface Props {
    * modes; most useful on diverging columns where even the sqrt ramp curve
    * isn't enough.
    */
-  log?: boolean
+  logScale?: boolean
   children: ReactNode
 }
 
@@ -61,7 +61,7 @@ function logCurve(t: number): number {
  * `range` is the [min, max, median] over the full filtered dataset, supplied
  * by the API so the highlight is stable across pages.
  */
-export function HeatCell({ value, range, mode = 'ramp', center, log = false, children }: Props) {
+export function HeatCell({ value, range, mode = 'ramp', center, logScale = false, children }: Props) {
   if (value == null || range == null) {
     return <>{children}</>
   }
@@ -77,7 +77,7 @@ export function HeatCell({ value, range, mode = 'ramp', center, log = false, chi
     // gifts, where most rows bunch near the minimum) still read clearly green —
     // linear would leave the bulk near neutral and only the rare max bright.
     const norm = (value - min) / span
-    const t = log ? logCurve(norm) : Math.sqrt(norm)
+    const t = logScale ? logCurve(norm) : Math.sqrt(norm)
     if (t < 0.05) {
       return <>{children}</>
     }
@@ -95,7 +95,7 @@ export function HeatCell({ value, range, mode = 'ramp', center, log = false, chi
     return <>{children}</>
   }
   const raw = Math.min(1, Math.abs(value - pivot) / reach)
-  const intensity = log ? logCurve(raw) : raw
+  const intensity = logScale ? logCurve(raw) : raw
   if (intensity < 0.05) {
     return <>{children}</>
   }

@@ -6,6 +6,7 @@ import type { CountryRow } from '@/lib/rows'
 
 import { CountryCell } from '@/components/cells/country-cell'
 import {
+  combatModeColumn,
   compactNumberColumn,
   gearColumn,
   localeNumberColumn,
@@ -49,6 +50,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   percentBarColumn<CountryRow>('avgHealth', 'Avg Health'),
   percentBarColumn<CountryRow>('avgHunger', 'Avg Hunger'),
   readinessColumn<CountryRow>(),
+  combatModeColumn<CountryRow>(),
   tierColumn<CountryRow>('damageTier'),
   rankTooltipColumn<CountryRow>('damage', 'damageRank', 'Total Damage', { width: 130 }),
   compactNumberColumn<CountryRow>('weeklyDamage', 'Weekly Damage', { heat: 'median', width: 140 }),

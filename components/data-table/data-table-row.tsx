@@ -1,4 +1,5 @@
 import type { Row } from '@tanstack/react-table'
+import type { CSSProperties } from 'react'
 
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { EmptyDash } from '@/components/empty-dash'
@@ -14,6 +15,11 @@ interface Props<TData> {
 // a soft right-edge shadow signals the pin without recoloring the column.
 const STICKY = 'bg-table-surface sticky left-0 z-10 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.35)]'
 
+// Mobile-narrow / sm-full width for the pinned column, mirroring the header
+// cell. The CSS var lets these classes win over what would otherwise be an
+// inline `width`.
+const STICKY_WIDTH = 'w-[140px] sm:w-[var(--col-w)]'
+
 export function DataTableRow<TData>({ row }: Props<TData>) {
   return (
     <TableRow>
@@ -21,8 +27,10 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
         const meta = cell.column.columnDef.meta
         const align = meta?.align ?? 'left'
         const width = meta?.width
-        const style = width ? { width: `${width}px` } : undefined
         const sticky = index === 0 ? STICKY : undefined
+        const style: CSSProperties | undefined = width
+          ? (sticky ? { '--col-w': `${width}px` } as CSSProperties : { width: `${width}px` })
+          : undefined
 
         // Cells with no value render the muted EmptyDash, so every column that
         // returns null for a missing value reads grey without per-column
@@ -35,7 +43,7 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
           return (
             <TableCell
               key={cell.id}
-              className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, sticky)}
+              className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, sticky, sticky && width && STICKY_WIDTH)}
               style={style}
             >
               <EmptyDash />
@@ -51,7 +59,7 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
                 range={cell.getContext().table.options.meta?.ranges?.[cell.column.id]}
                 mode={heat}
                 center={meta?.heatCenter}
-                log={meta?.heatLog}
+                logScale={meta?.heatLogScale}
               >
                 {rendered}
               </HeatCell>
@@ -61,7 +69,7 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
         return (
           <TableCell
             key={cell.id}
-            className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, sticky)}
+            className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, sticky, sticky && width && STICKY_WIDTH)}
             style={style}
           >
             {wrapped}

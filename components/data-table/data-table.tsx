@@ -75,7 +75,7 @@ declare module '@tanstack/react-table' {
      * (e.g. casesOpened, spanning 1 → 170k) so typical values still get tinted
      * instead of everything reading neutral until the lone outlier.
      */
-    heatLog?: boolean
+    heatLogScale?: boolean
 
     /**
      * Flip the sort-direction indicator. For rank columns sorted ascending
@@ -270,7 +270,16 @@ function DataTableInner<TData, TValue>({
         </DropdownMenu>
       </div>
 
-      <div className={cn('border-input bg-card overflow-hidden rounded-md border dark:bg-input/50', isPending && 'opacity-60')}>
+      <div className={cn(
+        // Full-bleed on mobile: a -mx-6 cancels the px-6 page padding so the
+        // (horizontally scrolling) table uses the whole screen width. Side
+        // borders + rounding are dropped while it touches the edges, and
+        // everything is restored from sm up where the page has room.
+        'border-input bg-card overflow-hidden border dark:bg-input/50',
+        '-mx-6 rounded-none border-x-0 sm:mx-0 sm:rounded-md sm:border-x',
+        isPending && 'opacity-60',
+      )}
+      >
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map(hg => (

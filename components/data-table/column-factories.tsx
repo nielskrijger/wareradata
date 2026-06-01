@@ -6,6 +6,7 @@ import type { RankingTier } from '@/lib/warera/api'
 import { GearScorePill } from '@/components/badges/gear-score-pill'
 import { ScaleBadge } from '@/components/badges/scale-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
+import { CombatModeShareCell } from '@/components/cells/combat-mode-share-cell'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
 import { PercentBar } from '@/components/cells/percent-bar'
@@ -58,14 +59,14 @@ export function compactNumberColumn<T>(
 export function localeNumberColumn<T>(
   key: Key<T>,
   header: string,
-  opts: { heat?: HeatMode, center?: number, log?: boolean, width?: number } = {},
+  opts: { heat?: HeatMode, center?: number, logScale?: boolean, width?: number } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
     header,
     cell: ({ row }) => (row.original[key] as number | null)?.toLocaleString() ?? null,
     sortDescFirst: true,
-    meta: { heat: opts.heat, heatCenter: opts.center, heatLog: opts.log, align: 'right', width: opts.width ?? 100 },
+    meta: { heat: opts.heat, heatCenter: opts.center, heatLogScale: opts.logScale, align: 'right', width: opts.width ?? 100 },
   }
 }
 
@@ -143,6 +144,27 @@ export function readinessColumn<T extends { readinessPill: ReadinessPill }>(
     sortDescFirst: true,
     sortUndefined: 'last',
     meta: { width: opts.width ?? 120 },
+  }
+}
+
+/**
+ * An entity's collective War / Eco lean as a two-tone bar, for the MU and
+ * country tables (both carry `avgWarShare`). Sorts on the average war share —
+ * the distribution, not point totals, which scale with level — highest war%
+ * first; entities with no trained members sort last. The per-user table uses
+ * {@link CombatModeCell} instead (richer per-player tooltip with raw points
+ * and discipline rank).
+ */
+export function combatModeColumn<T extends { avgWarShare: number | null }>(
+  opts: { width?: number } = {},
+): ColumnDef<T> {
+  return {
+    accessorKey: 'avgWarShare',
+    header: 'Skills',
+    cell: ({ row }) => <CombatModeShareCell avgWarShare={row.original.avgWarShare} />,
+    sortDescFirst: true,
+    sortUndefined: 'last',
+    meta: { width: opts.width ?? 110 },
   }
 }
 

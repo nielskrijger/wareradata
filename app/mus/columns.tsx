@@ -6,6 +6,7 @@ import type { MURow } from '@/lib/rows'
 
 import { MUCell } from '@/components/cells/mu-cell'
 import {
+  combatModeColumn,
   compactNumberColumn,
   countryColumn,
   gearColumn,
@@ -47,6 +48,7 @@ export const muColumns: ColumnDef<MURow>[] = [
   percentBarColumn<MURow>('avgHealth', 'Avg Health'),
   percentBarColumn<MURow>('avgHunger', 'Avg Hunger'),
   readinessColumn<MURow>(),
+  combatModeColumn<MURow>(),
   countryColumn<MURow>(),
   {
     accessorKey: 'regionName',

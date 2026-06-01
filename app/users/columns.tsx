@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import type { UserRow } from '@/lib/rows'
 
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
+import { CombatModeCell } from '@/components/cells/combat-mode-cell'
 import { MUCell } from '@/components/cells/mu-cell'
 import { PartyCell } from '@/components/cells/party-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
@@ -63,6 +64,25 @@ export const userColumns: ColumnDef<UserRow>[] = [
     cell: ({ row }) => <ReadinessBadge status={row.original.readinessStatus} />,
     meta: { width: 100 },
   },
+  {
+    // Sorts on warShare (the war/eco distribution), not the combatMode label:
+    // first click puts the most war-leaning players on top, pure-eco last,
+    // untrained (null share) trailing. Point totals scale with level, so the
+    // ratio is what's meaningful here.
+    accessorKey: 'warShare',
+    header: 'Skills',
+    cell: ({ row }) => (
+      <CombatModeCell
+        mode={row.original.combatMode}
+        warPoints={row.original.warPoints}
+        ecoPoints={row.original.ecoPoints}
+        warPointsRank={row.original.warPointsRank}
+        ecoPointsRank={row.original.ecoPointsRank}
+      />
+    ),
+    sortDescFirst: true,
+    meta: { width: 110 },
+  },
   rankTooltipColumn<UserRow>('damage', 'damageRank', 'Total Damage', { width: 130 }),
   compactNumberColumn<UserRow>('weeklyDamage', 'Weekly Damage', { heat: 'median', width: 140 }),
   rankTooltipColumn<UserRow>('wealth', 'wealthRank', 'Wealth', { width: 100 }),
@@ -114,7 +134,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
   localeNumberColumn<UserRow>('referrals', 'Referrals', { heat: 'ramp', width: 100 }),
   localeNumberColumn<UserRow>('premiumMonths', 'Premium Mo.', { heat: 'ramp', width: 120 }),
   localeNumberColumn<UserRow>('premiumGifts', 'Premium Gifts', { heat: 'ramp', width: 130 }),
-  localeNumberColumn<UserRow>('casesOpened', 'Cases Opened', { heat: 'median', log: true, width: 130 }),
+  localeNumberColumn<UserRow>('casesOpened', 'Cases Opened', { heat: 'median', logScale: true, width: 130 }),
   localeNumberColumn<UserRow>('gemsPurchased', 'Gems Purchased', { heat: 'ramp', width: 150 }),
   {
     accessorKey: 'pointsPerDay',

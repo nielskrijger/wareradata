@@ -17,7 +17,7 @@ interface Props {
   range?: Range
   heat?: HeatMode
   center?: number
-  log?: boolean
+  logScale?: boolean
   /**
    * Leaderboard position for this stat (e.g. damageRank), shown as
    * "#rank of total". Hidden when the value is 0 or null: a zero is usually
@@ -31,7 +31,7 @@ interface Props {
   total?: number
 }
 
-export function StatCard({ label, value, display, range, heat, center, log, rank, total }: Props) {
+export function StatCard({ label, value, display, range, heat, center, logScale, rank, total }: Props) {
   return (
     <div className="bg-card flex flex-col gap-1 rounded-md border p-3">
       <span className="text-xs font-medium">{label}</span>
@@ -39,7 +39,7 @@ export function StatCard({ label, value, display, range, heat, center, log, rank
         {value == null
           ? <EmptyDash />
           : (
-              <HeatCell value={value} range={range} mode={heat} center={center} log={log}>
+              <HeatCell value={value} range={range} mode={heat} center={center} logScale={logScale}>
                 {display ?? value.toLocaleString()}
               </HeatCell>
             )}

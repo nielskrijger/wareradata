@@ -2,6 +2,7 @@ import type {
   BattleGetBattlesResponse,
   BattleListItem,
   CountryListItem,
+  GameConfigGetGameConfigResponse,
   InventoryFetchCurrentEquipmentResponse,
   MuListItem,
   MuMemberListItem,
@@ -44,14 +45,35 @@ export type Battle = BattleListItem & {
   attacker: BattleListItem['attacker'] & { moneyPool?: number, bountyEffectiveAt?: string, tournamentTeam?: string }
   defender: BattleListItem['defender'] & { moneyPool?: number, bountyEffectiveAt?: string, tournamentTeam?: string }
 }
-export type UserLite = UserGetUserLiteResponse & {
+// One case type's opening counts, broken down by loot rarity. Present in the
+// getUserById stats payload (which the scrape now uses), absent on the old lite
+// payload — hence optional everywhere.
+export interface CaseStat {
+  byRarity?: Record<string, number>
+  openedCount?: number
+}
+// Users are hydrated via getUserById, whose payload is a superset of the lite
+// endpoint's. We base this type on the generated lite-response type only because
+// it types the fields we read (rankings, skills, …) precisely, whereas the
+// getUserById response type is looser (Record-typed); both describe the same
+// runtime object. The extra getUserById fields we consume are surfaced below.
+// See hydrateUsers.
+export type User = UserGetUserLiteResponse & {
   infos?: { isBanned?: boolean, colorScheme?: string }
   dates?: { lastConnectionAt?: string }
+  stats?: UserGetUserLiteResponse['stats'] & { case1?: CaseStat, case2?: CaseStat }
+  // Not from the API: stamped by the scraper at capture time, and updated by an
+  // on-demand refresh, so the user page can show how fresh the data is.
+  lastRefreshedAt?: string
 }
 // One user's currently-equipped gear. Each slot is optional: players strip gear
 // between battles to preserve durability, so the response is often `{}`.
 export type Equipment = InventoryFetchCurrentEquipmentResponse
 export type Ranking = RankingGetRankingResponse
+// The game's static config (item catalog, skill cost curves, upgrade tiers, …).
+// Scraped once per cycle so derived constants (e.g. gear roll bounds, skill
+// point costs) can read from live data instead of being hardcoded.
+export type GameConfig = GameConfigGetGameConfigResponse
 
 export const RANKING_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'] as const
 export type RankingTier = (typeof RANKING_TIERS)[number]
@@ -122,6 +144,15 @@ export function getRanking(rankingType: RankingType): Promise<Ranking> {
   return scrapeClient.ranking.getRanking({ rankingType })
 }
 
+/**
+ * Fetches the game's static configuration (item stats, skill cost curves,
+ * upgrade tiers, …). A single no-arg call; it changes only when the devs
+ * rebalance, so one fetch per scrape cycle is plenty.
+ */
+export function getGameConfig(_options: ScrapeRequestOptions = {}): Promise<GameConfig> {
+  return scrapeClient.gameConfig.getGameConfig()
+}
+
 export async function getUserIdsForCountry(
   countryId: string,
   _options: ScrapeRequestOptions = {},
@@ -135,22 +166,82 @@ export async function getUserIdsForCountry(
   return ids
 }
 
-function hydrateUsers(client: Client, userIds: string[]): Promise<UserLite[]> {
-  return Promise.all(userIds.map(userId => client.user.getUserLite({ userId })))
+async function hydrateUsers(client: Client, userIds: string[]): Promise<User[]> {
+  // getUserById returns a superset of the lite endpoint (verified field-by-field:
+  // same rankings/skills/infos/dates, plus richer stats such as the per-rarity
+  // case breakdown). Storage is no longer capped, so we capture the whole payload
+  // and project what we need on read. The response shape is looser than User
+  // (partial rankings, opaque skills), but every field we read is present at
+  // runtime, so we narrow it here.
+  const users = await Promise.all(userIds.map(userId => client.user.getUserById({ userId })))
+  return users as unknown as User[]
 }
 
 /**
  * Hydrates users via the scrape client, for the full-scrape user phase.
  */
-export function getUserLite(userIds: string[], _options: ScrapeRequestOptions = {}): Promise<UserLite[]> {
+export function getUsers(userIds: string[], _options: ScrapeRequestOptions = {}): Promise<User[]> {
   return hydrateUsers(scrapeClient, userIds)
 }
 
 /**
  * Hydrates users via the urgent client, for on-demand piecemeal refreshes.
  */
-export function getUserLiteUrgent(userIds: string[]): Promise<UserLite[]> {
+export function getUsersUrgent(userIds: string[]): Promise<User[]> {
   return hydrateUsers(urgentClient, userIds)
+}
+
+// Case loot rarities, weakest to strongest. Doubles as the render order for the
+// user page's per-rarity breakdown.
+export const CASE_RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] as const
+export type CaseRarity = (typeof CASE_RARITIES)[number]
+
+export interface CasesBreakdown {
+  byRarity: Partial<Record<CaseRarity, number>>
+  total: number
+}
+
+/**
+ * Per-rarity breakdown of a user's opened cases, summed across both case types
+ * (case1 standard + case2 premium), from a user's `stats` payload. Returns null
+ * when there are no case stats. Pure: shared by the snapshot builder (which now
+ * has this data on every row) and the live fallback below.
+ */
+export function extractCasesBreakdown(stats: { case1?: CaseStat, case2?: CaseStat } | undefined): CasesBreakdown | null {
+  if (!stats) {
+    return null
+  }
+
+  const byRarity: Partial<Record<CaseRarity, number>> = {}
+  let total = 0
+  for (const caseStat of [stats.case1, stats.case2]) {
+    const map = caseStat?.byRarity
+    if (!map) {
+      continue
+    }
+    for (const rarity of CASE_RARITIES) {
+      const count = map[rarity]
+      if (typeof count === 'number' && count > 0) {
+        byRarity[rarity] = (byRarity[rarity] ?? 0) + count
+        total += count
+      }
+    }
+  }
+
+  return total > 0 ? { byRarity, total } : null
+}
+
+/**
+ * Live fallback for the per-rarity case breakdown, used by the user page only
+ * for rows a fresh getUserById scrape hasn't reached yet. Returns null on error.
+ */
+export async function getUserCasesBreakdown(userId: string): Promise<CasesBreakdown | null> {
+  try {
+    const user = await urgentClient.user.getUserById({ userId }) as { stats?: { case1?: CaseStat, case2?: CaseStat } }
+    return extractCasesBreakdown(user.stats)
+  } catch {
+    return null
+  }
 }
 
 function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<Equipment[]> {
@@ -159,7 +250,7 @@ function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<Equipme
 
 /**
  * Fetches each user's currently-equipped gear. Same per-user fan-out shape as
- * {@link getUserLite} — one HTTP call per id, batched by the tRPC client up to
+ * {@link getUsers} — one HTTP call per id, batched by the tRPC client up to
  * 50 ops per request and paced by the rate limiter.
  *
  * Equipment is the most volatile field on a user (durability ticks down per
@@ -171,7 +262,7 @@ export function getEquipment(userIds: string[], _options: ScrapeRequestOptions =
 }
 
 /**
- * Urgent variant for piecemeal on-demand refreshes (mirrors getUserLiteUrgent).
+ * Urgent variant for piecemeal on-demand refreshes (mirrors getUsersUrgent).
  */
 export function getEquipmentUrgent(userIds: string[]): Promise<Equipment[]> {
   return fetchEquipmentBatch(urgentClient, userIds)
@@ -193,7 +284,7 @@ export async function getAllMUs(_options: ScrapeRequestOptions = {}): Promise<MU
 /**
  * Fetches the current member roster of a single MU. Each item carries the
  * member's `user` id plus their MU contribution counts, not the full user
- * payload, so a piecemeal MU refresh follows this with {@link getUserLiteUrgent}
+ * payload, so a piecemeal MU refresh follows this with {@link getUsersUrgent}
  * over the returned user ids. Returns the authoritative live roster, which
  * catches joins and leaves the stored member list may have missed. On the
  * urgent client so it never waits behind the scrape.

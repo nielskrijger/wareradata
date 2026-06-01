@@ -3,7 +3,7 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { writeRawSnapshot } from '@/lib/cache/file-store'
 
-import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getTournamentInfo, getUserIdsForCountry, getUserLite } from './api'
+import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getTournamentInfo, getUserIdsForCountry, getUsers } from './api'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
@@ -55,8 +55,11 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   const userIds = userIdLists.flat()
   console.info(`[scrape] collected ${userIds.length} user ids across ${countries.length} countries`)
 
-  // 3. Hydrate users.
-  const users = await getUserLite(userIds)
+  // 3. Hydrate users. Stamp each with the capture time (like MUs below) so the
+  // user page can show data freshness; an on-demand refresh bumps it later.
+  const usersRaw = await getUsers(userIds)
+  const usersCapturedAt = new Date().toISOString()
+  const users = usersRaw.map(u => ({ ...u, lastRefreshedAt: usersCapturedAt }))
   console.info(`[scrape] hydrated ${users.length} users`)
 
   // 3b. Per-user equipment. One HTTP call per user, batched by the tRPC client
@@ -100,6 +103,11 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   }
   console.info(`[scrape] fetched tournament "${tournament.name}" with ${tournament.teams.size} teams`)
 
+  // 8. Game config: static catalog (item stats, skill cost curves, …). One
+  // no-arg call; persisted so derived constants can read live data later.
+  const gameConfig = await getGameConfig()
+  console.info(`[scrape] fetched game config`)
+
   const durationMs = Date.now() - start
   const meta: SnapshotMeta = {
     scrapedAt: new Date().toISOString(),
@@ -114,7 +122,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { users, equipment, countries, mus, regions, parties, battles, tournament: tournamentSnapshot, meta }
+  return { users, equipment, countries, mus, regions, parties, battles, tournament: tournamentSnapshot, gameConfig, meta }
 }
 
 /**

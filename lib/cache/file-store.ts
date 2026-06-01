@@ -1,4 +1,4 @@
-import type { Battle, Country, Equipment, MU, Party, Region, SnapshotMeta, TournamentSnapshot, UserLite } from '@/lib/warera/api'
+import type { Battle, Country, Equipment, GameConfig, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
 
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
@@ -9,7 +9,7 @@ import path from 'node:path'
  * scraper publishes a globally consistent snapshot with one atomic rename.
  */
 export interface RawSnapshot {
-  users: UserLite[]
+  users: User[]
   // Currently-equipped gear keyed by user id. A user may be absent (no equipment
   // captured) or present with `{}` (stripped between battles); both render the
   // same in the UI.
@@ -20,6 +20,9 @@ export interface RawSnapshot {
   parties: Party[]
   battles: Battle[]
   tournament: TournamentSnapshot
+  // The game's static config (item stats, skill cost curves, …), captured every
+  // scrape. The gear-score roll bounds and skill cost curve are derived from it.
+  gameConfig: GameConfig
   meta: SnapshotMeta
 }
 
@@ -74,6 +77,10 @@ export function emptyRawSnapshot(): RawSnapshot {
     parties: [],
     battles: [],
     tournament: { id: null, name: null, teams: {} },
+    // Empty bootstrap placeholder (cold volume, before the first scrape). It has
+    // no users, so the derivations that read it are never exercised; the first
+    // scrape replaces this with the real config.
+    gameConfig: {} as GameConfig,
     meta: {},
   }
 }

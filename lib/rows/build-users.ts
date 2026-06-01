@@ -1,14 +1,23 @@
+import type { GearLookup } from '@/lib/gear/score'
 import type { UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
-import type { Equipment, UserLite } from '@/lib/warera/api'
+import type { Equipment, GameConfig, User } from '@/lib/warera/api'
 
-import { computeGearScore } from '@/lib/gear/score'
+import { computeGearScore, deriveSlotSpecs } from '@/lib/gear/score'
 import { rankAll, toTier } from '@/lib/rows/lookups'
 import { computePoints } from '@/lib/scoring'
+import { classifyCombatMode, deriveSkillPointCost, ECO_SKILLS, skillPoints, WAR_SKILLS } from '@/lib/skills/classify'
+import { extractCasesBreakdown } from '@/lib/warera/api'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number, equipment: Record<string, Equipment>): UserRow[] {
+export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, equipment: Record<string, Equipment>, gameConfig: GameConfig, gearLookup: GearLookup): UserRow[] {
+  // Derive the gear roll bounds and skill cost curve from the live config once
+  // for the whole batch (the scrape always captures it). The gear index is built
+  // once in buildSnapshot and passed in, since the Snapshot also exposes it.
+  const slotSpecs = deriveSlotSpecs(gameConfig)
+  const skillCost = deriveSkillPointCost(gameConfig)
+
   const rows = users
     .map((u) => {
       const country = lookups.countryById.get(u.country)
@@ -30,7 +39,16 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
       const hungerPercent = barPercent(skills?.hunger)
       const readinessStatus = toReadinessStatus(skills?.attack)
       const gear = equipment[u._id]
-      const gearScore = gear ? computeGearScore(gear) : null
+      const gearScore = gear ? computeGearScore(gear, slotSpecs, gearLookup) : null
+      const warPoints = skillPoints(skills, WAR_SKILLS, skillCost)
+      const ecoPoints = skillPoints(skills, ECO_SKILLS, skillCost)
+      const combatMode = classifyCombatMode(warPoints, ecoPoints)
+
+      // War's share of war+eco investment (0 = pure eco, 1 = pure war). This is
+      // the distribution the Mode column sorts on — the raw point totals scale
+      // with level, so only the ratio is meaningful. Null when nothing's trained
+      // in either, so those rows sort last rather than tying with pure-eco.
+      const warShare = warPoints + ecoPoints > 0 ? warPoints / (warPoints + ecoPoints) : null
 
       return {
         avatarUrl: u.avatarUrl ?? null,
@@ -38,6 +56,8 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
         bountyRank: null,
         casesOpened: r?.userCasesOpened?.value ?? null,
         casesOpenedRank: null,
+        casesByRarity: extractCasesBreakdown(u.stats),
+        combatMode,
         countryCode: country?.code ?? null,
         countryId: u.country,
         countryName: country?.name ?? null,
@@ -46,6 +66,8 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
         damagePoints: pts.damage,
         damageRank: damageRanking?.rank ?? null,
         damage,
+        ecoPoints,
+        ecoPointsRank: null,
         gearScore,
         gearScoreRank: null,
         gemsPurchased: r?.userGemsPurchased?.value ?? null,
@@ -55,6 +77,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
         id: u._id,
         isBanned: infos?.isBanned === true,
         lastConnectionAt: dates?.lastConnectionAt ?? null,
+        lastRefreshedAt: u.lastRefreshedAt ?? null,
         level: levelValue,
         levelPoints: pts.level,
         levelRank: level?.rank ?? null,
@@ -79,6 +102,9 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
         terrain: r?.userTerrain?.value ?? null,
         terrainRank: null,
         username: u.username,
+        warPoints,
+        warPointsRank: null,
+        warShare,
         wealthPoints: pts.wealth,
         wealthRank: wealthRanking?.rank ?? null,
         wealth,
@@ -95,6 +121,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
   rankAll(rows, [
     'bounty',
     'casesOpened',
+    'ecoPoints',
     'gearScore',
     'gemsPurchased',
     'militaryRank',
@@ -102,6 +129,7 @@ export function buildUserRows(users: UserLite[], lookups: Lookups, nowMs: number
     'premiumMonths',
     'referrals',
     'terrain',
+    'warPoints',
     'weeklyDamage',
   ], { militaryRank: 'militaryRankPos' })
 

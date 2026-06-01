@@ -33,6 +33,7 @@ const countrySortValue = makeSortValue<CountryRow>({
     'avgHealth',
     'avgHunger',
     'avgGearScore',
+    'avgWarShare',
     'damage',
     'damageRank',
     'weeklyDamage',

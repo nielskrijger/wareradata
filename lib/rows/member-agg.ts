@@ -19,6 +19,12 @@ export interface MemberAgg {
   premiumGiftsTotal: number
   premiumMonthsTotal: number
   total: number
+  // Sum and count of members' warShare (war / war+eco). Counts only members
+  // with a non-null share (i.e. who've trained war or eco), so the mean is a
+  // one-member-one-vote average of leans, untrained members excluded — same
+  // null-handling as the gear/health/hunger means.
+  warShareSum: number
+  warShareCount: number
   wealth: number
 }
 
@@ -42,6 +48,8 @@ function emptyAgg(): MemberAgg {
     premiumMonthsTotal: 0,
     readyCount: 0,
     total: 0,
+    warShareSum: 0,
+    warShareCount: 0,
     wealth: 0,
   }
 }
@@ -92,6 +100,10 @@ export function aggregateMembers(
       entry.gearScoreSum += u.gearScore
       entry.gearScoreCount += 1
     }
+    if (u.warShare !== null) {
+      entry.warShareSum += u.warShare
+      entry.warShareCount += 1
+    }
     if (u.readinessStatus === 'buff') {
       entry.buffCount += 1
     } else if (u.readinessStatus === 'debuff') {
@@ -112,6 +124,15 @@ export function aggregateMembers(
  */
 export function aggMean(sum: number, count: number): number | null {
   return count > 0 ? Math.round(sum / count) : null
+}
+
+/**
+ * Unrounded mean of a sum/count pair, or null when the count is zero. Used for
+ * the war-share average, which lives in 0..1 where rounding would collapse the
+ * signal — kept separate from {@link aggMean} (which rounds to whole percents).
+ */
+export function aggMeanRaw(sum: number, count: number): number | null {
+  return count > 0 ? sum / count : null
 }
 
 /**

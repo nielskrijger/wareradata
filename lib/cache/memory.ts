@@ -1,10 +1,12 @@
 import type { RawSnapshot } from './file-store'
+import type { GearLookup } from '@/lib/gear/score'
 import type { Range } from '@/lib/query'
 import type { BattleRow, CountryRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 
-import type { Equipment, TournamentSnapshot } from '@/lib/warera/api'
+import type { Equipment, GameConfig, TournamentSnapshot } from '@/lib/warera/api'
 
+import { deriveGearLookup } from '@/lib/gear/score'
 import { computeRanges } from '@/lib/query'
 import { buildBattleRows } from '@/lib/rows/build-battles'
 import { buildCountryRows } from '@/lib/rows/build-countries'
@@ -51,6 +53,14 @@ export interface Snapshot {
   // against the same warm lookups the rows were built from.
   lookups: Lookups
   tournament: TournamentSnapshot
+  // Game's static config (item stats, skill cost curves, …), captured every
+  // scrape. Pass-through from RawSnapshot; the gear roll bounds and skill cost
+  // curve are derived from it.
+  gameConfig: GameConfig
+  // Tiny code→tier + ammo-bonus lookup derived from gameConfig. Small enough to
+  // ship to the browser (via the /api/users response), so client gear components
+  // resolve tiers without the full config.
+  gearLookup: GearLookup
 }
 
 // Next loads server modules in several separate module graphs within one
@@ -82,7 +92,8 @@ function store(): SnapshotStore {
  */
 export function buildSnapshot(raw: RawSnapshot, nowMs: number): Snapshot {
   const lookups = buildLookups(raw.countries, raw.mus, raw.regions, raw.users, raw.parties)
-  const userRows = buildUserRows(raw.users, lookups, nowMs, raw.equipment)
+  const gearLookup = deriveGearLookup(raw.gameConfig)
+  const userRows = buildUserRows(raw.users, lookups, nowMs, raw.equipment, raw.gameConfig, gearLookup)
   const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups)
   const muRows = buildMURows(raw.mus, userRows, lookups)
   const partyRows = buildPartyRows(raw.parties, userRows, lookups)
@@ -90,7 +101,7 @@ export function buildSnapshot(raw: RawSnapshot, nowMs: number): Snapshot {
   const battleRows = buildBattleRows(raw.battles, raw.tournament, lookups)
   const userRanges = computeRanges(userRows)
 
-  return { users: userRows, userRanges, equipment: raw.equipment, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament }
+  return { users: userRows, userRanges, equipment: raw.equipment, countries: countryRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament, gameConfig: raw.gameConfig, gearLookup }
 }
 
 /**

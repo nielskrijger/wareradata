@@ -1,4 +1,4 @@
-import type { Country, MU, Party, RankingTier, Region, UserLite } from '@/lib/warera/api'
+import type { Country, MU, Party, RankingTier, Region, User } from '@/lib/warera/api'
 import { RANKING_TIERS } from '@/lib/warera/api'
 
 export interface Lookups {
@@ -17,7 +17,7 @@ export function buildLookups(
   countries: Country[],
   mus: MU[],
   regions: Region[],
-  users: UserLite[],
+  users: User[],
   parties: Party[],
 ): Lookups {
   const partyByUser = new Map<string, { id: string, name: string, avatarUrl: string | null }>()

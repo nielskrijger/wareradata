@@ -31,6 +31,7 @@ const muSortValue = makeSortValue<MURow>({
     'avgHealth',
     'avgHunger',
     'avgGearScore',
+    'avgWarShare',
     'damage',
     'damageRank',
     'weeklyDamage',

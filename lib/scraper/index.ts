@@ -3,27 +3,28 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 import { recordBattleHistory } from '@/lib/cache/archive'
 import { readRawSnapshot, writeRawSnapshot } from '@/lib/cache/file-store'
 import { buildSnapshotNow, swapSnapshot } from '@/lib/cache/memory'
-import { getEquipmentUrgent, getMuMembers, getUserLiteUrgent } from '@/lib/warera/api'
+import { getEquipmentUrgent, getMuMembers, getUsersUrgent } from '@/lib/warera/api'
 import { scrapeRawSnapshot } from '@/lib/warera/scrape'
 
 import 'server-only'
 
-// The most recent raw snapshot, plus per-MU in-flight refresh promises. Kept on
-// globalThis for the same reason as the built snapshot (see memory.ts): Next
-// loads server modules in several graphs within one process, so a module-level
-// `let` would give the scrape loop and a Server Action separate copies, and an
-// on-demand patch in one wouldn't build on the other's base. The global store
-// makes the raw base and the dedupe map process-wide.
+// The most recent raw snapshot, plus in-flight on-demand refresh promises keyed
+// by `<kind>:<id>` (mu / user). Kept on globalThis for the same reason as the
+// built snapshot (see memory.ts): Next loads server modules in several graphs
+// within one process, so a module-level `let` would give the scrape loop and a
+// Server Action separate copies, and an on-demand patch in one wouldn't build on
+// the other's base. The global store makes the raw base and the dedupe map
+// process-wide.
 interface ScraperStore {
   currentRaw: RawSnapshot | null
-  inFlightMuRefreshes: Map<string, Promise<void>>
+  inFlightRefreshes: Map<string, Promise<void>>
 }
 
 const GLOBAL_KEY = Symbol.for('wareradata.scraperStore')
 
 function store(): ScraperStore {
   const g = globalThis as typeof globalThis & { [GLOBAL_KEY]?: ScraperStore }
-  g[GLOBAL_KEY] ??= { currentRaw: null, inFlightMuRefreshes: new Map() }
+  g[GLOBAL_KEY] ??= { currentRaw: null, inFlightRefreshes: new Map() }
   return g[GLOBAL_KEY]
 }
 
@@ -69,76 +70,96 @@ async function scrapeLoop(): Promise<void> {
 
 /**
  * Refreshes one MU's members on demand and resolves when the in-memory snapshot
- * has been updated, so a caller (the page's "Request refresh" action) can await
- * it and then re-render with fresh data. Runs on the urgent client, separate
- * from the scrape budget.
- *
- * In-memory only: it patches `currentRaw` and swaps the built snapshot, but does
- * NOT write the file. The scrape loop alone owns the persisted snapshot, so a
- * manual refresh is a transient overlay that the next full cycle subsumes.
- *
- * Rebuilding the whole snapshot keeps the MU's aggregates, its members' rows,
- * the parent country's aggregates, and all ranks globally consistent. Concurrent
- * requests for the same MU share one fetch. No-ops if no base snapshot exists
- * yet (the scrape loop will cover it).
+ * has been updated, so a caller (the page's refresh action) can await it and
+ * then re-render with fresh data. Runs on the urgent client, separate from the
+ * scrape budget. Concurrent requests for the same MU share one fetch.
  */
 export function refreshMuMembers(muId: string): Promise<void> {
-  const s = store()
-  const existing = s.inFlightMuRefreshes.get(muId)
+  return dedupe(`mu:${muId}`, () => doRefreshMuMembers(muId))
+}
+
+/**
+ * Refreshes one user on demand (their lite profile + equipment), mirroring
+ * {@link refreshMuMembers}. Concurrent requests for the same user share one fetch.
+ */
+export function refreshUser(userId: string): Promise<void> {
+  return dedupe(`user:${userId}`, () => doRefreshUser(userId))
+}
+
+/**
+ * Single-flight by key: a refresh started while one with the same key is in
+ * flight reuses it. Keys are namespaced (`mu:<id>` / `user:<id>`) since MU and
+ * user ids share a format.
+ */
+function dedupe(key: string, run: () => Promise<void>): Promise<void> {
+  const map = store().inFlightRefreshes
+  const existing = map.get(key)
   if (existing) {
     return existing
   }
-
-  const run = doRefreshMuMembers(muId).finally(() => {
-    s.inFlightMuRefreshes.delete(muId)
-  })
-  s.inFlightMuRefreshes.set(muId, run)
-  return run
+  const promise = run().finally(() => map.delete(key))
+  map.set(key, promise)
+  return promise
 }
 
 async function doRefreshMuMembers(muId: string): Promise<void> {
-  // Ensure a base to patch. In a single process this is already set by the
-  // scrape loop; if this runs before the first cycle we seed it from the file.
+  const userIds = (await getMuMembers(muId)).map(m => m.user)
+  await refreshUsersInSnapshot(userIds, `mu-refresh ${muId}`, (raw, now) => ({
+    mus: raw.mus.map(m => (m._id === muId ? { ...m, members: userIds, lastRefreshedAt: now } : m)),
+  }))
+}
+
+async function doRefreshUser(userId: string): Promise<void> {
+  await refreshUsersInSnapshot([userId], `user-refresh ${userId}`)
+}
+
+/**
+ * Shared core of the on-demand refreshes. Re-fetches the given users' lite
+ * profiles + equipment via the urgent client, stamps each with the refresh time
+ * (so their pages show fresh data), merges them into a copy of `currentRaw`,
+ * applies an optional entity-specific patch (e.g. an MU's member list and its
+ * own timestamp), then rebuilds and swaps the served snapshot.
+ *
+ * In-memory only: it patches `currentRaw` and the built snapshot but does NOT
+ * write the file. The scrape loop alone owns the persisted snapshot, so a manual
+ * refresh is a transient overlay the next full cycle subsumes. Rebuilding the
+ * whole snapshot keeps every aggregate and rank globally consistent. No-ops if
+ * no base snapshot exists yet, or `userIds` is empty.
+ */
+async function refreshUsersInSnapshot(
+  userIds: string[],
+  reason: string,
+  patch?: (raw: RawSnapshot, now: string) => Partial<RawSnapshot>,
+): Promise<void> {
+  // Ensure a base to patch. In a single process the scrape loop has already set
+  // this; if we run before the first cycle, seed it from the file.
   await seedCurrentRaw()
   const s = store()
-  if (!s.currentRaw) {
-    return
-  }
-
-  const roster = await getMuMembers(muId)
-  const userIds = roster.map(m => m.user)
-  if (!userIds.length) {
+  if (!s.currentRaw || !userIds.length) {
     return
   }
 
   const [fresh, freshEquipment] = await Promise.all([
-    getUserLiteUrgent(userIds),
+    getUsersUrgent(userIds),
     getEquipmentUrgent(userIds),
   ])
 
+  const now = new Date().toISOString()
   const byId = new Map(s.currentRaw.users.map(u => [u._id, u]))
   for (const u of fresh) {
-    byId.set(u._id, u)
+    byId.set(u._id, { ...u, lastRefreshedAt: now })
   }
-
   const equipment = { ...s.currentRaw.equipment }
   for (let i = 0; i < userIds.length; i++) {
     equipment[userIds[i]] = freshEquipment[i]
   }
 
-  const now = new Date().toISOString()
-  const patched: RawSnapshot = {
-    ...s.currentRaw,
-    users: [...byId.values()],
-    equipment,
-    mus: s.currentRaw.mus.map(m => (m._id === muId ? { ...m, members: userIds, lastRefreshedAt: now } : m)),
-  }
+  const base: RawSnapshot = { ...s.currentRaw, users: [...byId.values()], equipment }
+  const patched = patch ? { ...base, ...patch(base, now) } : base
 
-  // In-memory only: update currentRaw and the served snapshot, but do not
-  // persist (the scrape loop owns the file).
   s.currentRaw = patched
-  swapSnapshot(buildSnapshotNow(patched, `mu-refresh ${muId}`))
-  console.info(`[scraper] MU ${muId} refreshed on demand (${fresh.length} members)`)
+  swapSnapshot(buildSnapshotNow(patched, reason))
+  console.info(`[scraper] on-demand refresh: ${reason} (${fresh.length} users)`)
 }
 
 /**

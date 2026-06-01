@@ -49,6 +49,7 @@ const userSortValue = makeSortValue<UserRow>({
     'hungerPercent',
     'readinessStatus',
     'gearScore',
+    'warShare',
   ],
   text: ['username', 'muName', 'partyName'],
   boolean: ['isBanned'],

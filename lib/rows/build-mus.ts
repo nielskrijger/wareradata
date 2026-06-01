@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { MU } from '@/lib/warera/api'
 
 import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggMean, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
+import { aggMean, aggMeanRaw, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): MURow[] {
   const membersByMu = aggregateMembers(userRows, u => u.muId)
@@ -31,6 +31,8 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         avatarUrl: m.avatarUrl ?? null,
         avgGearScore: agg ? aggMean(agg.gearScoreSum, agg.gearScoreCount) : null,
         avgGearScoreRank: null,
+        avgWarShare: agg ? aggMeanRaw(agg.warShareSum, agg.warShareCount) : null,
+        avgWarShareRank: null,
         avgHealth: agg ? aggMean(agg.healthSum, agg.healthCount) : null,
         avgHealthRank: null,
         avgHunger: agg ? aggMean(agg.hungerSum, agg.hungerCount) : null,
@@ -99,6 +101,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
     'avgHealth',
     'avgHunger',
     'avgGearScore',
+    'avgWarShare',
     'damage',
     'weeklyDamage',
     'bounty',

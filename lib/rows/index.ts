@@ -1,4 +1,5 @@
-import type { RankingTier } from '@/lib/warera/api'
+import type { CombatMode } from '@/lib/skills/classify'
+import type { CasesBreakdown, RankingTier } from '@/lib/warera/api'
 
 /**
  * Projected user row used by both the /users page and /api/users.
@@ -11,6 +12,9 @@ export interface UserRow {
   bountyRank: number | null
   casesOpened: number | null
   casesOpenedRank: number | null
+  // Per-rarity split of cases opened (from the getUserById scrape)
+  casesByRarity: CasesBreakdown | null
+  combatMode: CombatMode
   countryCode: string | null
   countryId: string
   countryName: string | null
@@ -19,6 +23,8 @@ export interface UserRow {
   damageRank: number | null
   damage: number | null
   damagePoints: number
+  ecoPoints: number
+  ecoPointsRank: number | null
   healthPercent: number | null
   hungerPercent: number | null
   gearScore: number | null
@@ -28,6 +34,7 @@ export interface UserRow {
   id: string
   isBanned: boolean
   lastConnectionAt: string | null
+  lastRefreshedAt: string | null
   level: number | null
   levelPoints: number
   levelRank: number | null
@@ -52,6 +59,11 @@ export interface UserRow {
   terrain: number | null
   terrainRank: number | null
   username: string
+  warPoints: number
+  warPointsRank: number | null
+  // War's share of war+eco skill investment (0 = pure eco … 1 = pure war), or
+  // null when neither is trained. The Mode column sorts on this distribution.
+  warShare: number | null
   wealthPoints: number
   wealthRank: number | null
   wealth: number | null
@@ -110,6 +122,8 @@ export interface CountryRow {
   activePopulationRank: number | null
   alliesCount: number
   alliesCountRank: number | null
+  avgWarShare: number | null
+  avgWarShareRank: number | null
   avgGearScore: number | null
   avgGearScoreRank: number | null
   avgHealth: number | null
@@ -170,6 +184,8 @@ export interface CountryRow {
  */
 export interface MURow {
   avatarUrl: string | null
+  avgWarShare: number | null
+  avgWarShareRank: number | null
   avgGearScore: number | null
   avgGearScoreRank: number | null
   avgHealth: number | null

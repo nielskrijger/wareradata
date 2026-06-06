@@ -8,6 +8,7 @@ import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CombatModeCard } from '@/components/detail/combat-mode-card'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
+import { GovernmentSection } from '@/components/detail/government-section'
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
@@ -27,7 +28,7 @@ interface PageProps {
 }
 
 async function getCountry(id: string) {
-  const [{ countries, users, mus, parties }, liveActive, activeBattlesByCountry] = await Promise.all([
+  const [{ countries, users, mus, parties, governments }, liveActive, activeBattlesByCountry] = await Promise.all([
     getSnapshot(),
     getLiveActiveBattles(),
     getActiveBattlesByCountry(),
@@ -36,6 +37,9 @@ async function getCountry(id: string) {
   if (!country) {
     return null
   }
+
+  const government = governments[id] ?? null
+
   // Ranges over the full set, same as the /countries table, so each stat can
   // show where this country sits. No filter/sort; we only want the ranges.
   const { ranges, total } = applyQuery(
@@ -75,7 +79,7 @@ async function getCountry(id: string) {
   // cell uses (each battle from this country's point of view).
   const activeBattlesList = activeBattlesByCountry.get(id) ?? []
 
-  return { country, ranges: ranges ?? {}, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList }
+  return { country, government, ranges: ranges ?? {}, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -97,7 +101,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
-  const { country: c, ranges, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList } = result
+  const { country: c, government, ranges, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList } = result
 
   return (
     <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
@@ -205,6 +209,8 @@ export default async function CountryDetailPage({ params }: PageProps) {
           ]}
         />
       </StatCardGrid>
+
+      <GovernmentSection government={government} />
 
       <CountryTables
         code={c.code}

@@ -188,6 +188,39 @@ export interface CountryRow {
 }
 
 /**
+ * One government office holder, resolved from a user id to the bits the country
+ * page needs to render an avatar + linked name (and the hover card). Null fields
+ * are dropped upstream, so every official here is a real, in-snapshot user.
+ */
+export interface GovernmentOfficial {
+  id: string
+  name: string
+  avatarUrl: string | null
+  colorScheme: string | null
+  // The official's political party, resolved from the party-membership lookup,
+  // so the government view can colour and group officials by party. Null when
+  // the official belongs to no party (an independent).
+  partyId: string | null
+  partyName: string | null
+  partyAvatarUrl: string | null
+}
+
+/**
+ * A country's elected officials, resolved from {@link RawSnapshot.governments}
+ * user ids to renderable {@link GovernmentOfficial}s. Executive seats are null
+ * when vacant (or the holder isn't in the snapshot); congress is the resolved
+ * roster, which may be empty. Built per country, read only by the country page.
+ */
+export interface GovernmentRow {
+  president: GovernmentOfficial | null
+  vicePresident: GovernmentOfficial | null
+  minOfDefense: GovernmentOfficial | null
+  minOfEconomy: GovernmentOfficial | null
+  minOfForeignAffairs: GovernmentOfficial | null
+  congressMembers: GovernmentOfficial[]
+}
+
+/**
  * Projected MU (military unit) row used by /mus and /api/mus.
  */
 export interface MURow {

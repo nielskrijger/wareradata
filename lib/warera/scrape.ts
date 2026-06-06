@@ -1,9 +1,9 @@
-import type { SnapshotMeta } from './api'
+import type { Government, SnapshotMeta } from './api'
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { writeRawSnapshot } from '@/lib/cache/file-store'
 
-import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getTournamentInfo, getUserIdsForCountry, getUsers } from './api'
+import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers } from './api'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
@@ -45,6 +45,30 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   // 1. Countries: single call.
   const countries = await getAllCountries()
   console.info(`[scrape] fetched ${countries.length} countries`)
+
+  // 1b. Governments: one call per country (no bulk endpoint), fanned out with
+  // the same bounded concurrency as the user-id pagination. Dormant or
+  // unoccupied countries have no government: the call may error or return an
+  // all-empty record, and either way we drop it from the map.
+  const governmentList = await mapWithConcurrency(
+    countries.map(c => c._id),
+    COUNTRY_PAGINATION_CONCURRENCY,
+    async (countryId) => {
+      try {
+        return await getGovernmentForCountry(countryId)
+      } catch {
+        return null
+      }
+    },
+  )
+  const governments: RawSnapshot['governments'] = {}
+  for (let i = 0; i < countries.length; i++) {
+    const gov = governmentList[i]
+    if (gov && hasGovernment(gov)) {
+      governments[countries[i]._id] = gov
+    }
+  }
+  console.info(`[scrape] fetched governments for ${Object.keys(governments).length} of ${countries.length} countries`)
 
   // 2. User IDs: paginate per country with bounded concurrency.
   const userIdLists = await mapWithConcurrency(
@@ -122,7 +146,23 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { users, equipment, countries, mus, regions, parties, battles, tournament: tournamentSnapshot, gameConfig, meta }
+  return { users, equipment, countries, governments, mus, regions, parties, battles, tournament: tournamentSnapshot, gameConfig, meta }
+}
+
+/**
+ * Whether a government record has any occupant worth keeping. The endpoint
+ * returns all-empty-string offices and an empty congress for unoccupied
+ * countries; those carry no information, so we drop them from the snapshot.
+ */
+function hasGovernment(g: Government): boolean {
+  return Boolean(
+    g.president
+    || g.vicePresident
+    || g.minOfDefense
+    || g.minOfEconomy
+    || g.minOfForeignAffairs
+    || g.congressMembers?.length,
+  )
 }
 
 /**

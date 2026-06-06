@@ -1,4 +1,4 @@
-import type { Battle, Country, Equipment, GameConfig, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
+import type { Battle, Country, Equipment, GameConfig, Government, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
 
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
@@ -17,6 +17,11 @@ export interface RawSnapshot {
   // same in the UI.
   equipment: Record<string, Equipment>
   countries: Country[]
+  // Each occupied country's elected officials (president, ministers, congress),
+  // keyed by country id, all as user ids. Captured once per scrape via the
+  // per-country government endpoint. Dormant countries with no government are
+  // simply absent from the map.
+  governments: Record<string, Government>
   mus: MU[]
   regions: Region[]
   parties: Party[]
@@ -78,6 +83,7 @@ export function emptyRawSnapshot(): RawSnapshot {
     users: [],
     equipment: {},
     countries: [],
+    governments: {},
     mus: [],
     regions: [],
     parties: [],
@@ -116,6 +122,7 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   // so a deploy that adds a new key doesn't crash on the first boot reading a
   // legacy on-disk snapshot. The next scrape cycle will populate them properly.
   parsed.equipment ??= {}
+  parsed.governments ??= {}
   const sizeMb = (raw.length / 1_000_000).toFixed(1)
   console.info(
     `[file-store] read snapshot from ${path}: ${sizeMb}MB, ${parsed.users?.length ?? 0} users in ${readMs}ms`,
@@ -156,6 +163,7 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
   yield '}'
 
   yield `,"countries":${JSON.stringify(snapshot.countries)}`
+  yield `,"governments":${JSON.stringify(snapshot.governments)}`
   yield `,"mus":${JSON.stringify(snapshot.mus)}`
   yield `,"regions":${JSON.stringify(snapshot.regions)}`
   yield `,"parties":${JSON.stringify(snapshot.parties)}`

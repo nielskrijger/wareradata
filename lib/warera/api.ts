@@ -3,6 +3,7 @@ import type {
   BattleListItem,
   CountryListItem,
   GameConfigGetGameConfigResponse,
+  GovernmentGetByCountryIdResponse,
   InventoryFetchCurrentEquipmentResponse,
   MuListItem,
   MuMemberListItem,
@@ -82,6 +83,10 @@ export type Equipment = InventoryFetchCurrentEquipmentResponse
 // Scraped once per cycle so derived constants (e.g. gear roll bounds, skill
 // point costs) can read from live data instead of being hardcoded.
 export type GameConfig = GameConfigGetGameConfigResponse
+// A country's elected officials. All fields are user ids: the president, vice
+// president, three ministers, and the congress roster. Dormant or unoccupied
+// countries may have empty-string offices and an empty congress.
+export type Government = GovernmentGetByCountryIdResponse
 
 export const RANKING_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'] as const
 export type RankingTier = (typeof RANKING_TIERS)[number]
@@ -133,6 +138,16 @@ type Client = typeof scrapeClient
 
 export function getAllCountries(_options: ScrapeRequestOptions = {}): Promise<Country[]> {
   return scrapeClient.country.getAllCountries()
+}
+
+/**
+ * Fetches one country's government (president, vice president, three ministers,
+ * and the congress roster, all as user ids). There's no bulk endpoint, so the
+ * scrape fans this out per country with bounded concurrency. Dormant countries
+ * may have no government; the caller treats an error or empty result as "none".
+ */
+export function getGovernmentForCountry(countryId: string, _options: ScrapeRequestOptions = {}): Promise<Government> {
+  return scrapeClient.government.getByCountryId({ countryId })
 }
 
 /**

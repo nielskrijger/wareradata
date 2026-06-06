@@ -1,7 +1,9 @@
 import type { Battle, Country, Equipment, GameConfig, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
 
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { createWriteStream } from 'node:fs'
+import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { pipeline } from 'node:stream/promises'
 
 /**
  * The whole scraped dataset in its raw API shape (the inputs to the row
@@ -37,6 +39,10 @@ export function snapshotPath(): string {
 export function archiveDir(): string {
   return path.join(dataDir(), 'archive')
 }
+
+// Temp-file prefix for the atomic snapshot write. A write that crashes before
+// its rename can leave one behind; the next successful write sweeps stale ones.
+const SNAPSHOT_TMP_PREFIX = 'snapshot.json.tmp.'
 
 /**
  * Reads and JSON-parses a file, or returns `fallback` when it doesn't exist
@@ -118,17 +124,84 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
 }
 
 /**
- * Persists the snapshot atomically: write to a unique temp file in the same
+ * Streams the snapshot as JSON one piece at a time, so we never materialize the
+ * whole ~100MB serialized string (and its write buffer) in memory at once. The
+ * two big collections (users, equipment) are emitted item by item; everything
+ * else is small enough to stringify whole. Key order is irrelevant to a parser,
+ * and `JSON.stringify` of an `undefined` value yields `undefined`, which we skip
+ * to mirror how `JSON.stringify` drops undefined-valued properties.
+ */
+function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
+  yield '{"users":['
+  let sep = ''
+  for (const user of snapshot.users) {
+    const json = JSON.stringify(user)
+    if (json === undefined) {
+      continue
+    }
+    yield sep + json
+    sep = ','
+  }
+
+  yield '],"equipment":{'
+  sep = ''
+  for (const [id, value] of Object.entries(snapshot.equipment)) {
+    const json = JSON.stringify(value)
+    if (json === undefined) {
+      continue
+    }
+    yield `${sep}${JSON.stringify(id)}:${json}`
+    sep = ','
+  }
+  yield '}'
+
+  yield `,"countries":${JSON.stringify(snapshot.countries)}`
+  yield `,"mus":${JSON.stringify(snapshot.mus)}`
+  yield `,"regions":${JSON.stringify(snapshot.regions)}`
+  yield `,"parties":${JSON.stringify(snapshot.parties)}`
+  yield `,"battles":${JSON.stringify(snapshot.battles)}`
+  yield `,"tournament":${JSON.stringify(snapshot.tournament)}`
+  yield `,"gameConfig":${JSON.stringify(snapshot.gameConfig)}`
+  yield `,"meta":${JSON.stringify(snapshot.meta)}`
+  yield '}'
+}
+
+/**
+ * Removes leftover snapshot temp files (orphans from a write that crashed before
+ * its rename). The current write's temp file is already renamed away by the time
+ * this runs, and the single scrape worker serializes writes, so everything still
+ * matching the prefix is stale. Best-effort: never throws.
+ */
+async function cleanupStaleTempFiles(dir: string): Promise<void> {
+  const entries = await readdir(dir)
+  await Promise.all(
+    entries
+      .filter(name => name.startsWith(SNAPSHOT_TMP_PREFIX))
+      .map(name => unlink(path.join(dir, name)).catch(() => undefined)),
+  )
+}
+
+/**
+ * Persists the snapshot atomically: stream it to a unique temp file in the same
  * directory, then rename over the live file. A same-filesystem rename is atomic
- * on POSIX, so a concurrent reader sees either the old or the new file, never a
- * half-written one. The temp name is unique per write to avoid clobbering, even
- * though the single scrape worker already serializes writes.
+ * on POSIX, so a concurrent reader sees either the old or the fully-written new
+ * file, never a half-written one. Streaming keeps peak memory flat instead of
+ * holding the whole serialized blob plus its write buffer (which was OOM-ing the
+ * scraper). On failure the partial temp file is removed; on success any stale
+ * temp files from earlier crashed writes are swept.
  */
 export async function writeRawSnapshot(snapshot: RawSnapshot): Promise<void> {
   const dir = dataDir()
   await mkdir(dir, { recursive: true })
 
-  const tmp = path.join(dir, `snapshot.json.tmp.${process.pid}.${Date.now()}`)
-  await writeFile(tmp, JSON.stringify(snapshot))
-  await rename(tmp, snapshotPath())
+  const tmp = path.join(dir, `${SNAPSHOT_TMP_PREFIX}${process.pid}.${Date.now()}`)
+  try {
+    await pipeline(serializeSnapshot(snapshot), createWriteStream(tmp))
+    await rename(tmp, snapshotPath())
+  } catch (err) {
+    await unlink(tmp).catch(() => undefined)
+    throw err
+  }
+
+  await cleanupStaleTempFiles(dir).catch(() => undefined)
 }

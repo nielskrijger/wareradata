@@ -30,6 +30,41 @@ function store(): ScraperStore {
 
 let started = false
 
+const MB = 1024 * 1024
+
+/**
+ * Logs a one-line memory breakdown tagged with `label`. Tracking the SAME point
+ * every cycle is how we tell a real leak from the expected mid-cycle sawtooth:
+ * a leak shows the post-GC baseline climbing cycle over cycle, a sawtooth keeps
+ * it flat. `external` / `arrayBuffers` climbing (rather than `heapUsed`) points
+ * at native retention (undici sockets, undrained response buffers) instead of
+ * JS objects.
+ */
+function logMemory(label: string): void {
+  const m = process.memoryUsage()
+  console.info(
+    `[scraper] mem ${label}: `
+    + `rss=${Math.round(m.rss / MB)}MB `
+    + `heapUsed=${Math.round(m.heapUsed / MB)}MB `
+    + `heapTotal=${Math.round(m.heapTotal / MB)}MB `
+    + `external=${Math.round(m.external / MB)}MB `
+    + `arrayBuffers=${Math.round(m.arrayBuffers / MB)}MB`,
+  )
+}
+
+/**
+ * Forces a full GC (only available under `node --expose-gc`) then logs memory,
+ * so the number reflects what's actually retained rather than uncollected
+ * garbage. Without `--expose-gc` it falls back to a plain reading.
+ */
+function logRetainedMemory(label: string): void {
+  const gc = (globalThis as typeof globalThis & { gc?: () => void }).gc
+  if (gc) {
+    gc()
+  }
+  logMemory(gc ? `${label} (post-gc)` : label)
+}
+
 /**
  * Publishes a full-cycle raw snapshot: record it as current, persist to disk,
  * rebuild rows, and swap the in-memory snapshot readers serve. Only the scrape
@@ -50,6 +85,7 @@ async function publish(raw: RawSnapshot): Promise<void> {
 async function scrapeLoop(): Promise<void> {
   for (;;) {
     try {
+      logMemory('cycle-start')
       console.info('[scraper] full scrape starting')
       const raw = await scrapeRawSnapshot()
       await publish(raw)
@@ -61,6 +97,10 @@ async function scrapeLoop(): Promise<void> {
       } catch (err) {
         console.error('[archive] failed', err instanceof Error ? err.message : err)
       }
+
+      // Measure AFTER the swap, when the previous snapshot should be collectible.
+      // The trend of this post-GC baseline over many cycles is the leak signal.
+      logRetainedMemory('cycle-end')
     } catch (err) {
       console.error('[scraper] full scrape failed', err instanceof Error ? err.message : err)
       await new Promise(resolve => setTimeout(resolve, 10_000))

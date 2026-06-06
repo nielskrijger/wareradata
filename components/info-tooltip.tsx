@@ -6,8 +6,9 @@ import { cn } from '@/lib/utils'
 interface Props {
   label: string
   hint: string
-  // Override the trigger styling. Defaults to a dotted underline (reads as
-  // "hover for a definition"); cells may prefer e.g. `text-muted-foreground`.
+  // Override the trigger styling. Defaults to a brighten-on-hover (the app's
+  // standard tooltip-trigger affordance); cells may add e.g.
+  // `text-muted-foreground cursor-default`.
   className?: string
 }
 
@@ -21,12 +22,7 @@ export function InfoTooltip({ label, hint, className }: Props) {
     <Tooltip>
       <TooltipTrigger
         render={(
-          <span
-            className={cn(
-              'underline decoration-dotted decoration-1 underline-offset-2',
-              className,
-            )}
-          />
+          <span className={cn('hover:text-foreground', className)} />
         )}
       >
         {label}

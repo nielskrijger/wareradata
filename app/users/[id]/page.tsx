@@ -88,7 +88,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   const hasGearData = user.gearScore != null
 
   return (
-    <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
+    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={user.username}
         aside={<RefreshButton id={user.id} action={requestUserRefresh} lastRefreshedAt={user.lastRefreshedAt} />}
@@ -114,7 +114,7 @@ export default async function UserDetailPage({ params }: PageProps) {
           <CountryCell countryCode={user.countryCode} countryName={user.countryName} countryId={user.countryId} />
           {user.level != null && (
             <Tooltip>
-              <TooltipTrigger render={<span className="text-muted-foreground" />}>
+              <TooltipTrigger render={<span className="text-muted-foreground hover:text-foreground cursor-default" />}>
                 Level <span className="text-foreground font-medium">{user.level}</span>
               </TooltipTrigger>
               <TooltipContent side="top">
@@ -138,7 +138,7 @@ export default async function UserDetailPage({ params }: PageProps) {
           )}
           <span>Joined {user.createdAt?.slice(0, 10) ?? EMPTY}</span>
           <Tooltip>
-            <TooltipTrigger render={<span className="inline-flex items-center gap-1" />}>
+            <TooltipTrigger render={<span className="inline-flex items-center gap-1 hover:text-foreground cursor-default" />}>
               <Clock className="size-3.5 shrink-0" />
               <RelativeTime iso={user.lastConnectionAt} />
             </TooltipTrigger>

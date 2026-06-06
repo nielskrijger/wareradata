@@ -28,9 +28,7 @@ export function PointsBreakdownCell({ total, level, damage, wealth }: Props) {
 
   return (
     <Tooltip>
-      <TooltipTrigger
-        className="hover:text-foreground cursor-default underline decoration-dotted decoration-1 underline-offset-2"
-      >
+      <TooltipTrigger className="hover:text-foreground cursor-default">
         {total.toLocaleString()}
       </TooltipTrigger>
       <TooltipContent align="end" side="top" className="w-60 px-3 py-2">

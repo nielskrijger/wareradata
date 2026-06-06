@@ -155,7 +155,7 @@ export const userColumns: ColumnDef<UserRow>[] = [
           <InfoTooltip
             label="N/A"
             hint="Account is less than 7 days old; per-day rate isn't meaningful yet."
-            className="text-muted-foreground no-underline"
+            className="text-muted-foreground cursor-default"
           />
         )
       }

@@ -254,7 +254,9 @@ export function countryColumn<
         countryId={row.original.countryId}
       />
     ),
-    meta: { width: opts.width ?? 180 },
+    // Tight enough that most names fit; long ones (e.g. "Bosnia and
+    // Herzegovina") truncate to an ellipsis with the full name on hover.
+    meta: { width: opts.width ?? 150 },
   }
 }
 

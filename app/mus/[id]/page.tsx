@@ -16,6 +16,7 @@ import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { VitalsCard } from '@/components/detail/vitals-card'
+import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { ExternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { UserHoverCard } from '@/components/user-hover-card'
@@ -151,6 +152,16 @@ export default async function MUDetailPage({ params }: PageProps) {
             { label: 'Member Wealth', value: mu.memberWealth, display: <CompactNumber value={mu.memberWealth} />, range: ranges.memberWealth, heat: 'median', rank: mu.memberWealthRank },
             { label: 'Bounty', value: mu.bounty, display: <CompactNumber value={mu.bounty} />, range: ranges.bounty, heat: 'median', rank: mu.bountyRank },
             { label: 'Invested', value: mu.investedMoney, display: <CompactNumber value={mu.investedMoney} />, range: ranges.investedMoney, heat: 'ramp', rank: mu.investedMoneyRank },
+          ]}
+        />
+        <WealthCompositionCard
+          perCapita={{ count: mu.memberCount, unit: 'member' }}
+          parts={[
+            { label: 'Companies', value: mu.companiesWealth, range: ranges.companiesWealth, rank: mu.companiesWealthRank },
+            { label: 'Items', value: mu.itemsWealth, range: ranges.itemsWealth, rank: mu.itemsWealthRank },
+            { label: 'Cash', value: mu.cashWealth, range: ranges.cashWealth, rank: mu.cashWealthRank },
+            { label: 'Equipment', value: mu.equipmentWealth, range: ranges.equipmentWealth, rank: mu.equipmentWealthRank },
+            { label: 'Weapons', value: mu.weaponsWealth, range: ranges.weaponsWealth, rank: mu.weaponsWealthRank },
           ]}
         />
         <MultiStatCard

@@ -23,6 +23,11 @@ const countryFieldAliases: FieldAliases = {
   treasury: 'money',
   unrest: 'unrestPercent',
   wars: 'warsCount',
+  companies: 'companiesWealth',
+  items: 'itemsWealth',
+  cash: 'cashWealth',
+  equipment: 'equipmentWealth',
+  weapons: 'weaponsWealth',
 }
 
 const countrySortValue = makeSortValue<CountryRow>({
@@ -41,6 +46,11 @@ const countrySortValue = makeSortValue<CountryRow>({
     'wealth',
     'wealthRank',
     'citizenWealth',
+    'companiesWealth',
+    'itemsWealth',
+    'cashWealth',
+    'equipmentWealth',
+    'weaponsWealth',
     'bounty',
     'money',
     'development',

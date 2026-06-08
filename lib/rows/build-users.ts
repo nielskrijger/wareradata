@@ -29,6 +29,9 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
       const levelValue = u.leveling?.level ?? null
       const damage = damageRanking?.value ?? null
       const wealth = wealthRanking?.value ?? null
+      // The wealth breakdown rides along in the getUserById stats payload. Absent
+      // for users a fresh scrape hasn't reached, so each part defaults to null.
+      const wealthParts = u.stats?.wealth
       const r = u.rankings
       const pts = computePoints({ level: levelValue, damage, wealth })
       const party = lookups.partyByUser.get(u._id)
@@ -110,6 +113,16 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
         wealthPoints: pts.wealth,
         wealthRank: wealthRanking?.rank ?? null,
         wealth,
+        companiesWealth: wealthParts?.companies ?? null,
+        companiesWealthRank: null,
+        itemsWealth: wealthParts?.items ?? null,
+        itemsWealthRank: null,
+        cashWealth: wealthParts?.money ?? null,
+        cashWealthRank: null,
+        equipmentWealth: wealthParts?.equipments ?? null,
+        equipmentWealthRank: null,
+        weaponsWealth: wealthParts?.weapons ?? null,
+        weaponsWealthRank: null,
         weeklyDamage: r?.weeklyUserDamages?.value ?? null,
         weeklyDamageRank: null,
       } satisfies UserRow
@@ -123,6 +136,11 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
   rankAll(rows, [
     'bounty',
     'casesOpened',
+    'companiesWealth',
+    'itemsWealth',
+    'cashWealth',
+    'equipmentWealth',
+    'weaponsWealth',
     'ecoPoints',
     'gearScore',
     'gemsPurchased',

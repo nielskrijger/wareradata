@@ -52,6 +52,20 @@ export interface CaseStat {
   byRarity?: Record<string, number>
   openedCount?: number
 }
+// The components that sum to a user's total wealth (all in gold), from the
+// getUserById `stats.wealth` payload: companies owned, items in storage, cash on
+// hand, equipped gear, and weapons. `total` is their sum (≈ the userWealth
+// ranking value, modulo capture timing). Every field is optional (absent on the
+// old lite payload and on the small fraction of users a fresh scrape hasn't
+// reached), so readers default to null.
+export interface WealthBreakdown {
+  companies?: number
+  items?: number
+  money?: number
+  equipments?: number
+  weapons?: number
+  total?: number
+}
 // Users are hydrated via getUserById, whose payload is a superset of the lite
 // endpoint's. We base this type on the generated lite-response type only because
 // it types the fields we read (rankings, skills, …) precisely, whereas the
@@ -61,7 +75,7 @@ export interface CaseStat {
 export type User = UserGetUserLiteResponse & {
   infos?: { isBanned?: boolean, colorScheme?: string }
   dates?: { lastConnectionAt?: string }
-  stats?: UserGetUserLiteResponse['stats'] & { case1?: CaseStat, case2?: CaseStat }
+  stats?: UserGetUserLiteResponse['stats'] & { case1?: CaseStat, case2?: CaseStat, wealth?: WealthBreakdown }
   // Not from the API: stamped by the scraper at capture time, and updated by an
   // on-demand refresh, so the user page can show how fresh the data is.
   lastRefreshedAt?: string

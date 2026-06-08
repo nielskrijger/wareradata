@@ -34,6 +34,14 @@ export interface MemberAgg {
   // holdings rather than the points derivative, which would diverge if the
   // scoring divisor ever changed.
   wealth: number
+  // Sums of members' five wealth parts (UserRow.{companies,items,cash,equipment,
+  // weapons}Wealth), for the entity's "Wealth composition" breakdown. Members
+  // missing a breakdown contribute 0.
+  companiesWealth: number
+  itemsWealth: number
+  cashWealth: number
+  equipmentWealth: number
+  weaponsWealth: number
 }
 
 function emptyAgg(): MemberAgg {
@@ -60,6 +68,11 @@ function emptyAgg(): MemberAgg {
     warShareCount: 0,
     wealthPoints: 0,
     wealth: 0,
+    companiesWealth: 0,
+    itemsWealth: 0,
+    cashWealth: 0,
+    equipmentWealth: 0,
+    weaponsWealth: 0,
   }
 }
 
@@ -91,6 +104,11 @@ export function aggregateMembers(
     entry.damage += u.damagePoints
     entry.wealthPoints += u.wealthPoints
     entry.wealth += u.wealth ?? 0
+    entry.companiesWealth += u.companiesWealth ?? 0
+    entry.itemsWealth += u.itemsWealth ?? 0
+    entry.cashWealth += u.cashWealth ?? 0
+    entry.equipmentWealth += u.equipmentWealth ?? 0
+    entry.weaponsWealth += u.weaponsWealth ?? 0
     entry.count += 1
     entry.gemsPurchasedTotal += u.gemsPurchased ?? 0
     entry.premiumMonthsTotal += u.premiumMonths ?? 0

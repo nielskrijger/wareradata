@@ -71,6 +71,20 @@ export interface UserRow {
   wealthPoints: number
   wealthRank: number | null
   wealth: number | null
+  // The five parts that make up wealth (gold), from the getUserById
+  // `stats.wealth` payload. Null when a scrape hasn't captured the breakdown for
+  // this user yet (a small fraction). Surfaced as the "Wealth composition" card
+  // and the per-component table columns.
+  companiesWealth: number | null
+  companiesWealthRank: number | null
+  itemsWealth: number | null
+  itemsWealthRank: number | null
+  cashWealth: number | null
+  cashWealthRank: number | null
+  equipmentWealth: number | null
+  equipmentWealthRank: number | null
+  weaponsWealth: number | null
+  weaponsWealthRank: number | null
   weeklyDamage: number | null
   weeklyDamageRank: number | null
 }
@@ -144,6 +158,18 @@ export interface CountryRow {
   // points derivative). Surfaced as the "Citizen Wealth" column.
   citizenWealth: number
   citizenWealthRank: number | null
+  // Citizen-summed wealth parts (each the sum of citizens' stats.wealth.*).
+  // Feed the country "Wealth composition" card and the per-component columns.
+  companiesWealth: number
+  companiesWealthRank: number | null
+  itemsWealth: number
+  itemsWealthRank: number | null
+  cashWealth: number
+  cashWealthRank: number | null
+  equipmentWealth: number
+  equipmentWealthRank: number | null
+  weaponsWealth: number
+  weaponsWealthRank: number | null
   code: string
   damageRank: number | null
   damageTier: RankingTier | null
@@ -267,6 +293,18 @@ export interface MURow {
   // points derivative). Surfaced as the "Member Wealth" column.
   memberWealth: number
   memberWealthRank: number | null
+  // Member-summed wealth parts (each the sum of members' stats.wealth.*). Feed
+  // the MU "Wealth composition" card and the per-component columns.
+  companiesWealth: number
+  companiesWealthRank: number | null
+  itemsWealth: number
+  itemsWealthRank: number | null
+  cashWealth: number
+  cashWealthRank: number | null
+  equipmentWealth: number
+  equipmentWealthRank: number | null
+  weaponsWealth: number
+  weaponsWealthRank: number | null
   name: string
   premiumGiftsTotal: number
   premiumGiftsTotalRank: number | null

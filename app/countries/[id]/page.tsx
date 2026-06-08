@@ -13,6 +13,7 @@ import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { VitalsCard } from '@/components/detail/vitals-card'
+import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { Flag } from '@/components/flag'
 import { ExternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
@@ -173,6 +174,16 @@ export default async function CountryDetailPage({ params }: PageProps) {
             { label: 'Bounty', value: c.bounty, display: <CompactNumber value={c.bounty} />, range: ranges.bounty, heat: 'ramp', rank: c.bountyRank },
             { label: 'Development', value: c.development, range: ranges.development, heat: 'median', rank: c.developmentRank },
             { label: 'Prod. bonus', value: c.productionBonus, display: c.productionBonus != null ? `${c.productionBonus}%` : undefined, range: ranges.productionBonus, heat: 'median', rank: c.productionBonusRank },
+          ]}
+        />
+        <WealthCompositionCard
+          perCapita={{ count: citizenPage.total, unit: 'citizen' }}
+          parts={[
+            { label: 'Companies', value: c.companiesWealth, range: ranges.companiesWealth, rank: c.companiesWealthRank },
+            { label: 'Items', value: c.itemsWealth, range: ranges.itemsWealth, rank: c.itemsWealthRank },
+            { label: 'Cash', value: c.cashWealth, range: ranges.cashWealth, rank: c.cashWealthRank },
+            { label: 'Equipment', value: c.equipmentWealth, range: ranges.equipmentWealth, rank: c.equipmentWealthRank },
+            { label: 'Weapons', value: c.weaponsWealth, range: ranges.weaponsWealth, rank: c.weaponsWealthRank },
           ]}
         />
         <MultiStatCard

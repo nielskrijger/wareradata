@@ -21,6 +21,11 @@ const userFieldAliases: FieldAliases = {
   health: 'healthPercent',
   hunger: 'hungerPercent',
   buff: 'readinessStatus',
+  companies: 'companiesWealth',
+  items: 'itemsWealth',
+  cash: 'cashWealth',
+  equipment: 'equipmentWealth',
+  weapons: 'weaponsWealth',
 }
 
 const userSortValue = makeSortValue<UserRow>({
@@ -30,6 +35,11 @@ const userSortValue = makeSortValue<UserRow>({
     'levelRank',
     'wealthRank',
     'wealth',
+    'companiesWealth',
+    'itemsWealth',
+    'cashWealth',
+    'equipmentWealth',
+    'weaponsWealth',
     'damageRank',
     'damage',
     'weeklyDamage',

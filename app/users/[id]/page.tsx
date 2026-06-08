@@ -20,6 +20,7 @@ import { RefreshButton } from '@/components/detail/refresh-button'
 import { SkillSplitCard } from '@/components/detail/skill-split-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { VitalsCard } from '@/components/detail/vitals-card'
+import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -180,6 +181,15 @@ export default async function UserDetailPage({ params }: PageProps) {
             { label: 'Wealth', value: user.wealth, display: <CompactNumber value={user.wealth} />, range: ranges.wealth, heat: 'median', rank: user.wealthRank },
             { label: 'Bounty', value: user.bounty, display: <CompactNumber value={user.bounty} />, range: ranges.bounty, heat: 'median', rank: user.bountyRank },
             { label: 'Referrals', value: user.referrals, range: ranges.referrals, heat: 'ramp', rank: user.referralsRank },
+          ]}
+        />
+        <WealthCompositionCard
+          parts={[
+            { label: 'Companies', value: user.companiesWealth, range: ranges.companiesWealth, rank: user.companiesWealthRank },
+            { label: 'Items', value: user.itemsWealth, range: ranges.itemsWealth, rank: user.itemsWealthRank },
+            { label: 'Cash', value: user.cashWealth, range: ranges.cashWealth, rank: user.cashWealthRank },
+            { label: 'Equipment', value: user.equipmentWealth, range: ranges.equipmentWealth, rank: user.equipmentWealthRank },
+            { label: 'Weapons', value: user.weaponsWealth, range: ranges.weaponsWealth, rank: user.weaponsWealthRank },
           ]}
         />
         <CasesCard

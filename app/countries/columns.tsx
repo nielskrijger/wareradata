@@ -57,6 +57,11 @@ export const countryColumns: ColumnDef<CountryRow>[] = [
   compactNumberColumn<CountryRow>('weeklyDamagePerCitizen', 'Weekly / Citizen', { heat: 'median', width: 150 }),
   rankTooltipColumn<CountryRow>('wealth', 'wealthRank', 'Country Wealth', { width: 130 }),
   compactNumberColumn<CountryRow>('citizenWealth', 'Citizen Wealth', { heat: 'median', width: 140 }),
+  compactNumberColumn<CountryRow>('companiesWealth', 'Companies', { heat: 'median', width: 110 }),
+  compactNumberColumn<CountryRow>('itemsWealth', 'Items', { heat: 'median', width: 100 }),
+  compactNumberColumn<CountryRow>('cashWealth', 'Cash', { heat: 'median', width: 100 }),
+  compactNumberColumn<CountryRow>('equipmentWealth', 'Equipment', { heat: 'median', width: 120 }),
+  compactNumberColumn<CountryRow>('weaponsWealth', 'Weapons', { heat: 'median', width: 110 }),
   {
     accessorKey: 'development',
     header: 'Development',

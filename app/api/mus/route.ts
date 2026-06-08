@@ -21,6 +21,11 @@ const muFieldAliases: FieldAliases = {
   premiumMonths: 'premiumMonthsTotal',
   premiumGifts: 'premiumGiftsTotal',
   level: 'avgLevel',
+  companies: 'companiesWealth',
+  items: 'itemsWealth',
+  cash: 'cashWealth',
+  equipment: 'equipmentWealth',
+  weapons: 'weaponsWealth',
 }
 
 const muSortValue = makeSortValue<MURow>({
@@ -39,6 +44,11 @@ const muSortValue = makeSortValue<MURow>({
     'wealth',
     'wealthRank',
     'memberWealth',
+    'companiesWealth',
+    'itemsWealth',
+    'cashWealth',
+    'equipmentWealth',
+    'weaponsWealth',
     'terrain',
     'reputation',
     'memberCount',

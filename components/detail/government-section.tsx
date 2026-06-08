@@ -32,6 +32,9 @@ const PARTY_PALETTE = [
 // Neutral grey for officials with no party (independents).
 const INDEPENDENT_RGB = '130, 130, 140'
 
+// Sentinel bench id for the no-party group, which has no party page to link to.
+const INDEPENDENT_KEY = '__independent'
+
 const ROLE_SHORT: Record<string, string> = {
   'President': 'President',
   'Vice President': 'Vice President',
@@ -93,7 +96,7 @@ function dedupeById(officials: GovernmentOfficial[]): GovernmentOfficial[] {
 function congressBenches(congress: GovernmentOfficial[], colors: Map<string, string>): Bench[] {
   const byParty = new Map<string, Bench>()
   for (const o of congress) {
-    const key = o.partyId ?? '__independent'
+    const key = o.partyId ?? INDEPENDENT_KEY
     let bench = byParty.get(key)
     if (!bench) {
       bench = {
@@ -108,10 +111,10 @@ function congressBenches(congress: GovernmentOfficial[], colors: Map<string, str
     bench.members.push(o)
   }
   return [...byParty.values()].sort((a, b) => {
-    if (a.id === '__independent') {
+    if (a.id === INDEPENDENT_KEY) {
       return 1
     }
-    if (b.id === '__independent') {
+    if (b.id === INDEPENDENT_KEY) {
       return -1
     }
     return b.members.length - a.members.length
@@ -183,7 +186,13 @@ export function GovernmentSection({ government }: Props) {
                   {bench.avatarUrl
                     ? <Avatar src={bench.avatarUrl} name={bench.name} size={20} />
                     : <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: `rgb(${bench.color})` }} />}
-                  <span className="truncate text-xs font-medium" title={bench.name}>{bench.name}</span>
+                  {bench.id === INDEPENDENT_KEY
+                    ? <span className="truncate text-xs font-medium" title={bench.name}>{bench.name}</span>
+                    : (
+                        <InternalLink href={`/parties/${bench.id}`} bold title={bench.name} className="min-w-0 truncate text-xs">
+                          {bench.name}
+                        </InternalLink>
+                      )}
                   <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">{bench.members.length}</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">

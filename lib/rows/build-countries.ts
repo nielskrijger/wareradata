@@ -41,6 +41,7 @@ export function buildCountryRows(
         avgLevelRank: null,
         avgPoints: agg ? Math.round(agg.total / agg.count) : null,
         avgPointsRank: null,
+        avgPointsPerDay: agg ? aggMean(agg.pointsPerDaySum, agg.pointsPerDayCount) : null,
         bounty: r?.countryBounty?.value ?? null,
         bountyRank: null,
         citizenWealth: agg?.wealth ?? 0,

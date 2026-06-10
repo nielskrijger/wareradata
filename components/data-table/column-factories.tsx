@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table'
 
 import type { ReadinessPill } from '@/lib/rows'
+
 import type { RankingTier } from '@/lib/warera/api'
 
 import { GearScorePill } from '@/components/badges/gear-score-pill'
@@ -13,9 +14,7 @@ import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
 import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
-import { ExternalLink } from '@/components/links'
 import { readinessScore } from '@/lib/rows'
-import { wareraUrl } from '@/lib/warera/urls'
 
 /**
  * Generic column factories for the patterns repeated verbatim across the entity
@@ -41,14 +40,14 @@ type Key<T> = Extract<keyof T, string>
 export function compactNumberColumn<T>(
   key: Key<T>,
   header: string,
-  opts: { heat?: HeatMode, width?: number } = {},
+  opts: { heat?: HeatMode, width?: number, tooltip?: string } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
     header,
     cell: ({ row }) => <CompactNumber value={row.original[key] as number | null} />,
     sortDescFirst: true,
-    meta: { heat: opts.heat, align: 'right', width: opts.width ?? 110 },
+    meta: { heat: opts.heat, align: 'right', width: opts.width ?? 110, tooltip: opts.tooltip },
   }
 }
 
@@ -59,14 +58,14 @@ export function compactNumberColumn<T>(
 export function localeNumberColumn<T>(
   key: Key<T>,
   header: string,
-  opts: { heat?: HeatMode, center?: number, logScale?: boolean, width?: number } = {},
+  opts: { heat?: HeatMode, center?: number, logScale?: boolean, width?: number, tooltip?: string } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
     header,
     cell: ({ row }) => (row.original[key] as number | null)?.toLocaleString() ?? null,
     sortDescFirst: true,
-    meta: { heat: opts.heat, heatCenter: opts.center, heatLogScale: opts.logScale, align: 'right', width: opts.width ?? 100 },
+    meta: { heat: opts.heat, heatCenter: opts.center, heatLogScale: opts.logScale, align: 'right', width: opts.width ?? 100, tooltip: opts.tooltip },
   }
 }
 
@@ -78,7 +77,7 @@ export function rankTooltipColumn<T>(
   valueKey: Key<T>,
   rankKey: Key<T>,
   header: string,
-  opts: { width?: number } = {},
+  opts: { width?: number, tooltip?: string } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: rankKey,
@@ -90,7 +89,7 @@ export function rankTooltipColumn<T>(
     ),
     sortDescFirst: false,
     sortUndefined: 'last',
-    meta: { heat: 'invert', sortInvert: true, align: 'right', width: opts.width ?? 130 },
+    meta: { heat: 'invert', sortInvert: true, align: 'right', width: opts.width ?? 130, tooltip: opts.tooltip },
   }
 }
 
@@ -143,7 +142,7 @@ export function readinessColumn<T extends { readinessPill: ReadinessPill }>(
     cell: ({ row }) => <ReadinessPillBar mix={row.original.readinessPill} />,
     sortDescFirst: true,
     sortUndefined: 'last',
-    meta: { width: opts.width ?? 120 },
+    meta: { width: opts.width ?? 130 },
   }
 }
 
@@ -169,26 +168,6 @@ export function combatModeColumn<T extends { avgWarShare: number | null }>(
 }
 
 /**
- * The trailing "Link → WarEra.io" external-link column. `kind` picks the
- * app.warera.io path (`/mu/<id>`, `/country/<id>`, …).
- */
-export function wareraLinkColumn<T extends { id: string }>(
-  kind: 'user' | 'country' | 'mu' | 'party',
-): ColumnDef<T> {
-  return {
-    id: 'warera',
-    header: 'Link',
-    enableSorting: false,
-    cell: ({ row }) => (
-      <ExternalLink href={wareraUrl(kind, row.original.id)}>
-        WarEra.io
-      </ExternalLink>
-    ),
-    meta: { width: 110 },
-  }
-}
-
-/**
  * The headline points column: a {@link PointsBreakdownCell} reading the entity's
  * total (`totalKey`) plus the fixed `levelPoints`/`damagePoints`/`wealthPoints`
  * breakdown every row carries.
@@ -198,7 +177,7 @@ export function pointsBreakdownColumn<
 >(
   totalKey: Key<T>,
   header: string,
-  opts: { width?: number } = {},
+  opts: { width?: number, tooltip?: string } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: totalKey,
@@ -212,7 +191,7 @@ export function pointsBreakdownColumn<
       />
     ),
     sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: opts.width ?? 120 },
+    meta: { heat: 'median', align: 'right', width: opts.width ?? 120, tooltip: opts.tooltip },
   }
 }
 

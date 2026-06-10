@@ -1,16 +1,14 @@
 import type { PageRequest, PageResult } from './data-table'
 
-import { combineFilter } from './combine-filter'
-
 /**
  * Client-side fetcher for any paginated `/api/*` endpoint that follows the
  * DataTable wire contract (`page` / `pageSize` / `sort` / `dir` / `filter`
  * query string, `{ rows, total, ranges? }` response).
  *
- * The optional `baseFilter` is AND-merged with the user's input via
- * {@link combineFilter} — used by scoped tables (the MU detail page's
- * member list, the party detail page's member list, etc.) to lock in a
- * parent context without leaking it into the visible filter input.
+ * The optional `baseFilter` (e.g. `muId:<id>` on a detail page's member list) is
+ * sent as its own param, separate from the user's `filter`, so the server can
+ * apply it as a locked-in scope the user's input can narrow but never widen
+ * past, and a malformed filter can't break out of it.
  */
 export async function fetchPaginated<T>(
   endpoint: string,
@@ -25,9 +23,11 @@ export async function fetchPaginated<T>(
   if (req.sort) {
     params.set('sort', req.sort)
   }
-  const filter = combineFilter(baseFilter, req.filter)
-  if (filter) {
-    params.set('filter', filter)
+  if (req.filter) {
+    params.set('filter', req.filter)
+  }
+  if (baseFilter) {
+    params.set('baseFilter', baseFilter)
   }
 
   const res = await fetch(`${endpoint}?${params.toString()}`)

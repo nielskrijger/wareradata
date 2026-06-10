@@ -62,7 +62,7 @@ function fetchUser(id: string): Promise<FetchedData> {
   return p
 }
 
-const intFull = new Intl.NumberFormat('en')
+const intFull = new Intl.NumberFormat('en', { maximumFractionDigits: 0 })
 
 /**
  * Wraps a username-shaped trigger with a hover tooltip showing the user's

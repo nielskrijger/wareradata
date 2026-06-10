@@ -18,15 +18,27 @@ const partyFieldAliases: FieldAliases = {
   premiumMonths: 'premiumMonthsTotal',
   premiumGifts: 'premiumGiftsTotal',
   level: 'avgLevel',
+  ppd: 'avgPointsPerDay',
+  companies: 'companiesWealth',
+  items: 'itemsWealth',
+  cash: 'cashWealth',
+  equipment: 'equipmentWealth',
+  weapons: 'weaponsWealth',
 }
 
 const partySortValue = makeSortValue<PartyRow>({
   passthrough: [
     'totalPoints',
     'avgPoints',
+    'avgPointsPerDay',
     'avgLevel',
     'memberCount',
     'memberWealth',
+    'companiesWealth',
+    'itemsWealth',
+    'cashWealth',
+    'equipmentWealth',
+    'weaponsWealth',
     'gemsPurchasedTotal',
     'premiumMonthsTotal',
     'premiumGiftsTotal',

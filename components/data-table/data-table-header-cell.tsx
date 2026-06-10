@@ -4,8 +4,10 @@ import type { CSSProperties } from 'react'
 import { flexRender } from '@tanstack/react-table'
 
 import { TableHead } from '@/components/ui/table'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
+import { CATEGORY_META, columnCategory } from './column-categories'
 import { SortIcon } from './sort-icon'
 
 interface Props<TData> {
@@ -38,8 +40,40 @@ export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
     : undefined
   const rendered = flexRender(header.column.columnDef.header, header.getContext())
 
+  // Prefix each column with its category's icon, the same symbol the Columns
+  // menu shows for that group (Points trophy, Combat swords, Wealth coin, …).
+  const category = columnCategory(header.column.columnDef)
+
+  // Every category but General carries a `color`, so only General (the catch-all)
+  // stays iconless in the header; it still shows its icon in the Columns menu.
+  const meta = CATEGORY_META[category]
+  const catMeta = meta.color ? meta : null
+  const CatIcon = catMeta?.Icon
+  const label = CatIcon
+    ? (
+        <span className="inline-flex items-center gap-1">
+          <CatIcon className="size-3.5 shrink-0" style={catMeta?.color ? { color: catMeta.color } : undefined} />
+          {rendered}
+        </span>
+      )
+    : rendered
+
+  // Optional header help text (meta.tooltip). The trigger renders as a plain
+  // inline span so it nests cleanly inside the sort button below.
+  const tip = header.column.columnDef.meta?.tooltip
+  const content = tip
+    ? (
+        <Tooltip>
+          <TooltipTrigger render={<span className="inline-flex items-center gap-1" />}>
+            {label}
+          </TooltipTrigger>
+          <TooltipContent>{tip}</TooltipContent>
+        </Tooltip>
+      )
+    : label
+
   if (!canSort) {
-    return <TableHead className={headClass} style={style}>{rendered}</TableHead>
+    return <TableHead className={headClass} style={style}>{content}</TableHead>
   }
   return (
     <TableHead className={headClass} style={style}>
@@ -51,7 +85,7 @@ export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
           align === 'right' && 'flex-row-reverse',
         )}
       >
-        {rendered}
+        {content}
         <SortIcon state={iconState} />
       </button>
     </TableHead>

@@ -13,6 +13,7 @@ import { DetailHeader, FactRow } from '@/components/detail/detail-header'
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
+import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { ExternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -128,6 +129,16 @@ export default async function PartyDetailPage({ params }: PageProps) {
           rows={[
             { label: 'Members', value: p.memberCount, range: ranges.memberCount, heat: 'ramp', rank: p.memberCountRank },
             { label: 'Avg level', value: p.avgLevel, range: ranges.avgLevel, heat: 'median', rank: p.avgLevelRank },
+          ]}
+        />
+        <WealthCompositionCard
+          perCapita={{ count: p.memberCount, unit: 'member' }}
+          parts={[
+            { label: 'Companies', value: p.companiesWealth, range: ranges.companiesWealth, rank: p.companiesWealthRank },
+            { label: 'Items', value: p.itemsWealth, range: ranges.itemsWealth, rank: p.itemsWealthRank },
+            { label: 'Cash', value: p.cashWealth, range: ranges.cashWealth, rank: p.cashWealthRank },
+            { label: 'Equipment', value: p.equipmentWealth, range: ranges.equipmentWealth, rank: p.equipmentWealthRank },
+            { label: 'Weapons', value: p.weaponsWealth, range: ranges.weaponsWealth, rank: p.weaponsWealthRank },
           ]}
         />
         <MultiStatCard

@@ -41,6 +41,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         avgLevelRank: null,
         avgPoints: agg ? Math.round(agg.total / agg.count) : null,
         avgPointsRank: null,
+        avgPointsPerDay: agg ? aggMean(agg.pointsPerDaySum, agg.pointsPerDayCount) : null,
         bounty: r?.muBounty?.value ?? null,
         bountyRank: null,
         countryCode: country?.code ?? null,

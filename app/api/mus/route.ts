@@ -21,6 +21,7 @@ const muFieldAliases: FieldAliases = {
   premiumMonths: 'premiumMonthsTotal',
   premiumGifts: 'premiumGiftsTotal',
   level: 'avgLevel',
+  ppd: 'avgPointsPerDay',
   companies: 'companiesWealth',
   items: 'itemsWealth',
   cash: 'cashWealth',
@@ -32,6 +33,7 @@ const muSortValue = makeSortValue<MURow>({
   passthrough: [
     'totalPoints',
     'avgPoints',
+    'avgPointsPerDay',
     'avgLevel',
     'avgHealth',
     'avgHunger',

@@ -152,6 +152,7 @@ export interface CountryRow {
   avgLevelRank: number | null
   avgPoints: number | null
   avgPointsRank: number | null
+  avgPointsPerDay: number | null
   bounty: number | null
   bountyRank: number | null
   // Sum of citizens' actual wealth in gold (real holdings, not the wealthPoints
@@ -263,6 +264,7 @@ export interface MURow {
   avgLevelRank: number | null
   avgPoints: number | null
   avgPointsRank: number | null
+  avgPointsPerDay: number | null
   bounty: number | null
   bountyRank: number | null
   countryCode: string | null
@@ -413,6 +415,7 @@ export interface PartyRow {
   avgLevelRank: number | null
   avgPoints: number | null
   avgPointsRank: number | null
+  avgPointsPerDay: number | null
   countryCode: string | null
   countryId: string | null
   countryName: string | null
@@ -433,8 +436,20 @@ export interface PartyRow {
   memberCount: number
   memberCountRank: number | null
   // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
-  // points derivative). Surfaced as the "Member Wealth" column.
+  // points derivative). Surfaced as the "Total" wealth column.
   memberWealth: number
+  // Member-summed wealth parts (each the sum of members' stats.wealth.*). Feed
+  // the party "Wealth composition" card and the per-component columns.
+  companiesWealth: number
+  companiesWealthRank: number | null
+  itemsWealth: number
+  itemsWealthRank: number | null
+  cashWealth: number
+  cashWealthRank: number | null
+  equipmentWealth: number
+  equipmentWealthRank: number | null
+  weaponsWealth: number
+  weaponsWealthRank: number | null
   militarism: number | null
   name: string
   premiumGiftsTotal: number

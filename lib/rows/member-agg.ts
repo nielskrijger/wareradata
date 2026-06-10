@@ -42,6 +42,10 @@ export interface MemberAgg {
   cashWealth: number
   equipmentWealth: number
   weaponsWealth: number
+  // Sum + count of members' points/day, for the per-member average rate. Counts
+  // only members with a non-null rate (accounts <7 days old have none).
+  pointsPerDaySum: number
+  pointsPerDayCount: number
 }
 
 function emptyAgg(): MemberAgg {
@@ -73,6 +77,8 @@ function emptyAgg(): MemberAgg {
     cashWealth: 0,
     equipmentWealth: 0,
     weaponsWealth: 0,
+    pointsPerDaySum: 0,
+    pointsPerDayCount: 0,
   }
 }
 
@@ -116,6 +122,10 @@ export function aggregateMembers(
     if (u.level !== null) {
       entry.levelSum += u.level
       entry.levelCount += 1
+    }
+    if (u.pointsPerDay !== null) {
+      entry.pointsPerDaySum += u.pointsPerDay
+      entry.pointsPerDayCount += 1
     }
     if (u.healthPercent !== null) {
       entry.healthSum += u.healthPercent

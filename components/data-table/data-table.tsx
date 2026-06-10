@@ -3,23 +3,17 @@
 import type { ColumnDef, RowData, VisibilityState } from '@tanstack/react-table'
 import type { ReactNode } from 'react'
 
+import type { Category } from './column-categories'
+
 import type { Range } from '@/lib/query'
 import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ChevronDown, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react'
 
-import { Button, buttonVariants } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Table,
@@ -30,6 +24,7 @@ import {
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
+import { ColumnsMenu } from './columns-menu'
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
 import { useTableUrlState } from './use-table-url-state'
@@ -85,6 +80,20 @@ declare module '@tanstack/react-table' {
      * "less good" end of the column.
      */
     sortInvert?: boolean
+
+    /**
+     * The column's category, driving the Columns-menu grouping, the header icon,
+     * and column ordering. Set by buildColumns from the group the column was
+     * declared in (see column-categories.ts); columns left unstamped fall back to
+     * General. Authoring it by hand is unnecessary in a buildColumns table.
+     */
+    category?: Category
+
+    /**
+     * Help text shown in a tooltip when hovering the column header. Use for
+     * columns whose terse label benefits from a word of explanation.
+     */
+    tooltip?: string
   }
 
   // eslint-disable-next-line unused-imports/no-unused-vars
@@ -238,36 +247,7 @@ function DataTableInner<TData, TValue>({
           )}
         </div>
         {searchHint}
-        <DropdownMenu>
-          <DropdownMenuTrigger className={cn(buttonVariants({ variant: 'outline' }), 'ml-auto')}>
-            Columns <ChevronDown className="ml-1 h-4 w-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="!w-auto min-w-40">
-            <DropdownMenuItem closeOnClick={false} onClick={() => table.toggleAllColumnsVisible(true)}>
-              Show all
-            </DropdownMenuItem>
-            <DropdownMenuItem closeOnClick={false} onClick={() => table.toggleAllColumnsVisible(false)}>
-              Hide all
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {table
-              .getAllColumns()
-              .filter(c => c.getCanHide())
-              .map((c) => {
-                const header = c.columnDef.header
-                const label = typeof header === 'string' ? header : c.id
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={c.id}
-                    checked={c.getIsVisible()}
-                    onCheckedChange={value => c.toggleVisibility(!!value)}
-                  >
-                    {label}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ColumnsMenu table={table} />
       </div>
 
       <div className={cn(

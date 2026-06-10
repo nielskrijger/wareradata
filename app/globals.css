@@ -79,6 +79,7 @@
   --heat-purple: oklch(0.62 0.2 295);
   --heat-gold: oklch(0.74 0.15 80);
   --heat-blue: oklch(0.62 0.15 240);
+  --heat-teal: oklch(0.68 0.13 195);
   --heat-slate: #a3a3a3;
   /* Brand orange (matches the logo) for the active nav pill. */
   --fire: oklch(0.66 0.21 50);
@@ -129,6 +130,7 @@
   --heat-purple: oklch(0.7 0.2 295);
   --heat-gold: oklch(0.82 0.15 80);
   --heat-blue: oklch(0.68 0.15 240);
+  --heat-teal: oklch(0.78 0.14 195);
   --heat-slate: #a3a3a3; /* gear common-tier grey; theme-invariant by design */
   --fire: oklch(0.79 0.19 55);
   --border: oklch(1 0 0 / 10%);

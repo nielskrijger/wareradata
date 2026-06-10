@@ -37,7 +37,7 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
     header: 'Development',
     cell: ({ row }) => formatDevelopment(row.original.development),
     sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 130 },
+    meta: { heat: 'median', align: 'right', width: 150 },
   },
   {
     accessorKey: 'strategicResource',
@@ -87,6 +87,6 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
     header: 'Neighbors',
     cell: ({ row }) => row.original.neighborCount.toLocaleString(),
     sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 100 },
+    meta: { heat: 'median', align: 'right', width: 110 },
   },
 ]

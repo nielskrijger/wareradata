@@ -15,6 +15,7 @@ const countryFieldAliases: FieldAliases = {
   allies: 'alliesCount',
   gems: 'gemsPurchasedTotal',
   level: 'avgLevel',
+  ppd: 'avgPointsPerDay',
   population: 'activePopulation',
   premiumGifts: 'premiumGiftsTotal',
   premiumMonths: 'premiumMonthsTotal',
@@ -34,6 +35,7 @@ const countrySortValue = makeSortValue<CountryRow>({
   passthrough: [
     'totalPoints',
     'avgPoints',
+    'avgPointsPerDay',
     'avgLevel',
     'avgHealth',
     'avgHunger',

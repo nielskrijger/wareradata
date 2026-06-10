@@ -11,6 +11,12 @@ export interface QueryParams {
   sort: string | null
   dir: 'asc' | 'desc'
   filter: string
+  /**
+   * A locked-in scope (e.g. `muId:<id>` on a detail page), kept separate from
+   * the user's `filter` so a malformed user filter can't widen past it. Empty
+   * on the plain list pages.
+   */
+  baseFilter?: string
 }
 
 export const DEFAULT_PAGE_SIZE = 25
@@ -29,8 +35,9 @@ export function parseQuery(searchParams: URLSearchParams): QueryParams {
   // haystack, and applyStructuredQuery hands the raw text to liqe (which
   // is case-insensitive on values by default).
   const filter = (searchParams.get('filter') ?? '').trim()
+  const baseFilter = (searchParams.get('baseFilter') ?? '').trim()
 
-  return { page, pageSize, sort, dir, filter }
+  return { page, pageSize, sort, dir, filter, baseFilter }
 }
 
 // [min, max, median] over the full filtered set. The median lets the client
@@ -176,17 +183,40 @@ function rewriteAliases(node: unknown, aliases: FieldAliases): void {
 }
 
 /**
+ * Lets users write `field=value` as a synonym for liqe's `field:value`. Only an
+ * `=` directly after a bare field token (at the start of the string, or after
+ * whitespace or `(`) is rewritten, so liqe's `>=` / `<=` operators and any `=`
+ * sitting inside a quoted value are left untouched.
+ */
+function normalizeEquals(filter: string): string {
+  return filter.replace(/(^|[\s(])([\w.]+)=/g, '$1$2:')
+}
+
+/**
+ * Filters `rows` by a single liqe expression. An empty expression is a no-op;
+ * an *unparseable* one is also a no-op (the rows pass through unchanged) so a
+ * typo narrows nothing rather than throwing — and, applied after the base
+ * scope, can never widen back past it.
+ */
+function runLiqeFilter<T extends object>(rows: T[], expr: string, aliases: FieldAliases): T[] {
+  if (!expr) {
+    return rows
+  }
+  try {
+    const ast = liqeParse(expr)
+    rewriteAliases(ast, aliases)
+    return liqeFilter(ast, rows as unknown as Record<string, unknown>[]) as unknown as T[]
+  } catch {
+    return rows
+  }
+}
+
+/**
  * Variant of {@link applyQuery} that runs the filter through liqe, supporting
- * structured queries like `country:net -mu:"Bla bla" levelRank:[1 TO 100]` as
- * well as plain free-text. Free-text falls back to liqe's whole-row substring
- * search so casual users still get sensible behaviour.
- *
- * Pass `aliases` to map friendly field names to underlying row keys (e.g.
- * `{ country: 'countryCode' }` lets users type `country:nl` instead of
- * `countryCode:nl`). Underlying names still work either way.
- *
- * Returns the unfiltered rows on parse failure (e.g. user typing `mu:` mid-
- * word) — better than throwing.
+ * structured queries like `country:net -mu:"Bla bla" rank:[1 TO 100]` as well as
+ * plain free-text (liqe falls back to a whole-row substring search). `aliases`
+ * maps friendly field names to row keys (e.g. `country` → `countryCode`);
+ * underlying names work too.
  */
 export function applyStructuredQuery<T extends object>(
   rows: T[],
@@ -194,16 +224,15 @@ export function applyStructuredQuery<T extends object>(
   sortValue: (row: T, sort: string) => number | string | null,
   aliases: FieldAliases = {},
 ): PagedResult<T> {
-  let filtered = rows
-  if (query.filter) {
-    try {
-      const ast = liqeParse(query.filter)
-      rewriteAliases(ast, aliases)
-      filtered = liqeFilter(ast, rows as unknown as Record<string, unknown>[]) as unknown as T[]
-    } catch {
-      filtered = rows
-    }
-  }
+  // The detail-page scope (`baseFilter`, e.g. `muId:<id>`) and the user's typed
+  // `filter` are applied in sequence: the trusted base first, then the user's
+  // filter over the already-scoped subset. That equals `base AND (user)` but
+  // with two safety properties — an unparseable user filter is dropped without
+  // widening past the base scope, and the user's own OR/NOT can only ever match
+  // within the scoped rows, never pull in others.
+  const scoped = runLiqeFilter(rows, query.baseFilter ?? '', aliases)
+  const filtered = runLiqeFilter(scoped, normalizeEquals(query.filter), aliases)
+
   return sortAndPaginate(filtered, query, sortValue)
 }
 

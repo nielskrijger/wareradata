@@ -1,4 +1,7 @@
+'use client'
+
 import { ArrowDown, ArrowUp } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import { EmptyDash } from '@/components/empty-dash'
 import { Countdown } from '@/components/relative-time'
@@ -16,15 +19,41 @@ interface Props {
   withTooltip?: boolean
 }
 
-// Absolute wall-clock time the effect ends ("Mon, 21:34"), in the viewer's
-// locale and timezone. The badge shows the relative countdown; the tooltip adds
-// the exact moment it wears off (and the day, for debuffs that cross midnight).
+/**
+ * Absolute wall-clock time the effect ends ("Mon, 21:34"), in the viewer's
+ * locale and timezone. The badge shows the relative countdown; the tooltip adds
+ * the exact moment it wears off (and the day, for debuffs that cross midnight).
+ */
 function formatEndsAt(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
     weekday: 'short',
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/**
+ * Once the countdown runs out the buff/debuff has worn off, so the pill should
+ * read "Ready" instead of a stale "0m". The snapshot's status flag lags the
+ * clock, so we detect expiry on the client. `now` stays null on the server and
+ * the first client render (so both agree the effect is still active, no
+ * hydration mismatch); a deferred update then reads the real clock and a 30s
+ * interval keeps it live, matching the countdown's own cadence.
+ */
+function useExpired(iso: string | null | undefined): boolean {
+  const [now, setNow] = useState<number | null>(null)
+
+  useEffect(() => {
+    const update = () => setNow(Date.now())
+    const initial = setTimeout(update, 0)
+    const id = setInterval(update, 30_000)
+    return () => {
+      clearTimeout(initial)
+      clearInterval(id)
+    }
+  }, [])
+
+  return now != null && iso != null && Date.parse(iso) <= now
 }
 
 /**
@@ -35,10 +64,15 @@ function formatEndsAt(iso: string): string {
  * empty-dash placeholder when unknown.
  */
 export function ReadinessBadge({ status, endsAt, withTooltip = true }: Props) {
+  const expired = useExpired(endsAt)
+
   if (status == null) {
     return <EmptyDash />
   }
-  if (status === 'neither') {
+
+  // "neither" is the baseline; an expired buff/debuff collapses to the same
+  // "Ready" pill once its countdown has elapsed, dropping the (now past) tooltip.
+  if (status === 'neither' || expired) {
     return (
       <Badge className="bg-neutral-500/15 text-neutral-800 dark:text-neutral-300">
         Ready

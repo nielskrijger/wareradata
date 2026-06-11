@@ -4,6 +4,7 @@ import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { Flag } from '@/components/flag'
+import { InfoTooltip } from '@/components/info-tooltip'
 import { InternalLink } from '@/components/links'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -43,9 +44,19 @@ export function MembersTable({ alliance: a }: Props) {
         <TableHeader>
           <TableRow>
             <TableHead>Country</TableHead>
-            <TableHead className="text-right">Core Dev</TableHead>
+            <TableHead className="text-right">
+              <InfoTooltip
+                label="Core Dev"
+                hint="Development this country contributes to the alliance core; the members' core dev sums to the alliance total and drives the Share column."
+              />
+            </TableHead>
             <TableHead className="text-right">Share</TableHead>
-            <TableHead className="text-right">Avg Dev</TableHead>
+            <TableHead className="text-right">
+              <InfoTooltip
+                label="Avg Dev"
+                hint="The country's average development; the members' values sum to the alliance's average development."
+              />
+            </TableHead>
             <TableHead className="text-right">Population</TableHead>
             <TableHead className="text-right">Weekly Dmg</TableHead>
             <TableHead className="text-right">Wealth</TableHead>

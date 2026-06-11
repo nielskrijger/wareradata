@@ -15,7 +15,7 @@ import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { VitalsCard } from '@/components/detail/vitals-card'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { Flag } from '@/components/flag'
-import { ExternalLink } from '@/components/links'
+import { ExternalLink, InternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -138,6 +138,13 @@ export default async function CountryDetailPage({ params }: PageProps) {
             {' '}
             parties
           </span>
+          {c.allianceId && c.allianceName && (
+            <span className="text-muted-foreground">
+              alliance
+              {' '}
+              <InternalLink href={`/alliances/${c.allianceId}`}>{c.allianceName}</InternalLink>
+            </span>
+          )}
           <BattleCountBadge count={battlePage.total} countryId={c.id} battles={activeBattlesList} />
           <ExternalLink href={wareraUrl('country', c.id)}>WarEra.io</ExternalLink>
         </FactRow>

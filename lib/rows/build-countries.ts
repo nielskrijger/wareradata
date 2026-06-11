@@ -1,6 +1,6 @@
 import type { CountryRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
-import type { Country, MU } from '@/lib/warera/api'
+import type { Alliance, Country, MU } from '@/lib/warera/api'
 
 import { rankAll, toTier } from '@/lib/rows/lookups'
 import { aggMean, aggMeanRaw, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
@@ -10,9 +10,20 @@ export function buildCountryRows(
   mus: MU[],
   userRows: UserRow[],
   lookups: Lookups,
+  alliances: Alliance[],
 ): CountryRow[] {
   const membersByCountry = aggregateMembers(userRows, u => u.countryId)
   const musCountByCountry = countMusByCountry(mus, lookups)
+
+  // Country → alliance, derived from the alliances' member lists rather than
+  // the country payload's allianceId, so it stays correct even on a snapshot
+  // whose countries were scraped before the alliances feature existed.
+  const allianceByCountry = new Map<string, { id: string, name: string }>()
+  for (const a of alliances) {
+    for (const m of a.memberCountries) {
+      allianceByCountry.set(m.country, { id: a._id, name: a.name })
+    }
+  }
 
   const rows = countries
     .map((c) => {
@@ -27,6 +38,8 @@ export function buildCountryRows(
         activeBattlesList: [],
         activePopulation: r?.countryActivePopulation?.value ?? null,
         activePopulationRank: null,
+        allianceId: allianceByCountry.get(c._id)?.id ?? null,
+        allianceName: allianceByCountry.get(c._id)?.name ?? null,
         alliesCount: c.allies?.length ?? 0,
         alliesCountRank: null,
         avgGearScore: agg ? aggMean(agg.gearScoreSum, agg.gearScoreCount) : null,

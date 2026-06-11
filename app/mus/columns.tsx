@@ -14,10 +14,11 @@ import {
   gearColumn,
   localeNumberColumn,
   percentBarColumn,
-  pointsBreakdownColumn,
+  pointsColumns,
   rankTooltipColumn,
   readinessColumn,
   tierColumn,
+  wealthBreakdownColumns,
 } from '@/components/data-table/column-factories'
 
 export type { MURow }
@@ -40,11 +41,7 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
     meta: { width: 220 },
   },
   {
-    points: [
-      pointsBreakdownColumn<MURow>('totalPoints', 'Total', { tooltip: 'Combined points of all members.' }),
-      localeNumberColumn<MURow>('avgPoints', 'Average', { heat: 'median', width: 110, tooltip: 'Average points per member.' }),
-      localeNumberColumn<MURow>('avgPointsPerDay', 'Avg / day', { heat: 'median', width: 125, tooltip: 'Average points earned per day, per member.' }),
-    ],
+    points: pointsColumns<MURow>('members'),
     general: [
       {
         accessorKey: 'avgLevel',
@@ -91,12 +88,7 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
       },
     ],
     wealth: [
-      compactNumberColumn<MURow>('memberWealth', 'Total', { heat: 'median', width: 110, tooltip: 'Combined wealth of all members (companies + items + cash + equipment + weapons).' }),
-      compactNumberColumn<MURow>('companiesWealth', 'Companies', { heat: 'median', width: 135, tooltip: 'Combined company value across members.' }),
-      compactNumberColumn<MURow>('itemsWealth', 'Items', { heat: 'median', width: 100, tooltip: 'Combined item value across members.' }),
-      compactNumberColumn<MURow>('cashWealth', 'Cash', { heat: 'median', width: 100, tooltip: 'Combined cash across members.' }),
-      compactNumberColumn<MURow>('equipmentWealth', 'Equipment', { heat: 'median', width: 130, tooltip: 'Combined equipment value across members.' }),
-      compactNumberColumn<MURow>('weaponsWealth', 'Weapons', { heat: 'median', width: 125, tooltip: 'Combined weapon value across members.' }),
+      ...wealthBreakdownColumns<MURow>('memberWealth', 'members'),
       compactNumberColumn<MURow>('investedMoney', 'Invested', { heat: 'ramp', width: 120, tooltip: 'Total money members have invested in the MU.' }),
       compactNumberColumn<MURow>('bounty', 'Bounty', { heat: 'median', width: 110, tooltip: 'Coins this MU has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
       rankTooltipColumn<MURow>('wealth', 'wealthRank', 'MU Wealth', { width: 135, tooltip: 'Wealth held by the MU itself (its own account and inventory), not the combined member Total.' }),

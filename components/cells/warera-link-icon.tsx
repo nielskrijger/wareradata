@@ -1,10 +1,12 @@
+import type { WareraEntityKind } from '@/lib/warera/urls'
+
 import { ExternalLink } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { wareraUrl } from '@/lib/warera/urls'
 
 interface Props {
-  kind: 'user' | 'country' | 'mu' | 'party'
+  kind: WareraEntityKind
   id: string
 }
 

@@ -16,6 +16,7 @@ import { ThemeToggle } from './theme-toggle'
 
 const links = [
   { href: '/countries', label: 'Countries' },
+  { href: '/alliances', label: 'Alliances' },
   { href: '/mus', label: 'MUs' },
   { href: '/users', label: 'Users' },
   { href: '/parties', label: 'Parties' },
@@ -45,13 +46,13 @@ export function SiteNav() {
       <div className="flex items-center gap-3 px-6 py-3 sm:gap-6 sm:px-8 lg:px-12">
         <Link href="/countries" className="font-brand flex items-center gap-2 text-[20px] tracking-wide">
           <Logo />
-          {/* Drop the wordmark below lg so the seven inline links keep their
+          {/* Drop the wordmark below lg so the eight inline links keep their
               room down to the md breakpoint; the logo mark alone still brands. */}
           <span className="logo-fire-text hidden lg:inline">WARERA DATA</span>
         </Link>
 
         {/* Inline links on wide screens. With the wordmark hidden below lg, the
-            seven items + toggle fit down to md; below that they collapse into
+            eight items + toggle fit down to md; below that they collapse into
             the hamburger menu on the right. */}
         <ul className="hidden items-center gap-1 text-sm md:flex">
           {links.map((link) => {

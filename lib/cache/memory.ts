@@ -1,13 +1,14 @@
 import type { RawSnapshot } from './file-store'
 import type { GearLookup } from '@/lib/gear/score'
 import type { Range } from '@/lib/query'
-import type { BattleRow, CountryRow, GovernmentRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
+import type { AllianceRow, BattleRow, CountryRow, GovernmentRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 
 import type { Equipment, GameConfig, TournamentSnapshot } from '@/lib/warera/api'
 
 import { deriveGearLookup } from '@/lib/gear/score'
 import { computeRanges } from '@/lib/query'
+import { buildAllianceRows } from '@/lib/rows/build-alliances'
 import { buildBattleRows } from '@/lib/rows/build-battles'
 import { buildCountryRows } from '@/lib/rows/build-countries'
 import { buildGovernmentRows } from '@/lib/rows/build-governments'
@@ -52,6 +53,7 @@ export interface Snapshot {
   governments: Record<string, GovernmentRow>
   mus: MURow[]
   parties: PartyRow[]
+  alliances: AllianceRow[]
   regions: RegionRow[]
   battles: BattleRow[]
   // Kept so live, on-demand fetches (active battles) can enrich raw API data
@@ -99,15 +101,16 @@ export function buildSnapshot(raw: RawSnapshot, nowMs: number): Snapshot {
   const lookups = buildLookups(raw.countries, raw.mus, raw.regions, raw.users, raw.parties)
   const gearLookup = deriveGearLookup(raw.gameConfig)
   const userRows = buildUserRows(raw.users, lookups, nowMs, raw.equipment, raw.gameConfig, gearLookup)
-  const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups)
+  const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups, raw.alliances)
   const governmentRows = buildGovernmentRows(raw.governments, lookups)
   const muRows = buildMURows(raw.mus, userRows, lookups)
   const partyRows = buildPartyRows(raw.parties, userRows, lookups)
+  const allianceRows = buildAllianceRows(raw.alliances, countryRows, userRows, lookups)
   const regionRows = buildRegionRows(raw.regions, lookups)
   const battleRows = buildBattleRows(raw.battles, raw.tournament, lookups)
   const userRanges = computeRanges(userRows)
 
-  return { users: userRows, userRanges, equipment: raw.equipment, countries: countryRows, governments: governmentRows, mus: muRows, parties: partyRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament, gameConfig: raw.gameConfig, gearLookup }
+  return { users: userRows, userRanges, equipment: raw.equipment, countries: countryRows, governments: governmentRows, mus: muRows, parties: partyRows, alliances: allianceRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament, gameConfig: raw.gameConfig, gearLookup }
 }
 
 /**

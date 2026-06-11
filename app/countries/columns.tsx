@@ -14,10 +14,11 @@ import {
   localeNumberColumn,
   percentBarColumn,
   percentColumn,
-  pointsBreakdownColumn,
+  pointsColumns,
   rankTooltipColumn,
   readinessColumn,
   tierColumn,
+  wealthBreakdownColumns,
 } from '@/components/data-table/column-factories'
 import { InternalLink } from '@/components/links'
 
@@ -42,11 +43,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
     meta: { width: 210 },
   },
   {
-    points: [
-      pointsBreakdownColumn<CountryRow>('totalPoints', 'Total', { tooltip: 'Combined points of all citizens.' }),
-      localeNumberColumn<CountryRow>('avgPoints', 'Average', { heat: 'median', width: 110, tooltip: 'Average points per citizen.' }),
-      localeNumberColumn<CountryRow>('avgPointsPerDay', 'Avg / day', { heat: 'median', width: 125, tooltip: 'Average points earned per day, per citizen.' }),
-    ],
+    points: pointsColumns<CountryRow>('citizens'),
     general: [
       {
         accessorKey: 'avgLevel',
@@ -128,12 +125,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
     ],
     wealth: [
       rankTooltipColumn<CountryRow>('wealth', 'wealthRank', 'Country Wealth', { width: 165, tooltip: 'Wealth held by the country itself (its own national assets), not the combined citizen Total.' }),
-      compactNumberColumn<CountryRow>('citizenWealth', 'Total', { heat: 'median', width: 110, tooltip: 'Combined wealth of all citizens (companies + items + cash + equipment + weapons).' }),
-      compactNumberColumn<CountryRow>('companiesWealth', 'Companies', { heat: 'median', width: 135, tooltip: 'Combined company value across citizens.' }),
-      compactNumberColumn<CountryRow>('itemsWealth', 'Items', { heat: 'median', width: 100, tooltip: 'Combined item value across citizens.' }),
-      compactNumberColumn<CountryRow>('cashWealth', 'Cash', { heat: 'median', width: 100, tooltip: 'Combined cash across citizens.' }),
-      compactNumberColumn<CountryRow>('equipmentWealth', 'Equipment', { heat: 'median', width: 130, tooltip: 'Combined equipment value across citizens.' }),
-      compactNumberColumn<CountryRow>('weaponsWealth', 'Weapons', { heat: 'median', width: 125, tooltip: 'Combined weapon value across citizens.' }),
+      ...wealthBreakdownColumns<CountryRow>('citizenWealth', 'citizens'),
       compactNumberColumn<CountryRow>('bounty', 'Bounty', { heat: 'ramp', width: 110, tooltip: 'Coins this country has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
       compactNumberColumn<CountryRow>('money', 'Treasury', { heat: 'median', width: 120, tooltip: 'Money held in the country treasury.' }),
     ],

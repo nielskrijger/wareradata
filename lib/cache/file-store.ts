@@ -1,4 +1,4 @@
-import type { Battle, Country, Equipment, GameConfig, Government, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
+import type { Alliance, Battle, Country, Equipment, GameConfig, Government, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
 
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
@@ -25,6 +25,9 @@ export interface RawSnapshot {
   mus: MU[]
   regions: Region[]
   parties: Party[]
+  // Multi-country blocs, captured whole (currently ~10). Members and rankings
+  // ride along on each alliance, so no per-alliance fan-out is needed.
+  alliances: Alliance[]
   battles: Battle[]
   tournament: TournamentSnapshot
   // The game's static config (item stats, skill cost curves, …), captured every
@@ -87,6 +90,7 @@ export function emptyRawSnapshot(): RawSnapshot {
     mus: [],
     regions: [],
     parties: [],
+    alliances: [],
     battles: [],
     tournament: { id: null, name: null, teams: {} },
     // Empty bootstrap placeholder (cold volume, before the first scrape). It has
@@ -123,6 +127,7 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   // legacy on-disk snapshot. The next scrape cycle will populate them properly.
   parsed.equipment ??= {}
   parsed.governments ??= {}
+  parsed.alliances ??= []
   const sizeMb = (raw.length / 1_000_000).toFixed(1)
   console.info(
     `[file-store] read snapshot from ${path}: ${sizeMb}MB, ${parsed.users?.length ?? 0} users in ${readMs}ms`,
@@ -167,6 +172,7 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
   yield `,"mus":${JSON.stringify(snapshot.mus)}`
   yield `,"regions":${JSON.stringify(snapshot.regions)}`
   yield `,"parties":${JSON.stringify(snapshot.parties)}`
+  yield `,"alliances":${JSON.stringify(snapshot.alliances)}`
   yield `,"battles":${JSON.stringify(snapshot.battles)}`
   yield `,"tournament":${JSON.stringify(snapshot.tournament)}`
   yield `,"gameConfig":${JSON.stringify(snapshot.gameConfig)}`

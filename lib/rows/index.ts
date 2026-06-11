@@ -138,6 +138,11 @@ export interface CountryRow {
   activeBattlesList: ActiveBattleSummary[]
   activePopulation: number | null
   activePopulationRank: number | null
+  // The alliance this country belongs to, derived from the alliances' member
+  // lists (not the country payload, so it works even on a snapshot whose
+  // countries predate the alliances feature). Null when unaligned.
+  allianceId: string | null
+  allianceName: string | null
   alliesCount: number
   alliesCountRank: number | null
   avgWarShare: number | null
@@ -459,4 +464,92 @@ export interface PartyRow {
   totalPoints: number
   totalPointsRank: number | null
   wealthPoints: number
+}
+
+/**
+ * One member country of an alliance, resolved from the raw country id to the
+ * bits the alliance pages render (flag, linked name, per-member development).
+ */
+export interface AllianceMemberRow {
+  countryId: string
+  code: string | null
+  name: string
+  // This member's development contribution; the members' coreDevelopments sum
+  // to the alliance's, which is what the roster share column leans on.
+  coreDevelopment: number
+  averageDevelopment: number
+  suspended: boolean
+  // Country stats joined from the member's CountryRow, so the members table
+  // can show what each country brings beyond development (the in-game view
+  // shows development only).
+  activePopulation: number | null
+  weeklyDamage: number | null
+  citizenWealth: number | null
+  avgLevel: number | null
+  damageTier: RankingTier | null
+}
+
+/**
+ * Projected alliance (multi-country bloc) row used by /alliances and
+ * /api/alliances. Values and ranks come from the live alliance rankings (the
+ * API ranks all alliances, so its ranks are authoritative); members are
+ * resolved and sorted by development contribution at build time.
+ */
+export interface AllianceRow {
+  id: string
+  name: string
+  // WarEra color scheme name (same palette as user profiles), the alliance's
+  // visual identity across the map and our list/detail pages.
+  scheme: string
+  avatarUrl: string | null
+  leaderId: string | null
+  leaderName: string | null
+  leaderAvatarUrl: string | null
+  leaderColorScheme: string | null
+  memberCount: number
+  members: AllianceMemberRow[]
+  // Concatenated member names + codes, so free-text and `country:` searches
+  // can match an alliance by any member country.
+  memberNames: string
+  // Aggregate ranking points over the citizens of all member countries
+  // (totalPoints = level + damage + wealth parts), plus per-citizen averages,
+  // mirroring the countries/MUs/parties aggregates.
+  totalPoints: number
+  totalPointsRank: number | null
+  avgPoints: number | null
+  avgPointsRank: number | null
+  avgPointsPerDay: number | null
+  levelPoints: number
+  damagePoints: number
+  wealthPoints: number
+  // Citizen-summed wealth (the member countries' citizenWealth and its
+  // components added up). Feeds the table's wealth column group.
+  citizenWealth: number
+  citizenWealthRank: number | null
+  companiesWealth: number
+  companiesWealthRank: number | null
+  itemsWealth: number
+  itemsWealthRank: number | null
+  cashWealth: number
+  cashWealthRank: number | null
+  equipmentWealth: number
+  equipmentWealthRank: number | null
+  weaponsWealth: number
+  weaponsWealthRank: number | null
+  createdAt: string | null
+  development: number | null
+  developmentRank: number | null
+  developmentTier: RankingTier | null
+  coreDevelopment: number | null
+  coreDevelopmentRank: number | null
+  averageDevelopment: number | null
+  averageDevelopmentRank: number | null
+  population: number | null
+  populationRank: number | null
+  totalDamage: number | null
+  totalDamageRank: number | null
+  weeklyDamage: number | null
+  weeklyDamageRank: number | null
+  weeklyDamagePerCitizen: number | null
+  weeklyDamagePerCitizenRank: number | null
 }

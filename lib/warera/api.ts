@@ -1,4 +1,5 @@
 import type {
+  Alliance,
   BattleGetBattlesResponse,
   BattleListItem,
   CountryListItem,
@@ -30,6 +31,10 @@ export type MU = Omit<MuListItem, 'rankings'> & {
 }
 export type Party = PartyGetManyPaginatedResponse['items'][number]
 export type Region = RegionsObjectItem
+// Multi-country bloc (the alliances feature shipped 2026-06-10). The SDK types
+// this natively since v0.3.3; re-exported so the rest of the codebase imports
+// every WarEra entity from this module.
+export type { Alliance } from '@wareraprojects/api'
 
 // The live API returns more on a battle than the generated BattleListItem: the
 // finished-battle outcome (`wonBy`, `endedAt`) and per-side `moneyPool` /
@@ -316,6 +321,14 @@ export function getMuMembers(muId: string): Promise<MuMemberListItem[]> {
 export async function getAllParties(_options: ScrapeRequestOptions = {}): Promise<Party[]> {
   const all: Party[] = []
   for await (const page of scrapeClient.party.getManyPaginated({ limit: 100, autoPaginate: true })) {
+    all.push(...page.items)
+  }
+  return all
+}
+
+export async function getAllAlliances(_options: ScrapeRequestOptions = {}): Promise<Alliance[]> {
+  const all: Alliance[] = []
+  for await (const page of scrapeClient.alliance.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...page.items)
   }
   return all

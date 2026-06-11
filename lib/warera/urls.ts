@@ -4,8 +4,8 @@
  */
 const BASE = 'https://app.warera.io'
 
-type Kind = 'user' | 'country' | 'mu' | 'party'
+export type WareraEntityKind = 'user' | 'country' | 'mu' | 'party' | 'alliance'
 
-export function wareraUrl(kind: Kind, id: string): string {
+export function wareraUrl(kind: WareraEntityKind, id: string): string {
   return `${BASE}/${kind}/${id}`
 }

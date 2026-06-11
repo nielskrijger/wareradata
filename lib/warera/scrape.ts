@@ -3,13 +3,13 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { writeRawSnapshot } from '@/lib/cache/file-store'
 
-import { getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers } from './api'
+import { getAllAlliances, getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers } from './api'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
 interface ScrapeResult {
   scrapedAt: string
-  counts: { countries: number, users: number, mus: number, regions: number, parties: number, battles: number }
+  counts: { countries: number, users: number, mus: number, regions: number, parties: number, alliances: number, battles: number }
   durationMs: number
 }
 
@@ -112,6 +112,11 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   const parties = await getAllParties()
   console.info(`[scrape] fetched ${parties.length} parties`)
 
+  // 6b. Alliances: single cursor-paginated stream (currently ~10 of them, so
+  // one page in practice).
+  const alliances = await getAllAlliances()
+  console.info(`[scrape] fetched ${alliances.length} alliances`)
+
   // 7. Battles: all active plus a recent window of finished ones.
   const battles = await getAllBattles()
   console.info(`[scrape] fetched ${battles.length} battles`)
@@ -141,12 +146,13 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
       mus: mus.length,
       regions: regions.length,
       parties: parties.length,
+      alliances: alliances.length,
       battles: battles.length,
     },
     scrapeDurationMs: durationMs,
   }
 
-  return { users, equipment, countries, governments, mus, regions, parties, battles, tournament: tournamentSnapshot, gameConfig, meta }
+  return { users, equipment, countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, meta }
 }
 
 /**
@@ -182,6 +188,7 @@ export async function runFullScrape(): Promise<ScrapeResult> {
     mus: raw.mus.length,
     regions: raw.regions.length,
     parties: raw.parties.length,
+    alliances: raw.alliances.length,
     battles: raw.battles.length,
   }
   return { scrapedAt: raw.meta.scrapedAt!, counts, durationMs: raw.meta.scrapeDurationMs! }

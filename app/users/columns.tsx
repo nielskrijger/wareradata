@@ -15,6 +15,7 @@ import { buildColumns } from '@/components/data-table/column-categories'
 import {
   compactNumberColumn,
   countryColumn,
+  dateColumn,
   gearColumn,
   localeNumberColumn,
   percentBarColumn,
@@ -114,13 +115,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         sortDescFirst: true,
         meta: { width: 110 },
       },
-      {
-        accessorKey: 'createdAt',
-        header: 'Joined',
-        cell: ({ row }) => row.original.createdAt?.slice(0, 10) ?? null,
-        sortDescFirst: true,
-        meta: { width: 110 },
-      },
+      dateColumn<UserRow>('createdAt', 'Joined'),
     ],
     combat: [
       percentBarColumn<UserRow>('healthPercent', 'Health', { width: 120 }),

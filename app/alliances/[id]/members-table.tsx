@@ -47,14 +47,14 @@ export function MembersTable({ alliance: a }: Props) {
             <TableHead className="text-right">
               <InfoTooltip
                 label="Core Dev"
-                hint="Development this country contributes to the alliance core; the members' core dev sums to the alliance total and drives the Share column."
+                hint="Development of this country's core (original) regions; drives the Share column."
               />
             </TableHead>
             <TableHead className="text-right">Share</TableHead>
             <TableHead className="text-right">
               <InfoTooltip
                 label="Avg Dev"
-                hint="The country's average development; the members' values sum to the alliance's average development."
+                hint="(core + current development) / 2"
               />
             </TableHead>
             <TableHead className="text-right">Population</TableHead>

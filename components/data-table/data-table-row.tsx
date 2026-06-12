@@ -43,7 +43,7 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
           return (
             <TableCell
               key={cell.id}
-              className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, sticky, sticky && width && STICKY_WIDTH)}
+              className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, meta?.cellClassName, sticky, sticky && width && STICKY_WIDTH)}
               style={style}
             >
               <EmptyDash />
@@ -69,7 +69,7 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
         return (
           <TableCell
             key={cell.id}
-            className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, sticky, sticky && width && STICKY_WIDTH)}
+            className={cn(align === 'right' ? 'text-right tabular-nums' : undefined, meta?.cellClassName, sticky, sticky && width && STICKY_WIDTH)}
             style={style}
           >
             {wrapped}

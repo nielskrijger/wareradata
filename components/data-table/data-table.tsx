@@ -94,6 +94,15 @@ declare module '@tanstack/react-table' {
      * columns whose terse label benefits from a word of explanation.
      */
     tooltip?: string
+
+    /**
+     * Extra classes for the body TableCell, e.g. `relative` so the cell
+     * renderer can paint a full-bleed background layer (`absolute inset-0`)
+     * that tracks the row height. A negative-margin wrapper can't: its height
+     * stays that of its own content, so it falls short when another cell makes
+     * the row taller.
+     */
+    cellClassName?: string
   }
 
   // eslint-disable-next-line unused-imports/no-unused-vars

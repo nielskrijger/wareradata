@@ -6,6 +6,7 @@ import { readRawSnapshot, writeRawSnapshot } from '@/lib/cache/file-store'
 import { buildSnapshotNow, swapSnapshot } from '@/lib/cache/memory'
 import { getEquipmentUrgent, getMuMembers, getUsersUrgent } from '@/lib/warera/api'
 import { scrapeRawSnapshot } from '@/lib/warera/scrape'
+import { scrapeAllFactories } from '@/lib/warera/scrape-factories'
 
 import 'server-only'
 
@@ -105,6 +106,39 @@ async function scrapeLoop(): Promise<void> {
     } catch (err) {
       console.error('[scraper] full scrape failed', err instanceof Error ? err.message : err)
       await new Promise(resolve => setTimeout(resolve, 10_000))
+    }
+  }
+}
+
+/**
+ * The continuous all-users factory scrape loop, back-to-back like the main
+ * scrape. Runs on the factory client (its own small rate-limit budget),
+ * independent of the main scrape and urgent traffic. Each pass rewrites
+ * `factories.json`; the main loop already reapplies it every cycle, and we
+ * rebuild once on completion so the Industry columns refresh promptly. Waits
+ * for a base snapshot (user list) before the first pass.
+ */
+async function factoryScrapeLoop(): Promise<void> {
+  for (;;) {
+    try {
+      await seedCurrentRaw()
+      const users = store().currentRaw?.users
+      if (!users?.length) {
+        await new Promise(resolve => setTimeout(resolve, 60_000))
+        continue
+      }
+
+      console.info('[factory-scrape] all-users pass starting')
+      const count = await scrapeAllFactories(users)
+      console.info(`[factory-scrape] all-users pass done: ${count} users with factories`)
+
+      const raw = store().currentRaw
+      if (raw) {
+        swapSnapshot(buildSnapshotNow(raw, 'factory-scrape', await readFactorySnapshot()))
+      }
+    } catch (err) {
+      console.error('[factory-scrape] pass failed', err instanceof Error ? err.message : err)
+      await new Promise(resolve => setTimeout(resolve, 30_000))
     }
   }
 }
@@ -217,6 +251,7 @@ export function startScraper(): void {
 
   void seedCurrentRaw().finally(() => {
     void scrapeLoop()
+    void factoryScrapeLoop()
   })
 }
 

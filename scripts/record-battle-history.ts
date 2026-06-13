@@ -2,7 +2,7 @@ import { recordBattleHistory } from '@/lib/cache/archive'
 import { logger } from '@/lib/log'
 import { getFinishedBattles } from '@/lib/warera/api'
 
-const log = logger.child({ phase: 'archive' })
+const log = logger.child({ component: 'archive' })
 
 async function main() {
   const battles = await getFinishedBattles()

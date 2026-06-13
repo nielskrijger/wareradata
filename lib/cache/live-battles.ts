@@ -11,7 +11,7 @@ import { getSnapshot } from './memory'
 // Build-time guard: holds the WarEra API key path; server-only.
 import 'server-only'
 
-const log = logger.child({ phase: 'live-battles' })
+const log = logger.child({ component: 'live-battles' })
 
 /**
  * Live active battles as enriched {@link BattleRow}s, cached for 60s via

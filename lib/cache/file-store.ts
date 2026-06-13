@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream/promises'
 
 import { logger } from '@/lib/log'
 
-const log = logger.child({ phase: 'file-store' })
+const log = logger.child({ component: 'file-store' })
 
 /**
  * The whole scraped dataset in its raw API shape (the inputs to the row

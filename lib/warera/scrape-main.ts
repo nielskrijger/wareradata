@@ -10,7 +10,7 @@ import { logger } from '@/lib/log'
 
 import { getAllAlliances, getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers, scrapeItemBestRegions, scrapeItemPrices } from './api'
 
-const log = logger.child({ phase: 'scrape' })
+const log = logger.child({ component: 'scrape' })
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 

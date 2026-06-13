@@ -29,7 +29,7 @@ import { streamUsers } from './users-store'
 // file (it holds the in-process snapshot and pulls in server-only builders).
 import 'server-only'
 
-const log = logger.child({ phase: 'snapshot' })
+const log = logger.child({ component: 'snapshot' })
 
 /**
  * In-process snapshot of built rows, scoped to a single Node process. The

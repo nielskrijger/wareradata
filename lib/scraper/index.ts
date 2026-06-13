@@ -40,8 +40,8 @@ function store(): ScraperStore {
 
 let started = false
 
-const log = logger.child({ phase: 'scraper' })
-const factoryLog = logger.child({ phase: 'factory-scrape' })
+const log = logger.child({ component: 'scraper' })
+const factoryLog = logger.child({ component: 'factory-scrape' })
 
 /**
  * Publishes a full-cycle raw snapshot: record it as current, persist to disk,

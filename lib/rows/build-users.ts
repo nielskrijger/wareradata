@@ -235,9 +235,9 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     factoryCount: factory?.factoryCount ?? null,
     factoryPpPerDay: factory?.ppPerDay ?? null,
     factoryNetPerDay: factory?.netPerDay ?? null,
-    factoryMovePotential: factory?.movePotentialNetPerDay ?? null,
-    factoryEfficiencyPct: factory && factory.movePotentialNetPerDay > 0
-      ? Math.min(100, (factory.netPerDay / factory.movePotentialNetPerDay) * 100)
+    factoryTopPotential: factory?.topPotentialNetPerDay ?? null,
+    factoryEfficiencyPct: factory && factory.topPotentialNetPerDay > 0
+      ? Math.min(100, (factory.netPerDay / factory.topPotentialNetPerDay) * 100)
       : null,
   } satisfies UserRow
 }

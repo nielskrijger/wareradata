@@ -1,7 +1,7 @@
 import { logger } from '@/lib/log'
 import { runMainScrape } from '@/lib/warera/scrape-main'
 
-const log = logger.child({ phase: 'scrape' })
+const log = logger.child({ component: 'scrape' })
 
 async function main() {
   const result = await runMainScrape()

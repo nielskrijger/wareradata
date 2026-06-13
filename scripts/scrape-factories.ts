@@ -3,7 +3,7 @@ import { loadCompanyOwnerIds } from '@/lib/cache/users-store'
 import { logger } from '@/lib/log'
 import { scrapeFactories } from '@/lib/warera/scrape-factories'
 
-const log = logger.child({ phase: 'factory-scrape' })
+const log = logger.child({ component: 'factory-scrape' })
 
 /**
  * Manual one-shot of the all-users factory scrape (`npm run scrape-factories`).

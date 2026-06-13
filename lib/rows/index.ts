@@ -107,15 +107,16 @@ export interface UserRow {
   weeklyDamage: number | null
   weeklyDamageRank: number | null
   // Per-user factory totals from the factory scrape. PpPerDay / netPerDay /
-  // count are shown in the user table's Industry group; movePotential backs the
+  // count are shown in the user table's Industry group; topPotential backs the
   // per-user efficiency and is summed by member-agg into the entity Industry
   // columns. Null when the scrape hasn't captured this user.
   factoryCount: number | null
   factoryPpPerDay: number | null
   factoryNetPerDay: number | null
-  factoryMovePotential: number | null
-  // Per-user location efficiency: net ÷ Move-potential (capped 100), null when
-  // nothing's produced. The user-table Efficiency column.
+  factoryTopPotential: number | null
+  // Per-user efficiency: net ÷ Top-potential (the most profitable item globally
+  // at its best region), capped 100 — how close to the game's best production.
+  // Null when nothing's produced. The user-table Efficiency column.
   factoryEfficiencyPct: number | null
 }
 

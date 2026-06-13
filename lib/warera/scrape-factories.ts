@@ -10,7 +10,7 @@ import { logger, memoryUsage } from '@/lib/log'
 
 import { getUserCompaniesSlow } from './api'
 
-const log = logger.child({ phase: 'factory-scrape' })
+const log = logger.child({ component: 'factory-scrape' })
 
 // Users hydrated concurrently. The factory client's rate limit is the real
 // throttle; concurrency just keeps the request pipe full behind it. Kept low so

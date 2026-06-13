@@ -8,7 +8,7 @@ import pino from 'pino'
  * App-wide structured logger. Emits one JSON object per line to stdout, which
  * Railway parses into level + message + queryable attributes (filter with
  * `@field:value`). Use a child logger per area and pass fields as the first
- * arg: `const log = logger.child({ phase: 'scraper' })` then
+ * arg: `const log = logger.child({ component: 'scraper' })` then
  * `log.info({ users: n }, 'hydrated users')`.
  */
 export const logger = pino({

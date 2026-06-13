@@ -6,7 +6,7 @@ import { logger } from '@/lib/log'
 
 import { archiveDir, readJsonFile, writeJsonFile } from './file-store'
 
-const log = logger.child({ phase: 'archive' })
+const log = logger.child({ component: 'archive' })
 
 function dayFile(day: string): string {
   return path.join(archiveDir(), `battles-${day}.json`)

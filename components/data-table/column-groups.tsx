@@ -142,7 +142,7 @@ const CASE_RARITY_WIDTHS: Record<CaseRarity, number> = {
  */
 export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
   return [
-    localeNumberColumn<T>('standardCasesOpened' as Key<T>, 'Standard Cases', { heat: 'ramp', logScale: true, width: 155, tooltip: 'Standard cases opened (the daily-reward case).' }),
+    localeNumberColumn<T>('standardCasesOpened' as Key<T>, 'Standard Cases', { heat: 'ramp', logScale: true, width: 155, tooltip: 'Standard cases opened.' }),
     localeNumberColumn<T>('mythicCasesOpened' as Key<T>, 'Mythic Cases', { heat: 'ramp', logScale: true, width: 140, tooltip: 'Premium mythic cases opened.' }),
     percentColumn<T>('caseLuck' as Key<T>, 'Luck', {
       heat: 'median',
@@ -150,7 +150,7 @@ export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
       decimals: 1,
       width: 95,
       rankKey: 'caseLuckRank' as Key<T>,
-      tooltip: `Pull luck vs the official drop rates: 100% = exactly the published odds, higher = lucky. Judged per case type, so premium cases count against premium odds. Hidden under ${MIN_LUCK_PULLS} pulls.`,
+      tooltip: `100% = exactly the published odds, higher = lucky. Premium cases count against premium odds. Hidden under ${MIN_LUCK_PULLS} pulls.`,
     }),
     ...CASE_RARITIES.map(rarity =>
       localeNumberColumn<T>(`cases${rarity[0].toUpperCase()}${rarity.slice(1)}` as Key<T>, `${rarity[0].toUpperCase()}${rarity.slice(1)}`, { heat: 'ramp', logScale: true, width: CASE_RARITY_WIDTHS[rarity] }),

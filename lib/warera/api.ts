@@ -130,12 +130,6 @@ export interface SnapshotMeta {
   scrapeDurationMs?: number
 }
 
-interface ScrapeRequestOptions {
-  // Retained for API compatibility with the previous client. The package
-  // doesn't expose Next.js fetch-cache hooks, so this is currently a no-op.
-  noCache?: boolean
-}
-
 // Three independent clients, each with its own rate-limit budget (the limit is
 // enforced per client at the fetch level). Splitting by purpose means urgent,
 // on-demand work never waits behind the long continuous scrape, and vice versa.
@@ -170,7 +164,7 @@ const factoryClient = createAPIClient({
 
 type Client = typeof scrapeClient
 
-export function getAllCountries(_options: ScrapeRequestOptions = {}): Promise<Country[]> {
+export function getAllCountries(): Promise<Country[]> {
   return scrapeClient.country.getAllCountries()
 }
 
@@ -180,7 +174,7 @@ export function getAllCountries(_options: ScrapeRequestOptions = {}): Promise<Co
  * scrape fans this out per country with bounded concurrency. Dormant countries
  * may have no government; the caller treats an error or empty result as "none".
  */
-export function getGovernmentForCountry(countryId: string, _options: ScrapeRequestOptions = {}): Promise<Government> {
+export function getGovernmentForCountry(countryId: string): Promise<Government> {
   return scrapeClient.government.getByCountryId({ countryId })
 }
 
@@ -189,14 +183,11 @@ export function getGovernmentForCountry(countryId: string, _options: ScrapeReque
  * upgrade tiers, …). A single no-arg call; it changes only when the devs
  * rebalance, so one fetch per scrape cycle is plenty.
  */
-export function getGameConfig(_options: ScrapeRequestOptions = {}): Promise<GameConfig> {
+export function getGameConfig(): Promise<GameConfig> {
   return scrapeClient.gameConfig.getGameConfig()
 }
 
-export async function getUserIdsForCountry(
-  countryId: string,
-  _options: ScrapeRequestOptions = {},
-): Promise<string[]> {
+export async function getUserIdsForCountry(countryId: string): Promise<string[]> {
   const ids: string[] = []
   for await (const page of scrapeClient.user.getUsersByCountry({ countryId, autoPaginate: true })) {
     for (const item of page.items) {
@@ -220,7 +211,7 @@ async function hydrateUsers(client: Client, userIds: string[]): Promise<User[]> 
 /**
  * Hydrates users via the scrape client, for the main-scrape user phase.
  */
-export function getUsers(userIds: string[], _options: ScrapeRequestOptions = {}): Promise<User[]> {
+export function getUsers(userIds: string[]): Promise<User[]> {
   return hydrateUsers(scrapeClient, userIds)
 }
 
@@ -297,7 +288,7 @@ function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<Equipme
  * hit, items get swapped between battles), so the per-cycle freshness is only
  * a rough snapshot of what someone happened to be wearing at scrape time.
  */
-export function getEquipment(userIds: string[], _options: ScrapeRequestOptions = {}): Promise<Equipment[]> {
+export function getEquipment(userIds: string[]): Promise<Equipment[]> {
   return fetchEquipmentBatch(scrapeClient, userIds)
 }
 
@@ -308,12 +299,12 @@ export function getEquipmentUrgent(userIds: string[]): Promise<Equipment[]> {
   return fetchEquipmentBatch(urgentClient, userIds)
 }
 
-export async function getAllRegions(_options: ScrapeRequestOptions = {}): Promise<Region[]> {
+export async function getAllRegions(): Promise<Region[]> {
   const obj = await scrapeClient.region.getRegionsObject()
   return Object.values(obj)
 }
 
-export async function getAllMUs(_options: ScrapeRequestOptions = {}): Promise<MU[]> {
+export async function getAllMUs(): Promise<MU[]> {
   const all: MU[] = []
   for await (const page of scrapeClient.mu.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...(page.items as MU[]))
@@ -333,7 +324,7 @@ export function getMuMembers(muId: string): Promise<MuMemberListItem[]> {
   return urgentClient.muMember.getByMu({ muId })
 }
 
-export async function getAllParties(_options: ScrapeRequestOptions = {}): Promise<Party[]> {
+export async function getAllParties(): Promise<Party[]> {
   const all: Party[] = []
   for await (const page of scrapeClient.party.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...page.items)
@@ -341,7 +332,7 @@ export async function getAllParties(_options: ScrapeRequestOptions = {}): Promis
   return all
 }
 
-export async function getAllAlliances(_options: ScrapeRequestOptions = {}): Promise<Alliance[]> {
+export async function getAllAlliances(): Promise<Alliance[]> {
   const all: Alliance[] = []
   for await (const page of scrapeClient.alliance.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...page.items)
@@ -353,30 +344,35 @@ export async function getAllAlliances(_options: ScrapeRequestOptions = {}): Prom
 // (there are only ~15 at a time), but finished battles are unbounded history,
 // so we keep just the most recent page-fulls.
 const FINISHED_BATTLES_LIMIT = 100
+const BATTLES_PAGE_SIZE = 50
+
+/**
+ * Walks `battle.getBattles` for the given activity flag. It's cursor-paginated
+ * (not autoPaginate), newest first, so we follow `nextCursor` until `max` items
+ * are collected or the cursor runs out. Pass `Infinity` for `max` to pull every
+ * page (the active list is small and always fetched whole). `client` picks the
+ * rate-limit budget.
+ */
+async function pageBattles(client: Client, isActive: boolean, max: number): Promise<Battle[]> {
+  const out: Battle[] = []
+  let cursor: string | undefined
+  do {
+    const page: BattleGetBattlesResponse = await client.battle.getBattles({ isActive, limit: BATTLES_PAGE_SIZE, cursor })
+    out.push(...(page.items as Battle[]))
+    cursor = page.nextCursor
+  } while (cursor && out.length < max)
+
+  return out.length > max ? out.slice(0, max) : out
+}
 
 /**
  * Fetches all active battles plus the most recent {@link FINISHED_BATTLES_LIMIT}
- * finished ones. `battle.getBattles` is cursor-paginated (not autoPaginate),
- * newest first, so we walk `nextCursor` until we have enough.
+ * finished ones, on the scrape client. Used by the hourly snapshot.
  */
-export async function getAllBattles(_options: ScrapeRequestOptions = {}): Promise<Battle[]> {
-  const active: Battle[] = []
-  let cursor: string | undefined
-  do {
-    const page: BattleGetBattlesResponse = await scrapeClient.battle.getBattles({ isActive: true, limit: 50, cursor })
-    active.push(...(page.items as Battle[]))
-    cursor = page.nextCursor
-  } while (cursor)
-
-  const finished: Battle[] = []
-  cursor = undefined
-  do {
-    const page: BattleGetBattlesResponse = await scrapeClient.battle.getBattles({ isActive: false, limit: 50, cursor })
-    finished.push(...(page.items as Battle[]))
-    cursor = page.nextCursor
-  } while (cursor && finished.length < FINISHED_BATTLES_LIMIT)
-
-  return [...active, ...finished.slice(0, FINISHED_BATTLES_LIMIT)]
+export async function getAllBattles(): Promise<Battle[]> {
+  const active = await pageBattles(scrapeClient, true, Infinity)
+  const finished = await pageBattles(scrapeClient, false, FINISHED_BATTLES_LIMIT)
+  return [...active, ...finished]
 }
 
 /**
@@ -385,15 +381,8 @@ export async function getAllBattles(_options: ScrapeRequestOptions = {}): Promis
  * and `lastHits`, which the live /battles views need for the round bar and Top
  * Damage Dealers. Used by the on-demand live cache, not the hourly scrape.
  */
-export async function getActiveBattles(): Promise<Battle[]> {
-  const active: Battle[] = []
-  let cursor: string | undefined
-  do {
-    const page: BattleGetBattlesResponse = await urgentClient.battle.getBattles({ isActive: true, limit: 50, cursor })
-    active.push(...(page.items as Battle[]))
-    cursor = page.nextCursor
-  } while (cursor)
-  return active
+export function getActiveBattles(): Promise<Battle[]> {
+  return pageBattles(urgentClient, true, Infinity)
 }
 
 /**
@@ -404,16 +393,8 @@ export async function getActiveBattles(): Promise<Battle[]> {
  * harmless — it only widens the safety margin against battles aging out before
  * we capture them.
  */
-export async function getFinishedBattles(maxBattles = 1000): Promise<Battle[]> {
-  const finished: Battle[] = []
-  let cursor: string | undefined
-  do {
-    const page: BattleGetBattlesResponse = await scrapeClient.battle.getBattles({ isActive: false, limit: 50, cursor })
-    finished.push(...(page.items as Battle[]))
-    cursor = page.nextCursor
-  } while (cursor && finished.length < maxBattles)
-
-  return finished.slice(0, maxBattles)
+export function getFinishedBattles(maxBattles = 1000): Promise<Battle[]> {
+  return pageBattles(scrapeClient, false, maxBattles)
 }
 
 // Tournament battles are fought between teams (not countries). In the current

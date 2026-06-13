@@ -19,7 +19,7 @@ import { ExternalLink, InternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, computeRanges, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { computeRanges, firstPage } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 import { CountryTables } from './country-tables'
@@ -47,30 +47,10 @@ async function getCountry(id: string) {
   const total = countries.length
 
   const code = country.code
-  const citizenPage = applyQuery(
-    users.filter(u => u.countryCode === code),
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'points', dir: 'desc', filter: '' },
-    () => '',
-    row => row.points,
-  )
-  const muPage = applyQuery(
-    mus.filter(m => m.countryCode === code),
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'totalPoints', dir: 'desc', filter: '' },
-    () => '',
-    row => row.totalPoints,
-  )
-  const partyPage = applyQuery(
-    parties.filter(p => p.countryCode === code),
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'totalPoints', dir: 'desc', filter: '' },
-    () => '',
-    row => row.totalPoints,
-  )
-  const battlePage = applyQuery(
-    liveActive.filter(b => b.attacker.id === id || b.defender.id === id),
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'totalDamage', dir: 'desc', filter: '' },
-    () => '',
-    row => row.totalDamage,
-  )
+  const citizenPage = firstPage(users.filter(u => u.countryCode === code), 'points')
+  const muPage = firstPage(mus.filter(m => m.countryCode === code), 'totalPoints')
+  const partyPage = firstPage(parties.filter(p => p.countryCode === code), 'totalPoints')
+  const battlePage = firstPage(liveActive.filter(b => b.attacker.id === id || b.defender.id === id), 'totalDamage')
 
   // The matchup list for this country's ⚔ pill tooltip, same shape the table
   // cell uses (each battle from this country's point of view).

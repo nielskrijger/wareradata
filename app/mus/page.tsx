@@ -5,7 +5,7 @@ import { connection } from 'next/server'
 import { NoDataPage } from '@/components/layout/no-data-page'
 import { PageShell } from '@/components/layout/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { firstPage } from '@/lib/query'
 
 import { MUsTable } from './mus-table'
 
@@ -22,12 +22,7 @@ export default async function MUsPage() {
     return <NoDataPage />
   }
 
-  const initial = applyQuery(
-    mus,
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'totalPoints', dir: 'desc', filter: '' },
-    () => '',
-    row => row.totalPoints,
-  )
+  const initial = firstPage(mus, 'totalPoints')
 
   return (
     <PageShell

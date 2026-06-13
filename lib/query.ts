@@ -152,6 +152,25 @@ export function applyQuery<T extends object>(
 }
 
 /**
+ * The server-rendered first page for a list or detail view: the top
+ * {@link DEFAULT_PAGE_SIZE} rows sorted by `sortField` descending, with heat
+ * ranges over the full set. There's no user filter to apply at this stage (the
+ * client takes over paging, sorting, and filtering once hydrated), so the
+ * haystack is empty and `sortField` doubles as the row accessor.
+ */
+export function firstPage<T extends object>(
+  rows: T[],
+  sortField: Extract<keyof T, string>,
+): PagedResult<T> {
+  return applyQuery(
+    rows,
+    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: sortField, dir: 'desc', filter: '' },
+    () => '',
+    row => (row as Record<string, unknown>)[sortField] as number | string | null,
+  )
+}
+
+/**
  * Maps friendly field names (typed by users) to the underlying row keys.
  * `country` → `countryCode`, `mu` → `muName`, etc.
  */

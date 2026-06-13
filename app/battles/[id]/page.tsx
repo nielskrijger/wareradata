@@ -23,7 +23,7 @@ interface PageProps {
 async function getBattle(id: string) {
   // Prefer the live active list (fresh score / round / top dealers). If the
   // battle isn't active (finished, or just ended between refreshes), fall back
-  // to the hourly snapshot.
+  // to the latest snapshot.
   const [liveActive, { battles }] = await Promise.all([getLiveActiveBattles(), getSnapshot()])
   return liveActive.find(b => b.id === id) ?? battles.find(b => b.id === id) ?? null
 }

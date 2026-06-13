@@ -15,7 +15,7 @@ import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, computeRanges, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { computeRanges, firstPage } from '@/lib/query'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -40,11 +40,9 @@ async function getAlliance(id: string) {
   // Citizens of all member countries, the alliance-wide equivalent of the
   // country page's citizens tab.
   const memberCodes = new Set(alliance.members.map(m => m.code).filter(Boolean))
-  const citizenPage = applyQuery(
+  const citizenPage = firstPage(
     users.filter(u => u.countryCode !== null && memberCodes.has(u.countryCode)),
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'points', dir: 'desc', filter: '' },
-    () => '',
-    row => row.points,
+    'points',
   )
 
   return { alliance, ranges, total, citizenPage }

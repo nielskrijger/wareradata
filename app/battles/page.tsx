@@ -6,7 +6,7 @@ import { NoDataPage } from '@/components/layout/no-data-page'
 import { PageShell } from '@/components/layout/page-shell'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { firstPage } from '@/lib/query'
 
 import { BattleTabs } from './battle-tabs'
 
@@ -24,19 +24,9 @@ export default async function BattlesPage() {
     return <NoDataPage />
   }
 
-  const active = applyQuery(
-    liveActive,
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'totalDamage', dir: 'desc', filter: '' },
-    () => '',
-    row => row.totalDamage,
-  )
+  const active = firstPage(liveActive, 'totalDamage')
 
-  const finished = applyQuery(
-    finishedBattles,
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'endedAt', dir: 'desc', filter: '' },
-    () => '',
-    row => row.endedAt,
-  )
+  const finished = firstPage(finishedBattles, 'endedAt')
 
   return (
     <PageShell
@@ -44,7 +34,7 @@ export default async function BattlesPage() {
       subtitle={(
         <>
           {`${active.total.toLocaleString()} active, ${finished.total.toLocaleString()} recent. `}
-          <span className="font-medium">Active battles are live; finished are from the hourly snapshot.</span>
+          <span className="font-medium">Active battles are live; finished are from the latest snapshot.</span>
         </>
       )}
     >

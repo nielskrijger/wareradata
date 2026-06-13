@@ -17,7 +17,7 @@ import { WealthCompositionCard } from '@/components/detail/wealth-composition-ca
 import { ExternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, computeRanges, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { computeRanges, firstPage } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 interface PageProps {
@@ -34,12 +34,7 @@ async function getParty(id: string) {
   // show where this party sits.
   const ranges = computeRanges(parties)
 
-  const memberPage = applyQuery(
-    users.filter(u => u.partyId === id),
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'points', dir: 'desc', filter: '' },
-    () => '',
-    row => row.points,
-  )
+  const memberPage = firstPage(users.filter(u => u.partyId === id), 'points')
 
   return { party, ranges, memberPage }
 }

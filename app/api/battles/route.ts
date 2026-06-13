@@ -32,7 +32,7 @@ const battleSortValue = makeSortValue<BattleRow>({
 
 /**
  * Driven by the client DataTable on /battles. Active battles come from the live
- * 60s-cached source; finished battles from the hourly snapshot. We merge both
+ * 60s-cached source; finished battles from the latest snapshot. We merge both
  * and let the locked `isActive:<bool>` base filter (per tab) select the right
  * set, so the live active rows replace the snapshot's stale ones.
  */

@@ -6,7 +6,7 @@ import { NoDataPage } from '@/components/layout/no-data-page'
 import { PageShell } from '@/components/layout/page-shell'
 import { withActiveBattleCounts } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { firstPage } from '@/lib/query'
 
 import { CountriesTable } from './countries-table'
 
@@ -23,12 +23,7 @@ export default async function CountriesPage() {
     return <NoDataPage />
   }
 
-  const initial = applyQuery(
-    await withActiveBattleCounts(countries),
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'totalPoints', dir: 'desc', filter: '' },
-    () => '',
-    row => row.totalPoints,
-  )
+  const initial = firstPage(await withActiveBattleCounts(countries), 'totalPoints')
 
   return (
     <PageShell

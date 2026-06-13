@@ -21,7 +21,7 @@ import { ExternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, computeRanges, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { computeRanges, firstPage } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 import { requestMuRefresh } from './actions'
@@ -45,12 +45,7 @@ async function getMU(id: string) {
   // embedded UsersTable takes over client-side, re-fetching with the same
   // muId scope applied as a base filter.
   const members = users.filter(u => u.muId === id)
-  const memberPage = applyQuery(
-    members,
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'points', dir: 'desc', filter: '' },
-    () => '',
-    row => row.points,
-  )
+  const memberPage = firstPage(members, 'points')
 
   return { mu, ranges, total, memberPage }
 }

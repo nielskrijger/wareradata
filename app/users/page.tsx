@@ -5,7 +5,7 @@ import { connection } from 'next/server'
 import { NoDataPage } from '@/components/layout/no-data-page'
 import { PageShell } from '@/components/layout/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { firstPage } from '@/lib/query'
 
 import { UsersTable } from './users-table'
 
@@ -27,12 +27,7 @@ export default async function UsersPage() {
 
   // Server-render just the first page; the client takes over for any
   // subsequent paging/sorting/filtering via /api/users.
-  const initial = applyQuery(
-    users,
-    { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: 'points', dir: 'desc', filter: '' },
-    () => '',
-    row => row.points,
-  )
+  const initial = firstPage(users, 'points')
 
   return (
     <PageShell

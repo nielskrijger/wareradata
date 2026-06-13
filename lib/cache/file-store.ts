@@ -1,4 +1,4 @@
-import type { Alliance, Battle, Country, Equipment, GameConfig, Government, ItemBestRegion, MarketPrices, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
+import type { Alliance, Battle, Country, GameConfig, Government, ItemBestRegion, MarketPrices, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
 
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
@@ -16,10 +16,8 @@ const log = logger.child({ phase: 'file-store' })
  */
 export interface RawSnapshot {
   users: User[]
-  // Currently-equipped gear keyed by user id. A user may be absent (no equipment
-  // captured) or present with `{}` (stripped between battles); both render the
-  // same in the UI.
-  equipment: Record<string, Equipment>
+  // Currently-equipped gear lives in a separate equipment.ndjson file, not here,
+  // so the persisted snapshot stays ~14 MB lighter (see lib/cache/equipment-store).
   countries: Country[]
   // Each occupied country's elected officials (president, ministers, congress),
   // keyed by country id, all as user ids. Captured once per scrape via the
@@ -94,7 +92,6 @@ export async function writeJsonFile(filePath: string, data: unknown): Promise<vo
 export function emptyRawSnapshot(): RawSnapshot {
   return {
     users: [],
-    equipment: {},
     countries: [],
     governments: {},
     mus: [],
@@ -137,22 +134,27 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   // Backfill fields added to RawSnapshot after the persisted file was written,
   // so a deploy that adds a new key doesn't crash on the first boot reading a
   // legacy on-disk snapshot. The next scrape cycle will populate them properly.
-  parsed.equipment ??= {}
   parsed.governments ??= {}
   parsed.alliances ??= []
   parsed.prices ??= {} as RawSnapshot['prices']
   parsed.itemBestRegions ??= {}
+
+  // Legacy snapshots embedded equipment (now in equipment.ndjson). Drop the dead
+  // key so a pre-migration file doesn't pin ~17 MB of unused gear until the next
+  // scrape rewrites the snapshot without it.
+  delete (parsed as { equipment?: unknown }).equipment
+
   log.info({ path, sizeMb: Number((raw.length / 1_000_000).toFixed(1)), users: parsed.users?.length ?? 0, readMs }, 'read snapshot')
   return parsed
 }
 
 /**
  * Streams the snapshot as JSON one piece at a time, so we never materialize the
- * whole ~100MB serialized string (and its write buffer) in memory at once. The
- * two big collections (users, equipment) are emitted item by item; everything
- * else is small enough to stringify whole. Key order is irrelevant to a parser,
- * and `JSON.stringify` of an `undefined` value yields `undefined`, which we skip
- * to mirror how `JSON.stringify` drops undefined-valued properties.
+ * whole serialized string (and its write buffer) in memory at once. The one big
+ * collection (users) is emitted item by item; everything else is small enough to
+ * stringify whole. Key order is irrelevant to a parser, and `JSON.stringify` of
+ * an `undefined` value yields `undefined`, which we skip to mirror how
+ * `JSON.stringify` drops undefined-valued properties.
  */
 function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
   yield '{"users":['
@@ -165,18 +167,7 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
     yield sep + json
     sep = ','
   }
-
-  yield '],"equipment":{'
-  sep = ''
-  for (const [id, value] of Object.entries(snapshot.equipment)) {
-    const json = JSON.stringify(value)
-    if (json === undefined) {
-      continue
-    }
-    yield `${sep}${JSON.stringify(id)}:${json}`
-    sep = ','
-  }
-  yield '}'
+  yield ']'
 
   yield `,"countries":${JSON.stringify(snapshot.countries)}`
   yield `,"governments":${JSON.stringify(snapshot.governments)}`

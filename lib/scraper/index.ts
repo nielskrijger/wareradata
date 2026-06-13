@@ -1,9 +1,9 @@
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { recordBattleHistory } from '@/lib/cache/archive'
+import { appendEquipmentLines } from '@/lib/cache/equipment-store'
 import { readRawSnapshot, writeRawSnapshot } from '@/lib/cache/file-store'
-import { buildSnapshotNow, swapSnapshot } from '@/lib/cache/memory'
-import { loadFactoryAggregates } from '@/lib/factories/aggregate'
+import { buildSnapshotFromRaw, swapSnapshot } from '@/lib/cache/memory'
 import { logger, logMemory, logRetainedMemory } from '@/lib/log'
 import { getEquipmentUrgent, getMuMembers, getUsersUrgent } from '@/lib/warera/api'
 import { scrapeFactories } from '@/lib/warera/scrape-factories'
@@ -44,7 +44,7 @@ const factoryLog = logger.child({ phase: 'factory-scrape' })
 async function publish(raw: RawSnapshot): Promise<void> {
   store().currentRaw = raw
   await writeRawSnapshot(raw)
-  swapSnapshot(buildSnapshotNow(raw, 'scrape', await loadFactoryAggregates(raw)))
+  swapSnapshot(await buildSnapshotFromRaw(raw, 'scrape'))
 }
 
 /**
@@ -158,16 +158,18 @@ async function doRefreshUser(userId: string): Promise<void> {
 
 /**
  * Shared core of the on-demand refreshes. Re-fetches the given users' lite
- * profiles + equipment via the urgent client, stamps each with the refresh time
- * (so their pages show fresh data), merges them into a copy of `currentRaw`,
- * applies an optional entity-specific patch (e.g. an MU's member list and its
- * own timestamp), then rebuilds and swaps the served snapshot.
+ * profiles + equipment via the urgent client, stamps each profile with the
+ * refresh time (so their pages show fresh data), merges the profiles into a copy
+ * of `currentRaw` and appends the fresh gear to the equipment file, applies an
+ * optional entity-specific patch (e.g. an MU's member list and its own
+ * timestamp), then rebuilds and swaps the served snapshot.
  *
- * In-memory only: it patches `currentRaw` and the built snapshot but does NOT
- * write the file. The scrape loop alone owns the persisted snapshot, so a manual
- * refresh is a transient overlay the next full cycle subsumes. Rebuilding the
- * whole snapshot keeps every aggregate and rank globally consistent. No-ops if
- * no base snapshot exists yet, or `userIds` is empty.
+ * Does NOT rewrite the snapshot file: it patches in-memory `currentRaw` and the
+ * built snapshot, and only appends to the equipment file (which the next main
+ * cycle rewrites clean). The scrape loop alone owns the persisted snapshot, so a
+ * manual refresh is a transient overlay the next full cycle subsumes. Rebuilding
+ * the whole snapshot keeps every aggregate and rank globally consistent. No-ops
+ * if no base snapshot exists yet, or `userIds` is empty.
  */
 async function refreshUsersInSnapshot(
   userIds: string[],
@@ -187,21 +189,23 @@ async function refreshUsersInSnapshot(
     getEquipmentUrgent(userIds),
   ])
 
+  // Append the fresh gear to the equipment file. The reader takes the last
+  // line per user, so this overrides the scrape's line until the next main cycle
+  // rewrites the file; the rebuild below streams it back for gear scoring, and
+  // the user detail page reads the same line.
+  await appendEquipmentLines(userIds, freshEquipment)
+
   const now = new Date().toISOString()
   const byId = new Map(s.currentRaw.users.map(u => [u._id, u]))
   for (const u of fresh) {
     byId.set(u._id, { ...u, lastRefreshedAt: now })
   }
-  const equipment = { ...s.currentRaw.equipment }
-  for (let i = 0; i < userIds.length; i++) {
-    equipment[userIds[i]] = freshEquipment[i]
-  }
 
-  const base: RawSnapshot = { ...s.currentRaw, users: [...byId.values()], equipment }
+  const base: RawSnapshot = { ...s.currentRaw, users: [...byId.values()] }
   const patched = patch ? { ...base, ...patch(base, now) } : base
 
   s.currentRaw = patched
-  swapSnapshot(buildSnapshotNow(patched, reason, await loadFactoryAggregates(patched)))
+  swapSnapshot(await buildSnapshotFromRaw(patched, reason))
   log.info({ reason, users: fresh.length }, 'on-demand refresh')
 }
 

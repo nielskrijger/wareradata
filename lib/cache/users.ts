@@ -3,6 +3,7 @@ import type { Range } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
 import type { Equipment } from '@/lib/warera/api'
 
+import { loadUserEquipment } from './equipment-store'
 import { getSnapshot } from './memory'
 
 import 'server-only'
@@ -14,9 +15,9 @@ export interface UserDetails {
   // against the same baseline.
   ranges: Record<string, Range>
   total: number
-  // Currently-equipped gear from the latest scrape. Empty object when the
-  // user stripped between battles (the scraper captured no slots) or when
-  // the snapshot pre-dates the equipment scrape phase.
+  // Currently-equipped gear from the latest scrape, read from the separate
+  // equipment file (not the snapshot). Empty object when the user stripped
+  // between battles (the scraper captured no slots) or before the first scrape.
   equipment: Equipment
   // The small code→tier + ammo-bonus lookup, so the client hover-card's gear
   // strip can resolve tiers/bonuses without the full config (see Snapshot).
@@ -29,10 +30,12 @@ export interface UserDetails {
  * Ranges are precomputed on the Snapshot, so this is O(n) on the find only.
  */
 export async function getUserById(id: string): Promise<UserDetails | null> {
-  const { users, userRanges, equipment, gearLookup } = await getSnapshot()
+  const { users, userRanges, gearLookup } = await getSnapshot()
   const user = users.find(u => u.id === id)
   if (!user) {
     return null
   }
-  return { user, ranges: userRanges, total: users.length, equipment: equipment[id] ?? {}, gearLookup }
+
+  const equipment = (await loadUserEquipment(id)) ?? {}
+  return { user, ranges: userRanges, total: users.length, equipment, gearLookup }
 }

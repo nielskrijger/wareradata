@@ -44,12 +44,12 @@ server, use `npm run scrape-main`.
 
 ### Environment
 
-| Var                 | Default  | Purpose                                                       |
-| ------------------- | -------- | ------------------------------------------------------------- |
-| `WARERA_API_KEY`    | (none)   | API key; raises the request-rate tier.                        |
-| `DATA_DIR`          | `./.data`| Where the snapshot and battle archive live.                   |
-| `SCRAPE_RATE_LIMIT` | `100`    | Requests/min for the continuous scrape client.                |
-| `URGENT_RATE_LIMIT` | `100`    | Requests/min for the on-demand client.                        |
+| Var                 | Default   | Purpose                                        |
+| ------------------- | --------- | ---------------------------------------------- |
+| `WARERA_API_KEY`    | (none)    | API key; raises the request-rate tier.         |
+| `DATA_DIR`          | `./.data` | Where the snapshot and battle archive live.    |
+| `SCRAPE_RATE_LIMIT` | `100`     | Requests/min for the continuous scrape client. |
+| `URGENT_RATE_LIMIT` | `100`     | Requests/min for the on-demand client.         |
 
 The two rate limits are enforced independently; keep their sum at the API's
 authenticated tier.
@@ -79,8 +79,8 @@ hundreds of requests, not ~16k, and a full cycle is a few minutes; tune
 
 ### Cycle phases
 
-A full cycle ([lib/warera/scrape.ts](lib/warera/scrape.ts)) runs these phases,
-then publishes and immediately starts the next:
+A full cycle ([lib/warera/scrape-main.ts](lib/warera/scrape-main.ts)) runs these
+phases, then publishes and immediately starts the next:
 
 1. **Countries**: `country.getAllCountries`, one call (~180 countries).
    1b. **Governments**: one call per country (no bulk endpoint), fanned out at
@@ -89,9 +89,10 @@ then publishes and immediately starts the next:
 2. **User IDs per country**: paginate `user.getUsersByCountry`, bounded
    concurrency 10.
 3. **Hydrate users**: `user.getUserLite` per id (~15k users).
-   3b. **Equipment**: currently-equipped gear, one call per user (batched);
-   many come back empty and are kept as-is so readers can tell "captured, none
-   equipped" from "not captured".
+   3b. **Equipment**: currently-equipped gear, one call per user (batched),
+   streamed to a separate `equipment.ndjson` file rather than the snapshot. Many come
+   back empty and are kept as-is so readers can tell "captured, none equipped"
+   from "not captured".
 4. **MUs**: cursor loop, 100 per page (~950 MUs).
 5. **Regions**: single `region.getRegionsObject` call (~700 regions).
 6. **Parties**: cursor loop, 100 per page (~480 parties).
@@ -129,18 +130,21 @@ the overlay.
 
 Everything lives under `DATA_DIR` (the mounted volume in production):
 
-| Path                              | Shape                                                                                                            |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `snapshot.json`                   | `{ users, equipment, countries, governments, mus, regions, parties, alliances, battles, tournament, gameConfig, meta }` |
-| `archive/battles-YYYY-MM-DD.json` | `Battle[]` finished that UTC day                                                                                |
-| `archive/seen.json`               | `string[]` archived battle ids (dedupe)                                                                         |
-| `archive/index.json`              | `string[]` days available                                                                                       |
+| Path                              | Shape                                                                                                                                 |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `snapshot.json`                   | `{ users, countries, governments, mus, regions, parties, alliances, battles, tournament, gameConfig, prices, itemBestRegions, meta }` |
+| `equipment.ndjson`                | one `{ userId, equipment }` per line — currently-equipped gear, split out of the snapshot                                             |
+| `factories.ndjson`                | one `{ userId, rows }` per line — the slow all-users factory scrape's output                                                          |
+| `archive/battles-YYYY-MM-DD.json` | `Battle[]` finished that UTC day                                                                                                      |
+| `archive/seen.json`               | `string[]` archived battle ids (dedupe)                                                                                               |
+| `archive/index.json`              | `string[]` days available                                                                                                             |
 
 Writes are atomic (stream to a temp file, then rename), so a request landing
-mid-scrape sees the old or new file, never a torn one. The two big collections
-(users, equipment) are serialized item by item to keep peak memory down. The
-in-memory snapshot is swapped by reference after each cycle, so reads never
-block on I/O.
+mid-scrape sees the old or new file, never a torn one. The one big collection
+(users) is serialized item by item to keep peak memory down; equipment and
+factory data live in their own separate NDJSON files so a full per-user map
+never has to materialize in the snapshot. The in-memory snapshot is swapped by reference
+after each cycle, so reads never block on I/O.
 
 ### Battle history archive
 
@@ -151,26 +155,26 @@ backfill older battles (they age out of the API).
 
 ## Scripts
 
-| Command                         | What it does                                                                 |
-| ------------------------------- | ---------------------------------------------------------------------------- |
-| `npm run dev`                   | Next dev server on port 3100 (scraper runs in-process).                      |
-| `npm run build` / `npm start`   | Production build and serve.                                                  |
+| Command                         | What it does                                                                                                           |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                   | Next dev server on port 3100 (scraper runs in-process).                                                                |
+| `npm run build` / `npm start`   | Production build and serve.                                                                                            |
 | `npm run scrape-main`           | One-off main scrape; writes `DATA_DIR/snapshot.json` and exits. Seeds or rebuilds the file without running the server. |
-| `npm run record-battle-history` | Fetch the current finished-battle window and fold it into the archive, idempotently, without a main scrape. |
-| `npm run lint` / `lint:fix`     | ESLint.                                                                      |
+| `npm run record-battle-history` | Fetch the current finished-battle window and fold it into the archive, idempotently, without a main scrape.            |
+| `npm run lint` / `lint:fix`     | ESLint.                                                                                                                |
 
 The in-server loop refreshes continuously; there is no external cron.
 
 ## Project layout
 
-| Path                | Contents                                                              |
-| ------------------- | -------------------------------------------------------------------- |
-| `app/`              | App Router pages: `/countries`, `/users`, `/mus`, `/regions`, `/parties`, `/alliances`, `/battles` (each with detail routes), plus `/about`. `/` redirects to `/countries`. |
-| `lib/warera/`       | API client config and the scrape logic (`scrape.ts`, `api.ts`).      |
-| `lib/scraper/`      | The in-process loop, publishing, and on-demand refreshes.            |
-| `lib/cache/`        | On-disk snapshot (`file-store.ts`), in-memory snapshot (`memory.ts`), and battle archive (`archive.ts`). |
-| `lib/rows/`         | Builds the row + lookup shapes the tables render from raw entities.  |
-| `components/`       | Table, detail-page, and UI building blocks.                          |
+| Path           | Contents                                                                                                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`         | App Router pages: `/countries`, `/users`, `/mus`, `/regions`, `/parties`, `/alliances`, `/battles` (each with detail routes), plus `/about`. `/` redirects to `/countries`. |
+| `lib/warera/`  | API client config and the scrape logic (`scrape-main.ts`, `scrape-factories.ts`, `api.ts`).                                                                                 |
+| `lib/scraper/` | The in-process loop, publishing, and on-demand refreshes.                                                                                                                   |
+| `lib/cache/`   | On-disk snapshot (`file-store.ts`), in-memory snapshot (`memory.ts`), and battle archive (`archive.ts`).                                                                    |
+| `lib/rows/`    | Builds the row + lookup shapes the tables render from raw entities.                                                                                                         |
+| `components/`  | Table, detail-page, and UI building blocks.                                                                                                                                 |
 
 ## License
 

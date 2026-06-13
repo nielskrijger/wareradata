@@ -1,6 +1,7 @@
 import type { Government, SnapshotMeta } from './api'
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
+import { writeEquipmentNdjson } from '@/lib/cache/equipment-store'
 import { writeRawSnapshot } from '@/lib/cache/file-store'
 
 import { recipeFromGameConfig } from '@/lib/factories/inputs'
@@ -92,15 +93,15 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   log.info({ users: users.length }, 'hydrated users')
 
   // 5. Per-user equipment. One HTTP call per user, batched by the tRPC client
-  // up to 50 ops. Many entries come back `{}` (player stripped gear between
-  // battles); kept in the snapshot as-is so readers can distinguish "captured,
-  // none equipped" from "not captured".
+  // up to 50 ops. Streamed straight to a separate equipment.ndjson file (not held
+  // in the RawSnapshot), keeping ~14 MB out of snapshot.json and off the
+  // scraper's resident heap; the build streams it back for gear scoring. Many
+  // entries come back `{}` (player stripped gear between battles); a line is
+  // written for each so readers can tell "captured, none equipped" from "not
+  // captured".
   const equipmentList = await getEquipment(userIds)
-  const equipment: Record<string, RawSnapshot['equipment'][string]> = {}
-  for (let i = 0; i < userIds.length; i++) {
-    equipment[userIds[i]] = equipmentList[i]
-  }
-  log.info({ users: equipmentList.length }, 'fetched equipment')
+  await writeEquipmentNdjson(userIds, equipmentList)
+  log.info({ users: equipmentList.length }, 'wrote equipment file')
 
   // 6. MUs: single cursor-paginated stream. Stamp each with the capture time so
   // the MU page can show data freshness; an on-demand refresh bumps it later.
@@ -168,7 +169,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { users, equipment, countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, itemBestRegions, meta }
+  return { users, countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, itemBestRegions, meta }
 }
 
 /**

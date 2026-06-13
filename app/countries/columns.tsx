@@ -89,9 +89,9 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
       },
     ],
     combat: [
-      gearColumn<CountryRow>('avgGearScore', 'Avg Gear', { width: 120 }),
-      percentBarColumn<CountryRow>('avgHealth', 'Avg Health'),
-      percentBarColumn<CountryRow>('avgHunger', 'Avg Hunger', { width: 140 }),
+      gearColumn<CountryRow>('avgGearScore', 'Avg Gear', { width: 120, tooltip: 'Average gear score across citizens. Higher means better-equipped fighters.' }),
+      percentBarColumn<CountryRow>('avgHealth', 'Avg Health', { tooltip: 'Average health across citizens.' }),
+      percentBarColumn<CountryRow>('avgHunger', 'Avg Hunger', { width: 140, tooltip: 'Average hunger across citizens.' }),
       readinessColumn<CountryRow>(),
       combatModeColumn<CountryRow>(),
       tierColumn<CountryRow>('damageTier'),

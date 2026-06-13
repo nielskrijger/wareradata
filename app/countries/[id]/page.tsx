@@ -19,7 +19,7 @@ import { ExternalLink, InternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { applyQuery, computeRanges, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 import { CountryTables } from './country-tables'
@@ -42,13 +42,9 @@ async function getCountry(id: string) {
   const government = governments[id] ?? null
 
   // Ranges over the full set, same as the /countries table, so each stat can
-  // show where this country sits. No filter/sort; we only want the ranges.
-  const { ranges, total } = applyQuery(
-    countries,
-    { page: 0, pageSize: 1, sort: null, dir: 'asc', filter: '' },
-    () => '',
-    () => null,
-  )
+  // show where this country sits.
+  const ranges = computeRanges(countries)
+  const total = countries.length
 
   const code = country.code
   const citizenPage = applyQuery(
@@ -80,7 +76,7 @@ async function getCountry(id: string) {
   // cell uses (each battle from this country's point of view).
   const activeBattlesList = activeBattlesByCountry.get(id) ?? []
 
-  return { country, government, ranges: ranges ?? {}, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList }
+  return { country, government, ranges, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

@@ -59,9 +59,9 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
       localeNumberColumn<MURow>('memberCount', 'Members', { heat: 'median', width: 100 }),
     ],
     combat: [
-      gearColumn<MURow>('avgGearScore', 'Avg Gear', { width: 120 }),
-      percentBarColumn<MURow>('avgHealth', 'Avg Health'),
-      percentBarColumn<MURow>('avgHunger', 'Avg Hunger', { width: 140 }),
+      gearColumn<MURow>('avgGearScore', 'Avg Gear', { width: 120, tooltip: 'Average gear score across members. Higher means better-equipped fighters.' }),
+      percentBarColumn<MURow>('avgHealth', 'Avg Health', { tooltip: 'Average health across members.' }),
+      percentBarColumn<MURow>('avgHunger', 'Avg Hunger', { width: 140, tooltip: 'Average hunger across members.' }),
       readinessColumn<MURow>(),
       combatModeColumn<MURow>(),
       tierColumn<MURow>('damageTier'),

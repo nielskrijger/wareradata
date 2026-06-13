@@ -15,7 +15,7 @@ import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { applyQuery, computeRanges, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -33,13 +33,9 @@ async function getAlliance(id: string) {
   }
 
   // Ranges over all alliances, same as the /alliances table, so each stat can
-  // show where this alliance sits. No filter/sort; we only want the ranges.
-  const { ranges, total } = applyQuery(
-    alliances,
-    { page: 0, pageSize: 1, sort: null, dir: 'asc', filter: '' },
-    () => '',
-    () => null,
-  )
+  // show where this alliance sits.
+  const ranges = computeRanges(alliances)
+  const total = alliances.length
 
   // Citizens of all member countries, the alliance-wide equivalent of the
   // country page's citizens tab.
@@ -51,7 +47,7 @@ async function getAlliance(id: string) {
     row => row.points,
   )
 
-  return { alliance, ranges: ranges ?? {}, total, citizenPage }
+  return { alliance, ranges, total, citizenPage }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

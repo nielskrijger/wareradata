@@ -2,7 +2,7 @@ import type { AllianceMemberRow, AllianceRow, CountryRow, UserRow } from '@/lib/
 import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance } from '@/lib/warera/api'
 
-import { leaderFields, rankAll, toTier } from '@/lib/rows/lookups'
+import { leaderFields, rankAll, rankPair, toTier } from '@/lib/rows/lookups'
 import { aggCases, aggPoints, aggPremium, aggregateMembers, aggVitals, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
 
 export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow[], userRows: UserRow[], lookups: Lookups): AllianceRow[] {
@@ -89,16 +89,12 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
         coreDevelopmentRank: null,
         averageDevelopment: a.averageDevelopment ?? null,
         averageDevelopmentRank: null,
-        population: r?.alliancePopulation?.value ?? null,
-        populationRank: r?.alliancePopulation?.rank ?? null,
+        ...rankPair('population', r?.alliancePopulation),
         ...aggVitals(agg),
         damageTier: toTier(r?.allianceDamages?.tier),
-        damage: r?.allianceDamages?.value ?? null,
-        damageRank: r?.allianceDamages?.rank ?? null,
-        weeklyDamage: r?.allianceWeeklyDamages?.value ?? null,
-        weeklyDamageRank: r?.allianceWeeklyDamages?.rank ?? null,
-        weeklyDamagePerCitizen: r?.allianceWeeklyDamagesPerCitizen?.value ?? null,
-        weeklyDamagePerCitizenRank: r?.allianceWeeklyDamagesPerCitizen?.rank ?? null,
+        ...rankPair('damage', r?.allianceDamages),
+        ...rankPair('weeklyDamage', r?.allianceWeeklyDamages),
+        ...rankPair('weeklyDamagePerCitizen', r?.allianceWeeklyDamagesPerCitizen),
       } satisfies AllianceRow
     })
     .sort((x, y) => y.totalPoints - x.totalPoints)

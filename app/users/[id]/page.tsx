@@ -28,7 +28,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { getSnapshot } from '@/lib/cache/memory'
 import { casesBreakdownFromRow } from '@/lib/cases'
 import { EMPTY } from '@/lib/format'
-import { applyQuery } from '@/lib/query'
+import { computeRanges } from '@/lib/query'
 import { getUserCasesBreakdown } from '@/lib/warera/api'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -46,14 +46,10 @@ async function getUser(id: string) {
     return null
   }
   // Ranges over the full ranked set, same as the table, so each stat can show
-  // where this player sits. No filter/sort needed; we only want the ranges.
-  const { ranges, total } = applyQuery(
-    users,
-    { page: 0, pageSize: 1, sort: null, dir: 'asc', filter: '' },
-    () => '',
-    () => null,
-  )
-  return { user, ranges: ranges ?? {}, total, equipment: equipment[id] ?? {}, gearLookup }
+  // where this player sits.
+  const ranges = computeRanges(users)
+
+  return { user, ranges, total: users.length, equipment: equipment[id] ?? {}, gearLookup }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

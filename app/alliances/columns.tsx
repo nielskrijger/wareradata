@@ -133,9 +133,9 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
       tierColumn<AllianceRow>('developmentTier'),
     ],
     combat: [
-      gearColumn<AllianceRow>('avgGearScore', 'Avg Gear', { width: 120 }),
-      percentBarColumn<AllianceRow>('avgHealth', 'Avg Health'),
-      percentBarColumn<AllianceRow>('avgHunger', 'Avg Hunger', { width: 140 }),
+      gearColumn<AllianceRow>('avgGearScore', 'Avg Gear', { width: 120, tooltip: 'Average gear score across citizens. Higher means better-equipped fighters.' }),
+      percentBarColumn<AllianceRow>('avgHealth', 'Avg Health', { tooltip: 'Average health across citizens.' }),
+      percentBarColumn<AllianceRow>('avgHunger', 'Avg Hunger', { width: 140, tooltip: 'Average hunger across citizens.' }),
       readinessColumn<AllianceRow>(),
       combatModeColumn<AllianceRow>(),
       tierColumn<AllianceRow>('damageTier'),

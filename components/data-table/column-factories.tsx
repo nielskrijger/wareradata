@@ -118,7 +118,7 @@ export function rankTooltipColumn<T>(
 export function percentBarColumn<T>(
   key: Key<T>,
   header: string,
-  opts: { width?: number } = {},
+  opts: { width?: number, tooltip?: string } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
@@ -126,7 +126,7 @@ export function percentBarColumn<T>(
     cell: ({ row }) => <PercentBar value={row.original[key] as number | null} />,
     sortDescFirst: true,
     sortUndefined: 'last',
-    meta: { width: opts.width ?? 130 },
+    meta: { width: opts.width ?? 130, tooltip: opts.tooltip },
   }
 }
 
@@ -220,7 +220,7 @@ export function pointsBreakdownColumn<
 export function gearColumn<T>(
   key: Key<T>,
   header: string,
-  opts: { width?: number } = {},
+  opts: { width?: number, tooltip?: string } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
@@ -228,7 +228,7 @@ export function gearColumn<T>(
     cell: ({ row }) => <GearScorePill score={row.original[key] as number | null} />,
     sortDescFirst: true,
     sortUndefined: 'last',
-    meta: { align: 'right', width: opts.width ?? 100 },
+    meta: { align: 'right', width: opts.width ?? 100, tooltip: opts.tooltip },
   }
 }
 

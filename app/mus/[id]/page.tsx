@@ -21,7 +21,7 @@ import { ExternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { applyQuery, computeRanges, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 import { requestMuRefresh } from './actions'
@@ -37,13 +37,9 @@ async function getMU(id: string) {
     return null
   }
   // Ranges over the full set, same as the /mus table, so each stat can show
-  // where this MU sits. No filter/sort needed; we only want the ranges.
-  const { ranges, total } = applyQuery(
-    mus,
-    { page: 0, pageSize: 1, sort: null, dir: 'asc', filter: '' },
-    () => '',
-    () => null,
-  )
+  // where this MU sits.
+  const ranges = computeRanges(mus)
+  const total = mus.length
 
   // First page of this MU's members, sorted like /users (points desc). The
   // embedded UsersTable takes over client-side, re-fetching with the same
@@ -56,7 +52,7 @@ async function getMU(id: string) {
     row => row.points,
   )
 
-  return { mu, ranges: ranges ?? {}, total, memberPage }
+  return { mu, ranges, total, memberPage }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

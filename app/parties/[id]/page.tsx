@@ -17,7 +17,7 @@ import { WealthCompositionCard } from '@/components/detail/wealth-composition-ca
 import { ExternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { getSnapshot } from '@/lib/cache/memory'
-import { applyQuery, DEFAULT_PAGE_SIZE } from '@/lib/query'
+import { applyQuery, computeRanges, DEFAULT_PAGE_SIZE } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
 interface PageProps {
@@ -31,13 +31,8 @@ async function getParty(id: string) {
     return null
   }
   // Ranges over the full set, same as the /parties table, so each stat can
-  // show where this party sits. No filter/sort; we only want the ranges.
-  const { ranges } = applyQuery(
-    parties,
-    { page: 0, pageSize: 1, sort: null, dir: 'asc', filter: '' },
-    () => '',
-    () => null,
-  )
+  // show where this party sits.
+  const ranges = computeRanges(parties)
 
   const memberPage = applyQuery(
     users.filter(u => u.partyId === id),
@@ -46,7 +41,7 @@ async function getParty(id: string) {
     row => row.points,
   )
 
-  return { party, ranges: ranges ?? {}, memberPage }
+  return { party, ranges, memberPage }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

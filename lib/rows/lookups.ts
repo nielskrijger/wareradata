@@ -54,6 +54,24 @@ export function toTier(value: unknown): RankingTier | null {
 }
 
 /**
+ * Spreads one API ranking entry into the `{ key, keyRank }` pair every row
+ * builder repeats for upstream-ranked stats:
+ * `rankPair('damage', r?.allianceDamages)` → `{ damage: <value | null>,
+ * damageRank: <rank | null> }`. Use it only when both sides come straight from
+ * the API entry; stats with a value fallback or a tier (e.g. development) or
+ * whose rank is recomputed via {@link rankAll} keep their explicit assignment.
+ */
+export function rankPair<K extends string>(
+  key: K,
+  src: { value?: number | null, rank?: number | null } | null | undefined,
+): Record<K | `${K}Rank`, number | null> {
+  return {
+    [key]: src?.value ?? null,
+    [`${key}Rank`]: src?.rank ?? null,
+  } as Record<K | `${K}Rank`, number | null>
+}
+
+/**
  * Resolve a leader user id into the {@link LeaderFields} the MU / party /
  * alliance rows render. All null when the id is null or the user isn't in the
  * snapshot.

@@ -2,16 +2,18 @@
 
 import type { ReactNode } from 'react'
 
+import type { HoverStatus } from '@/components/hover-card/use-entity-hover'
 import type { CountryDetails } from '@/lib/cache/countries'
 import type { Range } from '@/lib/query'
 
 import { Building2, Drumstick, Flame, Heart, Shield, Swords, Trophy, Users } from 'lucide-react'
-import { useState } from 'react'
 
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { Flag } from '@/components/flag'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { FillBar } from '@/components/hover-card/fill-bar'
+import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
+import { useEntityHover } from '@/components/hover-card/use-entity-hover'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
@@ -25,32 +27,6 @@ interface Props {
   // lets a truncating child shrink (the country-cell case); a flag roster
   // passes `inline-flex` so each trigger sits inline among wrapped flags.
   triggerClassName?: string
-}
-
-type Status = 'idle' | 'loading' | 'ready' | 'error'
-
-// Memoizes in-flight and resolved fetches across the page so two cells for the
-// same country share one network request, and re-hovers are instant. The Map
-// key is the country id; the value is the in-flight (or settled) promise.
-const fetchCache = new Map<string, Promise<CountryDetails>>()
-
-function fetchCountry(id: string): Promise<CountryDetails> {
-  let p = fetchCache.get(id)
-  if (p) {
-    return p
-  }
-
-  p = fetch(`/api/countries/${id}`).then(async (res) => {
-    if (!res.ok) {
-      // Drop the failed entry so a later hover retries instead of replaying the
-      // error indefinitely.
-      fetchCache.delete(id)
-      throw new Error(`HTTP ${res.status}`)
-    }
-    return res.json() as Promise<CountryDetails>
-  })
-  fetchCache.set(id, p)
-  return p
 }
 
 const intFull = new Intl.NumberFormat('en', { maximumFractionDigits: 0 })
@@ -81,40 +57,18 @@ function pctInRange(value: number, range: Range | undefined): number {
  * entity to look up, so no tooltip is shown.
  */
 export function CountryHoverCard({ countryId, children, triggerClassName = 'block min-w-0' }: Props) {
-  const [status, setStatus] = useState<Status>('idle')
-  const [data, setData] = useState<CountryDetails | null>(null)
-
-  if (!countryId) {
-    return <>{children}</>
-  }
-
-  function handleOpenChange(open: boolean) {
-    if (!open || status !== 'idle') {
-      return
-    }
-
-    setStatus('loading')
-    fetchCountry(countryId!)
-      .then((d) => {
-        setData(d)
-        setStatus('ready')
-      })
-      .catch(() => {
-        setStatus('error')
-      })
-  }
+  const { status, data, onOpenChange } = useEntityHover<CountryDetails>(countryId ? `/api/countries/${countryId}` : null)
 
   return (
-    <Tooltip onOpenChange={handleOpenChange}>
-      {/* The default `block min-w-0` lets a truncating child (the country link)
-          shrink: as a flex item this span otherwise keeps its content's
-          min-content width and the inner `truncate` never engages. Callers
-          override via triggerClassName (e.g. `inline-flex` for a flag roster). */}
-      <TooltipTrigger render={<span className={triggerClassName} />}>{children}</TooltipTrigger>
-      <TooltipContent side="top" className="w-80 p-0">
-        {status === 'ready' && data ? <Body data={data} /> : <Placeholder status={status} />}
-      </TooltipContent>
-    </Tooltip>
+    <HoverCardShell
+      enabled={!!countryId}
+      triggerClassName={triggerClassName}
+      contentClassName="w-80 p-0"
+      onOpenChange={onOpenChange}
+      content={status === 'ready' && data ? <Body data={data} /> : <Placeholder status={status} />}
+    >
+      {children}
+    </HoverCardShell>
   )
 }
 
@@ -174,36 +128,10 @@ function Tile({ icon, label, value, rank, range, display }: TileProps) {
   )
 }
 
-function FillBar({ icon, pct }: { icon: ReactNode, pct: number | null }) {
-  if (pct == null) {
-    return (
-      <div className="flex items-center gap-2">
-        {icon}
-        <div className="h-1.5 flex-1 rounded-full bg-white/10" />
-        <span className="w-9 text-right text-[11px] text-neutral-50/40">—</span>
-      </div>
-    )
-  }
-
-  const color = heatColor(pct)
-  return (
-    <div className="flex items-center gap-2">
-      {icon}
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-      </div>
-      <span className="w-9 text-right text-[11px] tabular-nums" style={{ color }}>
-        {pct}
-        %
-      </span>
-    </div>
-  )
-}
-
 // Fixed-size placeholder matching the loaded layout's footprint so the popover
 // doesn't jump when data arrives. Loading uses subtle pulses; error swaps in a
 // one-line message.
-function Placeholder({ status }: { status: Status }) {
+function Placeholder({ status }: { status: HoverStatus }) {
   if (status === 'error') {
     return (
       <div className="px-3 py-2 text-[11px] text-neutral-50/70">

@@ -2,13 +2,13 @@
 
 import type { ReactNode } from 'react'
 
+import type { HoverStatus } from '@/components/hover-card/use-entity-hover'
 import type { GearLookup } from '@/lib/gear/score'
 import type { Range } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
 import type { Equipment } from '@/lib/warera/api'
 
 import { Clock, Coins, Drumstick, Heart, Swords, Trophy } from 'lucide-react'
-import { useState } from 'react'
 
 import { Avatar } from '@/components/avatar'
 import { GearScorePill } from '@/components/badges/gear-score-pill'
@@ -16,10 +16,11 @@ import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { GearStrip } from '@/components/detail/gear-strip'
 import { Flag } from '@/components/flag'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { FillBar } from '@/components/hover-card/fill-bar'
+import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
+import { useEntityHover } from '@/components/hover-card/use-entity-hover'
 import { formatRelativeTime } from '@/lib/format'
 import { computeGearTier } from '@/lib/gear/score'
-import { heatColor } from '@/lib/utils'
 
 interface Props {
   // User id used as both the fetch key and the route param. When null, the
@@ -37,31 +38,6 @@ interface FetchedData {
   gearLookup: GearLookup
 }
 
-type Status = 'idle' | 'loading' | 'ready' | 'error'
-
-// Memoizes in-flight and resolved fetches across the page so two cells for the
-// same user share one network request, and re-hovers are instant. The Map key
-// is the user id; the value is the in-flight (or settled) promise.
-const fetchCache = new Map<string, Promise<FetchedData>>()
-
-function fetchUser(id: string): Promise<FetchedData> {
-  let p = fetchCache.get(id)
-  if (p) {
-    return p
-  }
-  p = fetch(`/api/users/${id}`).then(async (res) => {
-    if (!res.ok) {
-      // Drop the failed entry so a later hover retries instead of replaying the
-      // error indefinitely.
-      fetchCache.delete(id)
-      throw new Error(`HTTP ${res.status}`)
-    }
-    return res.json() as Promise<FetchedData>
-  })
-  fetchCache.set(id, p)
-  return p
-}
-
 const intFull = new Intl.NumberFormat('en', { maximumFractionDigits: 0 })
 
 /**
@@ -74,38 +50,18 @@ const intFull = new Intl.NumberFormat('en', { maximumFractionDigits: 0 })
  * to look up, so no tooltip is shown.
  */
 export function UserHoverCard({ userId, children }: Props) {
-  const [status, setStatus] = useState<Status>('idle')
-  const [data, setData] = useState<FetchedData | null>(null)
-
-  if (!userId) {
-    return <>{children}</>
-  }
-
-  function handleOpenChange(open: boolean) {
-    if (!open || status !== 'idle') {
-      return
-    }
-    setStatus('loading')
-    fetchUser(userId!)
-      .then((d) => {
-        setData(d)
-        setStatus('ready')
-      })
-      .catch(() => {
-        setStatus('error')
-      })
-  }
+  const { status, data, onOpenChange } = useEntityHover<FetchedData>(userId ? `/api/users/${userId}` : null)
 
   return (
-    <Tooltip onOpenChange={handleOpenChange}>
-      {/* block min-w-0 so a truncating child (the username link) can shrink:
-          as a flex item this span otherwise keeps its content's min-content
-          width and the inner `truncate` never engages. */}
-      <TooltipTrigger render={<span className="block min-w-0" />}>{children}</TooltipTrigger>
-      <TooltipContent side="top" className="w-80 p-0">
-        {status === 'ready' && data ? <Body data={data} /> : <Placeholder status={status} />}
-      </TooltipContent>
-    </Tooltip>
+    <HoverCardShell
+      enabled={!!userId}
+      triggerClassName="block min-w-0"
+      contentClassName="w-80 p-0"
+      onOpenChange={onOpenChange}
+      content={status === 'ready' && data ? <Body data={data} /> : <Placeholder status={status} />}
+    >
+      {children}
+    </HoverCardShell>
   )
 }
 
@@ -148,14 +104,8 @@ function Body({ data }: { data: FetchedData }) {
           <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} withTooltip={false} />
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Heart className={ICON_CLS} />
-            <FillBar pct={user.health} />
-          </div>
-          <div className="flex items-center gap-2">
-            <Drumstick className={ICON_CLS} />
-            <FillBar pct={user.hunger} />
-          </div>
+          <FillBar icon={<Heart className={ICON_CLS} />} pct={user.health} />
+          <FillBar icon={<Drumstick className={ICON_CLS} />} pct={user.hunger} />
         </div>
       </div>
 
@@ -196,33 +146,10 @@ function StatRow({ icon, label, value, range }: { icon: ReactNode, label: string
   )
 }
 
-function FillBar({ pct }: { pct: number | null }) {
-  if (pct == null) {
-    return (
-      <div className="flex flex-1 items-center gap-2">
-        <div className="bg-white/10 h-1.5 flex-1 rounded-full" />
-        <span className="w-9 text-right text-[11px] text-neutral-50/40">—</span>
-      </div>
-    )
-  }
-  const color = heatColor(pct)
-  return (
-    <div className="flex flex-1 items-center gap-2">
-      <div className="bg-white/10 h-1.5 flex-1 overflow-hidden rounded-full">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-      </div>
-      <span className="w-9 text-right text-[11px] tabular-nums" style={{ color }}>
-        {pct}
-        %
-      </span>
-    </div>
-  )
-}
-
 // Fixed-size placeholder matching the loaded layout's footprint so the popover
 // doesn't jump when data arrives. Loading uses subtle pulses; error swaps in
 // a one-line message.
-function Placeholder({ status }: { status: Status }) {
+function Placeholder({ status }: { status: HoverStatus }) {
   if (status === 'error') {
     return (
       <div className="px-3 py-2 text-[11px] text-neutral-50/70">

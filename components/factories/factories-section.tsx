@@ -3,9 +3,12 @@ import type { FactoryProfit } from '@/lib/factories/profit'
 import { getSnapshot } from '@/lib/cache/memory'
 import { buildItemBonus, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
 import { buildFrontier, computeFactoryProfit, portfolioTotals } from '@/lib/factories/profit'
+import { logger } from '@/lib/log'
 import { getItemBestRegions, getItemPrices, getUserCompanies } from '@/lib/warera/api'
 
 import { FactoriesTable } from './factories-table'
+
+const log = logger.child({ phase: 'factories' })
 
 /**
  * Streams a user's factories with daily profit and the Move / Top relocation
@@ -41,7 +44,7 @@ async function loadFactoryRows(userId: string): Promise<FactoryProfit[] | null> 
       .map(f => computeFactoryProfit(factoryInputFromData(f, regionName), prices, recipe, itemBonus, frontier))
       .sort((a, b) => b.netPerDay - a.netPerDay)
   } catch (error) {
-    console.error('[factories] failed to load for user', userId, error)
+    log.error({ userId, err: error }, 'failed to load factories')
     return null
   }
 }

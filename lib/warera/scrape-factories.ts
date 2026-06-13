@@ -7,8 +7,11 @@ import { rename, unlink } from 'node:fs/promises'
 
 import { factoriesNdjsonPath } from '@/lib/cache/factory-store'
 import { avgCompleteStat } from '@/lib/factories/inputs'
+import { logger, memoryUsage } from '@/lib/log'
 
 import { getUserCompaniesSlow } from './api'
+
+const log = logger.child({ phase: 'factory-scrape' })
 
 // Users hydrated concurrently. The factory client's rate limit (20/min) is the
 // real throttle; concurrency just keeps the request pipe full behind it. Kept
@@ -28,14 +31,14 @@ const CONCURRENCY = 6
  * the manual `npm run scrape-factories` script. Returns the count of users found
  * to own factories.
  */
-export async function scrapeAllFactories(users: User[], opts: { limit?: number } = {}): Promise<number> {
+export async function scrapeFactories(users: User[], opts: { limit?: number } = {}): Promise<number> {
   // Only users who own company wealth — skips the ~1.4% with none, saving a
   // wasted enumeration call each.
   let userIds = users.filter(u => (u.stats?.wealth?.companies ?? 0) > 0).map(u => u._id)
   if (opts.limit && Number.isFinite(opts.limit)) {
     userIds = userIds.slice(0, opts.limit)
   }
-  console.info(`[factory-scrape] scanning ${userIds.length} users at ${process.env.FACTORY_RATE_LIMIT ?? 20} req/min`)
+  log.info({ users: userIds.length, rateLimit: Number(process.env.FACTORY_RATE_LIMIT ?? 20) }, 'scanning users')
 
   const finalPath = factoriesNdjsonPath()
   const tmpPath = `${finalPath}.tmp.${process.pid}.${Date.now()}`
@@ -69,12 +72,12 @@ export async function scrapeAllFactories(users: User[], opts: { limit?: number }
           withFactories++
         }
       } catch (err) {
-        console.warn(`[factory-scrape] user ${userId} failed:`, (err as Error).message)
+        log.warn({ userId, err }, 'user failed')
       }
 
       done++
       if (done % 1000 === 0) {
-        console.info(`[factory-scrape] ${done}/${userIds.length} scanned, ${withFactories} with factories`)
+        log.info({ scanned: done, total: userIds.length, withFactories, ...memoryUsage() }, 'progress')
       }
     }
   }

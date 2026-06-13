@@ -5,6 +5,10 @@ import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/pro
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
 
+import { logger } from '@/lib/log'
+
+const log = logger.child({ phase: 'file-store' })
+
 /**
  * The whole scraped dataset in its raw API shape (the inputs to the row
  * builders, not the built rows). Persisted as a single JSON file so the
@@ -123,7 +127,7 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
     raw = await readFile(path, 'utf8')
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-      console.info(`[file-store] no snapshot at ${path} yet (cold volume)`)
+      log.info({ path }, 'no snapshot yet (cold volume)')
       return null
     }
     throw err
@@ -138,10 +142,7 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   parsed.alliances ??= []
   parsed.prices ??= {} as RawSnapshot['prices']
   parsed.itemBestRegions ??= {}
-  const sizeMb = (raw.length / 1_000_000).toFixed(1)
-  console.info(
-    `[file-store] read snapshot from ${path}: ${sizeMb}MB, ${parsed.users?.length ?? 0} users in ${readMs}ms`,
-  )
+  log.info({ path, sizeMb: Number((raw.length / 1_000_000).toFixed(1)), users: parsed.users?.length ?? 0, readMs }, 'read snapshot')
   return parsed
 }
 

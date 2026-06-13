@@ -9,6 +9,7 @@ import type { Equipment, GameConfig, TournamentSnapshot } from '@/lib/warera/api
 
 import { loadFactoryAggregates } from '@/lib/factories/aggregate'
 import { deriveGearLookup } from '@/lib/gear/score'
+import { logger } from '@/lib/log'
 import { computeRanges } from '@/lib/query'
 import { buildAllianceRows } from '@/lib/rows/build-alliances'
 import { buildBattleRows } from '@/lib/rows/build-battles'
@@ -25,6 +26,8 @@ import { emptyRawSnapshot, readRawSnapshot } from './file-store'
 // Build-time guard: fails the build if any client component ever imports this
 // file (it holds the in-process snapshot and pulls in server-only builders).
 import 'server-only'
+
+const log = logger.child({ phase: 'snapshot' })
 
 /**
  * In-process snapshot of built rows, scoped to a single Node process. The
@@ -129,7 +132,7 @@ export function buildSnapshot(raw: RawSnapshot, nowMs: number, factoryAggByUser:
 export function buildSnapshotNow(raw: RawSnapshot, label: string, factoryAggByUser: Map<string, UserFactoryAgg> = new Map()): Snapshot {
   const start = Date.now()
   const snapshot = buildSnapshot(raw, start, factoryAggByUser)
-  console.info(`[snapshot] ${label}: built rows in ${Date.now() - start}ms (${snapshot.users.length} users)`)
+  log.info({ label, durationMs: Date.now() - start, users: snapshot.users.length }, 'built rows')
   return snapshot
 }
 
@@ -152,13 +155,13 @@ export async function initSnapshot(): Promise<void> {
   if (s.current) {
     return
   }
-  console.info('[snapshot] boot: loading persisted snapshot from disk')
+  log.info('boot: loading persisted snapshot from disk')
   const raw = (await readRawSnapshot()) ?? emptyRawSnapshot()
   if (!raw.users.length) {
-    console.info('[snapshot] boot: no persisted data, starting empty until the scraper completes its first cycle')
+    log.info('boot: no persisted data, starting empty until the scraper completes its first cycle')
   }
   s.current = buildSnapshotNow(raw, 'boot', await loadFactoryAggregates(raw))
-  console.info(`[snapshot] boot: ready with ${s.current.users.length} users`)
+  log.info({ users: s.current.users.length }, 'boot: ready')
 }
 
 /**

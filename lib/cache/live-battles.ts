@@ -2,6 +2,7 @@ import type { ActiveBattleSummary, BattleRow, CountryRow } from '@/lib/rows'
 
 import { cacheLife } from 'next/cache'
 
+import { logger } from '@/lib/log'
 import { buildBattleRows } from '@/lib/rows/build-battles'
 import { getActiveBattles } from '@/lib/warera/api'
 
@@ -9,6 +10,8 @@ import { getSnapshot } from './memory'
 
 // Build-time guard: holds the WarEra API key path; server-only.
 import 'server-only'
+
+const log = logger.child({ phase: 'live-battles' })
 
 /**
  * Live active battles as enriched {@link BattleRow}s, cached for 60s via
@@ -30,7 +33,7 @@ export async function getLiveActiveBattles(): Promise<BattleRow[]> {
     const [battles, snapshot] = await Promise.all([getActiveBattles(), getSnapshot()])
     return buildBattleRows(battles, snapshot.tournament, snapshot.lookups)
   } catch (err) {
-    console.warn('[live-battles] active-battle fetch failed, serving empty:', err)
+    log.warn({ err }, 'active-battle fetch failed, serving empty')
     return []
   }
 }

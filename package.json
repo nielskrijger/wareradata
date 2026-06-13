@@ -11,7 +11,7 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "scrape": "tsx scripts/scrape.ts",
+    "scrape-main": "tsx scripts/scrape-main.ts",
     "scrape-factories": "tsx scripts/scrape-factories.ts",
     "record-battle-history": "tsx scripts/record-battle-history.ts"
   },
@@ -27,6 +27,7 @@
     "next": "16.2.6",
     "next-themes": "^0.4.6",
     "nuqs": "^2.8.9",
+    "pino": "^10.3.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "server-only": "^0.0.1",

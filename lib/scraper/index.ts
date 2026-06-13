@@ -113,9 +113,10 @@ async function scrapeLoop(): Promise<void> {
 /**
  * The continuous all-users factory scrape loop, back-to-back like the main
  * scrape. Runs on the factory client (its own small rate-limit budget),
- * independent of the main scrape and urgent traffic. Each pass rewrites
- * `factories.json`; the main loop already reapplies it every cycle, and we
- * rebuild once on completion so the Industry columns refresh promptly. Waits
+ * independent of the main scrape and urgent traffic. Each pass only rewrites
+ * `factories.json`; the main loop reapplies it on its next cycle (see
+ * {@link publish}), so we deliberately do NOT rebuild the snapshot here — that
+ * would let two full snapshot builds run concurrently and spike memory. Waits
  * for a base snapshot (user list) before the first pass.
  */
 async function factoryScrapeLoop(): Promise<void> {
@@ -131,11 +132,6 @@ async function factoryScrapeLoop(): Promise<void> {
       console.info('[factory-scrape] all-users pass starting')
       const count = await scrapeAllFactories(users)
       console.info(`[factory-scrape] all-users pass done: ${count} users with factories`)
-
-      const raw = store().currentRaw
-      if (raw) {
-        swapSnapshot(buildSnapshotNow(raw, 'factory-scrape', await readFactorySnapshot()))
-      }
     } catch (err) {
       console.error('[factory-scrape] pass failed', err instanceof Error ? err.message : err)
       await new Promise(resolve => setTimeout(resolve, 30_000))

@@ -2,7 +2,11 @@ import type { Battle } from '@/lib/warera/api'
 
 import path from 'node:path'
 
+import { logger } from '@/lib/log'
+
 import { archiveDir, readJsonFile, writeJsonFile } from './file-store'
+
+const log = logger.child({ phase: 'archive' })
 
 function dayFile(day: string): string {
   return path.join(archiveDir(), `battles-${day}.json`)
@@ -96,7 +100,7 @@ export async function recordBattleHistory(battles: Battle[]): Promise<ArchiveRes
     const merged = [...existing, ...dayBattles]
     await writeJsonFile(dayFile(day), merged)
     index.add(day)
-    console.info(`[archive] ${day}: +${dayBattles.length} battles (${merged.length} total)`)
+    log.info({ day, added: dayBattles.length, total: merged.length }, 'recorded day')
   }
   await writeJsonFile(indexFile(), [...index].sort())
 

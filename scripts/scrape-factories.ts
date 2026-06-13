@@ -1,6 +1,9 @@
-import { factorySnapshotPath } from '@/lib/cache/factory-store'
+import { factoriesNdjsonPath } from '@/lib/cache/factory-store'
 import { readRawSnapshot } from '@/lib/cache/file-store'
-import { scrapeAllFactories } from '@/lib/warera/scrape-factories'
+import { logger } from '@/lib/log'
+import { scrapeFactories } from '@/lib/warera/scrape-factories'
+
+const log = logger.child({ phase: 'factory-scrape' })
 
 /**
  * Manual one-shot of the all-users factory scrape (`npm run scrape-factories`).
@@ -13,15 +16,15 @@ async function main() {
 
   const raw = await readRawSnapshot()
   if (!raw) {
-    console.error('[factory-scrape] no snapshot yet; run the main scrape first')
+    log.error('no snapshot yet; run the main scrape first')
     process.exit(1)
   }
 
-  const count = await scrapeAllFactories(raw.users, { limit })
-  console.info(`[factory-scrape] done: ${count} users with factories → ${factorySnapshotPath()}`)
+  const count = await scrapeFactories(raw.users, { limit })
+  log.info({ withFactories: count, path: factoriesNdjsonPath() }, 'done')
 }
 
 main().catch((err) => {
-  console.error('[factory-scrape] failed', err)
+  log.error({ err }, 'failed')
   process.exit(1)
 })

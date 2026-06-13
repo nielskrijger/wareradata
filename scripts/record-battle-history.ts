@@ -1,15 +1,18 @@
 import { recordBattleHistory } from '@/lib/cache/archive'
+import { logger } from '@/lib/log'
 import { getFinishedBattles } from '@/lib/warera/api'
+
+const log = logger.child({ phase: 'archive' })
 
 async function main() {
   const battles = await getFinishedBattles()
-  console.info(`[archive] fetched ${battles.length} finished battles from the API`)
+  log.info({ battles: battles.length }, 'fetched finished battles from the API')
 
   const result = await recordBattleHistory(battles)
-  console.info('[archive] done', JSON.stringify(result))
+  log.info({ result }, 'archive done')
 }
 
 main().catch((err) => {
-  console.error('[archive] failed', err)
+  log.error({ err }, 'archive failed')
   process.exit(1)
 })

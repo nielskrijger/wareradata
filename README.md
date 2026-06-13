@@ -40,7 +40,7 @@ npm run dev          # next dev on port 3100
 The dev server runs the scraper in-process, same as production. On a cold start
 with no `DATA_DIR/snapshot.json`, pages render a "no data" state until the first
 cycle completes (a few minutes). To seed the file once without running the
-server, use `npm run scrape`.
+server, use `npm run scrape-main`.
 
 ### Environment
 
@@ -155,8 +155,8 @@ backfill older battles (they age out of the API).
 | ------------------------------- | ---------------------------------------------------------------------------- |
 | `npm run dev`                   | Next dev server on port 3100 (scraper runs in-process).                      |
 | `npm run build` / `npm start`   | Production build and serve.                                                  |
-| `npm run scrape`                | One-off full scrape; writes `DATA_DIR/snapshot.json` and exits. Seeds or rebuilds the file without running the server. |
-| `npm run record-battle-history` | Fetch the current finished-battle window and fold it into the archive, idempotently, without a full scrape. |
+| `npm run scrape-main`           | One-off main scrape; writes `DATA_DIR/snapshot.json` and exits. Seeds or rebuilds the file without running the server. |
+| `npm run record-battle-history` | Fetch the current finished-battle window and fold it into the archive, idempotently, without a main scrape. |
 | `npm run lint` / `lint:fix`     | ESLint.                                                                      |
 
 The in-server loop refreshes continuously; there is no external cron.

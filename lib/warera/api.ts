@@ -140,7 +140,7 @@ interface ScrapeRequestOptions {
 // enforced per client at the fetch level). Splitting by purpose means urgent,
 // on-demand work never waits behind the long continuous scrape, and vice versa.
 //
-//  - scrapeClient:  the background full-scrape loop.
+//  - scrapeClient:  the background main-scrape loop.
 //  - urgentClient:  latency-sensitive on-demand traffic (MU refreshes, live
 //    battles, the user-page factory fetch).
 //  - factoryClient: the slow, infrequent all-users factory scrape. Deliberately
@@ -217,7 +217,7 @@ async function hydrateUsers(client: Client, userIds: string[]): Promise<User[]> 
 }
 
 /**
- * Hydrates users via the scrape client, for the full-scrape user phase.
+ * Hydrates users via the scrape client, for the main-scrape user phase.
  */
 export function getUsers(userIds: string[], _options: ScrapeRequestOptions = {}): Promise<User[]> {
   return hydrateUsers(scrapeClient, userIds)

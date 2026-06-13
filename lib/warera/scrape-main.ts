@@ -4,8 +4,11 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 import { writeRawSnapshot } from '@/lib/cache/file-store'
 
 import { recipeFromGameConfig } from '@/lib/factories/inputs'
+import { logger } from '@/lib/log'
 
 import { getAllAlliances, getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers, scrapeItemBestRegions, scrapeItemPrices } from './api'
+
+const log = logger.child({ phase: 'scrape' })
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
@@ -41,12 +44,12 @@ async function mapWithConcurrency<T, R>(
  * on the scrape client, which has its own rate-limit budget separate from the
  * urgent on-demand client, so the two never wait on each other.
  */
-export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
+export async function scrapeMain(): Promise<RawSnapshot> {
   const start = Date.now()
 
   // 1. Countries: single call.
   const countries = await getAllCountries()
-  console.info(`[scrape] fetched ${countries.length} countries`)
+  log.info({ countries: countries.length }, 'fetched countries')
 
   // 2. Governments: one call per country (no bulk endpoint), fanned out with
   // the same bounded concurrency as the user-id pagination. Dormant or
@@ -70,7 +73,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
       governments[countries[i]._id] = gov
     }
   }
-  console.info(`[scrape] fetched governments for ${Object.keys(governments).length} of ${countries.length} countries`)
+  log.info({ governments: Object.keys(governments).length, countries: countries.length }, 'fetched governments')
 
   // 3. User IDs: paginate per country with bounded concurrency.
   const userIdLists = await mapWithConcurrency(
@@ -79,14 +82,14 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     countryId => getUserIdsForCountry(countryId),
   )
   const userIds = userIdLists.flat()
-  console.info(`[scrape] collected ${userIds.length} user ids across ${countries.length} countries`)
+  log.info({ userIds: userIds.length, countries: countries.length }, 'collected user ids')
 
   // 4. Hydrate users. Stamp each with the capture time (like MUs below) so the
   // user page can show data freshness; an on-demand refresh bumps it later.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
   const users = usersRaw.map(u => ({ ...u, lastRefreshedAt: usersCapturedAt }))
-  console.info(`[scrape] hydrated ${users.length} users`)
+  log.info({ users: users.length }, 'hydrated users')
 
   // 5. Per-user equipment. One HTTP call per user, batched by the tRPC client
   // up to 50 ops. Many entries come back `{}` (player stripped gear between
@@ -97,31 +100,31 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   for (let i = 0; i < userIds.length; i++) {
     equipment[userIds[i]] = equipmentList[i]
   }
-  console.info(`[scrape] fetched equipment for ${equipmentList.length} users`)
+  log.info({ users: equipmentList.length }, 'fetched equipment')
 
   // 6. MUs: single cursor-paginated stream. Stamp each with the capture time so
   // the MU page can show data freshness; an on-demand refresh bumps it later.
   const musRaw = await getAllMUs()
   const capturedAt = new Date().toISOString()
   const mus = musRaw.map(m => ({ ...m, lastRefreshedAt: capturedAt }))
-  console.info(`[scrape] fetched ${mus.length} MUs`)
+  log.info({ mus: mus.length }, 'fetched MUs')
 
   // 7. Regions: single call, returns ~700 regions as an object.
   const regions = await getAllRegions()
-  console.info(`[scrape] fetched ${regions.length} regions`)
+  log.info({ regions: regions.length }, 'fetched regions')
 
   // 8. Parties: single cursor-paginated stream.
   const parties = await getAllParties()
-  console.info(`[scrape] fetched ${parties.length} parties`)
+  log.info({ parties: parties.length }, 'fetched parties')
 
   // 9. Alliances: single cursor-paginated stream (currently ~10 of them, so
   // one page in practice).
   const alliances = await getAllAlliances()
-  console.info(`[scrape] fetched ${alliances.length} alliances`)
+  log.info({ alliances: alliances.length }, 'fetched alliances')
 
   // 10. Battles: all active plus a recent window of finished ones.
   const battles = await getAllBattles()
-  console.info(`[scrape] fetched ${battles.length} battles`)
+  log.info({ battles: battles.length }, 'fetched battles')
 
   // 11. Tournament teams: so tournament battles (team-vs-team, no country) can
   // resolve each side to its MU. Stored as a serializable record (the live
@@ -132,12 +135,12 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     name: tournament.name,
     teams: Object.fromEntries(tournament.teams),
   }
-  console.info(`[scrape] fetched tournament "${tournament.name}" with ${tournament.teams.size} teams`)
+  log.info({ tournament: tournament.name, teams: tournament.teams.size }, 'fetched tournament')
 
   // 12. Game config: static catalog (item stats, skill cost curves, …). One
   // no-arg call; persisted so derived constants can read live data later.
   const gameConfig = await getGameConfig()
-  console.info(`[scrape] fetched game config`)
+  log.info('fetched game config')
 
   // 13. Market context for factory profit: current prices + the best-region
   // bonus per producible item. ~2 requests (prices, plus the per-item region
@@ -148,7 +151,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     scrapeItemPrices(),
     scrapeItemBestRegions(recipeCodes),
   ])
-  console.info(`[scrape] fetched prices + best regions for ${Object.keys(itemBestRegions).length} items`)
+  log.info({ items: Object.keys(itemBestRegions).length }, 'fetched prices + best regions')
 
   const durationMs = Date.now() - start
   const meta: SnapshotMeta = {
@@ -185,15 +188,15 @@ function hasGovernment(g: Government): boolean {
 }
 
 /**
- * One-shot full scrape for the CLI (`npm run scrape`): gathers the dataset and
+ * One-shot main scrape for the CLI (`npm run scrape-main`): gathers the dataset and
  * writes it to the snapshot file, then returns counts. The in-server scraper
- * uses {@link scrapeRawSnapshot} directly so it can also swap the in-memory
+ * uses {@link scrapeMain} directly so it can also swap the in-memory
  * snapshot and loop.
  */
-export async function runFullScrape(): Promise<ScrapeResult> {
-  const raw = await scrapeRawSnapshot()
+export async function runMainScrape(): Promise<ScrapeResult> {
+  const raw = await scrapeMain()
   await writeRawSnapshot(raw)
-  console.info(`[scrape] wrote snapshot in ${raw.meta.scrapeDurationMs}ms`)
+  log.info({ durationMs: raw.meta.scrapeDurationMs }, 'wrote snapshot')
 
   const counts = {
     countries: raw.countries.length,

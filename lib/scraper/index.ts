@@ -1,12 +1,13 @@
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { recordBattleHistory } from '@/lib/cache/archive'
-import { readFactorySnapshot } from '@/lib/cache/factory-store'
 import { readRawSnapshot, writeRawSnapshot } from '@/lib/cache/file-store'
 import { buildSnapshotNow, swapSnapshot } from '@/lib/cache/memory'
+import { loadFactoryAggregates } from '@/lib/factories/aggregate'
+import { logger, logMemory, logRetainedMemory } from '@/lib/log'
 import { getEquipmentUrgent, getMuMembers, getUsersUrgent } from '@/lib/warera/api'
-import { scrapeRawSnapshot } from '@/lib/warera/scrape'
-import { scrapeAllFactories } from '@/lib/warera/scrape-factories'
+import { scrapeFactories } from '@/lib/warera/scrape-factories'
+import { scrapeMain } from '@/lib/warera/scrape-main'
 
 import 'server-only'
 
@@ -32,40 +33,8 @@ function store(): ScraperStore {
 
 let started = false
 
-const MB = 1024 * 1024
-
-/**
- * Logs a one-line memory breakdown tagged with `label`. Tracking the SAME point
- * every cycle is how we tell a real leak from the expected mid-cycle sawtooth:
- * a leak shows the post-GC baseline climbing cycle over cycle, a sawtooth keeps
- * it flat. `external` / `arrayBuffers` climbing (rather than `heapUsed`) points
- * at native retention (undici sockets, undrained response buffers) instead of
- * JS objects.
- */
-function logMemory(label: string): void {
-  const m = process.memoryUsage()
-  console.info(
-    `[scraper] mem ${label}: `
-    + `rss=${Math.round(m.rss / MB)}MB `
-    + `heapUsed=${Math.round(m.heapUsed / MB)}MB `
-    + `heapTotal=${Math.round(m.heapTotal / MB)}MB `
-    + `external=${Math.round(m.external / MB)}MB `
-    + `arrayBuffers=${Math.round(m.arrayBuffers / MB)}MB`,
-  )
-}
-
-/**
- * Forces a full GC (only available under `node --expose-gc`) then logs memory,
- * so the number reflects what's actually retained rather than uncollected
- * garbage. Without `--expose-gc` it falls back to a plain reading.
- */
-function logRetainedMemory(label: string): void {
-  const gc = (globalThis as typeof globalThis & { gc?: () => void }).gc
-  if (gc) {
-    gc()
-  }
-  logMemory(gc ? `${label} (post-gc)` : label)
-}
+const log = logger.child({ phase: 'scraper' })
+const factoryLog = logger.child({ phase: 'factory-scrape' })
 
 /**
  * Publishes a full-cycle raw snapshot: record it as current, persist to disk,
@@ -75,36 +44,36 @@ function logRetainedMemory(label: string): void {
 async function publish(raw: RawSnapshot): Promise<void> {
   store().currentRaw = raw
   await writeRawSnapshot(raw)
-  swapSnapshot(buildSnapshotNow(raw, 'scrape', await readFactorySnapshot()))
+  swapSnapshot(buildSnapshotNow(raw, 'scrape', await loadFactoryAggregates(raw)))
 }
 
 /**
- * The continuous full-scrape loop. Runs on the scrape client (its own rate-limit
+ * The continuous main-scrape loop. Runs on the scrape client (its own rate-limit
  * budget), so it never competes with urgent on-demand traffic. Each cycle
  * publishes the snapshot, folds finished battles into the archive, then starts
  * the next cycle. Errors are logged and the loop continues after a short pause.
  */
-async function scrapeLoop(): Promise<void> {
+async function mainScrapeLoop(): Promise<void> {
   for (;;) {
     try {
-      logMemory('cycle-start')
-      console.info('[scraper] full scrape starting')
-      const raw = await scrapeRawSnapshot()
+      logMemory(log, 'cycle-start')
+      log.info('main scrape starting')
+      const raw = await scrapeMain()
       await publish(raw)
-      console.info('[scraper] full scrape published')
+      log.info('main scrape published')
 
       try {
         const result = await recordBattleHistory(raw.battles)
-        console.info('[archive]', JSON.stringify(result))
+        log.info({ result }, 'archive recorded')
       } catch (err) {
-        console.error('[archive] failed', err instanceof Error ? err.message : err)
+        log.error({ err }, 'archive failed')
       }
 
       // Measure AFTER the swap, when the previous snapshot should be collectible.
       // The trend of this post-GC baseline over many cycles is the leak signal.
-      logRetainedMemory('cycle-end')
+      logRetainedMemory(log, 'cycle-end')
     } catch (err) {
-      console.error('[scraper] full scrape failed', err instanceof Error ? err.message : err)
+      log.error({ err }, 'main scrape failed')
       await new Promise(resolve => setTimeout(resolve, 10_000))
     }
   }
@@ -114,10 +83,11 @@ async function scrapeLoop(): Promise<void> {
  * The continuous all-users factory scrape loop, back-to-back like the main
  * scrape. Runs on the factory client (its own small rate-limit budget),
  * independent of the main scrape and urgent traffic. Each pass only rewrites
- * `factories.json`; the main loop reapplies it on its next cycle (see
- * {@link publish}), so we deliberately do NOT rebuild the snapshot here — that
- * would let two full snapshot builds run concurrently and spike memory. Waits
- * for a base snapshot (user list) before the first pass.
+ * `factories.ndjson` (streamed, no accumulator); the main loop reapplies it on
+ * its next cycle, so we deliberately do NOT rebuild the snapshot here. Memory is
+ * logged at pass start/end (with heap-vs-limit %), and `scrapeFactories`
+ * logs it mid-pass, so an OOM is attributable to this loop rather than guessed.
+ * Waits for a base snapshot (user list) before the first pass.
  */
 async function factoryScrapeLoop(): Promise<void> {
   for (;;) {
@@ -129,11 +99,13 @@ async function factoryScrapeLoop(): Promise<void> {
         continue
       }
 
-      console.info('[factory-scrape] all-users pass starting')
-      const count = await scrapeAllFactories(users)
-      console.info(`[factory-scrape] all-users pass done: ${count} users with factories`)
+      logMemory(factoryLog, 'factory-pass start')
+      factoryLog.info('all-users pass starting')
+      const count = await scrapeFactories(users)
+      factoryLog.info({ withFactories: count }, 'all-users pass done')
+      logRetainedMemory(factoryLog, 'factory-pass end')
     } catch (err) {
-      console.error('[factory-scrape] pass failed', err instanceof Error ? err.message : err)
+      factoryLog.error({ err }, 'pass failed')
       await new Promise(resolve => setTimeout(resolve, 30_000))
     }
   }
@@ -229,8 +201,8 @@ async function refreshUsersInSnapshot(
   const patched = patch ? { ...base, ...patch(base, now) } : base
 
   s.currentRaw = patched
-  swapSnapshot(buildSnapshotNow(patched, reason, await readFactorySnapshot()))
-  console.info(`[scraper] on-demand refresh: ${reason} (${fresh.length} users)`)
+  swapSnapshot(buildSnapshotNow(patched, reason, await loadFactoryAggregates(patched)))
+  log.info({ reason, users: fresh.length }, 'on-demand refresh')
 }
 
 /**
@@ -246,7 +218,7 @@ export function startScraper(): void {
   started = true
 
   void seedCurrentRaw().finally(() => {
-    void scrapeLoop()
+    void mainScrapeLoop()
     void factoryScrapeLoop()
   })
 }
@@ -262,6 +234,6 @@ async function seedCurrentRaw(): Promise<void> {
       s.currentRaw = raw
     }
   } catch (err) {
-    console.error('[scraper] seed from file failed', err instanceof Error ? err.message : err)
+    log.error({ err }, 'seed from file failed')
   }
 }

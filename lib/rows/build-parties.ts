@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Party } from '@/lib/warera/api'
 
 import { rankAll } from '@/lib/rows/lookups'
-import { aggCases, aggregateMembers } from '@/lib/rows/member-agg'
+import { aggCases, aggPoints, aggPremium, aggregateMembers, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_RANK_KEYS, WEALTH_PART_RANK_KEYS } from '@/lib/rows/member-agg'
 
 export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: Lookups): PartyRow[] {
   // partyByUser is built once in buildLookups (also consumed by buildUserRows
@@ -23,18 +23,15 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         avatarUrl: p.avatarUrl ?? null,
         avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
         avgLevelRank: null,
-        avgPoints: agg ? Math.round(agg.total / agg.count) : null,
-        avgPointsRank: null,
-        avgPointsPerDay: agg && agg.pointsPerDayCount > 0 ? Math.round(agg.pointsPerDaySum / agg.pointsPerDayCount) : null,
         countryCode: country?.code ?? null,
         countryId: p.country ?? null,
         countryName: country?.name ?? null,
         createdAt: p.createdAt ?? null,
-        damagePoints: agg?.damage ?? 0,
         description: p.description ?? null,
-        gemsPurchasedTotal: agg?.gemsPurchasedTotal ?? 0,
-        gemsPurchasedTotalRank: null,
         ...aggCases(agg),
+        ...aggPoints(agg),
+        ...aggPremium(agg),
+        ...aggWealthParts(agg),
         id: p._id,
         imperialism: ethics?.imperialism ?? null,
         industrialism: ethics?.industrialism ?? null,
@@ -43,29 +40,11 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         leaderColorScheme,
         leaderId: p.leader ?? null,
         leaderName,
-        levelPoints: agg?.level ?? 0,
         memberCount: p.members?.length ?? 0,
         memberCountRank: null,
         memberWealth: agg?.wealth ?? 0,
-        companiesWealth: agg?.companiesWealth ?? 0,
-        companiesWealthRank: null,
-        itemsWealth: agg?.itemsWealth ?? 0,
-        itemsWealthRank: null,
-        cashWealth: agg?.cashWealth ?? 0,
-        cashWealthRank: null,
-        equipmentWealth: agg?.equipmentWealth ?? 0,
-        equipmentWealthRank: null,
-        weaponsWealth: agg?.weaponsWealth ?? 0,
-        weaponsWealthRank: null,
         militarism: ethics?.militarism ?? null,
         name: p.name,
-        premiumGiftsTotal: agg?.premiumGiftsTotal ?? 0,
-        premiumGiftsTotalRank: null,
-        premiumMonthsTotal: agg?.premiumMonthsTotal ?? 0,
-        premiumMonthsTotalRank: null,
-        totalPoints: agg?.total ?? 0,
-        totalPointsRank: null,
-        wealthPoints: agg?.wealthPoints ?? 0,
       } satisfies PartyRow
     })
     .sort((a, b) => b.totalPoints - a.totalPoints)
@@ -75,18 +54,11 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
   // a leaderboard, so they get no rank.
   rankAll(rows, [
     'caseLuck',
-    'totalPoints',
-    'avgPoints',
+    ...POINTS_RANK_KEYS,
     'avgLevel',
     'memberCount',
-    'companiesWealth',
-    'itemsWealth',
-    'cashWealth',
-    'equipmentWealth',
-    'weaponsWealth',
-    'gemsPurchasedTotal',
-    'premiumMonthsTotal',
-    'premiumGiftsTotal',
+    ...WEALTH_PART_RANK_KEYS,
+    ...PREMIUM_RANK_KEYS,
   ])
 
   return rows

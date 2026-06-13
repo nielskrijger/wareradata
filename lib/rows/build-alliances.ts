@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance } from '@/lib/warera/api'
 
 import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggCases, aggMean, aggregateMembers } from '@/lib/rows/member-agg'
+import { aggCases, aggPoints, aggregateMembers, POINTS_RANK_KEYS, WEALTH_PART_RANK_KEYS } from '@/lib/rows/member-agg'
 
 export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow[], userRows: UserRow[], lookups: Lookups): AllianceRow[] {
   const countryRowById = new Map(countryRows.map(c => [c.id, c]))
@@ -74,14 +74,7 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
         memberCount: members.length,
         members,
         memberNames: members.map(m => `${m.name} ${m.code ?? ''}`).join(' '),
-        totalPoints: agg?.total ?? 0,
-        totalPointsRank: null,
-        avgPoints: agg ? Math.round(agg.total / agg.count) : null,
-        avgPointsRank: null,
-        avgPointsPerDay: agg ? aggMean(agg.pointsPerDaySum, agg.pointsPerDayCount) : null,
-        levelPoints: agg?.level ?? 0,
-        damagePoints: agg?.damage ?? 0,
-        wealthPoints: agg?.wealthPoints ?? 0,
+        ...aggPoints(agg),
         ...aggCases(agg),
         ...wealth,
         citizenWealthRank: null,
@@ -116,16 +109,11 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
   // other group builders do.
   rankAll(rows, [
     'caseLuck',
-    'totalPoints',
-    'avgPoints',
+    ...POINTS_RANK_KEYS,
     'coreDevelopment',
     'averageDevelopment',
     'citizenWealth',
-    'companiesWealth',
-    'itemsWealth',
-    'cashWealth',
-    'equipmentWealth',
-    'weaponsWealth',
+    ...WEALTH_PART_RANK_KEYS,
   ])
 
   return rows

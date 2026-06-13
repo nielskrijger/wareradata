@@ -18,7 +18,7 @@ import {
   readinessColumn,
   tierColumn,
 } from '@/components/data-table/column-factories'
-import { casesColumns, pointsColumns, wealthColumns } from '@/components/data-table/column-groups'
+import { casesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
 import { InternalLink } from '@/components/links'
 
 export type { CountryRow }
@@ -128,11 +128,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
       compactNumberColumn<CountryRow>('bounty', 'Bounty', { heat: 'ramp', width: 110, tooltip: 'Coins this country has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
       compactNumberColumn<CountryRow>('money', 'Treasury', { heat: 'median', width: 120, tooltip: 'Money held in the country treasury.' }),
     ],
-    premium: [
-      localeNumberColumn<CountryRow>('gemsPurchasedTotal', 'Gems Bought', { heat: 'ramp', width: 150 }),
-      localeNumberColumn<CountryRow>('premiumMonthsTotal', 'Premium Mo.', { heat: 'ramp', width: 145 }),
-      localeNumberColumn<CountryRow>('premiumGiftsTotal', 'Premium Gifts', { heat: 'ramp', width: 155 }),
-    ],
+    premium: premiumColumns<CountryRow>(),
     cases: casesColumns<CountryRow>(),
   },
 )

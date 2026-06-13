@@ -18,7 +18,7 @@ import {
   readinessColumn,
   tierColumn,
 } from '@/components/data-table/column-factories'
-import { casesColumns, pointsColumns, wealthColumns } from '@/components/data-table/column-groups'
+import { casesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
 
 export type { MURow }
 
@@ -92,11 +92,7 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
       compactNumberColumn<MURow>('bounty', 'Bounty', { heat: 'median', width: 110, tooltip: 'Coins this MU has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
       rankTooltipColumn<MURow>('wealth', 'wealthRank', 'MU Wealth', { width: 135, tooltip: 'Wealth held by the MU itself (its own account and inventory), not the combined member Total.' }),
     ],
-    premium: [
-      localeNumberColumn<MURow>('gemsPurchasedTotal', 'Gems Bought', { heat: 'ramp', width: 150 }),
-      localeNumberColumn<MURow>('premiumMonthsTotal', 'Premium Mo.', { heat: 'ramp', width: 145 }),
-      localeNumberColumn<MURow>('premiumGiftsTotal', 'Premium Gifts', { heat: 'ramp', width: 155 }),
-    ],
+    premium: premiumColumns<MURow>(),
     cases: casesColumns<MURow>(),
   },
 )

@@ -9,7 +9,7 @@ import { UserNameCell } from '@/components/cells/user-name-cell'
 import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { buildColumns } from '@/components/data-table/column-categories'
 import { countryColumn, dateColumn, localeNumberColumn, scaleBadgeColumn } from '@/components/data-table/column-factories'
-import { casesColumns, pointsColumns, wealthColumns } from '@/components/data-table/column-groups'
+import { casesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
 import { UserHoverCard } from '@/components/user-hover-card'
 
 export type { PartyRow }
@@ -67,11 +67,7 @@ export const partyColumns: ColumnDef<PartyRow>[] = buildColumns<PartyRow>(
       scaleBadgeColumn<PartyRow>('industrialism', 'Industrialism', { width: 145 }),
     ],
     wealth: wealthColumns<PartyRow>('memberWealth', 'members'),
-    premium: [
-      localeNumberColumn<PartyRow>('gemsPurchasedTotal', 'Gems Bought', { heat: 'ramp', width: 150 }),
-      localeNumberColumn<PartyRow>('premiumMonthsTotal', 'Premium Mo.', { heat: 'ramp', width: 145 }),
-      localeNumberColumn<PartyRow>('premiumGiftsTotal', 'Premium Gifts', { heat: 'ramp', width: 155 }),
-    ],
+    premium: premiumColumns<PartyRow>(),
     cases: casesColumns<PartyRow>(),
   },
 )

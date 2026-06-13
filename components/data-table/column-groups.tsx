@@ -84,6 +84,30 @@ export function wealthColumns<T extends WealthComponentsRow>(
 }
 
 /**
+ * Rows carrying the member-summed premium-spend totals, the shape the group
+ * tables share.
+ */
+interface PremiumRow {
+  gemsPurchasedTotal: number
+  premiumMonthsTotal: number
+  premiumGiftsTotal: number
+}
+
+/**
+ * The premium-spend group: gems bought, premium months, and premium gifts, each
+ * a member-summed total. Identical across the country / MU / party tables
+ * (alliances carry no premium aggregate). The /users table keeps its own
+ * per-player premium columns.
+ */
+export function premiumColumns<T extends PremiumRow>(): ColumnDef<T>[] {
+  return [
+    localeNumberColumn<T>('gemsPurchasedTotal' as Key<T>, 'Gems Bought', { heat: 'ramp', width: 150 }),
+    localeNumberColumn<T>('premiumMonthsTotal' as Key<T>, 'Premium Mo.', { heat: 'ramp', width: 145 }),
+    localeNumberColumn<T>('premiumGiftsTotal' as Key<T>, 'Premium Gifts', { heat: 'ramp', width: 155 }),
+  ]
+}
+
+/**
  * Rows carrying the case-pull stats, the shape the /users table and every
  * group table share.
  */

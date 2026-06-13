@@ -165,9 +165,59 @@ export interface GroupCaseStats {
 }
 
 /**
+ * Member-summed wealth components shared by every group row: each is the sum of
+ * the members'/citizens' `stats.wealth.*` parts (companies, items, cash,
+ * equipment, weapons), with a snapshot rank. The wealth Total is named per
+ * entity (memberWealth / citizenWealth), so it stays on each row. UserRow keeps
+ * its own nullable versions (one player can lack the breakdown).
+ */
+export interface GroupWealthParts {
+  companiesWealth: number
+  companiesWealthRank: number | null
+  itemsWealth: number
+  itemsWealthRank: number | null
+  cashWealth: number
+  cashWealthRank: number | null
+  equipmentWealth: number
+  equipmentWealthRank: number | null
+  weaponsWealth: number
+  weaponsWealthRank: number | null
+}
+
+/**
+ * Aggregate ranking points shared by every group row: the member-summed Total
+ * (with its level / damage / wealth breakdown) plus the two per-member
+ * averages. Only Total and Average carry a rank.
+ */
+export interface GroupPointsStats {
+  totalPoints: number
+  totalPointsRank: number | null
+  avgPoints: number | null
+  avgPointsRank: number | null
+  avgPointsPerDay: number | null
+  levelPoints: number
+  damagePoints: number
+  wealthPoints: number
+}
+
+/**
+ * Member-summed premium spend shared by the country / MU / party rows
+ * (alliances carry no premium aggregate): gems bought, premium months, and
+ * premium gifts, each with a snapshot rank.
+ */
+export interface GroupPremiumStats {
+  gemsPurchasedTotal: number
+  gemsPurchasedTotalRank: number | null
+  premiumMonthsTotal: number
+  premiumMonthsTotalRank: number | null
+  premiumGiftsTotal: number
+  premiumGiftsTotalRank: number | null
+}
+
+/**
  * Projected country row used by /countries and /api/countries.
  */
-export interface CountryRow extends GroupCaseStats {
+export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats {
   // Count of active battles this country is in (attacker or defender). Live
   // data, stamped on by withActiveBattleCounts(); 0 when not populated.
   activeBattles: number
@@ -193,38 +243,19 @@ export interface CountryRow extends GroupCaseStats {
   avgHungerRank: number | null
   avgLevel: number | null
   avgLevelRank: number | null
-  avgPoints: number | null
-  avgPointsRank: number | null
-  avgPointsPerDay: number | null
   bounty: number | null
   bountyRank: number | null
   // Sum of citizens' actual wealth in gold (real holdings, not the wealthPoints
   // points derivative). Surfaced as the "Citizen Wealth" column.
   citizenWealth: number
   citizenWealthRank: number | null
-  // Citizen-summed wealth parts (each the sum of citizens' stats.wealth.*).
-  // Feed the country "Wealth composition" card and the per-component columns.
-  companiesWealth: number
-  companiesWealthRank: number | null
-  itemsWealth: number
-  itemsWealthRank: number | null
-  cashWealth: number
-  cashWealthRank: number | null
-  equipmentWealth: number
-  equipmentWealthRank: number | null
-  weaponsWealth: number
-  weaponsWealthRank: number | null
   code: string
   damageRank: number | null
   damageTier: RankingTier | null
   damage: number | null
-  damagePoints: number
   development: number | null
   developmentRank: number | null
-  gemsPurchasedTotal: number
-  gemsPurchasedTotalRank: number | null
   id: string
-  levelPoints: number
   money: number | null
   moneyRank: number | null
   musCount: number
@@ -232,10 +263,6 @@ export interface CountryRow extends GroupCaseStats {
   name: string
   partyCount: number
   partyCountRank: number | null
-  premiumGiftsTotal: number
-  premiumGiftsTotalRank: number | null
-  premiumMonthsTotal: number
-  premiumMonthsTotalRank: number | null
   productionBonus: number | null
   productionBonusRank: number | null
   readinessPill: ReadinessPill
@@ -243,12 +270,9 @@ export interface CountryRow extends GroupCaseStats {
   taxIncome: number | null
   taxMarket: number | null
   taxSelfWork: number | null
-  totalPoints: number
-  totalPointsRank: number | null
   unrestPercent: number | null
   warsCount: number
   warsCountRank: number | null
-  wealthPoints: number
   wealthRank: number | null
   wealth: number | null
   weeklyDamagePerCitizen: number | null
@@ -293,7 +317,7 @@ export interface GovernmentRow {
 /**
  * Projected MU (military unit) row used by /mus and /api/mus.
  */
-export interface MURow extends GroupCaseStats {
+export interface MURow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats {
   avatarUrl: string | null
   avgWarShare: number | null
   avgWarShareRank: number | null
@@ -305,9 +329,6 @@ export interface MURow extends GroupCaseStats {
   avgHungerRank: number | null
   avgLevel: number | null
   avgLevelRank: number | null
-  avgPoints: number | null
-  avgPointsRank: number | null
-  avgPointsPerDay: number | null
   bounty: number | null
   bountyRank: number | null
   countryCode: string | null
@@ -316,11 +337,8 @@ export interface MURow extends GroupCaseStats {
   damageRank: number | null
   damageTier: RankingTier | null
   damage: number | null
-  damagePoints: number
   dormitoriesLevel: number | null
   dormitoriesLevelRank: number | null
-  gemsPurchasedTotal: number
-  gemsPurchasedTotalRank: number | null
   headquartersLevel: number | null
   headquartersLevelRank: number | null
   id: string
@@ -331,39 +349,19 @@ export interface MURow extends GroupCaseStats {
   leaderColorScheme: string | null
   leaderId: string | null
   leaderName: string | null
-  levelPoints: number
   memberCount: number
   memberCountRank: number | null
   // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
   // points derivative). Surfaced as the "Member Wealth" column.
   memberWealth: number
   memberWealthRank: number | null
-  // Member-summed wealth parts (each the sum of members' stats.wealth.*). Feed
-  // the MU "Wealth composition" card and the per-component columns.
-  companiesWealth: number
-  companiesWealthRank: number | null
-  itemsWealth: number
-  itemsWealthRank: number | null
-  cashWealth: number
-  cashWealthRank: number | null
-  equipmentWealth: number
-  equipmentWealthRank: number | null
-  weaponsWealth: number
-  weaponsWealthRank: number | null
   name: string
-  premiumGiftsTotal: number
-  premiumGiftsTotalRank: number | null
-  premiumMonthsTotal: number
-  premiumMonthsTotalRank: number | null
   readinessPill: ReadinessPill
   regionName: string | null
   reputation: number | null
   reputationRank: number | null
   terrain: number | null
   terrainRank: number | null
-  totalPoints: number
-  totalPointsRank: number | null
-  wealthPoints: number
   wealthRank: number | null
   wealth: number | null
   weeklyDamage: number | null
@@ -452,21 +450,15 @@ export interface BattleRow {
 /**
  * Projected political-party row used by /parties and /api/parties.
  */
-export interface PartyRow extends GroupCaseStats {
+export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats {
   avatarUrl: string | null
   avgLevel: number | null
   avgLevelRank: number | null
-  avgPoints: number | null
-  avgPointsRank: number | null
-  avgPointsPerDay: number | null
   countryCode: string | null
   countryId: string | null
   countryName: string | null
   createdAt: string | null
-  damagePoints: number
   description: string | null
-  gemsPurchasedTotal: number
-  gemsPurchasedTotalRank: number | null
   id: string
   imperialism: number | null
   industrialism: number | null
@@ -475,33 +467,13 @@ export interface PartyRow extends GroupCaseStats {
   leaderColorScheme: string | null
   leaderId: string | null
   leaderName: string | null
-  levelPoints: number
   memberCount: number
   memberCountRank: number | null
   // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
   // points derivative). Surfaced as the "Total" wealth column.
   memberWealth: number
-  // Member-summed wealth parts (each the sum of members' stats.wealth.*). Feed
-  // the party "Wealth composition" card and the per-component columns.
-  companiesWealth: number
-  companiesWealthRank: number | null
-  itemsWealth: number
-  itemsWealthRank: number | null
-  cashWealth: number
-  cashWealthRank: number | null
-  equipmentWealth: number
-  equipmentWealthRank: number | null
-  weaponsWealth: number
-  weaponsWealthRank: number | null
   militarism: number | null
   name: string
-  premiumGiftsTotal: number
-  premiumGiftsTotalRank: number | null
-  premiumMonthsTotal: number
-  premiumMonthsTotalRank: number | null
-  totalPoints: number
-  totalPointsRank: number | null
-  wealthPoints: number
 }
 
 /**
@@ -533,7 +505,7 @@ export interface AllianceMemberRow {
  * API ranks all alliances, so its ranks are authoritative); members are
  * resolved and sorted by development contribution at build time.
  */
-export interface AllianceRow extends GroupCaseStats {
+export interface AllianceRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats {
   id: string
   name: string
   // WarEra color scheme name (same palette as user profiles), the alliance's
@@ -549,31 +521,11 @@ export interface AllianceRow extends GroupCaseStats {
   // Concatenated member names + codes, so free-text and `country:` searches
   // can match an alliance by any member country.
   memberNames: string
-  // Aggregate ranking points over the citizens of all member countries
-  // (totalPoints = level + damage + wealth parts), plus per-citizen averages,
-  // mirroring the countries/MUs/parties aggregates.
-  totalPoints: number
-  totalPointsRank: number | null
-  avgPoints: number | null
-  avgPointsRank: number | null
-  avgPointsPerDay: number | null
-  levelPoints: number
-  damagePoints: number
-  wealthPoints: number
-  // Citizen-summed wealth (the member countries' citizenWealth and its
-  // components added up). Feeds the table's wealth column group.
+  // Citizen-summed wealth: the member countries' citizenWealth added up (its
+  // five components, from GroupWealthParts, are summed the same way). Feeds the
+  // table's wealth column group.
   citizenWealth: number
   citizenWealthRank: number | null
-  companiesWealth: number
-  companiesWealthRank: number | null
-  itemsWealth: number
-  itemsWealthRank: number | null
-  cashWealth: number
-  cashWealthRank: number | null
-  equipmentWealth: number
-  equipmentWealthRank: number | null
-  weaponsWealth: number
-  weaponsWealthRank: number | null
   createdAt: string | null
   development: number | null
   developmentRank: number | null

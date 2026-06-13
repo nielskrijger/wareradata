@@ -1,4 +1,4 @@
-import { factorySnapshotPath } from '@/lib/cache/factory-store'
+import { factoriesNdjsonPath } from '@/lib/cache/factory-store'
 import { readRawSnapshot } from '@/lib/cache/file-store'
 import { scrapeAllFactories } from '@/lib/warera/scrape-factories'
 
@@ -18,7 +18,7 @@ async function main() {
   }
 
   const count = await scrapeAllFactories(raw.users, { limit })
-  console.info(`[factory-scrape] done: ${count} users with factories → ${factorySnapshotPath()}`)
+  console.info(`[factory-scrape] done: ${count} users with factories → ${factoriesNdjsonPath()}`)
 }
 
 main().catch((err) => {

@@ -1,47 +1,59 @@
-import type { ItemPrices, RecipeLookup, UserFactoryAgg } from './profit'
-import type { FactorySnapshot } from '@/lib/cache/factory-store'
-import type { ItemBestRegion, MarketPrices } from '@/lib/warera/api'
+import type { ItemPrices, UserFactoryAgg } from './profit'
+import type { RawSnapshot } from '@/lib/cache/file-store'
 
-import { buildItemBonus } from './inputs'
+import { streamFactoryUsers } from '@/lib/cache/factory-store'
+
+import { recipeFromGameConfig } from './inputs'
 import { aggregateUserFactories, buildFrontier, computeFactoryProfit } from './profit'
 
 /**
- * Computes each user's factory totals from the raw factory snapshot plus the
- * market data (prices + best-region frontier) captured in the main snapshot.
- * Pure: the row builders call this at build time, no network. Returns a map
- * keyed by user id; users absent from the factory snapshot simply aren't in it.
+ * Streams the factory NDJSON file and computes each user's factory totals from
+ * the raw rows plus the snapshot's market data (prices + best-region frontier).
+ * Only the small per-user aggregate map is retained — raw rows are parsed and
+ * discarded one line at a time, so a full factory dataset never materializes in
+ * memory. Region names aren't needed (the aggregate is pure numbers), so no
+ * lookups are required here. Returns an empty map when the file doesn't exist.
  */
-export function buildUserFactoryAggregates(
-  factory: FactorySnapshot,
-  prices: MarketPrices,
-  itemBestRegions: Record<string, ItemBestRegion>,
-  recipe: RecipeLookup,
-  regionName: (id: string) => string,
-): Map<string, UserFactoryAgg> {
-  const priceMap = prices as unknown as ItemPrices
-  const itemBonus = buildItemBonus(itemBestRegions, regionName)
-  const frontier = buildFrontier(priceMap, recipe, itemBonus)
+export async function loadFactoryAggregates(
+  raw: Pick<RawSnapshot, 'prices' | 'itemBestRegions' | 'gameConfig'>,
+): Promise<Map<string, UserFactoryAgg>> {
+  const prices = raw.prices as unknown as ItemPrices
+  const recipe = recipeFromGameConfig(raw.gameConfig)
+
+  // Best-region bonus per item, with region names stripped (unused in the math).
+  const itemBonus = Object.fromEntries(
+    Object.entries(raw.itemBestRegions).map(([code, r]) => [code, {
+      bonusPct: r.bonusPct,
+      regionName: '',
+      strategicPct: r.strategicPct,
+      ethicSpecializationPct: r.ethicSpecializationPct,
+      depositPct: r.depositPct,
+      ethicDepositPct: r.ethicDepositPct,
+      depositEndAt: r.depositEndAt,
+    }]),
+  )
+  const frontier = buildFrontier(prices, recipe, itemBonus)
 
   const out = new Map<string, UserFactoryAgg>()
-  for (const [userId, rows] of Object.entries(factory.byUser)) {
+  await streamFactoryUsers(({ userId, rows }) => {
     const profits = rows.map(r => computeFactoryProfit(
       {
         id: '',
         name: '',
         itemCode: r.itemCode,
-        regionName: regionName(r.regionId),
+        regionName: '',
         bonusPct: r.bonusPct,
         workerCount: r.workerCount,
         pointsPerDay: r.pointsPerDay,
         grossWagePerDay: r.grossWagePerDay,
       },
-      priceMap,
+      prices,
       recipe,
       itemBonus,
       frontier,
     ))
     out.set(userId, aggregateUserFactories(profits))
-  }
+  })
 
   return out
 }

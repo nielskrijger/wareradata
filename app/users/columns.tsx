@@ -177,7 +177,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       localeNumberColumn<UserRow>('factoryCount', 'Factories', { heat: 'ramp', width: 105, tooltip: 'Number of factories this player owns.' }),
       compactNumberColumn<UserRow>('factoryNetPerDay', 'Net / day', { heat: 'median', width: 115, tooltip: 'Daily factory profit (revenue − inputs − wages).' }),
       compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', { heat: 'median', width: 110, tooltip: 'Production points produced per day across this player\'s factories.' }),
-      percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', { heat: 'median', width: 115, tooltip: 'Realized net ÷ best-region (Move) potential. Higher = better located.' }),
+      percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', { heat: 'median', decimals: 0, width: 115, tooltip: 'Realized net ÷ best-region (Move) potential. Higher = better located.' }),
     ],
     premium: [
       localeNumberColumn<UserRow>('premiumMonths', 'Premium Mo.', { heat: 'ramp', width: 145 }),

@@ -108,7 +108,7 @@ export function industryColumns<T extends FactoryStatsRow>(who: 'members' | 'cit
     compactNumberColumn<T>('factoryNetPerDay' as Key<T>, 'Net / day', { heat: 'median', width: 115, tooltip: `Combined factory profit per day across ${who} (revenue − inputs − wages).` }),
     compactNumberColumn<T>('factoryPpPerDay' as Key<T>, 'PP / day', { heat: 'median', width: 110, tooltip: `Combined production points per day across ${who}.` }),
     compactNumberColumn<T>('factoryPpPerMember' as Key<T>, who === 'citizens' ? 'PP / citizen' : 'PP / member', { heat: 'median', width: 130, tooltip: `Production points per day per ${one}.` }),
-    percentColumn<T>('factoryEfficiencyPct' as Key<T>, 'Efficiency', { heat: 'median', width: 115, tooltip: `Realized net ÷ best-region (Move) potential. Higher = better located.` }),
+    percentColumn<T>('factoryEfficiencyPct' as Key<T>, 'Efficiency', { heat: 'median', decimals: 0, width: 115, tooltip: `Realized net ÷ best-region (Move) potential. Higher = better located.` }),
   ]
 }
 

@@ -8,7 +8,8 @@ import { PartyCell } from '@/components/cells/party-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { buildColumns } from '@/components/data-table/column-categories'
-import { countryColumn, dateColumn, localeNumberColumn, pointsColumns, scaleBadgeColumn, wealthBreakdownColumns } from '@/components/data-table/column-factories'
+import { countryColumn, dateColumn, localeNumberColumn, scaleBadgeColumn } from '@/components/data-table/column-factories'
+import { casesColumns, pointsColumns, wealthColumns } from '@/components/data-table/column-groups'
 import { UserHoverCard } from '@/components/user-hover-card'
 
 export type { PartyRow }
@@ -65,11 +66,12 @@ export const partyColumns: ColumnDef<PartyRow>[] = buildColumns<PartyRow>(
       scaleBadgeColumn<PartyRow>('imperialism', 'Imperialism', { width: 140 }),
       scaleBadgeColumn<PartyRow>('industrialism', 'Industrialism', { width: 145 }),
     ],
-    wealth: wealthBreakdownColumns<PartyRow>('memberWealth', 'members'),
+    wealth: wealthColumns<PartyRow>('memberWealth', 'members'),
     premium: [
       localeNumberColumn<PartyRow>('gemsPurchasedTotal', 'Gems Bought', { heat: 'ramp', width: 150 }),
       localeNumberColumn<PartyRow>('premiumMonthsTotal', 'Premium Mo.', { heat: 'ramp', width: 145 }),
       localeNumberColumn<PartyRow>('premiumGiftsTotal', 'Premium Gifts', { heat: 'ramp', width: 155 }),
     ],
+    cases: casesColumns<PartyRow>(),
   },
 )

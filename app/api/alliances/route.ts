@@ -12,6 +12,14 @@ import { TIER_INDEX } from '@/lib/warera/api'
  * finds the alliances a country belongs to.
  */
 const allianceFieldAliases: FieldAliases = {
+  cases: 'casesOpenedTotal',
+  luck: 'caseLuck',
+  common: 'casesCommon',
+  uncommon: 'casesUncommon',
+  rare: 'casesRare',
+  epic: 'casesEpic',
+  legendary: 'casesLegendary',
+  mythic: 'casesMythic',
   cash: 'cashWealth',
   companies: 'companiesWealth',
   country: 'memberNames',
@@ -31,6 +39,15 @@ const allianceFieldAliases: FieldAliases = {
 
 const allianceSortValue = makeSortValue<AllianceRow>({
   passthrough: [
+    'caseLuck',
+    'standardCasesOpened',
+    'mythicCasesOpened',
+    'casesCommon',
+    'casesUncommon',
+    'casesRare',
+    'casesEpic',
+    'casesLegendary',
+    'casesMythic',
     'totalPoints',
     'avgPoints',
     'avgPointsPerDay',

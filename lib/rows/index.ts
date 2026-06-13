@@ -1,5 +1,5 @@
 import type { CombatMode } from '@/lib/skills/classify'
-import type { CasesBreakdown, RankingTier } from '@/lib/warera/api'
+import type { RankingTier } from '@/lib/warera/api'
 
 /**
  * Projected user row used by both the /users page and /api/users.
@@ -12,8 +12,27 @@ export interface UserRow {
   bountyRank: number | null
   casesOpened: number | null
   casesOpenedRank: number | null
-  // Per-rarity split of cases opened (from the getUserById scrape)
-  casesByRarity: CasesBreakdown | null
+  // Opens split by case type: case1 (the standard daily-reward case) and
+  // case2 (the premium mythic case). Null when no case stats were captured.
+  standardCasesOpened: number | null
+  mythicCasesOpened: number | null
+  // Per-rarity pull counts (case1+case2 merged, from the getUserById scrape),
+  // flat so the Cases columns can sort and heat-tint. Null when no case stats
+  // were captured.
+  casesCommon: number | null
+  casesUncommon: number | null
+  casesRare: number | null
+  casesEpic: number | null
+  casesLegendary: number | null
+  casesMythic: number | null
+  // Pull luck vs the official drop rates (100 = exactly the published odds).
+  // Null under MIN_LUCK_PULLS categorized pulls (see lib/cases.ts).
+  caseLuck: number | null
+  caseLuckRank: number | null
+  // Weighted luck score inputs, kept on the row so group builders pool
+  // members' scores instead of averaging their percentages.
+  caseLuckActual: number
+  caseLuckExpected: number
   combatMode: CombatMode
   countryCode: string | null
   countryId: string
@@ -127,9 +146,28 @@ export function readinessScore(mix: ReadinessPill): number | null {
 }
 
 /**
+ * Case pulls aggregated over a group's members (citizens for countries and
+ * alliances): opens per case type, per-rarity counts, and pooled luck vs the
+ * official odds (see lib/cases.ts). Shared by every group row.
+ */
+export interface GroupCaseStats {
+  casesOpenedTotal: number
+  standardCasesOpened: number
+  mythicCasesOpened: number
+  casesCommon: number
+  casesUncommon: number
+  casesRare: number
+  casesEpic: number
+  casesLegendary: number
+  casesMythic: number
+  caseLuck: number | null
+  caseLuckRank: number | null
+}
+
+/**
  * Projected country row used by /countries and /api/countries.
  */
-export interface CountryRow {
+export interface CountryRow extends GroupCaseStats {
   // Count of active battles this country is in (attacker or defender). Live
   // data, stamped on by withActiveBattleCounts(); 0 when not populated.
   activeBattles: number
@@ -255,7 +293,7 @@ export interface GovernmentRow {
 /**
  * Projected MU (military unit) row used by /mus and /api/mus.
  */
-export interface MURow {
+export interface MURow extends GroupCaseStats {
   avatarUrl: string | null
   avgWarShare: number | null
   avgWarShareRank: number | null
@@ -414,7 +452,7 @@ export interface BattleRow {
 /**
  * Projected political-party row used by /parties and /api/parties.
  */
-export interface PartyRow {
+export interface PartyRow extends GroupCaseStats {
   avatarUrl: string | null
   avgLevel: number | null
   avgLevelRank: number | null
@@ -495,7 +533,7 @@ export interface AllianceMemberRow {
  * API ranks all alliances, so its ranks are authoritative); members are
  * resolved and sorted by development contribution at build time.
  */
-export interface AllianceRow {
+export interface AllianceRow extends GroupCaseStats {
   id: string
   name: string
   // WarEra color scheme name (same palette as user profiles), the alliance's

@@ -80,6 +80,9 @@
   --heat-gold: oklch(0.74 0.15 80);
   --heat-blue: oklch(0.62 0.15 240);
   --heat-teal: oklch(0.68 0.13 195);
+  /* Cases cyan: between teal (195) and blue (240) but lighter than both, for
+     the Cases category icon. */
+  --heat-cyan: oklch(0.66 0.13 215);
   --heat-slate: #a3a3a3;
   /* Brand orange (matches the logo) for the active nav pill. */
   --fire: oklch(0.66 0.21 50);
@@ -131,6 +134,7 @@
   --heat-gold: oklch(0.82 0.15 80);
   --heat-blue: oklch(0.68 0.15 240);
   --heat-teal: oklch(0.78 0.14 195);
+  --heat-cyan: oklch(0.76 0.13 215);
   --heat-slate: #a3a3a3; /* gear common-tier grey; theme-invariant by design */
   --fire: oklch(0.79 0.19 55);
   --border: oklch(1 0 0 / 10%);

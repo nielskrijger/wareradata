@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance, Country, MU } from '@/lib/warera/api'
 
 import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggMean, aggMeanRaw, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
+import { aggCases, aggMean, aggMeanRaw, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildCountryRows(
   countries: Country[],
@@ -78,6 +78,7 @@ export function buildCountryRows(
         developmentRank: null,
         gemsPurchasedTotal: agg?.gemsPurchasedTotal ?? 0,
         gemsPurchasedTotalRank: null,
+        ...aggCases(agg),
         id: c._id,
         levelPoints: agg?.level ?? 0,
         money: c.money ?? null,
@@ -120,6 +121,7 @@ export function buildCountryRows(
   // policy settings (lower isn't "better" in a leaderboard sense), so they get
   // no rank.
   rankAll(rows, [
+    'caseLuck',
     'totalPoints',
     'avgPoints',
     'avgLevel',

@@ -12,6 +12,14 @@ import { TIER_INDEX } from '@/lib/warera/api'
  * popover cheatsheet in `countries-table.tsx`.
  */
 const countryFieldAliases: FieldAliases = {
+  cases: 'casesOpenedTotal',
+  luck: 'caseLuck',
+  common: 'casesCommon',
+  uncommon: 'casesUncommon',
+  rare: 'casesRare',
+  epic: 'casesEpic',
+  legendary: 'casesLegendary',
+  mythic: 'casesMythic',
   allies: 'alliesCount',
   gems: 'gemsPurchasedTotal',
   level: 'avgLevel',
@@ -33,6 +41,15 @@ const countryFieldAliases: FieldAliases = {
 
 const countrySortValue = makeSortValue<CountryRow>({
   passthrough: [
+    'caseLuck',
+    'standardCasesOpened',
+    'mythicCasesOpened',
+    'casesCommon',
+    'casesUncommon',
+    'casesRare',
+    'casesEpic',
+    'casesLegendary',
+    'casesMythic',
     'totalPoints',
     'avgPoints',
     'avgPointsPerDay',

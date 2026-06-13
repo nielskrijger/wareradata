@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Party } from '@/lib/warera/api'
 
 import { rankAll } from '@/lib/rows/lookups'
-import { aggregateMembers } from '@/lib/rows/member-agg'
+import { aggCases, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: Lookups): PartyRow[] {
   // partyByUser is built once in buildLookups (also consumed by buildUserRows
@@ -34,6 +34,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         description: p.description ?? null,
         gemsPurchasedTotal: agg?.gemsPurchasedTotal ?? 0,
         gemsPurchasedTotalRank: null,
+        ...aggCases(agg),
         id: p._id,
         imperialism: ethics?.imperialism ?? null,
         industrialism: ethics?.industrialism ?? null,
@@ -73,6 +74,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
   // competition rank over the snapshot). Ethics are a -2..+2 policy scale, not
   // a leaderboard, so they get no rank.
   rankAll(rows, [
+    'caseLuck',
     'totalPoints',
     'avgPoints',
     'avgLevel',

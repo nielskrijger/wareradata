@@ -44,7 +44,7 @@ export function UsersTable({ initial, baseFilter }: Props) {
             { q: 'rank:[1 TO 100]', desc: 'Numeric range' },
             { q: 'level:>30', desc: 'Comparators' },
           ]}
-          fieldsList="username, country, mu, party, level, damage, health, hunger, buff, companies, items, cash, equipment, weapons, and more."
+          fieldsList="username, country, mu, party, level, damage, health, hunger, buff, companies, items, cash, equipment, weapons, cases, luck, and more."
         />
       )}
     />

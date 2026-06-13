@@ -9,6 +9,14 @@ import { createTableRoute, makeSortValue } from '@/lib/query'
  * popover cheatsheet in `parties-table.tsx`.
  */
 const partyFieldAliases: FieldAliases = {
+  cases: 'casesOpenedTotal',
+  luck: 'caseLuck',
+  common: 'casesCommon',
+  uncommon: 'casesUncommon',
+  rare: 'casesRare',
+  epic: 'casesEpic',
+  legendary: 'casesLegendary',
+  mythic: 'casesMythic',
   country: 'countryCode',
   leader: 'leaderName',
   members: 'memberCount',
@@ -28,6 +36,15 @@ const partyFieldAliases: FieldAliases = {
 
 const partySortValue = makeSortValue<PartyRow>({
   passthrough: [
+    'caseLuck',
+    'standardCasesOpened',
+    'mythicCasesOpened',
+    'casesCommon',
+    'casesUncommon',
+    'casesRare',
+    'casesEpic',
+    'casesLegendary',
+    'casesMythic',
     'totalPoints',
     'avgPoints',
     'avgPointsPerDay',

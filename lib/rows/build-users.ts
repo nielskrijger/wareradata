@@ -3,6 +3,7 @@ import type { UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { Equipment, GameConfig, User } from '@/lib/warera/api'
 
+import { caseLuckScores, luckPercent } from '@/lib/cases'
 import { computeGearScore, deriveSlotSpecs } from '@/lib/gear/score'
 import { rankAll, toTier } from '@/lib/rows/lookups'
 import { computePoints } from '@/lib/scoring'
@@ -54,13 +55,29 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
       // in either, so those rows sort last rather than tying with pure-eco.
       const warShare = warPoints + ecoPoints > 0 ? warPoints / (warPoints + ecoPoints) : null
 
+      // Case pulls: the merged per-rarity breakdown plus the official-odds
+      // weighted luck scores (kept on the row so group builders can pool them).
+      const cases = extractCasesBreakdown(u.stats)
+      const luck = caseLuckScores(u.stats)
+
       return {
         avatarUrl: u.avatarUrl ?? null,
         bounty: r?.userBounty?.value ?? null,
         bountyRank: null,
         casesOpened: r?.userCasesOpened?.value ?? null,
         casesOpenedRank: null,
-        casesByRarity: extractCasesBreakdown(u.stats),
+        standardCasesOpened: u.stats?.case1?.openedCount ?? null,
+        mythicCasesOpened: u.stats?.case2?.openedCount ?? null,
+        casesCommon: cases ? cases.byRarity.common ?? 0 : null,
+        casesUncommon: cases ? cases.byRarity.uncommon ?? 0 : null,
+        casesRare: cases ? cases.byRarity.rare ?? 0 : null,
+        casesEpic: cases ? cases.byRarity.epic ?? 0 : null,
+        casesLegendary: cases ? cases.byRarity.legendary ?? 0 : null,
+        casesMythic: cases ? cases.byRarity.mythic ?? 0 : null,
+        caseLuck: luckPercent(luck.actual, luck.expected, luck.categorized),
+        caseLuckRank: null,
+        caseLuckActual: luck.actual,
+        caseLuckExpected: luck.expected,
         combatMode,
         countryCode: country?.code ?? null,
         countryId: u.country,
@@ -135,6 +152,7 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
   // higher value = better (rank #1). Rows with a null value get a null rank.
   rankAll(rows, [
     'bounty',
+    'caseLuck',
     'casesOpened',
     'companiesWealth',
     'itemsWealth',

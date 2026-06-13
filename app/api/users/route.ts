@@ -11,6 +11,14 @@ import { TIER_INDEX } from '@/lib/warera/api'
  * Keep in sync with the popover cheatsheet in `users-table.tsx`.
  */
 const userFieldAliases: FieldAliases = {
+  cases: 'casesOpened',
+  luck: 'caseLuck',
+  common: 'casesCommon',
+  uncommon: 'casesUncommon',
+  rare: 'casesRare',
+  epic: 'casesEpic',
+  legendary: 'casesLegendary',
+  mythic: 'casesMythic',
   country: 'countryCode',
   mu: 'muName',
   party: 'partyName',
@@ -30,6 +38,15 @@ const userFieldAliases: FieldAliases = {
 
 const userSortValue = makeSortValue<UserRow>({
   passthrough: [
+    'caseLuck',
+    'standardCasesOpened',
+    'mythicCasesOpened',
+    'casesCommon',
+    'casesUncommon',
+    'casesRare',
+    'casesEpic',
+    'casesLegendary',
+    'casesMythic',
     'countryCode',
     'level',
     'levelRank',

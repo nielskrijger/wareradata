@@ -71,68 +71,6 @@ export function dateColumn<T>(
 }
 
 /**
- * Rows carrying the aggregate points fields, the shape every group table
- * (MUs, countries, parties, alliances) shares.
- */
-interface PointsRow {
-  totalPoints: number
-  levelPoints: number
-  damagePoints: number
-  wealthPoints: number
-  avgPoints: number | null
-  avgPointsPerDay: number | null
-}
-
-/**
- * The aggregate points trio shared by the group tables: the member-summed
- * Total (with the level/damage/wealth breakdown on hover) plus the two
- * per-member averages. `who` names the collective in the tooltips. The /users
- * table keeps its own pair: its values are one player's points, not a sum.
- */
-export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
-  const one = who.slice(0, -1)
-
-  return [
-    pointsBreakdownColumn<T>('totalPoints' as Key<T>, 'Total', { tooltip: `Combined points of all ${who}.` }),
-    localeNumberColumn<T>('avgPoints' as Key<T>, 'Average', { heat: 'median', width: 110, tooltip: `Average points per ${one}.` }),
-    localeNumberColumn<T>('avgPointsPerDay' as Key<T>, 'Avg / day', { heat: 'median', width: 125, tooltip: `Average points earned per day, per ${one}.` }),
-  ]
-}
-
-/**
- * Rows carrying the five member-summed wealth components, the shape every
- * group table (MUs, countries, parties, alliances) shares.
- */
-interface WealthComponentsRow {
-  companiesWealth: number
-  itemsWealth: number
-  cashWealth: number
-  equipmentWealth: number
-  weaponsWealth: number
-}
-
-/**
- * The six aggregate wealth columns shared by the group tables: the
- * member-summed Total plus its five components. Only the Total's row key
- * (memberWealth vs citizenWealth) and the collective noun in the tooltips
- * differ per table. The /users table keeps its own set: its values are one
- * player's holdings, not a sum, so the tooltips read differently.
- */
-export function wealthBreakdownColumns<T extends WealthComponentsRow>(
-  totalKey: Key<T>,
-  who: 'members' | 'citizens',
-): ColumnDef<T>[] {
-  return [
-    compactNumberColumn<T>(totalKey, 'Total', { heat: 'median', width: 110, tooltip: `Combined wealth of all ${who} (companies + items + cash + equipment + weapons).` }),
-    compactNumberColumn<T>('companiesWealth' as Key<T>, 'Companies', { heat: 'median', width: 135, tooltip: `Combined company value across ${who}.` }),
-    compactNumberColumn<T>('itemsWealth' as Key<T>, 'Items', { heat: 'median', width: 100, tooltip: `Combined item value across ${who}.` }),
-    compactNumberColumn<T>('cashWealth' as Key<T>, 'Cash', { heat: 'median', width: 100, tooltip: `Combined cash across ${who}.` }),
-    compactNumberColumn<T>('equipmentWealth' as Key<T>, 'Equipment', { heat: 'median', width: 130, tooltip: `Combined equipment value across ${who}.` }),
-    compactNumberColumn<T>('weaponsWealth' as Key<T>, 'Weapons', { heat: 'median', width: 125, tooltip: `Combined weapon value across ${who}.` }),
-  ]
-}
-
-/**
  * Right-aligned locale-formatted integer (`12,345`), null-safe. Suits both the
  * nullable averages (avgPoints) and the always-present totals (gems, premium).
  */
@@ -344,7 +282,7 @@ export function scaleBadgeColumn<T>(
 export function percentColumn<T>(
   key: Key<T>,
   header: string,
-  opts: { heat?: HeatMode, center?: number, decimals?: number, sortInvert?: boolean, width?: number } = {},
+  opts: { heat?: HeatMode, center?: number, decimals?: number, sortInvert?: boolean, width?: number, tooltip?: string, rankKey?: Key<T> } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
@@ -354,9 +292,18 @@ export function percentColumn<T>(
       if (value === null) {
         return null
       }
-      return `${opts.decimals != null ? value.toFixed(opts.decimals) : value}%`
+
+      const display = `${opts.decimals != null ? value.toFixed(opts.decimals) : value}%`
+      if (!opts.rankKey) {
+        return display
+      }
+      return (
+        <ValueWithRankTooltip rank={row.original[opts.rankKey] as number | null}>
+          {display}
+        </ValueWithRankTooltip>
+      )
     },
     sortDescFirst: true,
-    meta: { heat: opts.heat, heatCenter: opts.center, sortInvert: opts.sortInvert, align: 'right', width: opts.width ?? 110 },
+    meta: { heat: opts.heat, heatCenter: opts.center, sortInvert: opts.sortInvert, align: 'right', width: opts.width ?? 110, tooltip: opts.tooltip },
   }
 }

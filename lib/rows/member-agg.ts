@@ -1,4 +1,6 @@
-import type { UserRow } from '@/lib/rows'
+import type { GroupCaseStats, UserRow } from '@/lib/rows'
+
+import { luckPercent } from '@/lib/cases'
 
 export interface MemberAgg {
   buffCount: number
@@ -46,6 +48,20 @@ export interface MemberAgg {
   // only members with a non-null rate (accounts <7 days old have none).
   pointsPerDaySum: number
   pointsPerDayCount: number
+  // Case pulls: total opens, per-rarity sums, and the pooled luck score inputs
+  // (see lib/cases.ts), so group luck judges the group's combined pulls against
+  // the official odds rather than averaging member percentages.
+  casesOpened: number
+  standardCasesOpened: number
+  mythicCasesOpened: number
+  casesCommon: number
+  casesUncommon: number
+  casesRare: number
+  casesEpic: number
+  casesLegendary: number
+  casesMythic: number
+  caseLuckActual: number
+  caseLuckExpected: number
 }
 
 function emptyAgg(): MemberAgg {
@@ -79,6 +95,17 @@ function emptyAgg(): MemberAgg {
     weaponsWealth: 0,
     pointsPerDaySum: 0,
     pointsPerDayCount: 0,
+    casesOpened: 0,
+    standardCasesOpened: 0,
+    mythicCasesOpened: 0,
+    casesCommon: 0,
+    casesUncommon: 0,
+    casesRare: 0,
+    casesEpic: 0,
+    casesLegendary: 0,
+    casesMythic: 0,
+    caseLuckActual: 0,
+    caseLuckExpected: 0,
   }
 }
 
@@ -119,6 +146,17 @@ export function aggregateMembers(
     entry.gemsPurchasedTotal += u.gemsPurchased ?? 0
     entry.premiumMonthsTotal += u.premiumMonths ?? 0
     entry.premiumGiftsTotal += u.premiumGifts ?? 0
+    entry.casesOpened += u.casesOpened ?? 0
+    entry.standardCasesOpened += u.standardCasesOpened ?? 0
+    entry.mythicCasesOpened += u.mythicCasesOpened ?? 0
+    entry.casesCommon += u.casesCommon ?? 0
+    entry.casesUncommon += u.casesUncommon ?? 0
+    entry.casesRare += u.casesRare ?? 0
+    entry.casesEpic += u.casesEpic ?? 0
+    entry.casesLegendary += u.casesLegendary ?? 0
+    entry.casesMythic += u.casesMythic ?? 0
+    entry.caseLuckActual += u.caseLuckActual
+    entry.caseLuckExpected += u.caseLuckExpected
     if (u.level !== null) {
       entry.levelSum += u.level
       entry.levelCount += 1
@@ -154,6 +192,38 @@ export function aggregateMembers(
   }
 
   return out
+}
+
+/**
+ * Pooled case luck for a group: the members' combined weighted pulls judged
+ * against the official odds (see lib/cases.ts), not a mean of member
+ * percentages — heavy openers weigh in proportionally.
+ */
+function aggCaseLuck(agg: MemberAgg): number | null {
+  const categorized = agg.casesCommon + agg.casesUncommon + agg.casesRare
+    + agg.casesEpic + agg.casesLegendary + agg.casesMythic
+  return luckPercent(agg.caseLuckActual, agg.caseLuckExpected, categorized)
+}
+
+/**
+ * A group row's case-stat fields ({@link GroupCaseStats}), assembled from the
+ * aggregate. One spread per builder keeps the field set in one place, next to
+ * the aggregation that produces it.
+ */
+export function aggCases(agg: MemberAgg | undefined): GroupCaseStats {
+  return {
+    casesOpenedTotal: agg?.casesOpened ?? 0,
+    standardCasesOpened: agg?.standardCasesOpened ?? 0,
+    mythicCasesOpened: agg?.mythicCasesOpened ?? 0,
+    casesCommon: agg?.casesCommon ?? 0,
+    casesUncommon: agg?.casesUncommon ?? 0,
+    casesRare: agg?.casesRare ?? 0,
+    casesEpic: agg?.casesEpic ?? 0,
+    casesLegendary: agg?.casesLegendary ?? 0,
+    casesMythic: agg?.casesMythic ?? 0,
+    caseLuck: agg ? aggCaseLuck(agg) : null,
+    caseLuckRank: null,
+  }
 }
 
 /**

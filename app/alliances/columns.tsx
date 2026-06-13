@@ -8,7 +8,8 @@ import { AllianceAvatar } from '@/components/cells/alliance-avatar'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { buildColumns } from '@/components/data-table/column-categories'
-import { compactNumberColumn, dateColumn, localeNumberColumn, pointsColumns, tierColumn, wealthBreakdownColumns } from '@/components/data-table/column-factories'
+import { compactNumberColumn, dateColumn, localeNumberColumn, tierColumn } from '@/components/data-table/column-factories'
+import { casesColumns, pointsColumns, wealthColumns } from '@/components/data-table/column-groups'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
@@ -131,6 +132,7 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
       compactNumberColumn<AllianceRow>('weeklyDamage', 'Weekly', { heat: 'median', width: 110 }),
       compactNumberColumn<AllianceRow>('weeklyDamagePerCitizen', 'Weekly / Citizen', { heat: 'median', width: 170 }),
     ],
-    wealth: wealthBreakdownColumns<AllianceRow>('citizenWealth', 'citizens'),
+    wealth: wealthColumns<AllianceRow>('citizenWealth', 'citizens'),
+    cases: casesColumns<AllianceRow>(),
   },
 )

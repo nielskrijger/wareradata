@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { MU } from '@/lib/warera/api'
 
 import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggMean, aggMeanRaw, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
+import { aggCases, aggMean, aggMeanRaw, aggReadinessPill, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): MURow[] {
   const membersByMu = aggregateMembers(userRows, u => u.muId)
@@ -55,6 +55,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         dormitoriesLevelRank: null,
         gemsPurchasedTotal: agg?.gemsPurchasedTotal ?? 0,
         gemsPurchasedTotalRank: null,
+        ...aggCases(agg),
         headquartersLevel: m.activeUpgradeLevels?.headquarters ?? null,
         headquartersLevelRank: null,
         id: m._id,
@@ -108,6 +109,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
   // damage/wealth ranks the API also provides, trading its global denominator
   // for one consistent with the rest of the card grid.
   rankAll(rows, [
+    'caseLuck',
     'totalPoints',
     'avgPoints',
     'avgLevel',

@@ -1,7 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import type { LucideIcon } from 'lucide-react'
 
-import { Building2, Coins, Compass, Landmark, LayoutGrid, Sparkles, Swords, Trophy } from 'lucide-react'
+import { Building2, Coins, Compass, Landmark, LayoutGrid, PackageOpen, Sparkles, Swords, Trophy } from 'lucide-react'
 
 /**
  * Categories group the (long) column list in the Columns menu into collapsible
@@ -26,6 +26,7 @@ export const CATEGORIES = [
   'muSpecific',
   'wealth',
   'premium',
+  'cases',
 ] as const
 
 export type Category = (typeof CATEGORIES)[number]
@@ -50,6 +51,7 @@ export const CATEGORY_META: Record<Category, { label: string, Icon: LucideIcon, 
   muSpecific: { label: 'MU-specific', Icon: Building2, color: 'var(--heat-slate)' },
   wealth: { label: 'Wealth', Icon: Coins, color: 'var(--heat-gold)' },
   premium: { label: 'Premium', Icon: Sparkles, color: 'var(--heat-purple)' },
+  cases: { label: 'Cases', Icon: PackageOpen, color: 'var(--heat-cyan)' },
 }
 
 /**

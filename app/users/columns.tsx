@@ -22,6 +22,7 @@ import {
   pointsBreakdownColumn,
   rankTooltipColumn,
 } from '@/components/data-table/column-factories'
+import { casesColumns } from '@/components/data-table/column-groups'
 import { InfoTooltip } from '@/components/info-tooltip'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -174,8 +175,8 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
     premium: [
       localeNumberColumn<UserRow>('premiumMonths', 'Premium Mo.', { heat: 'ramp', width: 145 }),
       localeNumberColumn<UserRow>('premiumGifts', 'Premium Gifts', { heat: 'ramp', width: 155 }),
-      localeNumberColumn<UserRow>('casesOpened', 'Cases Opened', { heat: 'median', logScale: true, width: 155 }),
       localeNumberColumn<UserRow>('gemsPurchased', 'Gems Purchased', { heat: 'ramp', width: 175 }),
     ],
+    cases: casesColumns<UserRow>(),
   },
 )

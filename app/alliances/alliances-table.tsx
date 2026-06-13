@@ -32,7 +32,7 @@ export function AlliancesTable({ initial }: Props) {
             { q: 'population:[100 TO 1000]', desc: 'Numeric range' },
             { q: 'country:rs AND members:>5', desc: 'Combine with AND/OR' },
           ]}
-          fieldsList="name, leader, country, members, population, points, ppd, dev, damage, weekly, wealth, companies, items, cash, equipment, weapons, and more."
+          fieldsList="name, leader, country, members, population, points, ppd, dev, damage, weekly, wealth, companies, items, cash, equipment, weapons, cases, luck, and more."
         />
       )}
     />

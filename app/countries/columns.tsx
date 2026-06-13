@@ -14,12 +14,11 @@ import {
   localeNumberColumn,
   percentBarColumn,
   percentColumn,
-  pointsColumns,
   rankTooltipColumn,
   readinessColumn,
   tierColumn,
-  wealthBreakdownColumns,
 } from '@/components/data-table/column-factories'
+import { casesColumns, pointsColumns, wealthColumns } from '@/components/data-table/column-groups'
 import { InternalLink } from '@/components/links'
 
 export type { CountryRow }
@@ -125,7 +124,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
     ],
     wealth: [
       rankTooltipColumn<CountryRow>('wealth', 'wealthRank', 'Country Wealth', { width: 165, tooltip: 'Wealth held by the country itself (its own national assets), not the combined citizen Total.' }),
-      ...wealthBreakdownColumns<CountryRow>('citizenWealth', 'citizens'),
+      ...wealthColumns<CountryRow>('citizenWealth', 'citizens'),
       compactNumberColumn<CountryRow>('bounty', 'Bounty', { heat: 'ramp', width: 110, tooltip: 'Coins this country has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
       compactNumberColumn<CountryRow>('money', 'Treasury', { heat: 'median', width: 120, tooltip: 'Money held in the country treasury.' }),
     ],
@@ -134,5 +133,6 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
       localeNumberColumn<CountryRow>('premiumMonthsTotal', 'Premium Mo.', { heat: 'ramp', width: 145 }),
       localeNumberColumn<CountryRow>('premiumGiftsTotal', 'Premium Gifts', { heat: 'ramp', width: 155 }),
     ],
+    cases: casesColumns<CountryRow>(),
   },
 )

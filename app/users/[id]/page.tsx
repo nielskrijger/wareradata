@@ -26,6 +26,7 @@ import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { getSnapshot } from '@/lib/cache/memory'
+import { casesBreakdownFromRow } from '@/lib/cases'
 import { EMPTY } from '@/lib/format'
 import { applyQuery } from '@/lib/query'
 import { getUserCasesBreakdown } from '@/lib/warera/api'
@@ -79,7 +80,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   // The per-rarity case breakdown now rides along in the snapshot (users are
   // scraped via getUserById). Fall back to a live fetch only for rows a fresh
   // scrape hasn't reached yet, and skip it entirely when there are no cases.
-  const cases = user.casesByRarity ?? (user.casesOpened ? await getUserCasesBreakdown(user.id) : null)
+  const cases = casesBreakdownFromRow(user) ?? (user.casesOpened ? await getUserCasesBreakdown(user.id) : null)
 
   const rgb = schemeRgb(user.colorScheme)
   // Show the gear section whenever we captured this user's equipment, even if

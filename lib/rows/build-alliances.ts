@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance } from '@/lib/warera/api'
 
 import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggMean, aggregateMembers } from '@/lib/rows/member-agg'
+import { aggCases, aggMean, aggregateMembers } from '@/lib/rows/member-agg'
 
 export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow[], userRows: UserRow[], lookups: Lookups): AllianceRow[] {
   const countryRowById = new Map(countryRows.map(c => [c.id, c]))
@@ -82,6 +82,7 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
         levelPoints: agg?.level ?? 0,
         damagePoints: agg?.damage ?? 0,
         wealthPoints: agg?.wealthPoints ?? 0,
+        ...aggCases(agg),
         ...wealth,
         citizenWealthRank: null,
         companiesWealthRank: null,
@@ -114,6 +115,7 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
   // fields carry no upstream rank, so rank those across the snapshot like the
   // other group builders do.
   rankAll(rows, [
+    'caseLuck',
     'totalPoints',
     'avgPoints',
     'coreDevelopment',

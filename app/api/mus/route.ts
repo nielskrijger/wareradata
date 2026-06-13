@@ -11,6 +11,14 @@ import { TIER_INDEX } from '@/lib/warera/api'
  * popover cheatsheet in `mus-table.tsx`.
  */
 const muFieldAliases: FieldAliases = {
+  cases: 'casesOpenedTotal',
+  luck: 'caseLuck',
+  common: 'casesCommon',
+  uncommon: 'casesUncommon',
+  rare: 'casesRare',
+  epic: 'casesEpic',
+  legendary: 'casesLegendary',
+  mythic: 'casesMythic',
   country: 'countryCode',
   region: 'regionName',
   members: 'memberCount',
@@ -31,6 +39,15 @@ const muFieldAliases: FieldAliases = {
 
 const muSortValue = makeSortValue<MURow>({
   passthrough: [
+    'caseLuck',
+    'standardCasesOpened',
+    'mythicCasesOpened',
+    'casesCommon',
+    'casesUncommon',
+    'casesRare',
+    'casesEpic',
+    'casesLegendary',
+    'casesMythic',
     'totalPoints',
     'avgPoints',
     'avgPointsPerDay',

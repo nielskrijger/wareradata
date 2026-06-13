@@ -143,14 +143,15 @@ interface ScrapeRequestOptions {
 //  - scrapeClient:  the background main-scrape loop.
 //  - urgentClient:  latency-sensitive on-demand traffic (MU refreshes, live
 //    battles, the user-page factory fetch).
-//  - factoryClient: the slow, infrequent all-users factory scrape. Deliberately
-//    small so it can run for hours without starving the others.
+//  - factoryClient: the all-users factory scrape. Currently the largest share to
+//    get the first full pass done sooner; drop it back (and give scrape more)
+//    once that pass has completed.
 //
-// Defaults sum to 200 (120 + 60 + 20), the API's authenticated cap, so all
-// three together stay within budget; each is overridable by env for headroom.
-const SCRAPE_RATE_LIMIT = Number(process.env.SCRAPE_RATE_LIMIT ?? 120)
-const URGENT_RATE_LIMIT = Number(process.env.URGENT_RATE_LIMIT ?? 60)
-const FACTORY_RATE_LIMIT = Number(process.env.FACTORY_RATE_LIMIT ?? 20)
+// Defaults sum to 200 (60 + 40 + 100), the API's authenticated cap, so all three
+// together stay within budget; each is overridable by env to rebalance.
+const SCRAPE_RATE_LIMIT = Number(process.env.SCRAPE_RATE_LIMIT ?? 60)
+const URGENT_RATE_LIMIT = Number(process.env.URGENT_RATE_LIMIT ?? 40)
+const FACTORY_RATE_LIMIT = Number(process.env.FACTORY_RATE_LIMIT ?? 100)
 
 const scrapeClient = createAPIClient({
   apiKey: process.env.WARERA_API_KEY,

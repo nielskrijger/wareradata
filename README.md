@@ -44,15 +44,17 @@ server, use `npm run scrape-main`.
 
 ### Environment
 
-| Var                 | Default   | Purpose                                        |
-| ------------------- | --------- | ---------------------------------------------- |
-| `WARERA_API_KEY`    | (none)    | API key; raises the request-rate tier.         |
-| `DATA_DIR`          | `./.data` | Where the snapshot and battle archive live.    |
-| `SCRAPE_RATE_LIMIT` | `100`     | Requests/min for the continuous scrape client. |
-| `URGENT_RATE_LIMIT` | `100`     | Requests/min for the on-demand client.         |
+| Var                  | Default   | Purpose                                             |
+| -------------------- | --------- | --------------------------------------------------- |
+| `WARERA_API_KEY`     | (none)    | API key; raises the request-rate tier.              |
+| `DATA_DIR`           | `./.data` | Where the snapshot and battle archive live.         |
+| `SCRAPE_RATE_LIMIT`  | `60`      | Requests/min for the continuous main-scrape client. |
+| `URGENT_RATE_LIMIT`  | `40`      | Requests/min for the on-demand client.              |
+| `FACTORY_RATE_LIMIT` | `100`     | Requests/min for the all-users factory scrape.      |
 
-The two rate limits are enforced independently; keep their sum at the API's
-authenticated tier.
+The three rate limits are enforced independently; keep their sum (default 200) at
+the API's authenticated tier. Factory holds the largest share for now to finish
+its first full pass; rebalance toward scrape once that's done.
 
 ## The scraper
 
@@ -64,13 +66,13 @@ its `fs` and scraper imports stay out of the edge bundle: it awaits
 `startScraper` fire-and-forget, so the loop never blocks the server from
 becoming ready.
 
-There are two [@wareraprojects/api](https://www.npmjs.com/package/@wareraprojects/api)
-clients, each with its own rate-limit budget so the two never wait on each
-other:
+There are three [@wareraprojects/api](https://www.npmjs.com/package/@wareraprojects/api)
+clients, each with its own rate-limit budget so none waits behind another:
 
-- **scrape client** (`SCRAPE_RATE_LIMIT`): the continuous full-scrape loop.
+- **scrape client** (`SCRAPE_RATE_LIMIT`): the continuous main-scrape loop.
 - **urgent client** (`URGENT_RATE_LIMIT`): on-demand, latency-sensitive
   traffic (the per-page Refresh buttons).
+- **factory client** (`FACTORY_RATE_LIMIT`): the slow all-users factory scrape.
 
 The client handles tRPC batching (up to 50 calls per request) and retries, and
 enforces the rate limit at the HTTP-request level. So the user phase below is

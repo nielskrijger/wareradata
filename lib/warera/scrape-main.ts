@@ -1,7 +1,9 @@
 import type { Government, SnapshotMeta } from './api'
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
+import { writeEquipmentNdjson } from '@/lib/cache/equipment-store'
 import { writeRawSnapshot } from '@/lib/cache/file-store'
+import { writeUsersNdjson } from '@/lib/cache/users-store'
 
 import { recipeFromGameConfig } from '@/lib/factories/inputs'
 import { logger } from '@/lib/log'
@@ -86,21 +88,26 @@ export async function scrapeMain(): Promise<RawSnapshot> {
 
   // 4. Hydrate users. Stamp each with the capture time (like MUs below) so the
   // user page can show data freshness; an on-demand refresh bumps it later.
+  // Streamed straight to users.ndjson (not held in the RawSnapshot) — the raw
+  // user array is the biggest collection (~84 MB), so keeping it off the
+  // persisted snapshot and the scraper's resident heap is the main memory win;
+  // the build streams it back into the rows.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
   const users = usersRaw.map(u => ({ ...u, lastRefreshedAt: usersCapturedAt }))
+  await writeUsersNdjson(users)
   log.info({ users: users.length }, 'hydrated users')
 
   // 5. Per-user equipment. One HTTP call per user, batched by the tRPC client
-  // up to 50 ops. Many entries come back `{}` (player stripped gear between
-  // battles); kept in the snapshot as-is so readers can distinguish "captured,
-  // none equipped" from "not captured".
+  // up to 50 ops. Streamed straight to a separate equipment.ndjson file (not held
+  // in the RawSnapshot), keeping ~14 MB out of snapshot.json and off the
+  // scraper's resident heap; the build streams it back for gear scoring. Many
+  // entries come back `{}` (player stripped gear between battles); a line is
+  // written for each so readers can tell "captured, none equipped" from "not
+  // captured".
   const equipmentList = await getEquipment(userIds)
-  const equipment: Record<string, RawSnapshot['equipment'][string]> = {}
-  for (let i = 0; i < userIds.length; i++) {
-    equipment[userIds[i]] = equipmentList[i]
-  }
-  log.info({ users: equipmentList.length }, 'fetched equipment')
+  await writeEquipmentNdjson(userIds, equipmentList)
+  log.info({ users: equipmentList.length }, 'wrote equipment file')
 
   // 6. MUs: single cursor-paginated stream. Stamp each with the capture time so
   // the MU page can show data freshness; an on-demand refresh bumps it later.
@@ -168,7 +175,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { users, equipment, countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, itemBestRegions, meta }
+  return { countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, itemBestRegions, meta }
 }
 
 /**
@@ -200,7 +207,7 @@ export async function runMainScrape(): Promise<ScrapeResult> {
 
   const counts = {
     countries: raw.countries.length,
-    users: raw.users.length,
+    users: raw.meta.entityCounts?.users ?? 0,
     mus: raw.mus.length,
     regions: raw.regions.length,
     parties: raw.parties.length,

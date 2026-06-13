@@ -6,7 +6,7 @@ import { leaderFields, rankAll } from '@/lib/rows/lookups'
 import { aggCases, aggPoints, aggPremium, aggregateMembers, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
 
 export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: Lookups): PartyRow[] {
-  // partyByUser is built once in buildLookups (also consumed by buildUserRows
+  // partyByUser is built once in buildBaseLookups (also consumed by buildUserRows
   // to set partyId/partyName on each user row).
   const membersByParty = aggregateMembers(userRows, u => lookups.partyByUser.get(u.id)?.id ?? null)
 

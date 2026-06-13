@@ -1,4 +1,4 @@
-import type { Alliance, Battle, Country, Equipment, GameConfig, Government, ItemBestRegion, MarketPrices, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
+import type { Alliance, Battle, Country, GameConfig, Government, ItemBestRegion, MarketPrices, MU, Party, Region, SnapshotMeta, TournamentSnapshot } from '@/lib/warera/api'
 
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
@@ -15,11 +15,10 @@ const log = logger.child({ phase: 'file-store' })
  * scraper publishes a globally consistent snapshot with one atomic rename.
  */
 export interface RawSnapshot {
-  users: User[]
-  // Currently-equipped gear keyed by user id. A user may be absent (no equipment
-  // captured) or present with `{}` (stripped between battles); both render the
-  // same in the UI.
-  equipment: Record<string, Equipment>
+  // The raw user array lives in a separate users.ndjson file, and currently-
+  // equipped gear in equipment.ndjson — neither is held here, so the persisted
+  // snapshot is small (~5 MB) and the build streams those files into the rows
+  // (see lib/cache/users-store and lib/cache/equipment-store).
   countries: Country[]
   // Each occupied country's elected officials (president, ministers, congress),
   // keyed by country id, all as user ids. Captured once per scrape via the
@@ -93,8 +92,6 @@ export async function writeJsonFile(filePath: string, data: unknown): Promise<vo
 
 export function emptyRawSnapshot(): RawSnapshot {
   return {
-    users: [],
-    equipment: {},
     countries: [],
     governments: {},
     mus: [],
@@ -137,48 +134,32 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   // Backfill fields added to RawSnapshot after the persisted file was written,
   // so a deploy that adds a new key doesn't crash on the first boot reading a
   // legacy on-disk snapshot. The next scrape cycle will populate them properly.
-  parsed.equipment ??= {}
   parsed.governments ??= {}
   parsed.alliances ??= []
   parsed.prices ??= {} as RawSnapshot['prices']
   parsed.itemBestRegions ??= {}
-  log.info({ path, sizeMb: Number((raw.length / 1_000_000).toFixed(1)), users: parsed.users?.length ?? 0, readMs }, 'read snapshot')
+
+  // Legacy snapshots embedded users (now in users.ndjson) and equipment (now in
+  // equipment.ndjson). Drop the dead keys so a pre-migration file doesn't pin
+  // ~100 MB of unused data until the next scrape rewrites the snapshot without
+  // them. Transitional: serializeSnapshot never emits these, so once one cycle
+  // has run in each environment this is dead and can be removed.
+  delete (parsed as { users?: unknown }).users
+  delete (parsed as { equipment?: unknown }).equipment
+
+  log.info({ path, sizeMb: Number((raw.length / 1_000_000).toFixed(1)), countries: parsed.countries?.length ?? 0, readMs }, 'read snapshot')
   return parsed
 }
 
 /**
- * Streams the snapshot as JSON one piece at a time, so we never materialize the
- * whole ~100MB serialized string (and its write buffer) in memory at once. The
- * two big collections (users, equipment) are emitted item by item; everything
- * else is small enough to stringify whole. Key order is irrelevant to a parser,
- * and `JSON.stringify` of an `undefined` value yields `undefined`, which we skip
- * to mirror how `JSON.stringify` drops undefined-valued properties.
+ * Streams the snapshot as JSON one field at a time. The two big collections
+ * (users, equipment) now live in their own NDJSON files, so what remains here is
+ * small (~5 MB) — but the streamed write keeps the atomic temp-file + rename
+ * guarantee and avoids holding a second copy in a write buffer. Key order is
+ * irrelevant to a parser.
  */
 function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
-  yield '{"users":['
-  let sep = ''
-  for (const user of snapshot.users) {
-    const json = JSON.stringify(user)
-    if (json === undefined) {
-      continue
-    }
-    yield sep + json
-    sep = ','
-  }
-
-  yield '],"equipment":{'
-  sep = ''
-  for (const [id, value] of Object.entries(snapshot.equipment)) {
-    const json = JSON.stringify(value)
-    if (json === undefined) {
-      continue
-    }
-    yield `${sep}${JSON.stringify(id)}:${json}`
-    sep = ','
-  }
-  yield '}'
-
-  yield `,"countries":${JSON.stringify(snapshot.countries)}`
+  yield `{"countries":${JSON.stringify(snapshot.countries)}`
   yield `,"governments":${JSON.stringify(snapshot.governments)}`
   yield `,"mus":${JSON.stringify(snapshot.mus)}`
   yield `,"regions":${JSON.stringify(snapshot.regions)}`

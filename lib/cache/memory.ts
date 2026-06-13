@@ -5,7 +5,7 @@ import type { Range } from '@/lib/query'
 import type { AllianceRow, BattleRow, CountryRow, GovernmentRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 
-import type { Equipment, GameConfig, TournamentSnapshot } from '@/lib/warera/api'
+import type { Equipment, GameConfig, TournamentSnapshot, User } from '@/lib/warera/api'
 
 import { loadFactoryAggregates } from '@/lib/factories/aggregate'
 import { deriveGearLookup } from '@/lib/gear/score'
@@ -19,9 +19,11 @@ import { buildMURows } from '@/lib/rows/build-mus'
 import { buildPartyRows } from '@/lib/rows/build-parties'
 import { buildRegionRows } from '@/lib/rows/build-regions'
 import { buildUserRows } from '@/lib/rows/build-users'
-import { buildLookups } from '@/lib/rows/lookups'
+import { buildBaseLookups } from '@/lib/rows/lookups'
 
+import { loadEquipmentByUser } from './equipment-store'
 import { emptyRawSnapshot, readRawSnapshot } from './file-store'
+import { streamUsers } from './users-store'
 
 // Build-time guard: fails the build if any client component ever imports this
 // file (it holds the in-process snapshot and pulls in server-only builders).
@@ -47,10 +49,6 @@ export interface Snapshot {
   // tooltip can heat-tint stats against the leaderboard without re-walking
   // 16k rows per request.
   userRanges: Record<string, Range>
-  // Currently-equipped gear per user id, captured by the equipment scrape
-  // phase. Pass-through from RawSnapshot — the row builders don't need it,
-  // but per-user views (hover-card, detail page) read it directly.
-  equipment: Record<string, Equipment>
   countries: CountryRow[]
   // Resolved government per country id (president, ministers, congress), built
   // from RawSnapshot.governments + the user lookups. Read only by the country
@@ -84,8 +82,9 @@ export interface Snapshot {
 interface SnapshotStore {
   // The built snapshot the scraper keeps swapped in.
   current: Snapshot | null
-  // Guards against many concurrent first-requests each loading the 68 MB file:
-  // the first read kicks off one load, the rest await the same promise.
+  // Guards against many concurrent first-requests each building from disk
+  // (reading the snapshot + streaming users.ndjson): the first read kicks off one
+  // load, the rest await the same promise.
   loading: Promise<Snapshot> | null
 }
 
@@ -102,14 +101,24 @@ function store(): SnapshotStore {
  * builders never mutate their input), so the result is a new immutable snapshot
  * safe to publish while readers still hold an older one.
  */
-export function buildSnapshot(raw: RawSnapshot, nowMs: number, factoryAggByUser: Map<string, UserFactoryAgg> = new Map()): Snapshot {
-  const lookups = buildLookups(raw.countries, raw.mus, raw.regions, raw.users, raw.parties)
+export async function buildSnapshot(
+  raw: RawSnapshot,
+  nowMs: number,
+  streamUsersForBuild: (onUser: (user: User) => void) => Promise<void>,
+  factoryAggByUser: Map<string, UserFactoryAgg> = new Map(),
+  equipmentByUser: Record<string, Equipment> = {},
+): Promise<Snapshot> {
+  // User-derived lookup maps start empty here and are filled by buildUserRows as
+  // it streams users.ndjson; the MU/party/alliance builders read them afterward.
+  const lookups = buildBaseLookups(raw.countries, raw.mus, raw.regions, raw.parties)
   const gearLookup = deriveGearLookup(raw.gameConfig)
 
-  // Per-user factory totals (streamed + computed from the factory NDJSON +
-  // market data by the async caller) roll up through member-agg into the entity
-  // Industry columns. Empty when the factory scrape hasn't run.
-  const userRows = buildUserRows(raw.users, lookups, nowMs, raw.equipment, raw.gameConfig, gearLookup, factoryAggByUser)
+  // Users are streamed from users.ndjson (one line at a time) into their rows, so
+  // the 84 MB raw array never resides; only the derived UserRow[] is kept.
+  // Per-user factory totals and equipment are likewise streamed from their own
+  // files by the caller. Factory totals roll up through member-agg into the
+  // entity Industry columns; equipment feeds gear scoring and isn't retained.
+  const userRows = await buildUserRows(streamUsersForBuild, lookups, nowMs, equipmentByUser, raw.gameConfig, gearLookup, factoryAggByUser)
   const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups, raw.alliances)
   const governmentRows = buildGovernmentRows(raw.governments, lookups)
   const muRows = buildMURows(raw.mus, userRows, lookups)
@@ -119,19 +128,51 @@ export function buildSnapshot(raw: RawSnapshot, nowMs: number, factoryAggByUser:
   const battleRows = buildBattleRows(raw.battles, raw.tournament, lookups)
   const userRanges = computeRanges(userRows)
 
-  return { users: userRows, userRanges, equipment: raw.equipment, countries: countryRows, governments: governmentRows, mus: muRows, parties: partyRows, alliances: allianceRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament, gameConfig: raw.gameConfig, gearLookup }
+  return { users: userRows, userRanges, countries: countryRows, governments: governmentRows, mus: muRows, parties: partyRows, alliances: allianceRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament, gameConfig: raw.gameConfig, gearLookup }
 }
 
 /**
- * Builds a snapshot at the current time and logs the duration. Use at the
- * boot / scrape paths (worker context, never during prerender) — keeping the
- * Date.now() and timing log out of {@link buildSnapshot} itself lets that
- * function be called from a prerender path without tripping the
- * cacheComponents current-time check.
+ * Wraps the raw users.ndjson stream with the on-demand refresh overlay: a
+ * refreshed user's line is replaced by the overlay version (last-wins), and
+ * overlay users not yet in the file (added between main cycles) are emitted
+ * after. The overlay is small (only users refreshed since the last main cycle).
  */
-export function buildSnapshotNow(raw: RawSnapshot, label: string, factoryAggByUser: Map<string, UserFactoryAgg> = new Map()): Snapshot {
+function streamUsersWithOverlay(overlay: Map<string, User>): (onUser: (user: User) => void) => Promise<void> {
+  return async (onUser) => {
+    const consumed = new Set<string>()
+    await streamUsers((u) => {
+      const override = overlay.get(u._id)
+      if (override) {
+        consumed.add(u._id)
+        onUser(override)
+      } else {
+        onUser(u)
+      }
+    })
+
+    for (const [id, u] of overlay) {
+      if (!consumed.has(id)) {
+        onUser(u)
+      }
+    }
+  }
+}
+
+/**
+ * Loads the streamed factory and equipment files in parallel and builds the
+ * snapshot, streaming users.ndjson (with the refresh `userOverlay` merged on
+ * top) into the rows, and logs the build duration. The one place that joins a raw
+ * snapshot with its separate NDJSON files, so the scrape, refresh, boot, and
+ * lazy-load paths stay consistent.
+ */
+export async function buildSnapshotFromRaw(raw: RawSnapshot, label: string, userOverlay: Map<string, User> = new Map()): Promise<Snapshot> {
+  const [factoryAggByUser, equipmentByUser] = await Promise.all([
+    loadFactoryAggregates(raw),
+    loadEquipmentByUser(),
+  ])
+
   const start = Date.now()
-  const snapshot = buildSnapshot(raw, start, factoryAggByUser)
+  const snapshot = await buildSnapshot(raw, start, streamUsersWithOverlay(userOverlay), factoryAggByUser, equipmentByUser)
   log.info({ label, durationMs: Date.now() - start, users: snapshot.users.length }, 'built rows')
   return snapshot
 }
@@ -157,10 +198,10 @@ export async function initSnapshot(): Promise<void> {
   }
   log.info('boot: loading persisted snapshot from disk')
   const raw = (await readRawSnapshot()) ?? emptyRawSnapshot()
-  if (!raw.users.length) {
+  s.current = await buildSnapshotFromRaw(raw, 'boot')
+  if (!s.current.users.length) {
     log.info('boot: no persisted data, starting empty until the scraper completes its first cycle')
   }
-  s.current = buildSnapshotNow(raw, 'boot', await loadFactoryAggregates(raw))
   log.info({ users: s.current.users.length }, 'boot: ready')
 }
 
@@ -182,7 +223,7 @@ export function getSnapshot(): Promise<Snapshot> {
   if (!s.loading) {
     s.loading = readRawSnapshot()
       .then(raw => raw ?? emptyRawSnapshot())
-      .then(async raw => buildSnapshotNow(raw, 'lazy-load', await loadFactoryAggregates(raw)))
+      .then(raw => buildSnapshotFromRaw(raw, 'lazy-load'))
       .then((snapshot) => {
         s.current ??= snapshot
         s.loading = null

@@ -27,6 +27,7 @@ import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { loadUserEquipment } from '@/lib/cache/equipment-store'
 import { getSnapshot } from '@/lib/cache/memory'
 import { casesBreakdownFromRow } from '@/lib/cases'
 import { EMPTY } from '@/lib/format'
@@ -42,7 +43,7 @@ interface PageProps {
 }
 
 async function getUser(id: string) {
-  const { users, equipment, gearLookup } = await getSnapshot()
+  const { users, gearLookup } = await getSnapshot()
   const user = users.find(u => u.id === id)
   if (!user) {
     return null
@@ -51,7 +52,7 @@ async function getUser(id: string) {
   // where this player sits.
   const ranges = computeRanges(users)
 
-  return { user, ranges, total: users.length, equipment: equipment[id] ?? {}, gearLookup }
+  return { user, ranges, total: users.length, gearLookup }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -73,7 +74,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
-  const { user, ranges, total, equipment, gearLookup } = result
+  const { user, ranges, total, gearLookup } = result
 
   // The per-rarity case breakdown now rides along in the snapshot (users are
   // scraped via getUserById). Fall back to a live fetch only for rows a fresh
@@ -86,6 +87,10 @@ export default async function UserDetailPage({ params }: PageProps) {
   // equipped" legible. A null score means we never scraped their gear, so the
   // section stays hidden rather than implying an empty loadout.
   const hasGearData = user.gearScore != null
+
+  // The full loadout lives in a separate equipment file (not the snapshot), so
+  // read just this user's line, and only when there's a gear section to fill.
+  const equipment = hasGearData ? (await loadUserEquipment(user.id)) ?? undefined : undefined
 
   return (
     <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">

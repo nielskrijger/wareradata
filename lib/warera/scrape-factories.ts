@@ -5,7 +5,7 @@ import { writeFileAtomic } from '@/lib/cache/ndjson'
 import { avgCompleteStat } from '@/lib/factories/inputs'
 import { logger, memoryUsage } from '@/lib/log'
 
-import { getUserCompaniesSlow } from './api'
+import { FACTORY_RATE_LIMIT, getUserCompaniesSlow } from './api'
 
 const log = logger.child({ component: 'factory-scrape' })
 
@@ -34,7 +34,7 @@ const PROGRESS_EVERY = 250
  */
 export async function scrapeFactories(userIds: string[], opts: { limit?: number } = {}): Promise<number> {
   const ids = opts.limit && Number.isFinite(opts.limit) ? userIds.slice(0, opts.limit) : userIds
-  log.info({ users: ids.length, rateLimit: Number(process.env.FACTORY_RATE_LIMIT ?? 20) }, 'scanning users')
+  log.info({ users: ids.length, rateLimit: FACTORY_RATE_LIMIT }, 'scanning users')
 
   let withFactories = 0
   let done = 0

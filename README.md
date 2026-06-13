@@ -44,17 +44,10 @@ server, use `npm run scrape-main`.
 
 ### Environment
 
-| Var                  | Default   | Purpose                                             |
-| -------------------- | --------- | --------------------------------------------------- |
-| `WARERA_API_KEY`     | (none)    | API key; raises the request-rate tier.              |
-| `DATA_DIR`           | `./.data` | Where the snapshot and battle archive live.         |
-| `SCRAPE_RATE_LIMIT`  | `60`      | Requests/min for the continuous main-scrape client. |
-| `URGENT_RATE_LIMIT`  | `40`      | Requests/min for the on-demand client.              |
-| `FACTORY_RATE_LIMIT` | `100`     | Requests/min for the all-users factory scrape.      |
-
-The three rate limits are enforced independently; keep their sum (default 200) at
-the API's authenticated tier. Factory holds the largest share for now to finish
-its first full pass; rebalance toward scrape once that's done.
+| Var              | Default   | Purpose                                     |
+| ---------------- | --------- | ------------------------------------------- |
+| `WARERA_API_KEY` | (none)    | API key; raises the request-rate tier.      |
+| `DATA_DIR`       | `./.data` | Where the snapshot and battle archive live. |
 
 ## The scraper
 

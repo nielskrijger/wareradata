@@ -3,7 +3,9 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { writeRawSnapshot } from '@/lib/cache/file-store'
 
-import { getAllAlliances, getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers } from './api'
+import { recipeFromGameConfig } from '@/lib/factories/inputs'
+
+import { getAllAlliances, getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers, scrapeItemBestRegions, scrapeItemPrices } from './api'
 
 const COUNTRY_PAGINATION_CONCURRENCY = 10
 
@@ -46,7 +48,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   const countries = await getAllCountries()
   console.info(`[scrape] fetched ${countries.length} countries`)
 
-  // 1b. Governments: one call per country (no bulk endpoint), fanned out with
+  // 2. Governments: one call per country (no bulk endpoint), fanned out with
   // the same bounded concurrency as the user-id pagination. Dormant or
   // unoccupied countries have no government: the call may error or return an
   // all-empty record, and either way we drop it from the map.
@@ -70,7 +72,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   }
   console.info(`[scrape] fetched governments for ${Object.keys(governments).length} of ${countries.length} countries`)
 
-  // 2. User IDs: paginate per country with bounded concurrency.
+  // 3. User IDs: paginate per country with bounded concurrency.
   const userIdLists = await mapWithConcurrency(
     countries.map(c => c._id),
     COUNTRY_PAGINATION_CONCURRENCY,
@@ -79,14 +81,14 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   const userIds = userIdLists.flat()
   console.info(`[scrape] collected ${userIds.length} user ids across ${countries.length} countries`)
 
-  // 3. Hydrate users. Stamp each with the capture time (like MUs below) so the
+  // 4. Hydrate users. Stamp each with the capture time (like MUs below) so the
   // user page can show data freshness; an on-demand refresh bumps it later.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
   const users = usersRaw.map(u => ({ ...u, lastRefreshedAt: usersCapturedAt }))
   console.info(`[scrape] hydrated ${users.length} users`)
 
-  // 3b. Per-user equipment. One HTTP call per user, batched by the tRPC client
+  // 5. Per-user equipment. One HTTP call per user, batched by the tRPC client
   // up to 50 ops. Many entries come back `{}` (player stripped gear between
   // battles); kept in the snapshot as-is so readers can distinguish "captured,
   // none equipped" from "not captured".
@@ -97,31 +99,31 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   }
   console.info(`[scrape] fetched equipment for ${equipmentList.length} users`)
 
-  // 4. MUs: single cursor-paginated stream. Stamp each with the capture time so
+  // 6. MUs: single cursor-paginated stream. Stamp each with the capture time so
   // the MU page can show data freshness; an on-demand refresh bumps it later.
   const musRaw = await getAllMUs()
   const capturedAt = new Date().toISOString()
   const mus = musRaw.map(m => ({ ...m, lastRefreshedAt: capturedAt }))
   console.info(`[scrape] fetched ${mus.length} MUs`)
 
-  // 5. Regions: single call, returns ~700 regions as an object.
+  // 7. Regions: single call, returns ~700 regions as an object.
   const regions = await getAllRegions()
   console.info(`[scrape] fetched ${regions.length} regions`)
 
-  // 6. Parties: single cursor-paginated stream.
+  // 8. Parties: single cursor-paginated stream.
   const parties = await getAllParties()
   console.info(`[scrape] fetched ${parties.length} parties`)
 
-  // 6b. Alliances: single cursor-paginated stream (currently ~10 of them, so
+  // 9. Alliances: single cursor-paginated stream (currently ~10 of them, so
   // one page in practice).
   const alliances = await getAllAlliances()
   console.info(`[scrape] fetched ${alliances.length} alliances`)
 
-  // 7. Battles: all active plus a recent window of finished ones.
+  // 10. Battles: all active plus a recent window of finished ones.
   const battles = await getAllBattles()
   console.info(`[scrape] fetched ${battles.length} battles`)
 
-  // 7b. Tournament teams: so tournament battles (team-vs-team, no country) can
+  // 11. Tournament teams: so tournament battles (team-vs-team, no country) can
   // resolve each side to its MU. Stored as a serializable record (the live
   // shape uses a Map, which doesn't survive JSON).
   const tournament = await getTournamentInfo()
@@ -132,10 +134,21 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
   }
   console.info(`[scrape] fetched tournament "${tournament.name}" with ${tournament.teams.size} teams`)
 
-  // 8. Game config: static catalog (item stats, skill cost curves, …). One
+  // 12. Game config: static catalog (item stats, skill cost curves, …). One
   // no-arg call; persisted so derived constants can read live data later.
   const gameConfig = await getGameConfig()
   console.info(`[scrape] fetched game config`)
+
+  // 13. Market context for factory profit: current prices + the best-region
+  // bonus per producible item. ~2 requests (prices, plus the per-item region
+  // calls batched into one). Stored so the row builders value factories at build
+  // time with no network.
+  const recipeCodes = Object.keys(recipeFromGameConfig(gameConfig))
+  const [prices, itemBestRegions] = await Promise.all([
+    scrapeItemPrices(),
+    scrapeItemBestRegions(recipeCodes),
+  ])
+  console.info(`[scrape] fetched prices + best regions for ${Object.keys(itemBestRegions).length} items`)
 
   const durationMs = Date.now() - start
   const meta: SnapshotMeta = {
@@ -152,7 +165,7 @@ export async function scrapeRawSnapshot(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { users, equipment, countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, meta }
+  return { users, equipment, countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, itemBestRegions, meta }
 }
 
 /**

@@ -19,6 +19,7 @@ import {
   gearColumn,
   localeNumberColumn,
   percentBarColumn,
+  percentColumn,
   pointsBreakdownColumn,
   rankTooltipColumn,
 } from '@/components/data-table/column-factories'
@@ -171,6 +172,12 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       compactNumberColumn<UserRow>('weaponsWealth', 'Weapons', { heat: 'median', width: 125, tooltip: 'Value of weapons owned.' }),
       compactNumberColumn<UserRow>('bounty', 'Bounty', { heat: 'median', width: 110, tooltip: 'Coins this player has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
       localeNumberColumn<UserRow>('referrals', 'Referrals', { heat: 'ramp', width: 120, tooltip: 'Players this user has referred.' }),
+    ],
+    industry: [
+      localeNumberColumn<UserRow>('factoryCount', 'Factories', { heat: 'ramp', width: 105, tooltip: 'Number of factories this player owns.' }),
+      compactNumberColumn<UserRow>('factoryNetPerDay', 'Net / day', { heat: 'median', width: 115, tooltip: 'Daily factory profit (revenue − inputs − wages).' }),
+      compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', { heat: 'median', width: 110, tooltip: 'Production points produced per day across this player\'s factories.' }),
+      percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', { heat: 'median', width: 115, tooltip: 'Realized net ÷ best-region (Move) potential. Higher = better located.' }),
     ],
     premium: [
       localeNumberColumn<UserRow>('premiumMonths', 'Premium Mo.', { heat: 'ramp', width: 145 }),

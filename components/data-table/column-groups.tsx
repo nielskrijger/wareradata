@@ -84,6 +84,35 @@ export function wealthColumns<T extends WealthComponentsRow>(
 }
 
 /**
+ * Rows carrying the member-summed factory aggregates, the shape every group
+ * table shares.
+ */
+interface FactoryStatsRow {
+  factoryPpPerDay: number
+  factoryPpPerMember: number | null
+  factoryNetPerDay: number
+  factoryEfficiencyPct: number | null
+}
+
+/**
+ * The Industry column group: combined factory profit and production per day
+ * (total + per-member), and location efficiency (realized net vs the best-region
+ * Move potential). `who` names the collective in the tooltips and the per-member
+ * header. Shared by the country / MU / alliance tables; empty until the slow
+ * factory scrape has run.
+ */
+export function industryColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
+  const one = who.slice(0, -1)
+
+  return [
+    compactNumberColumn<T>('factoryNetPerDay' as Key<T>, 'Net / day', { heat: 'median', width: 115, tooltip: `Combined factory profit per day across ${who} (revenue − inputs − wages).` }),
+    compactNumberColumn<T>('factoryPpPerDay' as Key<T>, 'PP / day', { heat: 'median', width: 110, tooltip: `Combined production points per day across ${who}.` }),
+    compactNumberColumn<T>('factoryPpPerMember' as Key<T>, who === 'citizens' ? 'PP / citizen' : 'PP / member', { heat: 'median', width: 130, tooltip: `Production points per day per ${one}.` }),
+    percentColumn<T>('factoryEfficiencyPct' as Key<T>, 'Efficiency', { heat: 'median', width: 115, tooltip: `Realized net ÷ best-region (Move) potential. Higher = better located.` }),
+  ]
+}
+
+/**
  * Rows carrying the member-summed premium-spend totals, the shape the group
  * tables share.
  */

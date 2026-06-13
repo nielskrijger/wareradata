@@ -3,7 +3,7 @@ import type { UserRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
-import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
+import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, FACTORY_FIELD_ALIASES, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
@@ -14,6 +14,8 @@ import { TIER_INDEX } from '@/lib/warera/api'
 const userFieldAliases: FieldAliases = {
   ...CASE_FIELD_ALIASES,
   ...WEALTH_FIELD_ALIASES,
+  ...FACTORY_FIELD_ALIASES,
+  factories: 'factoryCount',
   cases: 'casesOpened',
   country: 'countryCode',
   mu: 'muName',
@@ -29,6 +31,10 @@ const userSortValue = makeSortValue<UserRow>({
   passthrough: [
     ...CASE_SORT_KEYS,
     ...WEALTH_PART_KEYS,
+    'factoryCount',
+    'factoryPpPerDay',
+    'factoryNetPerDay',
+    'factoryEfficiencyPct',
     'countryCode',
     'level',
     'levelRank',

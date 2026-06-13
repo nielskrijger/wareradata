@@ -12,6 +12,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "scrape": "tsx scripts/scrape.ts",
+    "scrape-factories": "tsx scripts/scrape-factories.ts",
     "record-battle-history": "tsx scripts/record-battle-history.ts"
   },
   "dependencies": {

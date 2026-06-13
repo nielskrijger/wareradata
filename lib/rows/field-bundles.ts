@@ -57,3 +57,21 @@ export const PREMIUM_FIELD_ALIASES: FieldAliases = {
  * and weekly-damage-per-citizen stay route-local (not every entity has them).
  */
 export const COMBAT_SORT_KEYS = ['damage', 'damageRank', 'weeklyDamage'] as const
+
+/**
+ * Industry filter aliases shared by the country / MU / alliance tables.
+ */
+export const FACTORY_FIELD_ALIASES: FieldAliases = {
+  pp: 'factoryPpPerDay',
+  ppPerMember: 'factoryPpPerMember',
+  factoryNet: 'factoryNetPerDay',
+  efficiency: 'factoryEfficiencyPct',
+}
+
+/**
+ * Industry sort/filter passthrough keys shared by the country / MU / alliance
+ * tables: production points/day (total + per-member), net gold/day, and
+ * efficiency. Re-exported from {@link FACTORY_RANK_KEYS} so the sortable set and
+ * the ranked set never drift.
+ */
+export { FACTORY_RANK_KEYS as FACTORY_SORT_KEYS } from '@/lib/rows/member-agg'

@@ -12,7 +12,7 @@ import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { CountryHoverCard } from '@/components/country-hover-card'
 import { buildColumns } from '@/components/data-table/column-categories'
 import { combatModeColumn, compactNumberColumn, dateColumn, gearColumn, localeNumberColumn, percentBarColumn, rankTooltipColumn, readinessColumn, tierColumn } from '@/components/data-table/column-factories'
-import { casesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
+import { casesColumns, industryColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
@@ -144,6 +144,7 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
       compactNumberColumn<AllianceRow>('weeklyDamagePerCitizen', 'Weekly / Citizen', { heat: 'median', width: 170 }),
     ],
     wealth: wealthColumns<AllianceRow>('citizenWealth', 'citizens'),
+    industry: industryColumns<AllianceRow>('citizens'),
     premium: premiumColumns<AllianceRow>(),
     cases: casesColumns<AllianceRow>(),
   },

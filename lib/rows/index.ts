@@ -106,6 +106,17 @@ export interface UserRow {
   weaponsWealthRank: number | null
   weeklyDamage: number | null
   weeklyDamageRank: number | null
+  // Per-user factory totals from the factory scrape. PpPerDay / netPerDay /
+  // count are shown in the user table's Industry group; movePotential backs the
+  // per-user efficiency and is summed by member-agg into the entity Industry
+  // columns. Null when the scrape hasn't captured this user.
+  factoryCount: number | null
+  factoryPpPerDay: number | null
+  factoryNetPerDay: number | null
+  factoryMovePotential: number | null
+  // Per-user location efficiency: net ÷ Move-potential (capped 100), null when
+  // nothing's produced. The user-table Efficiency column.
+  factoryEfficiencyPct: number | null
 }
 
 /**
@@ -182,6 +193,24 @@ export interface GroupWealthParts {
   equipmentWealthRank: number | null
   weaponsWealth: number
   weaponsWealthRank: number | null
+}
+
+/**
+ * Member-summed factory economics shared by the country / MU / alliance rows:
+ * production points/day (total + per-member), net gold/day, and location
+ * efficiency (Σ net ÷ Σ Move-potential, capped at 100). Each ranked value
+ * carries a snapshot rank. Sourced from the slow factory scrape, so all fields
+ * read 0 / null until it (and a main scrape carrying market data) have run.
+ */
+export interface GroupFactoryStats {
+  factoryPpPerDay: number
+  factoryPpPerDayRank: number | null
+  factoryPpPerMember: number | null
+  factoryPpPerMemberRank: number | null
+  factoryNetPerDay: number
+  factoryNetPerDayRank: number | null
+  factoryEfficiencyPct: number | null
+  factoryEfficiencyRank: number | null
 }
 
 /**
@@ -264,7 +293,7 @@ export interface LeaderFields {
 /**
  * Projected country row used by /countries and /api/countries.
  */
-export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats {
+export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupFactoryStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats {
   // Count of active battles this country is in (attacker or defender). Live
   // data, stamped on by withActiveBattleCounts(); 0 when not populated.
   activeBattles: number
@@ -350,7 +379,7 @@ export interface GovernmentRow {
 /**
  * Projected MU (military unit) row used by /mus and /api/mus.
  */
-export interface MURow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats, LeaderFields {
+export interface MURow extends GroupCaseStats, GroupWealthParts, GroupFactoryStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats, LeaderFields {
   avatarUrl: string | null
   avgLevel: number | null
   avgLevelRank: number | null
@@ -522,7 +551,7 @@ export interface AllianceMemberRow {
  * API ranks all alliances, so its ranks are authoritative); members are
  * resolved and sorted by development contribution at build time.
  */
-export interface AllianceRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats, LeaderFields {
+export interface AllianceRow extends GroupCaseStats, GroupWealthParts, GroupFactoryStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats, LeaderFields {
   id: string
   name: string
   // WarEra color scheme name (same palette as user profiles), the alliance's

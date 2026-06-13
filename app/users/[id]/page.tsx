@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Clock } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
+import { Suspense } from 'react'
 
 import { Avatar } from '@/components/avatar'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
@@ -21,6 +22,7 @@ import { SkillSplitCard } from '@/components/detail/skill-split-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { VitalsCard } from '@/components/detail/vitals-card'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
+import { FactoriesSection } from '@/components/factories/factories-section'
 import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -204,6 +206,10 @@ export default async function UserDetailPage({ params }: PageProps) {
           ]}
         />
       </StatCardGrid>
+
+      <Suspense fallback={<div className="bg-card text-muted-foreground rounded-md border p-3 text-sm">Loading factories…</div>}>
+        <FactoriesSection userId={user.id} />
+      </Suspense>
     </main>
   )
 }

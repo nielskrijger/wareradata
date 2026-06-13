@@ -1,3 +1,4 @@
+import type { UserFactoryAgg } from '@/lib/factories/profit'
 import type { GearLookup } from '@/lib/gear/score'
 import type { UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
@@ -12,7 +13,7 @@ import { extractCasesBreakdown } from '@/lib/warera/api'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, equipment: Record<string, Equipment>, gameConfig: GameConfig, gearLookup: GearLookup): UserRow[] {
+export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, equipment: Record<string, Equipment>, gameConfig: GameConfig, gearLookup: GearLookup, factoryAggByUser: Map<string, UserFactoryAgg>): UserRow[] {
   // Derive the gear roll bounds and skill cost curve from the live config once
   // for the whole batch (the scrape always captures it). The gear index is built
   // once in buildSnapshot and passed in, since the Snapshot also exposes it.
@@ -59,6 +60,10 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
       // weighted luck scores (kept on the row so group builders can pool them).
       const cases = extractCasesBreakdown(u.stats)
       const luck = caseLuckScores(u.stats)
+
+      // Per-user factory totals (null when the factory scrape hasn't reached them),
+      // summed by member-agg into the entity Industry columns.
+      const factory = factoryAggByUser.get(u._id)
 
       return {
         avatarUrl: u.avatarUrl ?? null,
@@ -142,6 +147,13 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
         weaponsWealthRank: null,
         weeklyDamage: r?.weeklyUserDamages?.value ?? null,
         weeklyDamageRank: null,
+        factoryCount: factory?.factoryCount ?? null,
+        factoryPpPerDay: factory?.ppPerDay ?? null,
+        factoryNetPerDay: factory?.netPerDay ?? null,
+        factoryMovePotential: factory?.movePotentialNetPerDay ?? null,
+        factoryEfficiencyPct: factory && factory.movePotentialNetPerDay > 0
+          ? Math.min(100, (factory.netPerDay / factory.movePotentialNetPerDay) * 100)
+          : null,
       } satisfies UserRow
     })
     .filter(r => r.levelRank !== null)

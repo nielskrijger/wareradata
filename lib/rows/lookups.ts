@@ -1,5 +1,5 @@
 import type { LeaderFields } from '@/lib/rows'
-import type { Country, MU, Party, RankingTier, Region, User } from '@/lib/warera/api'
+import type { Country, MU, Party, RankingTier, Region } from '@/lib/warera/api'
 import { RANKING_TIERS } from '@/lib/warera/api'
 
 export interface Lookups {
@@ -14,11 +14,17 @@ export interface Lookups {
   partyCountByCountry: Map<string, number>
 }
 
-export function buildLookups(
+/**
+ * Builds the lookups derivable from the small (non-streamed) entities. The three
+ * per-user maps (`userNameById` / `userAvatarById` / `userColorSchemeById`) start
+ * empty and are filled by {@link buildUserRows} as it streams users.ndjson, so
+ * the raw user array never has to be held just to build them. The MU / party /
+ * alliance builders that read those maps run after the user pass.
+ */
+export function buildBaseLookups(
   countries: Country[],
   mus: MU[],
   regions: Region[],
-  users: User[],
   parties: Party[],
 ): Lookups {
   const partyByUser = new Map<string, { id: string, name: string, avatarUrl: string | null }>()
@@ -39,9 +45,9 @@ export function buildLookups(
     muNameById: new Map(mus.map(m => [m._id, m.name])),
     muAvatarById: new Map(mus.map(m => [m._id, m.avatarUrl ?? null])),
     regionById: new Map(regions.map(r => [r._id, r])),
-    userNameById: new Map(users.map(u => [u._id, u.username])),
-    userAvatarById: new Map(users.map(u => [u._id, u.avatarUrl ?? null])),
-    userColorSchemeById: new Map(users.map(u => [u._id, u.infos?.colorScheme ?? null])),
+    userNameById: new Map(),
+    userAvatarById: new Map(),
+    userColorSchemeById: new Map(),
     partyByUser,
     partyCountByCountry,
   }

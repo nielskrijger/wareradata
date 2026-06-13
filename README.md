@@ -88,7 +88,8 @@ phases, then publishes and immediately starts the next:
    dropped.
 2. **User IDs per country**: paginate `user.getUsersByCountry`, bounded
    concurrency 10.
-3. **Hydrate users**: `user.getUserLite` per id (~15k users).
+3. **Hydrate users**: `user.getUserLite` per id (~15k users), streamed to a
+   separate `users.ndjson` file rather than the snapshot.
    3b. **Equipment**: currently-equipped gear, one call per user (batched),
    streamed to a separate `equipment.ndjson` file rather than the snapshot. Many come
    back empty and are kept as-is so readers can tell "captured, none equipped"
@@ -130,21 +131,24 @@ the overlay.
 
 Everything lives under `DATA_DIR` (the mounted volume in production):
 
-| Path                              | Shape                                                                                                                                 |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `snapshot.json`                   | `{ users, countries, governments, mus, regions, parties, alliances, battles, tournament, gameConfig, prices, itemBestRegions, meta }` |
-| `equipment.ndjson`                | one `{ userId, equipment }` per line — currently-equipped gear, split out of the snapshot                                             |
-| `factories.ndjson`                | one `{ userId, rows }` per line — the slow all-users factory scrape's output                                                          |
-| `archive/battles-YYYY-MM-DD.json` | `Battle[]` finished that UTC day                                                                                                      |
-| `archive/seen.json`               | `string[]` archived battle ids (dedupe)                                                                                               |
-| `archive/index.json`              | `string[]` days available                                                                                                             |
+| Path                              | Shape                                                                                                                                  |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `snapshot.json`                   | `{ countries, governments, mus, regions, parties, alliances, battles, tournament, gameConfig, prices, itemBestRegions, meta }` (~5 MB) |
+| `users.ndjson`                    | one `User` per line — the raw user array (~84 MB), split out of the snapshot                                                           |
+| `equipment.ndjson`                | one `{ userId, equipment }` per line — currently-equipped gear                                                                         |
+| `factories.ndjson`                | one `{ userId, rows }` per line — the slow all-users factory scrape's output                                                           |
+| `archive/battles-YYYY-MM-DD.json` | `Battle[]` finished that UTC day                                                                                                       |
+| `archive/seen.json`               | `string[]` archived battle ids (dedupe)                                                                                                |
+| `archive/index.json`              | `string[]` days available                                                                                                              |
 
 Writes are atomic (stream to a temp file, then rename), so a request landing
-mid-scrape sees the old or new file, never a torn one. The one big collection
-(users) is serialized item by item to keep peak memory down; equipment and
-factory data live in their own separate NDJSON files so a full per-user map
-never has to materialize in the snapshot. The in-memory snapshot is swapped by reference
-after each cycle, so reads never block on I/O.
+mid-scrape sees the old or new file, never a torn one. The three big per-user
+collections (users, equipment, factories) live in their own NDJSON files: the
+build streams each into the derived rows (and a one-user lookup serves the detail
+page / hover-card), so a full per-user array never resides in memory alongside
+the built rows. That leaves `snapshot.json` itself small. The in-memory snapshot
+of built rows is swapped by reference after each cycle, so reads never block on
+I/O.
 
 ### Battle history archive
 

@@ -1,12 +1,12 @@
 import type { Equipment } from '@/lib/warera/api'
 
-import { once } from 'node:events'
-import { createReadStream, createWriteStream } from 'node:fs'
-import { appendFile, mkdir, rename, unlink } from 'node:fs/promises'
+import { createReadStream } from 'node:fs'
+import { appendFile } from 'node:fs/promises'
 import path from 'node:path'
 import { createInterface } from 'node:readline'
 
 import { dataDir } from './file-store'
+import { streamNdjson, writeNdjson } from './ndjson'
 
 /**
  * One NDJSON line of the equipment file: a user id plus their currently-equipped
@@ -33,31 +33,9 @@ export function equipmentNdjsonPath(): string {
 
 /**
  * Streams the equipment file line by line, invoking `onUser` per record.
- * Resolves silently when the file doesn't exist yet (no scrape has run). Skips
- * blank or unparseable lines (e.g. a torn final line from a crashed writer).
  */
-export async function streamEquipmentUsers(onUser: (line: EquipmentUserLine) => void): Promise<void> {
-  const rl = createInterface({
-    input: createReadStream(equipmentNdjsonPath(), { encoding: 'utf8' }),
-    crlfDelay: Infinity,
-  })
-
-  try {
-    for await (const line of rl) {
-      if (!line.trim()) {
-        continue
-      }
-      try {
-        onUser(JSON.parse(line) as EquipmentUserLine)
-      } catch {
-        // Skip a torn/partial line rather than failing the whole build.
-      }
-    }
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-      throw err
-    }
-  }
+export function streamEquipmentUsers(onUser: (line: EquipmentUserLine) => void): Promise<void> {
+  return streamNdjson(equipmentNdjsonPath(), onUser)
 }
 
 /**
@@ -113,35 +91,17 @@ export async function loadUserEquipment(userId: string): Promise<Equipment | nul
 
 /**
  * Atomically (re)writes the equipment file from the freshly scraped lists
- * (parallel arrays: `equipmentList[i]` is `userIds[i]`'s gear). Streams one
- * NDJSON line per user to a temp file, then renames over `equipment.ndjson` — so
- * a crashed/partial write leaves the previous file intact and the whole
- * serialized blob is never held in memory. A line is written for every user
- * (including `{}`), preserving the captured-but-empty vs not-captured split.
+ * (parallel arrays: `equipmentList[i]` is `userIds[i]`'s gear). A line is written
+ * for every user (including `{}`), preserving the captured-but-empty vs
+ * not-captured split.
  */
-export async function writeEquipmentNdjson(userIds: string[], equipmentList: Equipment[]): Promise<void> {
-  const finalPath = equipmentNdjsonPath()
-  // The main scrape writes this before snapshot.json, so on a cold volume the
-  // data dir may not exist yet.
-  await mkdir(dataDir(), { recursive: true })
+export function writeEquipmentNdjson(userIds: string[], equipmentList: Equipment[]): Promise<void> {
+  return writeNdjson(equipmentNdjsonPath(), equipmentLines(userIds, equipmentList))
+}
 
-  const tmpPath = `${finalPath}.tmp.${process.pid}.${Date.now()}`
-  const out = createWriteStream(tmpPath, { encoding: 'utf8' })
-
-  try {
-    for (let i = 0; i < userIds.length; i++) {
-      const line = `${JSON.stringify({ userId: userIds[i], equipment: equipmentList[i] })}\n`
-      if (!out.write(line)) {
-        await once(out, 'drain')
-      }
-    }
-    out.end()
-    await once(out, 'finish')
-    await rename(tmpPath, finalPath)
-  } catch (err) {
-    out.destroy()
-    await unlink(tmpPath).catch(() => undefined)
-    throw err
+function* equipmentLines(userIds: string[], equipmentList: Equipment[]): Generator<EquipmentUserLine> {
+  for (let i = 0; i < userIds.length; i++) {
+    yield { userId: userIds[i], equipment: equipmentList[i] }
   }
 }
 

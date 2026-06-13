@@ -1,8 +1,7 @@
-import { createReadStream } from 'node:fs'
 import path from 'node:path'
-import { createInterface } from 'node:readline'
 
 import { dataDir } from './file-store'
+import { streamNdjson } from './ndjson'
 
 /**
  * One factory's raw, slow-changing facts, captured by the all-users factory
@@ -38,30 +37,8 @@ export function factoriesNdjsonPath(): string {
 }
 
 /**
- * Streams the factory file line by line, invoking `onUser` per record. Resolves
- * silently when the file doesn't exist yet (the slow scrape hasn't run). Skips
- * blank or unparseable lines (e.g. a torn final line from a crashed writer).
+ * Streams the factory file line by line, invoking `onUser` per record.
  */
-export async function streamFactoryUsers(onUser: (line: FactoryUserLine) => void): Promise<void> {
-  const rl = createInterface({
-    input: createReadStream(factoriesNdjsonPath(), { encoding: 'utf8' }),
-    crlfDelay: Infinity,
-  })
-
-  try {
-    for await (const line of rl) {
-      if (!line.trim()) {
-        continue
-      }
-      try {
-        onUser(JSON.parse(line) as FactoryUserLine)
-      } catch {
-        // Skip a torn/partial line rather than failing the whole build.
-      }
-    }
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-      throw err
-    }
-  }
+export function streamFactoryUsers(onUser: (line: FactoryUserLine) => void): Promise<void> {
+  return streamNdjson(factoriesNdjsonPath(), onUser)
 }

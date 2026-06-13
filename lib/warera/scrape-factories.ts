@@ -1,4 +1,3 @@
-import type { User } from './api'
 import type { FactoryRawRow } from '@/lib/cache/factory-store'
 
 import { once } from 'node:events'
@@ -28,17 +27,13 @@ const CONCURRENCY = 6
  * Streams NDJSON (one user per line) to a temp file, then renames over
  * `factories.ndjson` once the pass completes — so it holds no accumulator in
  * memory, and a crashed/partial pass leaves the previous file intact. Shared by
- * the manual `npm run scrape-factories` script. Returns the count of users found
- * to own factories.
+ * the manual `npm run scrape-factories` script. Takes the pre-filtered list of
+ * company-owning user ids (see `loadCompanyOwnerIds`). Returns the count of users
+ * found to own factories.
  */
-export async function scrapeFactories(users: User[], opts: { limit?: number } = {}): Promise<number> {
-  // Only users who own company wealth — skips the ~1.4% with none, saving a
-  // wasted enumeration call each.
-  let userIds = users.filter(u => (u.stats?.wealth?.companies ?? 0) > 0).map(u => u._id)
-  if (opts.limit && Number.isFinite(opts.limit)) {
-    userIds = userIds.slice(0, opts.limit)
-  }
-  log.info({ users: userIds.length, rateLimit: Number(process.env.FACTORY_RATE_LIMIT ?? 20) }, 'scanning users')
+export async function scrapeFactories(userIds: string[], opts: { limit?: number } = {}): Promise<number> {
+  const ids = opts.limit && Number.isFinite(opts.limit) ? userIds.slice(0, opts.limit) : userIds
+  log.info({ users: ids.length, rateLimit: Number(process.env.FACTORY_RATE_LIMIT ?? 20) }, 'scanning users')
 
   const finalPath = factoriesNdjsonPath()
   const tmpPath = `${finalPath}.tmp.${process.pid}.${Date.now()}`
@@ -55,8 +50,8 @@ export async function scrapeFactories(users: User[], opts: { limit?: number } = 
   }
 
   async function worker(): Promise<void> {
-    while (cursor < userIds.length) {
-      const userId = userIds[cursor++]
+    while (cursor < ids.length) {
+      const userId = ids[cursor++]
       try {
         const factories = await getUserCompaniesSlow(userId)
         if (factories.length) {
@@ -77,7 +72,7 @@ export async function scrapeFactories(users: User[], opts: { limit?: number } = 
 
       done++
       if (done % 1000 === 0) {
-        log.info({ scanned: done, total: userIds.length, withFactories, ...memoryUsage() }, 'progress')
+        log.info({ scanned: done, total: ids.length, withFactories, ...memoryUsage() }, 'progress')
       }
     }
   }

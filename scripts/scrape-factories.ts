@@ -1,5 +1,5 @@
 import { factoriesNdjsonPath } from '@/lib/cache/factory-store'
-import { readRawSnapshot } from '@/lib/cache/file-store'
+import { loadCompanyOwnerIds } from '@/lib/cache/users-store'
 import { logger } from '@/lib/log'
 import { scrapeFactories } from '@/lib/warera/scrape-factories'
 
@@ -14,13 +14,13 @@ async function main() {
   const limitArg = process.argv.find(a => a.startsWith('--limit='))
   const limit = limitArg ? Number(limitArg.split('=')[1]) : undefined
 
-  const raw = await readRawSnapshot()
-  if (!raw) {
-    log.error('no snapshot yet; run the main scrape first')
+  const userIds = await loadCompanyOwnerIds()
+  if (!userIds.length) {
+    log.error('no users yet; run the main scrape first')
     process.exit(1)
   }
 
-  const count = await scrapeFactories(raw.users, { limit })
+  const count = await scrapeFactories(userIds, { limit })
   log.info({ withFactories: count, path: factoriesNdjsonPath() }, 'done')
 }
 

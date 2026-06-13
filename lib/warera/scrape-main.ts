@@ -3,6 +3,7 @@ import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { writeEquipmentNdjson } from '@/lib/cache/equipment-store'
 import { writeRawSnapshot } from '@/lib/cache/file-store'
+import { writeUsersNdjson } from '@/lib/cache/users-store'
 
 import { recipeFromGameConfig } from '@/lib/factories/inputs'
 import { logger } from '@/lib/log'
@@ -87,9 +88,14 @@ export async function scrapeMain(): Promise<RawSnapshot> {
 
   // 4. Hydrate users. Stamp each with the capture time (like MUs below) so the
   // user page can show data freshness; an on-demand refresh bumps it later.
+  // Streamed straight to users.ndjson (not held in the RawSnapshot) — the raw
+  // user array is the biggest collection (~84 MB), so keeping it off the
+  // persisted snapshot and the scraper's resident heap is the main memory win;
+  // the build streams it back into the rows.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
   const users = usersRaw.map(u => ({ ...u, lastRefreshedAt: usersCapturedAt }))
+  await writeUsersNdjson(users)
   log.info({ users: users.length }, 'hydrated users')
 
   // 5. Per-user equipment. One HTTP call per user, batched by the tRPC client
@@ -169,7 +175,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { users, countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, itemBestRegions, meta }
+  return { countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, itemBestRegions, meta }
 }
 
 /**
@@ -201,7 +207,7 @@ export async function runMainScrape(): Promise<ScrapeResult> {
 
   const counts = {
     countries: raw.countries.length,
-    users: raw.users.length,
+    users: raw.meta.entityCounts?.users ?? 0,
     mus: raw.mus.length,
     regions: raw.regions.length,
     parties: raw.parties.length,

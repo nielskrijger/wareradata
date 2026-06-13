@@ -4,12 +4,15 @@ import type { ColumnDef } from '@tanstack/react-table'
 
 import type { AllianceRow } from '@/lib/rows'
 
+import Link from 'next/link'
+
 import { AllianceAvatar } from '@/components/cells/alliance-avatar'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
+import { CountryHoverCard } from '@/components/country-hover-card'
 import { buildColumns } from '@/components/data-table/column-categories'
-import { compactNumberColumn, dateColumn, localeNumberColumn, tierColumn } from '@/components/data-table/column-factories'
-import { casesColumns, pointsColumns, wealthColumns } from '@/components/data-table/column-groups'
+import { combatModeColumn, compactNumberColumn, dateColumn, gearColumn, localeNumberColumn, percentBarColumn, rankTooltipColumn, readinessColumn, tierColumn } from '@/components/data-table/column-factories'
+import { casesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
@@ -63,9 +66,11 @@ const membersColumn: ColumnDef<AllianceRow> = {
   cell: ({ row }) => (
     <span className="flex flex-wrap items-center gap-1">
       {row.original.members.map(m => (
-        <span key={m.countryId} title={m.name}>
-          <Flag code={m.code} />
-        </span>
+        <CountryHoverCard key={m.countryId} countryId={m.countryId} triggerClassName="inline-flex">
+          <Link href={`/countries/${m.countryId}`} aria-label={m.name} className="inline-flex">
+            <Flag code={m.code} />
+          </Link>
+        </CountryHoverCard>
       ))}
     </span>
   ),
@@ -103,7 +108,7 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
       dateColumn<AllianceRow>('createdAt', 'Founded'),
       {
         accessorKey: 'development',
-        header: 'Development',
+        header: 'Current Dev',
         cell: ({ row }) =>
           row.original.development !== null ? row.original.development.toFixed(1) : null,
         sortDescFirst: true,
@@ -128,11 +133,18 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
       tierColumn<AllianceRow>('developmentTier'),
     ],
     combat: [
-      compactNumberColumn<AllianceRow>('totalDamage', 'Total Damage', { heat: 'median', width: 140 }),
+      gearColumn<AllianceRow>('avgGearScore', 'Avg Gear', { width: 120 }),
+      percentBarColumn<AllianceRow>('avgHealth', 'Avg Health'),
+      percentBarColumn<AllianceRow>('avgHunger', 'Avg Hunger', { width: 140 }),
+      readinessColumn<AllianceRow>(),
+      combatModeColumn<AllianceRow>(),
+      tierColumn<AllianceRow>('damageTier'),
+      rankTooltipColumn<AllianceRow>('damage', 'damageRank', 'Total', { width: 140 }),
       compactNumberColumn<AllianceRow>('weeklyDamage', 'Weekly', { heat: 'median', width: 110 }),
       compactNumberColumn<AllianceRow>('weeklyDamagePerCitizen', 'Weekly / Citizen', { heat: 'median', width: 170 }),
     ],
     wealth: wealthColumns<AllianceRow>('citizenWealth', 'citizens'),
+    premium: premiumColumns<AllianceRow>(),
     cases: casesColumns<AllianceRow>(),
   },
 )

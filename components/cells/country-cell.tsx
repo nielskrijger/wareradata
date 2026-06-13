@@ -1,6 +1,7 @@
 import type { ActiveBattleSummary } from '@/lib/rows'
 
 import { BattleCountBadge } from '@/components/badges/battle-count-badge'
+import { CountryHoverCard } from '@/components/country-hover-card'
 import { EmptyDash } from '@/components/empty-dash'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/links'
@@ -31,16 +32,22 @@ export function CountryCell({ countryCode, countryName, countryId, activeBattles
   const label = countryName ?? countryCode ?? ''
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Flag code={countryCode} />
-      {countryId
-        ? (
-            <InternalLink href={`/countries/${countryId}`} title={label} className="truncate">
-              {label}
-            </InternalLink>
-          )
-        : (
-            <span className="truncate">{label}</span>
-          )}
+      {/* Only the flag + name trigger the hover-card; the battle pill stays
+          outside it so its own tooltip doesn't nest inside this one. */}
+      <CountryHoverCard countryId={countryId} triggerClassName="block min-w-0 flex-1">
+        <span className="flex min-w-0 items-center gap-2">
+          <Flag code={countryCode} />
+          {countryId
+            ? (
+                <InternalLink href={`/countries/${countryId}`} title={label} className="truncate">
+                  {label}
+                </InternalLink>
+              )
+            : (
+                <span className="truncate">{label}</span>
+              )}
+        </span>
+      </CountryHoverCard>
       {activeBattles != null && (
         <BattleCountBadge
           count={activeBattles}

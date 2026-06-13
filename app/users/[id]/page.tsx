@@ -158,7 +158,7 @@ export default async function UserDetailPage({ params }: PageProps) {
           wealth={user.wealthPoints}
           caption={{ value: user.pointsPerDay, unit: 'points/day' }}
         />
-        <VitalsCard health={user.healthPercent} hunger={user.hungerPercent} />
+        <VitalsCard health={user.health} hunger={user.hunger} />
         <SkillSplitCard
           mode={user.combatMode}
           warPoints={user.warPoints}

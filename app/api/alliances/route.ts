@@ -3,6 +3,8 @@ import type { AllianceRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
+import { readinessScore } from '@/lib/rows'
+import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, COMBAT_SORT_KEYS, PREMIUM_FIELD_ALIASES, PREMIUM_KEYS, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
@@ -12,42 +14,28 @@ import { TIER_INDEX } from '@/lib/warera/api'
  * finds the alliances a country belongs to.
  */
 const allianceFieldAliases: FieldAliases = {
+  ...CASE_FIELD_ALIASES,
+  ...WEALTH_FIELD_ALIASES,
+  ...PREMIUM_FIELD_ALIASES,
   cases: 'casesOpenedTotal',
-  luck: 'caseLuck',
-  common: 'casesCommon',
-  uncommon: 'casesUncommon',
-  rare: 'casesRare',
-  epic: 'casesEpic',
-  legendary: 'casesLegendary',
-  mythic: 'casesMythic',
-  cash: 'cashWealth',
-  companies: 'companiesWealth',
   country: 'memberNames',
-  damage: 'totalDamage',
   dev: 'development',
-  equipment: 'equipmentWealth',
   founded: 'createdAt',
-  items: 'itemsWealth',
+  health: 'avgHealth',
+  hunger: 'avgHunger',
   leader: 'leaderName',
   members: 'memberCount',
   points: 'totalPoints',
   ppd: 'avgPointsPerDay',
   wealth: 'citizenWealth',
-  weapons: 'weaponsWealth',
   weekly: 'weeklyDamage',
 }
 
 const allianceSortValue = makeSortValue<AllianceRow>({
   passthrough: [
-    'caseLuck',
-    'standardCasesOpened',
-    'mythicCasesOpened',
-    'casesCommon',
-    'casesUncommon',
-    'casesRare',
-    'casesEpic',
-    'casesLegendary',
-    'casesMythic',
+    ...CASE_SORT_KEYS,
+    ...WEALTH_PART_KEYS,
+    ...PREMIUM_KEYS,
     'totalPoints',
     'avgPoints',
     'avgPointsPerDay',
@@ -59,21 +47,21 @@ const allianceSortValue = makeSortValue<AllianceRow>({
     'coreDevelopmentRank',
     'averageDevelopment',
     'averageDevelopmentRank',
-    'totalDamage',
-    'weeklyDamage',
+    ...COMBAT_SORT_KEYS,
+    'avgGearScore',
+    'avgWarShare',
+    'avgHealth',
+    'avgHunger',
     'weeklyDamagePerCitizen',
     'memberCount',
     'citizenWealth',
-    'companiesWealth',
-    'itemsWealth',
-    'cashWealth',
-    'equipmentWealth',
-    'weaponsWealth',
     'createdAt',
   ],
   text: ['name', 'leaderName'],
   custom: {
     developmentTier: row => (row.developmentTier ? TIER_INDEX[row.developmentTier] : null),
+    damageTier: row => (row.damageTier ? TIER_INDEX[row.damageTier] : null),
+    readinessScore: row => readinessScore(row.readinessPill),
   },
   default: 'totalPoints',
 })

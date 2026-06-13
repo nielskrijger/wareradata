@@ -2,8 +2,8 @@ import type { PartyRow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { Party } from '@/lib/warera/api'
 
-import { rankAll } from '@/lib/rows/lookups'
-import { aggCases, aggPoints, aggPremium, aggregateMembers, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_RANK_KEYS, WEALTH_PART_RANK_KEYS } from '@/lib/rows/member-agg'
+import { leaderFields, rankAll } from '@/lib/rows/lookups'
+import { aggCases, aggPoints, aggPremium, aggregateMembers, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
 
 export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: Lookups): PartyRow[] {
   // partyByUser is built once in buildLookups (also consumed by buildUserRows
@@ -14,9 +14,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
     .map((p) => {
       const agg = membersByParty.get(p._id)
       const country = p.country ? lookups.countryById.get(p.country) : undefined
-      const leaderName = p.leader ? lookups.userNameById.get(p.leader) ?? null : null
-      const leaderAvatarUrl = p.leader ? lookups.userAvatarById.get(p.leader) ?? null : null
-      const leaderColorScheme = p.leader ? lookups.userColorSchemeById.get(p.leader) ?? null : null
+      const leader = leaderFields(p.leader ?? null, lookups)
       const ethics = p.ethics
 
       return {
@@ -36,10 +34,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         imperialism: ethics?.imperialism ?? null,
         industrialism: ethics?.industrialism ?? null,
         isolationism: ethics?.isolationism ?? null,
-        leaderAvatarUrl,
-        leaderColorScheme,
-        leaderId: p.leader ?? null,
-        leaderName,
+        ...leader,
         memberCount: p.members?.length ?? 0,
         memberCountRank: null,
         memberWealth: agg?.wealth ?? 0,
@@ -57,8 +52,8 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
     ...POINTS_RANK_KEYS,
     'avgLevel',
     'memberCount',
-    ...WEALTH_PART_RANK_KEYS,
-    ...PREMIUM_RANK_KEYS,
+    ...WEALTH_PART_KEYS,
+    ...PREMIUM_KEYS,
   ])
 
   return rows

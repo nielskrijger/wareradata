@@ -44,8 +44,8 @@ export interface UserRow {
   damagePoints: number
   ecoPoints: number
   ecoPointsRank: number | null
-  healthPercent: number | null
-  hungerPercent: number | null
+  health: number | null
+  hunger: number | null
   gearScore: number | null
   gearScoreRank: number | null
   gemsPurchased: number | null
@@ -215,9 +215,56 @@ export interface GroupPremiumStats {
 }
 
 /**
+ * Member-averaged combat/condition stats produced from a group's pooled
+ * citizens: average gear score, war-share, health and hunger, plus the
+ * buff/ready/debuff readiness split. Shared by CountryRow, MURow and
+ * AllianceRow (filled via {@link aggVitals}); UserRow keeps the raw per-person
+ * fields instead. Ranks are assigned by rankAll.
+ */
+export interface GroupVitals {
+  avgGearScore: number | null
+  avgGearScoreRank: number | null
+  avgWarShare: number | null
+  avgWarShareRank: number | null
+  avgHealth: number | null
+  avgHealthRank: number | null
+  avgHunger: number | null
+  avgHungerRank: number | null
+  readinessPill: ReadinessPill
+}
+
+/**
+ * Damage rankings shared by the country / MU / alliance rows: total damage
+ * (value + rank + tier) and weekly damage, all from the upstream API rankings
+ * per entity (no agg spread — the builders assign them directly).
+ * weeklyDamagePerCitizen stays per-row (countries + alliances only).
+ */
+export interface GroupDamageStats {
+  damage: number | null
+  damageRank: number | null
+  damageTier: RankingTier | null
+  weeklyDamage: number | null
+  weeklyDamageRank: number | null
+}
+
+/**
+ * Leader identity fields shared by the MU / party / alliance rows: the leader's
+ * id plus the bits to render their avatar + linked name (and the hover card).
+ * All null when the entity has no leader, or the leader isn't in the snapshot.
+ * Resolved by {@link leaderFields}. Countries elect a government instead (see
+ * {@link GovernmentRow}), so they don't carry this.
+ */
+export interface LeaderFields {
+  leaderId: string | null
+  leaderName: string | null
+  leaderAvatarUrl: string | null
+  leaderColorScheme: string | null
+}
+
+/**
  * Projected country row used by /countries and /api/countries.
  */
-export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats {
+export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats {
   // Count of active battles this country is in (attacker or defender). Live
   // data, stamped on by withActiveBattleCounts(); 0 when not populated.
   activeBattles: number
@@ -233,14 +280,6 @@ export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupPoint
   allianceName: string | null
   alliesCount: number
   alliesCountRank: number | null
-  avgWarShare: number | null
-  avgWarShareRank: number | null
-  avgGearScore: number | null
-  avgGearScoreRank: number | null
-  avgHealth: number | null
-  avgHealthRank: number | null
-  avgHunger: number | null
-  avgHungerRank: number | null
   avgLevel: number | null
   avgLevelRank: number | null
   bounty: number | null
@@ -250,9 +289,6 @@ export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupPoint
   citizenWealth: number
   citizenWealthRank: number | null
   code: string
-  damageRank: number | null
-  damageTier: RankingTier | null
-  damage: number | null
   development: number | null
   developmentRank: number | null
   id: string
@@ -265,7 +301,6 @@ export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupPoint
   partyCountRank: number | null
   productionBonus: number | null
   productionBonusRank: number | null
-  readinessPill: ReadinessPill
   specializedItem: string | null
   taxIncome: number | null
   taxMarket: number | null
@@ -277,8 +312,6 @@ export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupPoint
   wealth: number | null
   weeklyDamagePerCitizen: number | null
   weeklyDamagePerCitizenRank: number | null
-  weeklyDamage: number | null
-  weeklyDamageRank: number | null
 }
 
 /**
@@ -317,16 +350,8 @@ export interface GovernmentRow {
 /**
  * Projected MU (military unit) row used by /mus and /api/mus.
  */
-export interface MURow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats {
+export interface MURow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats, LeaderFields {
   avatarUrl: string | null
-  avgWarShare: number | null
-  avgWarShareRank: number | null
-  avgGearScore: number | null
-  avgGearScoreRank: number | null
-  avgHealth: number | null
-  avgHealthRank: number | null
-  avgHunger: number | null
-  avgHungerRank: number | null
   avgLevel: number | null
   avgLevelRank: number | null
   bounty: number | null
@@ -334,9 +359,6 @@ export interface MURow extends GroupCaseStats, GroupWealthParts, GroupPointsStat
   countryCode: string | null
   countryId: string | null
   countryName: string | null
-  damageRank: number | null
-  damageTier: RankingTier | null
-  damage: number | null
   dormitoriesLevel: number | null
   dormitoriesLevelRank: number | null
   headquartersLevel: number | null
@@ -345,10 +367,6 @@ export interface MURow extends GroupCaseStats, GroupWealthParts, GroupPointsStat
   investedMoney: number
   investedMoneyRank: number | null
   lastRefreshedAt: string | null
-  leaderAvatarUrl: string | null
-  leaderColorScheme: string | null
-  leaderId: string | null
-  leaderName: string | null
   memberCount: number
   memberCountRank: number | null
   // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
@@ -356,7 +374,6 @@ export interface MURow extends GroupCaseStats, GroupWealthParts, GroupPointsStat
   memberWealth: number
   memberWealthRank: number | null
   name: string
-  readinessPill: ReadinessPill
   regionName: string | null
   reputation: number | null
   reputationRank: number | null
@@ -364,8 +381,6 @@ export interface MURow extends GroupCaseStats, GroupWealthParts, GroupPointsStat
   terrainRank: number | null
   wealthRank: number | null
   wealth: number | null
-  weeklyDamage: number | null
-  weeklyDamageRank: number | null
 }
 
 /**
@@ -376,9 +391,15 @@ export interface RegionRow {
   biome: string | null
   climate: string | null
   code: string
+  // Current (occupying) owner.
   countryCode: string | null
   countryId: string | null
   countryName: string | null
+  // Core (original) owner, from the region's initialCountry. Equals the current
+  // owner for a home region; differs when the region is occupied.
+  coreCountryCode: string | null
+  coreCountryId: string | null
+  coreCountryName: string | null
   development: number | null
   id: string
   isCapital: boolean
@@ -450,7 +471,7 @@ export interface BattleRow {
 /**
  * Projected political-party row used by /parties and /api/parties.
  */
-export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats {
+export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, LeaderFields {
   avatarUrl: string | null
   avgLevel: number | null
   avgLevelRank: number | null
@@ -463,10 +484,6 @@ export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsS
   imperialism: number | null
   industrialism: number | null
   isolationism: number | null
-  leaderAvatarUrl: string | null
-  leaderColorScheme: string | null
-  leaderId: string | null
-  leaderName: string | null
   memberCount: number
   memberCountRank: number | null
   // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
@@ -505,17 +522,13 @@ export interface AllianceMemberRow {
  * API ranks all alliances, so its ranks are authoritative); members are
  * resolved and sorted by development contribution at build time.
  */
-export interface AllianceRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats {
+export interface AllianceRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats, LeaderFields {
   id: string
   name: string
   // WarEra color scheme name (same palette as user profiles), the alliance's
   // visual identity across the map and our list/detail pages.
   scheme: string
   avatarUrl: string | null
-  leaderId: string | null
-  leaderName: string | null
-  leaderAvatarUrl: string | null
-  leaderColorScheme: string | null
   memberCount: number
   members: AllianceMemberRow[]
   // Concatenated member names + codes, so free-text and `country:` searches
@@ -536,10 +549,6 @@ export interface AllianceRow extends GroupCaseStats, GroupWealthParts, GroupPoin
   averageDevelopmentRank: number | null
   population: number | null
   populationRank: number | null
-  totalDamage: number | null
-  totalDamageRank: number | null
-  weeklyDamage: number | null
-  weeklyDamageRank: number | null
   weeklyDamagePerCitizen: number | null
   weeklyDamagePerCitizenRank: number | null
 }

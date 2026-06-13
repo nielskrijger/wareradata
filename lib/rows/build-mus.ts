@@ -2,8 +2,8 @@ import type { MURow, UserRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { MU } from '@/lib/warera/api'
 
-import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggCases, aggMean, aggMeanRaw, aggPoints, aggPremium, aggReadinessPill, aggregateMembers, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_RANK_KEYS, WEALTH_PART_RANK_KEYS } from '@/lib/rows/member-agg'
+import { leaderFields, rankAll, toTier } from '@/lib/rows/lookups'
+import { aggCases, aggPoints, aggPremium, aggregateMembers, aggVitals, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
 
 export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): MURow[] {
   const membersByMu = aggregateMembers(userRows, u => u.muId)
@@ -16,10 +16,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         ? Object.values(m.investedMoneyByUsers).reduce((sum, n) => sum + n, 0)
         : 0
       const region = m.region ? lookups.regionById.get(m.region) : undefined
-      const leaderId = m.user ?? null
-      const leaderName = leaderId ? lookups.userNameById.get(leaderId) ?? null : null
-      const leaderAvatarUrl = leaderId ? lookups.userAvatarById.get(leaderId) ?? null : null
-      const leaderColorScheme = leaderId ? lookups.userColorSchemeById.get(leaderId) ?? null : null
+      const leader = leaderFields(m.user ?? null, lookups)
 
       // MUs are headquartered in a region; the region's *initial* country is
       // the MU's spiritual home (current owner can change as territory shifts).
@@ -29,14 +26,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
 
       return {
         avatarUrl: m.avatarUrl ?? null,
-        avgGearScore: agg ? aggMean(agg.gearScoreSum, agg.gearScoreCount) : null,
-        avgGearScoreRank: null,
-        avgWarShare: agg ? aggMeanRaw(agg.warShareSum, agg.warShareCount) : null,
-        avgWarShareRank: null,
-        avgHealth: agg ? aggMean(agg.healthSum, agg.healthCount) : null,
-        avgHealthRank: null,
-        avgHunger: agg ? aggMean(agg.hungerSum, agg.hungerCount) : null,
-        avgHungerRank: null,
+        ...aggVitals(agg),
         avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
         avgLevelRank: null,
         bounty: r?.muBounty?.value ?? null,
@@ -59,16 +49,12 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         investedMoney,
         investedMoneyRank: null,
         lastRefreshedAt: m.lastRefreshedAt ?? null,
-        leaderAvatarUrl,
-        leaderColorScheme,
-        leaderId,
-        leaderName,
+        ...leader,
         memberCount: m.members?.length ?? 0,
         memberCountRank: null,
         memberWealth: agg?.wealth ?? 0,
         memberWealthRank: null,
         name: m.name,
-        readinessPill: aggReadinessPill(agg),
         regionName: region?.name ?? null,
         reputation: r?.muReputation?.value ?? null,
         reputationRank: null,
@@ -103,11 +89,11 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
     'reputation',
     'memberCount',
     'memberWealth',
-    ...WEALTH_PART_RANK_KEYS,
+    ...WEALTH_PART_KEYS,
     'investedMoney',
     'dormitoriesLevel',
     'headquartersLevel',
-    ...PREMIUM_RANK_KEYS,
+    ...PREMIUM_KEYS,
   ])
 
   return rows

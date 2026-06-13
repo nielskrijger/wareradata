@@ -119,8 +119,8 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       dateColumn<UserRow>('createdAt', 'Joined'),
     ],
     combat: [
-      percentBarColumn<UserRow>('healthPercent', 'Health', { width: 120 }),
-      percentBarColumn<UserRow>('hungerPercent', 'Hunger', { width: 120 }),
+      percentBarColumn<UserRow>('health', 'Health', { width: 120 }),
+      percentBarColumn<UserRow>('hunger', 'Hunger', { width: 120 }),
       gearColumn<UserRow>('gearScore', 'Gear'),
       {
         // Sorts on the buff/debuff time remaining (see readinessSortValue in the

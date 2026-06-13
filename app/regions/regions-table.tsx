@@ -31,7 +31,7 @@ export function RegionsTable({ initial }: Props) {
             { q: 'biome:desert', desc: 'Field match' },
             { q: 'dev:>100', desc: 'Comparators' },
           ]}
-          fieldsList="name, country, city, resource, biome, climate, capital, dev, neighbors."
+          fieldsList="name, country, core, city, resource, biome, climate, capital, dev, neighbors."
         />
       )}
     />

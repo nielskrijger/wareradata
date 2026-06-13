@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance, Country, MU } from '@/lib/warera/api'
 
 import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggCases, aggMean, aggMeanRaw, aggPoints, aggPremium, aggReadinessPill, aggregateMembers, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_RANK_KEYS, WEALTH_PART_RANK_KEYS } from '@/lib/rows/member-agg'
+import { aggCases, aggPoints, aggPremium, aggregateMembers, aggVitals, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
 
 export function buildCountryRows(
   countries: Country[],
@@ -42,14 +42,7 @@ export function buildCountryRows(
         allianceName: allianceByCountry.get(c._id)?.name ?? null,
         alliesCount: c.allies?.length ?? 0,
         alliesCountRank: null,
-        avgGearScore: agg ? aggMean(agg.gearScoreSum, agg.gearScoreCount) : null,
-        avgGearScoreRank: null,
-        avgWarShare: agg ? aggMeanRaw(agg.warShareSum, agg.warShareCount) : null,
-        avgWarShareRank: null,
-        avgHealth: agg ? aggMean(agg.healthSum, agg.healthCount) : null,
-        avgHealthRank: null,
-        avgHunger: agg ? aggMean(agg.hungerSum, agg.hungerCount) : null,
-        avgHungerRank: null,
+        ...aggVitals(agg),
         avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
         avgLevelRank: null,
         bounty: r?.countryBounty?.value ?? null,
@@ -76,7 +69,6 @@ export function buildCountryRows(
         partyCountRank: null,
         productionBonus: r?.countryProductionBonus?.value ?? null,
         productionBonusRank: null,
-        readinessPill: aggReadinessPill(agg),
         specializedItem: c.specializedItem ?? null,
         taxIncome: c.taxes?.income ?? null,
         taxMarket: c.taxes?.market ?? null,
@@ -112,7 +104,7 @@ export function buildCountryRows(
     'weeklyDamagePerCitizen',
     'wealth',
     'citizenWealth',
-    ...WEALTH_PART_RANK_KEYS,
+    ...WEALTH_PART_KEYS,
     'bounty',
     'money',
     'development',
@@ -122,7 +114,7 @@ export function buildCountryRows(
     'partyCount',
     'alliesCount',
     'warsCount',
-    ...PREMIUM_RANK_KEYS,
+    ...PREMIUM_KEYS,
   ])
 
   return rows

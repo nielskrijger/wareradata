@@ -10,6 +10,7 @@ import { createTableRoute, makeSortValue } from '@/lib/query'
  */
 const regionFieldAliases: FieldAliases = {
   country: 'countryCode',
+  core: 'coreCountryCode',
   resource: 'strategicResource',
   city: 'mainCity',
   capital: 'isCapital',
@@ -19,7 +20,7 @@ const regionFieldAliases: FieldAliases = {
 
 const regionSortValue = makeSortValue<RegionRow>({
   passthrough: ['development', 'neighborCount', 'biome', 'climate', 'strategicResource'],
-  text: ['name', 'countryName', 'mainCity'],
+  text: ['name', 'countryName', 'coreCountryName', 'mainCity'],
   boolean: ['isCapital', 'isLinkedToCapital'],
   default: 'development',
 })

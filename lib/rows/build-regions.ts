@@ -6,12 +6,16 @@ export function buildRegionRows(regions: Region[], lookups: Lookups): RegionRow[
   return regions
     .map((r) => {
       const country = r.country ? lookups.countryById.get(r.country) : undefined
+      const core = r.initialCountry ? lookups.countryById.get(r.initialCountry) : undefined
 
       return {
         baseDevelopment: r.baseDevelopment ?? null,
         biome: r.biome ?? null,
         climate: r.climate ?? null,
         code: r.code,
+        coreCountryCode: core?.code ?? null,
+        coreCountryId: r.initialCountry ?? null,
+        coreCountryName: core?.name ?? null,
         countryCode: country?.code ?? null,
         countryId: r.country ?? null,
         countryName: country?.name ?? null,

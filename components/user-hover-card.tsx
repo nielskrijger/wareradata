@@ -150,11 +150,11 @@ function Body({ data }: { data: FetchedData }) {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Heart className={ICON_CLS} />
-            <FillBar pct={user.healthPercent} />
+            <FillBar pct={user.health} />
           </div>
           <div className="flex items-center gap-2">
             <Drumstick className={ICON_CLS} />
-            <FillBar pct={user.hungerPercent} />
+            <FillBar pct={user.hunger} />
           </div>
         </div>
       </div>

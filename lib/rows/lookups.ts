@@ -1,3 +1,4 @@
+import type { LeaderFields } from '@/lib/rows'
 import type { Country, MU, Party, RankingTier, Region, User } from '@/lib/warera/api'
 import { RANKING_TIERS } from '@/lib/warera/api'
 
@@ -50,6 +51,20 @@ export function toTier(value: unknown): RankingTier | null {
   return typeof value === 'string' && (RANKING_TIERS as readonly string[]).includes(value)
     ? (value as RankingTier)
     : null
+}
+
+/**
+ * Resolve a leader user id into the {@link LeaderFields} the MU / party /
+ * alliance rows render. All null when the id is null or the user isn't in the
+ * snapshot.
+ */
+export function leaderFields(leaderId: string | null, lookups: Lookups): LeaderFields {
+  return {
+    leaderId,
+    leaderName: leaderId ? lookups.userNameById.get(leaderId) ?? null : null,
+    leaderAvatarUrl: leaderId ? lookups.userAvatarById.get(leaderId) ?? null : null,
+    leaderColorScheme: leaderId ? lookups.userColorSchemeById.get(leaderId) ?? null : null,
+  }
 }
 
 /**

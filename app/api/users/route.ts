@@ -3,6 +3,7 @@ import type { UserRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
+import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
@@ -11,14 +12,9 @@ import { TIER_INDEX } from '@/lib/warera/api'
  * Keep in sync with the popover cheatsheet in `users-table.tsx`.
  */
 const userFieldAliases: FieldAliases = {
+  ...CASE_FIELD_ALIASES,
+  ...WEALTH_FIELD_ALIASES,
   cases: 'casesOpened',
-  luck: 'caseLuck',
-  common: 'casesCommon',
-  uncommon: 'casesUncommon',
-  rare: 'casesRare',
-  epic: 'casesEpic',
-  legendary: 'casesLegendary',
-  mythic: 'casesMythic',
   country: 'countryCode',
   mu: 'muName',
   party: 'partyName',
@@ -26,37 +22,18 @@ const userFieldAliases: FieldAliases = {
   lastSeen: 'lastConnectionAt',
   joined: 'createdAt',
   ppd: 'pointsPerDay',
-  health: 'healthPercent',
-  hunger: 'hungerPercent',
   buff: 'readinessStatus',
-  companies: 'companiesWealth',
-  items: 'itemsWealth',
-  cash: 'cashWealth',
-  equipment: 'equipmentWealth',
-  weapons: 'weaponsWealth',
 }
 
 const userSortValue = makeSortValue<UserRow>({
   passthrough: [
-    'caseLuck',
-    'standardCasesOpened',
-    'mythicCasesOpened',
-    'casesCommon',
-    'casesUncommon',
-    'casesRare',
-    'casesEpic',
-    'casesLegendary',
-    'casesMythic',
+    ...CASE_SORT_KEYS,
+    ...WEALTH_PART_KEYS,
     'countryCode',
     'level',
     'levelRank',
     'wealthRank',
     'wealth',
-    'companiesWealth',
-    'itemsWealth',
-    'cashWealth',
-    'equipmentWealth',
-    'weaponsWealth',
     'damageRank',
     'damage',
     'weeklyDamage',
@@ -72,8 +49,8 @@ const userSortValue = makeSortValue<UserRow>({
     'createdAt',
     'points',
     'pointsPerDay',
-    'healthPercent',
-    'hungerPercent',
+    'health',
+    'hunger',
     'gearScore',
     'warShare',
   ],

@@ -5,6 +5,7 @@ import { withActiveBattleCounts } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
 import { readinessScore } from '@/lib/rows'
+import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, COMBAT_SORT_KEYS, PREMIUM_FIELD_ALIASES, PREMIUM_KEYS, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
@@ -12,44 +13,29 @@ import { TIER_INDEX } from '@/lib/warera/api'
  * popover cheatsheet in `countries-table.tsx`.
  */
 const countryFieldAliases: FieldAliases = {
+  ...CASE_FIELD_ALIASES,
+  ...WEALTH_FIELD_ALIASES,
+  ...PREMIUM_FIELD_ALIASES,
   cases: 'casesOpenedTotal',
-  luck: 'caseLuck',
-  common: 'casesCommon',
-  uncommon: 'casesUncommon',
-  rare: 'casesRare',
-  epic: 'casesEpic',
-  legendary: 'casesLegendary',
-  mythic: 'casesMythic',
   allies: 'alliesCount',
-  gems: 'gemsPurchasedTotal',
+  health: 'avgHealth',
+  hunger: 'avgHunger',
   level: 'avgLevel',
+  points: 'totalPoints',
   ppd: 'avgPointsPerDay',
   population: 'activePopulation',
-  premiumGifts: 'premiumGiftsTotal',
-  premiumMonths: 'premiumMonthsTotal',
   rank: 'damageRank',
   specialty: 'specializedItem',
   treasury: 'money',
   unrest: 'unrestPercent',
   wars: 'warsCount',
-  companies: 'companiesWealth',
-  items: 'itemsWealth',
-  cash: 'cashWealth',
-  equipment: 'equipmentWealth',
-  weapons: 'weaponsWealth',
 }
 
 const countrySortValue = makeSortValue<CountryRow>({
   passthrough: [
-    'caseLuck',
-    'standardCasesOpened',
-    'mythicCasesOpened',
-    'casesCommon',
-    'casesUncommon',
-    'casesRare',
-    'casesEpic',
-    'casesLegendary',
-    'casesMythic',
+    ...CASE_SORT_KEYS,
+    ...WEALTH_PART_KEYS,
+    ...PREMIUM_KEYS,
     'totalPoints',
     'avgPoints',
     'avgPointsPerDay',
@@ -58,18 +44,11 @@ const countrySortValue = makeSortValue<CountryRow>({
     'avgHunger',
     'avgGearScore',
     'avgWarShare',
-    'damage',
-    'damageRank',
-    'weeklyDamage',
+    ...COMBAT_SORT_KEYS,
     'weeklyDamagePerCitizen',
     'wealth',
     'wealthRank',
     'citizenWealth',
-    'companiesWealth',
-    'itemsWealth',
-    'cashWealth',
-    'equipmentWealth',
-    'weaponsWealth',
     'bounty',
     'money',
     'development',
@@ -79,9 +58,6 @@ const countrySortValue = makeSortValue<CountryRow>({
     'partyCount',
     'alliesCount',
     'warsCount',
-    'gemsPurchasedTotal',
-    'premiumMonthsTotal',
-    'premiumGiftsTotal',
     'code',
     'specializedItem',
     'taxIncome',

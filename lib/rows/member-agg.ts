@@ -1,4 +1,4 @@
-import type { GroupCaseStats, GroupPointsStats, GroupPremiumStats, GroupWealthParts, UserRow } from '@/lib/rows'
+import type { GroupCaseStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupWealthParts, UserRow } from '@/lib/rows'
 
 import { luckPercent } from '@/lib/cases'
 
@@ -165,12 +165,12 @@ export function aggregateMembers(
       entry.pointsPerDaySum += u.pointsPerDay
       entry.pointsPerDayCount += 1
     }
-    if (u.healthPercent !== null) {
-      entry.healthSum += u.healthPercent
+    if (u.health !== null) {
+      entry.healthSum += u.health
       entry.healthCount += 1
     }
-    if (u.hungerPercent !== null) {
-      entry.hungerSum += u.hungerPercent
+    if (u.hunger !== null) {
+      entry.hungerSum += u.hunger
       entry.hungerCount += 1
     }
     if (u.gearScore !== null) {
@@ -248,7 +248,7 @@ export function aggMeanRaw(sum: number, count: number): number | null {
  * A group row's wealth-component fields ({@link GroupWealthParts}), assembled
  * from the aggregate. One spread per builder keeps the field set next to the
  * aggregation that produces it; ranks are filled later by rankAll (the value
- * keys are {@link WEALTH_PART_RANK_KEYS}). The alliance builder sums member
+ * keys are {@link WEALTH_PART_KEYS}). The alliance builder sums member
  * country rows instead, so it sets these itself.
  */
 export function aggWealthParts(agg: MemberAgg | undefined): GroupWealthParts {
@@ -267,9 +267,10 @@ export function aggWealthParts(agg: MemberAgg | undefined): GroupWealthParts {
 }
 
 /**
- * The {@link aggWealthParts} value keys rankAll should rank.
+ * The five wealth-component field keys, ranked by the builders (via rankAll)
+ * and reused as the sort/filter passthrough in the API routes.
  */
-export const WEALTH_PART_RANK_KEYS = ['companiesWealth', 'itemsWealth', 'cashWealth', 'equipmentWealth', 'weaponsWealth'] as const
+export const WEALTH_PART_KEYS = ['companiesWealth', 'itemsWealth', 'cashWealth', 'equipmentWealth', 'weaponsWealth'] as const
 
 /**
  * A group row's aggregate points fields ({@link GroupPointsStats}): the
@@ -298,7 +299,7 @@ export const POINTS_RANK_KEYS = ['totalPoints', 'avgPoints'] as const
 /**
  * A group row's premium-spend fields ({@link GroupPremiumStats}): members' gems
  * bought, premium months, and premium gifts, summed. Ranks are filled later by
- * rankAll (the value keys are {@link PREMIUM_RANK_KEYS}). Alliances carry no
+ * rankAll (the value keys are {@link PREMIUM_KEYS}). Alliances carry no
  * premium aggregate, so only the country / MU / party builders spread this.
  */
 export function aggPremium(agg: MemberAgg | undefined): GroupPremiumStats {
@@ -313,9 +314,10 @@ export function aggPremium(agg: MemberAgg | undefined): GroupPremiumStats {
 }
 
 /**
- * The {@link aggPremium} value keys rankAll should rank.
+ * The premium-spend field keys, ranked by the builders (via rankAll) and reused
+ * as the sort/filter passthrough in the country / MU / party API routes.
  */
-export const PREMIUM_RANK_KEYS = ['gemsPurchasedTotal', 'premiumMonthsTotal', 'premiumGiftsTotal'] as const
+export const PREMIUM_KEYS = ['gemsPurchasedTotal', 'premiumMonthsTotal', 'premiumGiftsTotal'] as const
 
 /**
  * Readiness-status mix (buff / ready / debuff member counts) from a
@@ -327,5 +329,25 @@ export function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, re
     buff: agg?.buffCount ?? 0,
     ready: agg?.readyCount ?? 0,
     debuff: agg?.debuffCount ?? 0,
+  }
+}
+
+/**
+ * A group row's member-averaged combat/condition stats ({@link GroupVitals}):
+ * average gear score, war-share, health and hunger across the citizens, plus
+ * the readiness mix. Ranks are filled later by rankAll. Shared by the country /
+ * MU / alliance builders.
+ */
+export function aggVitals(agg: MemberAgg | undefined): GroupVitals {
+  return {
+    avgGearScore: aggMean(agg?.gearScoreSum ?? 0, agg?.gearScoreCount ?? 0),
+    avgGearScoreRank: null,
+    avgWarShare: aggMeanRaw(agg?.warShareSum ?? 0, agg?.warShareCount ?? 0),
+    avgWarShareRank: null,
+    avgHealth: aggMean(agg?.healthSum ?? 0, agg?.healthCount ?? 0),
+    avgHealthRank: null,
+    avgHunger: aggMean(agg?.hungerSum ?? 0, agg?.hungerCount ?? 0),
+    avgHungerRank: null,
+    readinessPill: aggReadinessPill(agg),
   }
 }

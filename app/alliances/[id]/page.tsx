@@ -142,15 +142,8 @@ export default async function AllianceDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Development"
           total={total}
-          hero={{
-            label: 'Current',
-            value: a.development,
-            display: a.development !== null ? a.development.toFixed(1) : undefined,
-            range: ranges.development,
-            heat: 'median',
-            rank: a.developmentRank,
-          }}
           rows={[
+            { label: 'Current', value: a.development, display: a.development !== null ? a.development.toFixed(1) : undefined, range: ranges.development, heat: 'median', rank: a.developmentRank },
             { label: 'Core', value: a.coreDevelopment, display: a.coreDevelopment !== null ? a.coreDevelopment.toFixed(1) : undefined, range: ranges.coreDevelopment, heat: 'median', rank: a.coreDevelopmentRank },
             { label: 'Average', value: a.averageDevelopment, display: a.averageDevelopment !== null ? a.averageDevelopment.toFixed(1) : undefined, range: ranges.averageDevelopment, heat: 'median', rank: a.averageDevelopmentRank },
           ]}
@@ -158,15 +151,8 @@ export default async function AllianceDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Damage"
           total={total}
-          hero={{
-            label: 'Total',
-            value: a.totalDamage,
-            display: <CompactNumber value={a.totalDamage} />,
-            range: ranges.totalDamage,
-            heat: 'median',
-            rank: a.totalDamageRank,
-          }}
           rows={[
+            { label: 'Total', value: a.damage, display: <CompactNumber value={a.damage} />, range: ranges.damage, heat: 'median', rank: a.damageRank },
             { label: 'Weekly', value: a.weeklyDamage, display: <CompactNumber value={a.weeklyDamage} />, range: ranges.weeklyDamage, heat: 'median', rank: a.weeklyDamageRank },
             { label: 'Per citizen', value: a.weeklyDamagePerCitizen, display: <CompactNumber value={a.weeklyDamagePerCitizen} />, range: ranges.weeklyDamagePerCitizen, heat: 'median', rank: a.weeklyDamagePerCitizenRank },
           ]}

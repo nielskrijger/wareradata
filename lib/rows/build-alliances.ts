@@ -2,8 +2,8 @@ import type { AllianceMemberRow, AllianceRow, CountryRow, UserRow } from '@/lib/
 import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance } from '@/lib/warera/api'
 
-import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggCases, aggPoints, aggregateMembers, POINTS_RANK_KEYS, WEALTH_PART_RANK_KEYS } from '@/lib/rows/member-agg'
+import { leaderFields, rankAll, toTier } from '@/lib/rows/lookups'
+import { aggCases, aggPoints, aggPremium, aggregateMembers, aggVitals, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
 
 export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow[], userRows: UserRow[], lookups: Lookups): AllianceRow[] {
   const countryRowById = new Map(countryRows.map(c => [c.id, c]))
@@ -67,15 +67,13 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
         name: a.name,
         scheme: a.scheme,
         avatarUrl: a.avatarUrl ?? null,
-        leaderId: a.leader ?? null,
-        leaderName: a.leader ? lookups.userNameById.get(a.leader) ?? null : null,
-        leaderAvatarUrl: a.leader ? lookups.userAvatarById.get(a.leader) ?? null : null,
-        leaderColorScheme: a.leader ? lookups.userColorSchemeById.get(a.leader) ?? null : null,
+        ...leaderFields(a.leader ?? null, lookups),
         memberCount: members.length,
         members,
         memberNames: members.map(m => `${m.name} ${m.code ?? ''}`).join(' '),
         ...aggPoints(agg),
         ...aggCases(agg),
+        ...aggPremium(agg),
         ...wealth,
         citizenWealthRank: null,
         companiesWealthRank: null,
@@ -93,8 +91,10 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
         averageDevelopmentRank: null,
         population: r?.alliancePopulation?.value ?? null,
         populationRank: r?.alliancePopulation?.rank ?? null,
-        totalDamage: r?.allianceDamages?.value ?? null,
-        totalDamageRank: r?.allianceDamages?.rank ?? null,
+        ...aggVitals(agg),
+        damageTier: toTier(r?.allianceDamages?.tier),
+        damage: r?.allianceDamages?.value ?? null,
+        damageRank: r?.allianceDamages?.rank ?? null,
         weeklyDamage: r?.allianceWeeklyDamages?.value ?? null,
         weeklyDamageRank: r?.allianceWeeklyDamages?.rank ?? null,
         weeklyDamagePerCitizen: r?.allianceWeeklyDamagesPerCitizen?.value ?? null,
@@ -110,10 +110,15 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
   rankAll(rows, [
     'caseLuck',
     ...POINTS_RANK_KEYS,
+    ...PREMIUM_KEYS,
+    'avgGearScore',
+    'avgWarShare',
+    'avgHealth',
+    'avgHunger',
     'coreDevelopment',
     'averageDevelopment',
     'citizenWealth',
-    ...WEALTH_PART_RANK_KEYS,
+    ...WEALTH_PART_KEYS,
   ])
 
   return rows

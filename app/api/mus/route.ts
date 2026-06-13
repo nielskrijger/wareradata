@@ -4,6 +4,7 @@ import type { MURow } from '@/lib/rows'
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
 import { readinessScore } from '@/lib/rows'
+import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, COMBAT_SORT_KEYS, PREMIUM_FIELD_ALIASES, PREMIUM_KEYS, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
@@ -11,43 +12,28 @@ import { TIER_INDEX } from '@/lib/warera/api'
  * popover cheatsheet in `mus-table.tsx`.
  */
 const muFieldAliases: FieldAliases = {
+  ...CASE_FIELD_ALIASES,
+  ...WEALTH_FIELD_ALIASES,
+  ...PREMIUM_FIELD_ALIASES,
   cases: 'casesOpenedTotal',
-  luck: 'caseLuck',
-  common: 'casesCommon',
-  uncommon: 'casesUncommon',
-  rare: 'casesRare',
-  epic: 'casesEpic',
-  legendary: 'casesLegendary',
-  mythic: 'casesMythic',
   country: 'countryCode',
   region: 'regionName',
   members: 'memberCount',
   invested: 'investedMoney',
   dorms: 'dormitoriesLevel',
   hq: 'headquartersLevel',
-  gems: 'gemsPurchasedTotal',
-  premiumMonths: 'premiumMonthsTotal',
-  premiumGifts: 'premiumGiftsTotal',
+  health: 'avgHealth',
+  hunger: 'avgHunger',
   level: 'avgLevel',
+  points: 'totalPoints',
   ppd: 'avgPointsPerDay',
-  companies: 'companiesWealth',
-  items: 'itemsWealth',
-  cash: 'cashWealth',
-  equipment: 'equipmentWealth',
-  weapons: 'weaponsWealth',
 }
 
 const muSortValue = makeSortValue<MURow>({
   passthrough: [
-    'caseLuck',
-    'standardCasesOpened',
-    'mythicCasesOpened',
-    'casesCommon',
-    'casesUncommon',
-    'casesRare',
-    'casesEpic',
-    'casesLegendary',
-    'casesMythic',
+    ...CASE_SORT_KEYS,
+    ...WEALTH_PART_KEYS,
+    ...PREMIUM_KEYS,
     'totalPoints',
     'avgPoints',
     'avgPointsPerDay',
@@ -56,27 +42,17 @@ const muSortValue = makeSortValue<MURow>({
     'avgHunger',
     'avgGearScore',
     'avgWarShare',
-    'damage',
-    'damageRank',
-    'weeklyDamage',
+    ...COMBAT_SORT_KEYS,
     'bounty',
     'wealth',
     'wealthRank',
     'memberWealth',
-    'companiesWealth',
-    'itemsWealth',
-    'cashWealth',
-    'equipmentWealth',
-    'weaponsWealth',
     'terrain',
     'reputation',
     'memberCount',
     'investedMoney',
     'dormitoriesLevel',
     'headquartersLevel',
-    'gemsPurchasedTotal',
-    'premiumMonthsTotal',
-    'premiumGiftsTotal',
   ],
   text: ['name', 'countryName', 'regionName'],
   custom: {

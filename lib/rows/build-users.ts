@@ -39,8 +39,8 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
       const days = daysSinceJoin(u.createdAt, nowMs)
       const pointsPerDay = days === null ? null : Math.round(pts.total / days)
       const skills = u.skills
-      const healthPercent = barPercent(skills?.health)
-      const hungerPercent = barPercent(skills?.hunger)
+      const health = barPercent(skills?.health)
+      const hunger = barPercent(skills?.hunger)
       const readinessStatus = toReadinessStatus(skills?.attack)
       const readinessEndsAt = u.buffs?.buffEndAt ?? u.buffs?.debuffEndAt ?? null
       const gear = equipment[u._id]
@@ -93,8 +93,8 @@ export function buildUserRows(users: User[], lookups: Lookups, nowMs: number, eq
         gearScoreRank: null,
         gemsPurchased: r?.userGemsPurchased?.value ?? null,
         gemsPurchasedRank: null,
-        healthPercent,
-        hungerPercent,
+        health,
+        hunger,
         id: u._id,
         isBanned: infos?.isBanned === true,
         lastConnectionAt: dates?.lastConnectionAt ?? null,

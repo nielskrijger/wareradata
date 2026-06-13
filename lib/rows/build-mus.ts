@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { MU } from '@/lib/warera/api'
 
 import { leaderFields, rankAll, toTier } from '@/lib/rows/lookups'
-import { aggCases, aggPoints, aggPremium, aggregateMembers, aggVitals, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
+import { aggCases, aggFactories, aggPoints, aggPremium, aggregateMembers, aggVitals, aggWealthParts, FACTORY_RANK_KEYS, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
 
 export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): MURow[] {
   const membersByMu = aggregateMembers(userRows, u => u.muId)
@@ -40,6 +40,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         dormitoriesLevel: m.activeUpgradeLevels?.dormitories ?? null,
         dormitoriesLevelRank: null,
         ...aggCases(agg),
+        ...aggFactories(agg),
         ...aggPoints(agg),
         ...aggPremium(agg),
         ...aggWealthParts(agg),
@@ -90,6 +91,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
     'memberCount',
     'memberWealth',
     ...WEALTH_PART_KEYS,
+    ...FACTORY_RANK_KEYS,
     'investedMoney',
     'dormitoriesLevel',
     'headquartersLevel',

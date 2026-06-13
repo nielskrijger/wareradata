@@ -1,4 +1,4 @@
-import type { Alliance, Battle, Country, Equipment, GameConfig, Government, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
+import type { Alliance, Battle, Country, Equipment, GameConfig, Government, ItemBestRegion, MarketPrices, MU, Party, Region, SnapshotMeta, TournamentSnapshot, User } from '@/lib/warera/api'
 
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
@@ -33,6 +33,12 @@ export interface RawSnapshot {
   // The game's static config (item stats, skill cost curves, …), captured every
   // scrape. The gear-score roll bounds and skill cost curve are derived from it.
   gameConfig: GameConfig
+  // Market context for the factory profit model, captured each cycle (~2 extra
+  // requests): current item prices, and the best-region bonus per item (the
+  // "production frontier"). Kept here so the row builders can value factories at
+  // build time without any network. Empty on a legacy/cold snapshot.
+  prices: MarketPrices
+  itemBestRegions: Record<string, ItemBestRegion>
   meta: SnapshotMeta
 }
 
@@ -97,6 +103,8 @@ export function emptyRawSnapshot(): RawSnapshot {
     // no users, so the derivations that read it are never exercised; the first
     // scrape replaces this with the real config.
     gameConfig: {} as GameConfig,
+    prices: {} as MarketPrices,
+    itemBestRegions: {},
     meta: {},
   }
 }
@@ -128,6 +136,8 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   parsed.equipment ??= {}
   parsed.governments ??= {}
   parsed.alliances ??= []
+  parsed.prices ??= {} as RawSnapshot['prices']
+  parsed.itemBestRegions ??= {}
   const sizeMb = (raw.length / 1_000_000).toFixed(1)
   console.info(
     `[file-store] read snapshot from ${path}: ${sizeMb}MB, ${parsed.users?.length ?? 0} users in ${readMs}ms`,
@@ -176,6 +186,8 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
   yield `,"battles":${JSON.stringify(snapshot.battles)}`
   yield `,"tournament":${JSON.stringify(snapshot.tournament)}`
   yield `,"gameConfig":${JSON.stringify(snapshot.gameConfig)}`
+  yield `,"prices":${JSON.stringify(snapshot.prices)}`
+  yield `,"itemBestRegions":${JSON.stringify(snapshot.itemBestRegions)}`
   yield `,"meta":${JSON.stringify(snapshot.meta)}`
   yield '}'
 }

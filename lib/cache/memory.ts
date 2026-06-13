@@ -1,3 +1,4 @@
+import type { FactorySnapshot } from './factory-store'
 import type { RawSnapshot } from './file-store'
 import type { GearLookup } from '@/lib/gear/score'
 import type { Range } from '@/lib/query'
@@ -6,6 +7,8 @@ import type { Lookups } from '@/lib/rows/lookups'
 
 import type { Equipment, GameConfig, TournamentSnapshot } from '@/lib/warera/api'
 
+import { buildUserFactoryAggregates } from '@/lib/factories/aggregate'
+import { recipeFromGameConfig } from '@/lib/factories/inputs'
 import { deriveGearLookup } from '@/lib/gear/score'
 import { computeRanges } from '@/lib/query'
 import { buildAllianceRows } from '@/lib/rows/build-alliances'
@@ -18,6 +21,7 @@ import { buildRegionRows } from '@/lib/rows/build-regions'
 import { buildUserRows } from '@/lib/rows/build-users'
 import { buildLookups } from '@/lib/rows/lookups'
 
+import { readFactorySnapshot } from './factory-store'
 import { emptyRawSnapshot, readRawSnapshot } from './file-store'
 
 // Build-time guard: fails the build if any client component ever imports this
@@ -97,10 +101,18 @@ function store(): SnapshotStore {
  * builders never mutate their input), so the result is a new immutable snapshot
  * safe to publish while readers still hold an older one.
  */
-export function buildSnapshot(raw: RawSnapshot, nowMs: number): Snapshot {
+export function buildSnapshot(raw: RawSnapshot, nowMs: number, factory: FactorySnapshot = { byUser: {} }): Snapshot {
   const lookups = buildLookups(raw.countries, raw.mus, raw.regions, raw.users, raw.parties)
   const gearLookup = deriveGearLookup(raw.gameConfig)
-  const userRows = buildUserRows(raw.users, lookups, nowMs, raw.equipment, raw.gameConfig, gearLookup)
+
+  // Value each user's factories from the raw factory rows + the snapshot's
+  // market data (prices + best-region frontier), so member-agg can roll the
+  // per-user totals up into the entity Industry columns. Empty when neither
+  // scrape has populated its inputs yet.
+  const regionName = (id: string) => lookups.regionById.get(id)?.name ?? '—'
+  const factoryAggByUser = buildUserFactoryAggregates(factory, raw.prices, raw.itemBestRegions, recipeFromGameConfig(raw.gameConfig), regionName)
+
+  const userRows = buildUserRows(raw.users, lookups, nowMs, raw.equipment, raw.gameConfig, gearLookup, factoryAggByUser)
   const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups, raw.alliances)
   const governmentRows = buildGovernmentRows(raw.governments, lookups)
   const muRows = buildMURows(raw.mus, userRows, lookups)
@@ -120,9 +132,9 @@ export function buildSnapshot(raw: RawSnapshot, nowMs: number): Snapshot {
  * function be called from a prerender path without tripping the
  * cacheComponents current-time check.
  */
-export function buildSnapshotNow(raw: RawSnapshot, label: string): Snapshot {
+export function buildSnapshotNow(raw: RawSnapshot, label: string, factory: FactorySnapshot = { byUser: {} }): Snapshot {
   const start = Date.now()
-  const snapshot = buildSnapshot(raw, start)
+  const snapshot = buildSnapshot(raw, start, factory)
   console.info(`[snapshot] ${label}: built rows in ${Date.now() - start}ms (${snapshot.users.length} users)`)
   return snapshot
 }
@@ -147,11 +159,11 @@ export async function initSnapshot(): Promise<void> {
     return
   }
   console.info('[snapshot] boot: loading persisted snapshot from disk')
-  const raw = await readRawSnapshot()
+  const [raw, factory] = await Promise.all([readRawSnapshot(), readFactorySnapshot()])
   if (!raw) {
     console.info('[snapshot] boot: no persisted data, starting empty until the scraper completes its first cycle')
   }
-  s.current = buildSnapshotNow(raw ?? emptyRawSnapshot(), 'boot')
+  s.current = buildSnapshotNow(raw ?? emptyRawSnapshot(), 'boot', factory)
   console.info(`[snapshot] boot: ready with ${s.current.users.length} users`)
 }
 
@@ -171,8 +183,8 @@ export function getSnapshot(): Promise<Snapshot> {
     return Promise.resolve(s.current)
   }
   if (!s.loading) {
-    s.loading = readRawSnapshot()
-      .then(raw => buildSnapshotNow(raw ?? emptyRawSnapshot(), 'lazy-load'))
+    s.loading = Promise.all([readRawSnapshot(), readFactorySnapshot()])
+      .then(([raw, factory]) => buildSnapshotNow(raw ?? emptyRawSnapshot(), 'lazy-load', factory))
       .then((snapshot) => {
         s.current ??= snapshot
         s.loading = null

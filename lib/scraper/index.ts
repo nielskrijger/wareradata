@@ -1,6 +1,7 @@
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { recordBattleHistory } from '@/lib/cache/archive'
+import { readFactorySnapshot } from '@/lib/cache/factory-store'
 import { readRawSnapshot, writeRawSnapshot } from '@/lib/cache/file-store'
 import { buildSnapshotNow, swapSnapshot } from '@/lib/cache/memory'
 import { getEquipmentUrgent, getMuMembers, getUsersUrgent } from '@/lib/warera/api'
@@ -73,7 +74,7 @@ function logRetainedMemory(label: string): void {
 async function publish(raw: RawSnapshot): Promise<void> {
   store().currentRaw = raw
   await writeRawSnapshot(raw)
-  swapSnapshot(buildSnapshotNow(raw, 'scrape'))
+  swapSnapshot(buildSnapshotNow(raw, 'scrape', await readFactorySnapshot()))
 }
 
 /**
@@ -198,7 +199,7 @@ async function refreshUsersInSnapshot(
   const patched = patch ? { ...base, ...patch(base, now) } : base
 
   s.currentRaw = patched
-  swapSnapshot(buildSnapshotNow(patched, reason))
+  swapSnapshot(buildSnapshotNow(patched, reason, await readFactorySnapshot()))
   console.info(`[scraper] on-demand refresh: ${reason} (${fresh.length} users)`)
 }
 

@@ -3,7 +3,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance } from '@/lib/warera/api'
 
 import { leaderFields, rankAll, rankPair, toTier } from '@/lib/rows/lookups'
-import { aggCases, aggPoints, aggPremium, aggregateMembers, aggVitals, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
+import { aggCases, aggFactories, aggPoints, aggPremium, aggregateMembers, aggVitals, FACTORY_RANK_KEYS, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
 
 export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow[], userRows: UserRow[], lookups: Lookups): AllianceRow[] {
   const countryRowById = new Map(countryRows.map(c => [c.id, c]))
@@ -74,6 +74,7 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
         ...aggPoints(agg),
         ...aggCases(agg),
         ...aggPremium(agg),
+        ...aggFactories(agg),
         ...wealth,
         citizenWealthRank: null,
         companiesWealthRank: null,
@@ -115,6 +116,7 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
     'averageDevelopment',
     'citizenWealth',
     ...WEALTH_PART_KEYS,
+    ...FACTORY_RANK_KEYS,
   ])
 
   return rows

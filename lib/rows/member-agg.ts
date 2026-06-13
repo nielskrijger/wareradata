@@ -1,4 +1,4 @@
-import type { GroupCaseStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupWealthParts, UserRow } from '@/lib/rows'
+import type { GroupCaseStats, GroupFactoryStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupWealthParts, UserRow } from '@/lib/rows'
 
 import { luckPercent } from '@/lib/cases'
 
@@ -21,6 +21,12 @@ export interface MemberAgg {
   premiumGiftsTotal: number
   premiumMonthsTotal: number
   total: number
+  // Sums of members' per-user factory totals (production points/day, net gold/day,
+  // and Move-potential gold/day), for the entity's Industry columns. Members
+  // with no scraped factories contribute 0; efficiency = factoryNet / factoryMove.
+  factoryPpPerDay: number
+  factoryNetPerDay: number
+  factoryMovePotential: number
   // Sum and count of members' warShare (war / war+eco). Counts only members
   // with a non-null share (i.e. who've trained war or eco), so the mean is a
   // one-member-one-vote average of leans, untrained members excluded — same
@@ -84,6 +90,9 @@ function emptyAgg(): MemberAgg {
     premiumMonthsTotal: 0,
     readyCount: 0,
     total: 0,
+    factoryPpPerDay: 0,
+    factoryNetPerDay: 0,
+    factoryMovePotential: 0,
     warShareSum: 0,
     warShareCount: 0,
     wealthPoints: 0,
@@ -157,6 +166,9 @@ export function aggregateMembers(
     entry.casesMythic += u.casesMythic ?? 0
     entry.caseLuckActual += u.caseLuckActual
     entry.caseLuckExpected += u.caseLuckExpected
+    entry.factoryPpPerDay += u.factoryPpPerDay ?? 0
+    entry.factoryNetPerDay += u.factoryNetPerDay ?? 0
+    entry.factoryMovePotential += u.factoryMovePotential ?? 0
     if (u.level !== null) {
       entry.levelSum += u.level
       entry.levelCount += 1
@@ -331,6 +343,34 @@ export function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, re
     debuff: agg?.debuffCount ?? 0,
   }
 }
+
+/**
+ * A group row's factory fields ({@link GroupFactoryStats}): member-summed
+ * production points/day (total + per-member over the entity's member count) and
+ * net gold/day, plus location efficiency (Σ net ÷ Σ Move-potential, capped at
+ * 100, null when nothing's produced). Ranks filled later by rankAll (value keys
+ * are {@link FACTORY_RANK_KEYS}). Empty until the factory scrape has run.
+ */
+export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
+  const ppPerDay = agg?.factoryPpPerDay ?? 0
+  const netPerDay = agg?.factoryNetPerDay ?? 0
+  const move = agg?.factoryMovePotential ?? 0
+  return {
+    factoryPpPerDay: ppPerDay,
+    factoryPpPerDayRank: null,
+    factoryPpPerMember: agg && agg.count > 0 ? ppPerDay / agg.count : null,
+    factoryPpPerMemberRank: null,
+    factoryNetPerDay: netPerDay,
+    factoryNetPerDayRank: null,
+    factoryEfficiencyPct: move > 0 ? Math.min(100, (netPerDay / move) * 100) : null,
+    factoryEfficiencyRank: null,
+  }
+}
+
+/**
+ * The {@link aggFactories} value keys rankAll should rank.
+ */
+export const FACTORY_RANK_KEYS = ['factoryPpPerDay', 'factoryPpPerMember', 'factoryNetPerDay', 'factoryEfficiencyPct'] as const
 
 /**
  * A group row's member-averaged combat/condition stats ({@link GroupVitals}):

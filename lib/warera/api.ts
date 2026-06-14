@@ -444,19 +444,8 @@ export async function getTournamentInfo(): Promise<TournamentInfo> {
   return { id: tournament._id, name: tournament.name ?? null, teams: map }
 }
 
-// A factory (company) hydrated from getById, widened for fields the live API
-// returns that the generated types miss: the real worker objects and the
-// optional movedUpAt timestamp.
-export interface FactoryWorker {
-  user: string
-  wage: number
-  joinedAt: string
-  _id: string
-}
-export type Factory = Omit<CompanyGetByIdResponse, 'workers'> & {
-  workers: FactoryWorker[]
-  movedUpAt?: string
-}
+// A factory (company) as returned by company.getById.
+export type Factory = CompanyGetByIdResponse
 
 // One factory's daily work stats (production points + wages per day).
 export type FactoryWorkStat = WorkStatsItem
@@ -491,7 +480,7 @@ async function fetchUserCompanies(client: Client, userId: string): Promise<Facto
     Promise.all(ids.map(id => client.company.getProductionBonus({ companyId: id }).catch(() => null))),
   ])
 
-  return ids.map((_, i) => ({ company: companies[i] as unknown as Factory, stats: stats[i], bonus: bonuses[i] }))
+  return ids.map((_, i) => ({ company: companies[i], stats: stats[i], bonus: bonuses[i] }))
 }
 
 /**

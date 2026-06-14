@@ -8,7 +8,7 @@ import { getItemBestRegions, getItemPrices, getUserCompanies } from '@/lib/warer
 
 import { FactoriesTable } from './factories-table'
 
-const log = logger.child({ phase: 'factories' })
+const log = logger.child({ component: 'factories' })
 
 /**
  * Streams a user's factories with daily profit and the Move / Top relocation

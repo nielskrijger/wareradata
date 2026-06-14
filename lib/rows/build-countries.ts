@@ -55,7 +55,7 @@ export function buildCountryRows(
         damageRank: null,
         damageTier: toTier(r?.countryDamages?.tier),
         damage: r?.countryDamages?.value ?? null,
-        development: c.development ?? null,
+        development: r?.countryDevelopment?.value ?? null,
         developmentRank: null,
         ...aggCases(agg),
         ...aggPoints(agg),

@@ -43,7 +43,7 @@ export function PartiesTable({ initial, baseFilter }: Props) {
             { q: 'militarism:[50 TO 100]', desc: 'Numeric range' },
             { q: 'country:nl AND members:>5', desc: 'Combine with AND/OR' },
           ]}
-          fieldsList="name, country, leader, members, points, companies, items, cash, equipment, weapons, cases, luck, and more."
+          fieldsList="name, country, leader, members, points, companies, stockpile, items, cash, equipment, weapons, cases, luck, and more."
         />
       )}
     />

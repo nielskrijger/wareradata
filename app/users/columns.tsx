@@ -166,6 +166,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
     wealth: [
       rankTooltipColumn<UserRow>('wealth', 'wealthRank', 'Total', { width: 100, tooltip: 'Total wealth: companies + items + cash + equipment + weapons.' }),
       compactNumberColumn<UserRow>('companiesWealth', 'Companies', { heat: 'median', width: 135, tooltip: 'Value of companies owned.' }),
+      compactNumberColumn<UserRow>('stockpileWealth', 'Stockpile', { heat: 'median', width: 120, tooltip: 'Value of items + cash + equipment + weapons.' }),
       compactNumberColumn<UserRow>('itemsWealth', 'Items', { heat: 'median', width: 100, tooltip: 'Value of items held.' }),
       compactNumberColumn<UserRow>('cashWealth', 'Cash', { heat: 'median', width: 100, tooltip: 'Liquid cash on hand.' }),
       compactNumberColumn<UserRow>('equipmentWealth', 'Equipment', { heat: 'median', width: 130, tooltip: 'Value of equipment owned.' }),

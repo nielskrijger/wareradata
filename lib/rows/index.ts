@@ -108,6 +108,10 @@ export interface UserRow {
   equipmentWealthRank: number | null
   weaponsWealth: number | null
   weaponsWealthRank: number | null
+  // Stockpile: tradeable wealth held outside companies (items + cash +
+  // equipment + weapons). Null when the wealth breakdown is absent.
+  stockpileWealth: number | null
+  stockpileWealthRank: number | null
   weeklyDamage: number | null
   weeklyDamageRank: number | null
   // Per-user factory totals from the factory scrape. PpPerDay / netPerDay /
@@ -208,6 +212,10 @@ export interface GroupWealthParts {
   equipmentWealthRank: number | null
   weaponsWealth: number
   weaponsWealthRank: number | null
+  // Stockpile: member-summed tradeable wealth outside companies (items + cash +
+  // equipment + weapons).
+  stockpileWealth: number
+  stockpileWealthRank: number | null
 }
 
 /**

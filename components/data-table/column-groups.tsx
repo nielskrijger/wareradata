@@ -56,6 +56,7 @@ export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'):
  */
 interface WealthComponentsRow {
   companiesWealth: number
+  stockpileWealth: number
   itemsWealth: number
   cashWealth: number
   equipmentWealth: number
@@ -76,6 +77,7 @@ export function wealthColumns<T extends WealthComponentsRow>(
   return [
     compactNumberColumn<T>(totalKey, 'Total', { heat: 'median', width: 110, tooltip: `Combined wealth of all ${who} (companies + items + cash + equipment + weapons).` }),
     compactNumberColumn<T>('companiesWealth' as Key<T>, 'Companies', { heat: 'median', width: 135, tooltip: `Combined company value across ${who}.` }),
+    compactNumberColumn<T>('stockpileWealth' as Key<T>, 'Stockpile', { heat: 'median', width: 120, tooltip: `Combined wealth of items + cash + equipment + weapons.` }),
     compactNumberColumn<T>('itemsWealth' as Key<T>, 'Items', { heat: 'median', width: 100, tooltip: `Combined item value across ${who}.` }),
     compactNumberColumn<T>('cashWealth' as Key<T>, 'Cash', { heat: 'median', width: 100, tooltip: `Combined cash across ${who}.` }),
     compactNumberColumn<T>('equipmentWealth' as Key<T>, 'Equipment', { heat: 'median', width: 130, tooltip: `Combined equipment value across ${who}.` }),

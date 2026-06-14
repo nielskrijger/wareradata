@@ -86,6 +86,7 @@ export async function buildUserRows(
     'cashWealth',
     'equipmentWealth',
     'weaponsWealth',
+    'stockpileWealth',
     'ecoPoints',
     'gearScore',
     'gemsPurchased',
@@ -119,6 +120,13 @@ function buildUserRow(u: User, ctx: UserRowContext) {
   // The wealth breakdown rides along in the getUserById stats payload. Absent
   // for users a fresh scrape hasn't reached, so each part defaults to null.
   const wealthParts = u.stats?.wealth
+
+  // Stockpile: the tradeable, non-company wealth (items + cash + equipment +
+  // weapons). Null when the breakdown is absent, matching its parts.
+  const stockpileWealth = wealthParts
+    ? (wealthParts.items ?? 0) + (wealthParts.money ?? 0) + (wealthParts.equipments ?? 0) + (wealthParts.weapons ?? 0)
+    : null
+
   const r = u.rankings
   const pts = computePoints({ level: levelValue, damage, wealth })
   const party = lookups.partyByUser.get(u._id)
@@ -234,6 +242,8 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     equipmentWealthRank: null,
     weaponsWealth: wealthParts?.weapons ?? null,
     weaponsWealthRank: null,
+    stockpileWealth,
+    stockpileWealthRank: null,
     weeklyDamage: r?.weeklyUserDamages?.value ?? null,
     weeklyDamageRank: null,
     factoryCount: factory?.factoryCount ?? null,

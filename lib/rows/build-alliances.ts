@@ -26,7 +26,7 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
       // Citizen wealth is the sum of the member countries' citizen-summed
       // figures. Countries partition users, so summing the already-aggregated
       // country rows equals aggregating the alliance's citizens directly.
-      const wealth = { citizenWealth: 0, companiesWealth: 0, itemsWealth: 0, cashWealth: 0, equipmentWealth: 0, weaponsWealth: 0 }
+      const wealth = { citizenWealth: 0, companiesWealth: 0, stockpileWealth: 0, itemsWealth: 0, cashWealth: 0, equipmentWealth: 0, weaponsWealth: 0 }
       for (const m of a.memberCountries) {
         const c = countryRowById.get(m.country)
         if (!c) {
@@ -34,6 +34,7 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
         }
         wealth.citizenWealth += c.citizenWealth
         wealth.companiesWealth += c.companiesWealth
+        wealth.stockpileWealth += c.stockpileWealth
         wealth.itemsWealth += c.itemsWealth
         wealth.cashWealth += c.cashWealth
         wealth.equipmentWealth += c.equipmentWealth
@@ -78,6 +79,7 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
         ...wealth,
         citizenWealthRank: null,
         companiesWealthRank: null,
+        stockpileWealthRank: null,
         itemsWealthRank: null,
         cashWealthRank: null,
         equipmentWealthRank: null,

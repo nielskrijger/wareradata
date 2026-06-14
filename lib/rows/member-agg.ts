@@ -287,6 +287,8 @@ export function aggWealthParts(agg: MemberAgg | undefined): GroupWealthParts {
     equipmentWealthRank: null,
     weaponsWealth: agg?.weaponsWealth ?? 0,
     weaponsWealthRank: null,
+    stockpileWealth: (agg?.itemsWealth ?? 0) + (agg?.cashWealth ?? 0) + (agg?.equipmentWealth ?? 0) + (agg?.weaponsWealth ?? 0),
+    stockpileWealthRank: null,
   }
 }
 
@@ -294,7 +296,7 @@ export function aggWealthParts(agg: MemberAgg | undefined): GroupWealthParts {
  * The five wealth-component field keys, ranked by the builders (via rankAll)
  * and reused as the sort/filter passthrough in the API routes.
  */
-export const WEALTH_PART_KEYS = ['companiesWealth', 'itemsWealth', 'cashWealth', 'equipmentWealth', 'weaponsWealth'] as const
+export const WEALTH_PART_KEYS = ['companiesWealth', 'itemsWealth', 'cashWealth', 'equipmentWealth', 'weaponsWealth', 'stockpileWealth'] as const
 
 /**
  * A group row's aggregate points fields ({@link GroupPointsStats}): the

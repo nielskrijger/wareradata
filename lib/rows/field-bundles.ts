@@ -36,6 +36,7 @@ export const CASE_SORT_KEYS = ['caseLuck', 'standardCasesOpened', 'mythicCasesOp
  */
 export const WEALTH_FIELD_ALIASES: FieldAliases = {
   companies: 'companiesWealth',
+  stockpile: 'stockpileWealth',
   items: 'itemsWealth',
   cash: 'cashWealth',
   equipment: 'equipmentWealth',

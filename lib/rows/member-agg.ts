@@ -368,8 +368,8 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
   const netPerDay = agg?.factoryNetPerDay ?? 0
   const top = agg?.factoryTopPotential ?? 0
   return {
-    factoryAvgCount: agg && agg.count > 0 ? Math.round((agg.factoryCount / agg.count) * 10) / 10 : null,
-    factoryAvgCountRank: null,
+    factoryCount: agg?.factoryCount ?? 0,
+    factoryCountRank: null,
     factoryPpPerDay: ppPerDay,
     factoryPpPerDayRank: null,
     factoryNetPerDay: netPerDay,
@@ -388,7 +388,7 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
 /**
  * The {@link aggFactories} value keys rankAll should rank.
  */
-export const FACTORY_RANK_KEYS = ['factoryAvgCount', 'factoryPpPerDay', 'factoryNetPerDay', 'factoryEngineNetPerDay', 'factoryEmployeeNetPerDay', 'factoryWorkers', 'factoryEfficiencyPct'] as const
+export const FACTORY_RANK_KEYS = ['factoryCount', 'factoryPpPerDay', 'factoryNetPerDay', 'factoryEngineNetPerDay', 'factoryEmployeeNetPerDay', 'factoryWorkers', 'factoryEfficiencyPct'] as const
 
 /**
  * A group row's member-averaged combat/condition stats ({@link GroupVitals}):

@@ -88,7 +88,7 @@ export function wealthColumns<T extends WealthComponentsRow>(
  * table shares.
  */
 interface FactoryStatsRow {
-  factoryAvgCount: number | null
+  factoryCount: number
   factoryPpPerDay: number
   factoryNetPerDay: number
   factoryEngineNetPerDay: number
@@ -98,7 +98,7 @@ interface FactoryStatsRow {
 }
 
 /**
- * The Factories column group: average factories per member, hired-worker
+ * The Factories column group: total factories across members, hired-worker
  * headcount, combined profit per day split into Auto (passive engines) and
  * Workers (workforce, net of wages), production points/day, and efficiency
  * (realized net vs the game-best Top potential). Net excludes self-work. `who`
@@ -106,10 +106,8 @@ interface FactoryStatsRow {
  * tables; empty until the slow factory scrape has run.
  */
 export function factoriesColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
-  const one = who === 'citizens' ? 'citizen' : 'member'
-
   return [
-    localeNumberColumn<T>('factoryAvgCount' as Key<T>, '# Factories', { heat: 'median', width: 130, tooltip: `Average factories owned per ${one}.` }),
+    localeNumberColumn<T>('factoryCount' as Key<T>, '# Factories', { heat: 'ramp', width: 130, tooltip: `Total factories owned across ${who}.` }),
     localeNumberColumn<T>('factoryWorkers' as Key<T>, '# Workers', { heat: 'ramp', width: 115, tooltip: `Total hired workers across ${who}.` }),
     compactNumberColumn<T>('factoryNetPerDay' as Key<T>, 'Total / day', { heat: 'median', width: 120, tooltip: `Combined factory profit per day across ${who}: automated engines + hired workers, net of wages. Excludes self-work.` }),
     compactNumberColumn<T>('factoryEngineNetPerDay' as Key<T>, 'Auto / day', { heat: 'median', width: 120, tooltip: `Profit per day from automated engines across ${who}.` }),

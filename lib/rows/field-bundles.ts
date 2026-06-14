@@ -62,7 +62,7 @@ export const COMBAT_SORT_KEYS = ['damage', 'damageRank', 'weeklyDamage'] as cons
  * Factories filter aliases shared by the country / MU / alliance tables.
  */
 export const FACTORY_FIELD_ALIASES: FieldAliases = {
-  avgFactories: 'factoryAvgCount',
+  factories: 'factoryCount',
   pp: 'factoryPpPerDay',
   factoryNet: 'factoryNetPerDay',
   auto: 'factoryEngineNetPerDay',

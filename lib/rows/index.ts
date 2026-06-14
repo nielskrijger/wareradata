@@ -219,9 +219,9 @@ export interface GroupWealthParts {
  * have run.
  */
 export interface GroupFactoryStats {
-  // Average factories owned per member (1 decimal). Null when no members.
-  factoryAvgCount: number | null
-  factoryAvgCountRank: number | null
+  // Total factories owned across members (member-summed). 0 when none.
+  factoryCount: number
+  factoryCountRank: number | null
   factoryPpPerDay: number
   factoryPpPerDayRank: number | null
   factoryNetPerDay: number

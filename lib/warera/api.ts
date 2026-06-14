@@ -497,6 +497,39 @@ export function getUserCompaniesSlow(userId: string): Promise<FactoryData[]> {
   return fetchUserCompanies(factoryClient, userId)
 }
 
+// One worker a user employs: their user id, per-work wage (gold), and fidelity
+// (loyalty days, 0–10). Fidelity adds +1% to that worker's production per day,
+// capped at +10% (gameConfig.worker.maxFidelity).
+export interface WorkerInfo {
+  userId: string
+  wage: number
+  fidelity: number
+}
+
+// The workers a user employs, grouped by company.
+export interface CompanyWorkers {
+  companyId: string
+  workers: WorkerInfo[]
+}
+
+/**
+ * Fetches every worker a user employs, grouped by company, via `worker.getWorkers`.
+ * The roster is no longer inlined on `company.getById`, so this is the source for
+ * who works where, their wage, and how loyal they are. Urgent client.
+ */
+export async function getUserWorkers(userId: string): Promise<CompanyWorkers[]> {
+  const client = urgentClient as unknown as {
+    worker: { getWorkers: (input: { userId: string }) => Promise<{
+      workersPerCompany?: Array<{ company: { _id: string }, workers?: Array<{ user?: string, wage?: number, fidelity?: number }> }>
+    }> }
+  }
+  const res = await client.worker.getWorkers({ userId })
+  return (res.workersPerCompany ?? []).map(c => ({
+    companyId: c.company._id,
+    workers: (c.workers ?? []).map(w => ({ userId: w.user ?? '', wage: w.wage ?? 0, fidelity: w.fidelity ?? 0 })),
+  }))
+}
+
 // Current market price per item code. Aliased so the snapshot store and row
 // builders can name the type without reaching into the SDK.
 export type MarketPrices = ItemTradingGetPricesResponse

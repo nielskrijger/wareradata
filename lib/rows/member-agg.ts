@@ -24,6 +24,7 @@ export interface MemberAgg {
   // Sums of members' per-user factory totals (production points/day, net gold/day,
   // and Top-potential gold/day), for the entity's Factories columns. Members with
   // no scraped factories contribute 0; efficiency = factoryNet / factoryTop.
+  factoryCount: number
   factoryPpPerDay: number
   factoryNetPerDay: number
   factoryEngineNetPerDay: number
@@ -93,6 +94,7 @@ function emptyAgg(): MemberAgg {
     premiumMonthsTotal: 0,
     readyCount: 0,
     total: 0,
+    factoryCount: 0,
     factoryPpPerDay: 0,
     factoryNetPerDay: 0,
     factoryEngineNetPerDay: 0,
@@ -172,6 +174,7 @@ export function aggregateMembers(
     entry.casesMythic += u.casesMythic ?? 0
     entry.caseLuckActual += u.caseLuckActual
     entry.caseLuckExpected += u.caseLuckExpected
+    entry.factoryCount += u.factoryCount ?? 0
     entry.factoryPpPerDay += u.factoryPpPerDay ?? 0
     entry.factoryNetPerDay += u.factoryNetPerDay ?? 0
     entry.factoryEngineNetPerDay += u.factoryEngineNetPerDay ?? 0
@@ -365,6 +368,8 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
   const netPerDay = agg?.factoryNetPerDay ?? 0
   const top = agg?.factoryTopPotential ?? 0
   return {
+    factoryAvgCount: agg && agg.count > 0 ? Math.round((agg.factoryCount / agg.count) * 10) / 10 : null,
+    factoryAvgCountRank: null,
     factoryPpPerDay: ppPerDay,
     factoryPpPerDayRank: null,
     factoryNetPerDay: netPerDay,
@@ -383,7 +388,7 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
 /**
  * The {@link aggFactories} value keys rankAll should rank.
  */
-export const FACTORY_RANK_KEYS = ['factoryPpPerDay', 'factoryNetPerDay', 'factoryEngineNetPerDay', 'factoryEmployeeNetPerDay', 'factoryWorkers', 'factoryEfficiencyPct'] as const
+export const FACTORY_RANK_KEYS = ['factoryAvgCount', 'factoryPpPerDay', 'factoryNetPerDay', 'factoryEngineNetPerDay', 'factoryEmployeeNetPerDay', 'factoryWorkers', 'factoryEfficiencyPct'] as const
 
 /**
  * A group row's member-averaged combat/condition stats ({@link GroupVitals}):

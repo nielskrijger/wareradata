@@ -9,7 +9,7 @@ import { computeGearScore, deriveSlotSpecs } from '@/lib/gear/score'
 import { rankAll, toTier } from '@/lib/rows/lookups'
 import { computePoints } from '@/lib/scoring'
 import { classifyCombatMode, deriveSkillPointCost, ECO_SKILLS, skillPoints, WAR_SKILLS } from '@/lib/skills/classify'
-import { extractCasesBreakdown } from '@/lib/warera/api'
+import { extractCasesByType, mergeCasesBreakdown } from '@/lib/warera/api'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -141,9 +141,11 @@ function buildUserRow(u: User, ctx: UserRowContext) {
   // in either, so those rows sort last rather than tying with pure-eco.
   const warShare = warPoints + ecoPoints > 0 ? warPoints / (warPoints + ecoPoints) : null
 
-  // Case pulls: the merged per-rarity breakdown plus the official-odds
-  // weighted luck scores (kept on the row so group builders can pool them).
-  const cases = extractCasesBreakdown(u.stats)
+  // Case pulls: the per-type split (for the detail toggle), its merge into the
+  // combined per-rarity flats (for the tables), and the official-odds weighted
+  // luck scores (kept on the row so group builders can pool them).
+  const casesByType = extractCasesByType(u.stats)
+  const cases = mergeCasesBreakdown(casesByType.standard, casesByType.mythic)
   const luck = caseLuckScores(u.stats)
 
   // Per-user factory totals (null when the factory scrape hasn't reached them),
@@ -158,6 +160,8 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     casesOpenedRank: null,
     standardCasesOpened: u.stats?.case1?.openedCount ?? null,
     mythicCasesOpened: u.stats?.case2?.openedCount ?? null,
+    standardCasesByRarity: casesByType.standard,
+    mythicCasesByRarity: casesByType.mythic,
     casesCommon: cases ? cases.byRarity.common ?? 0 : null,
     casesUncommon: cases ? cases.byRarity.uncommon ?? 0 : null,
     casesRare: cases ? cases.byRarity.rare ?? 0 : null,

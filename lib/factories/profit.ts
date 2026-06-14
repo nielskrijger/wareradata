@@ -326,7 +326,7 @@ export interface UserFactoryAgg {
   workerCount: number
   ppPerDay: number
   netPerDay: number
-  // Net split by source: engine (passive) vs employees (workforce, net of wages).
+  // Net split by source: engine vs employees (workforce, net of wages).
   // engineNetPerDay + employeeNetPerDay = netPerDay.
   engineNetPerDay: number
   employeeNetPerDay: number

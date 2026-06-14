@@ -1,4 +1,4 @@
-import type { CaseRarity, CasesBreakdown, CaseStat } from '@/lib/warera/api'
+import type { CaseRarity, CaseStat } from '@/lib/warera/api'
 
 import { CASE_RARITIES } from '@/lib/warera/api'
 
@@ -90,29 +90,4 @@ export function luckPercent(actual: number, expected: number, categorized: numbe
     return null
   }
   return Math.round((actual / expected) * 1000) / 10
-}
-
-/**
- * Reassembles a {@link CasesBreakdown} from a row's flat per-rarity counts
- * (the rows carry only the flats; this feeds the user page's cases card).
- * Null when no case stats were captured for the row.
- */
-export function casesBreakdownFromRow(row: Partial<Record<`cases${Capitalize<CaseRarity>}`, number | null>>): CasesBreakdown | null {
-  const byRarity: Partial<Record<CaseRarity, number>> = {}
-
-  let total = 0
-  let captured = false
-  for (const rarity of CASE_RARITIES) {
-    const count = row[`cases${rarity[0].toUpperCase()}${rarity.slice(1)}` as keyof typeof row]
-    if (count === null || count === undefined) {
-      continue
-    }
-    captured = true
-    if (count > 0) {
-      byRarity[rarity] = count
-      total += count
-    }
-  }
-
-  return captured && total > 0 ? { byRarity, total } : null
 }

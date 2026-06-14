@@ -229,35 +229,82 @@ export function getUsersUrgent(userIds: string[]): Promise<User[]> {
 export const CASE_RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] as const
 export type CaseRarity = (typeof CASE_RARITIES)[number]
 
+/**
+ * Per-rarity pull counts for a case type; absent rarities mean zero.
+ */
+export type CaseRarityCounts = Partial<Record<CaseRarity, number>>
+
 export interface CasesBreakdown {
-  byRarity: Partial<Record<CaseRarity, number>>
+  byRarity: CaseRarityCounts
   total: number
 }
 
 /**
- * Per-rarity breakdown of a user's opened cases, summed across both case types
- * (case1 standard + case2 premium), from a user's `stats` payload. Returns null
- * when there are no case stats. Pure: shared by the snapshot builder (which now
- * has this data on every row) and the live fallback below.
+ * A user's opens split by case type, the bundle the detail card's Standard /
+ * Mythic toggle consumes: per-type opened counts plus per-type rarity maps.
+ * Each field is null when that type has no captured data.
  */
-export function extractCasesBreakdown(stats: { case1?: CaseStat, case2?: CaseStat } | undefined): CasesBreakdown | null {
-  if (!stats) {
+export interface CasesByType {
+  standardOpened: number | null
+  mythicOpened: number | null
+  standardByRarity: CaseRarityCounts | null
+  mythicByRarity: CaseRarityCounts | null
+}
+
+/**
+ * One case type's byRarity as a clean {@link CaseRarityCounts} map. Drops zero
+ * and non-rarity buckets; null when the type has no categorized pulls.
+ */
+function rarityMap(caseStat: CaseStat | undefined): CaseRarityCounts | null {
+  const map = caseStat?.byRarity
+  if (!map) {
     return null
   }
 
-  const byRarity: Partial<Record<CaseRarity, number>> = {}
+  const out: CaseRarityCounts = {}
   let total = 0
-  for (const caseStat of [stats.case1, stats.case2]) {
-    const map = caseStat?.byRarity
-    if (!map) {
-      continue
+  for (const rarity of CASE_RARITIES) {
+    const count = map[rarity]
+    if (typeof count === 'number' && count > 0) {
+      out[rarity] = count
+      total += count
     }
-    for (const rarity of CASE_RARITIES) {
-      const count = map[rarity]
-      if (typeof count === 'number' && count > 0) {
-        byRarity[rarity] = (byRarity[rarity] ?? 0) + count
-        total += count
-      }
+  }
+
+  return total > 0 ? out : null
+}
+
+/**
+ * Per-rarity pull counts split by case type: case1 (the standard daily case)
+ * and case2 (the premium mythic case). Each side is null when it has no
+ * categorized pulls. Feeds the user page's Standard / Mythic toggle.
+ */
+export function extractCasesByType(stats: { case1?: CaseStat, case2?: CaseStat } | undefined): {
+  standard: CaseRarityCounts | null
+  mythic: CaseRarityCounts | null
+} {
+  return {
+    standard: rarityMap(stats?.case1),
+    mythic: rarityMap(stats?.case2),
+  }
+}
+
+/**
+ * Merge the per-type rarity maps into the combined breakdown (case1 + case2),
+ * with the summed total. Null when neither type has any categorized pulls.
+ */
+export function mergeCasesBreakdown(standard: CaseRarityCounts | null, mythic: CaseRarityCounts | null): CasesBreakdown | null {
+  if (!standard && !mythic) {
+    return null
+  }
+
+  const byRarity: CaseRarityCounts = {}
+  let total = 0
+  for (const rarity of CASE_RARITIES) {
+    const count = (standard?.[rarity] ?? 0) + (mythic?.[rarity] ?? 0)
+    if (count > 0) {
+      byRarity[rarity] = count
+      total += count
     }
   }
 
@@ -265,13 +312,20 @@ export function extractCasesBreakdown(stats: { case1?: CaseStat, case2?: CaseSta
 }
 
 /**
- * Live fallback for the per-rarity case breakdown, used by the user page only
- * for rows a fresh getUserById scrape hasn't reached yet. Returns null on error.
+ * Live fallback for the per-type case breakdown, used by the user page only for
+ * rows a fresh getUserById scrape hasn't reached yet. Returns null on error.
  */
-export async function getUserCasesBreakdown(userId: string): Promise<CasesBreakdown | null> {
+export async function getUserCasesByType(userId: string): Promise<CasesByType | null> {
   try {
     const user = await urgentClient.user.getUserById({ userId }) as { stats?: { case1?: CaseStat, case2?: CaseStat } }
-    return extractCasesBreakdown(user.stats)
+    const { standard, mythic } = extractCasesByType(user.stats)
+
+    return {
+      standardOpened: user.stats?.case1?.openedCount ?? null,
+      mythicOpened: user.stats?.case2?.openedCount ?? null,
+      standardByRarity: standard,
+      mythicByRarity: mythic,
+    }
   } catch {
     return null
   }

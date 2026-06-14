@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
 
+import type { UserRow } from '@/lib/rows'
+import type { CasesByType } from '@/lib/warera/api'
+
 import { Clock } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
@@ -29,10 +32,9 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { loadUserEquipment } from '@/lib/cache/equipment-store'
 import { getSnapshot } from '@/lib/cache/memory'
-import { casesBreakdownFromRow } from '@/lib/cases'
 import { EMPTY } from '@/lib/format'
 import { computeRanges } from '@/lib/query'
-import { getUserCasesBreakdown } from '@/lib/warera/api'
+import { getUserCasesByType } from '@/lib/warera/api'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -53,6 +55,26 @@ async function getUser(id: string) {
   const ranges = computeRanges(users)
 
   return { user, ranges, total: users.length, gearLookup }
+}
+
+/**
+ * The per-type case breakdown for the detail card: read straight from the
+ * snapshot row when the scrape has reached this user, else a one-off live fetch
+ * (skipped when the user has opened no cases). Always returns the full shape so
+ * the card can read each field directly.
+ */
+async function resolveCasesByType(user: UserRow): Promise<CasesByType> {
+  if (user.standardCasesByRarity || user.mythicCasesByRarity) {
+    return {
+      standardOpened: user.standardCasesOpened,
+      mythicOpened: user.mythicCasesOpened,
+      standardByRarity: user.standardCasesByRarity,
+      mythicByRarity: user.mythicCasesByRarity,
+    }
+  }
+
+  const live = user.casesOpened ? await getUserCasesByType(user.id) : null
+  return live ?? { standardOpened: null, mythicOpened: null, standardByRarity: null, mythicByRarity: null }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -76,10 +98,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   }
   const { user, ranges, total, gearLookup } = result
 
-  // The per-rarity case breakdown now rides along in the snapshot (users are
-  // scraped via getUserById). Fall back to a live fetch only for rows a fresh
-  // scrape hasn't reached yet, and skip it entirely when there are no cases.
-  const cases = casesBreakdownFromRow(user) ?? (user.casesOpened ? await getUserCasesBreakdown(user.id) : null)
+  const cases = await resolveCasesByType(user)
 
   const rgb = schemeRgb(user.colorScheme)
   // Show the gear section whenever we captured this user's equipment, even if
@@ -197,10 +216,10 @@ export default async function UserDetailPage({ params }: PageProps) {
           ]}
         />
         <CasesCard
-          total={user.casesOpened}
+          combinedOpened={user.casesOpened}
           rank={user.casesOpenedRank}
           rankOf={total}
-          breakdown={cases}
+          {...cases}
         />
         <MultiStatCard
           label="Premium"

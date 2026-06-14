@@ -1,5 +1,5 @@
 import type { CombatMode } from '@/lib/skills/classify'
-import type { RankingTier } from '@/lib/warera/api'
+import type { CaseRarityCounts, RankingTier } from '@/lib/warera/api'
 
 /**
  * Projected user row used by both the /users page and /api/users.
@@ -16,6 +16,10 @@ export interface UserRow {
   // case2 (the premium mythic case). Null when no case stats were captured.
   standardCasesOpened: number | null
   mythicCasesOpened: number | null
+  // Per-rarity pull counts split by case type, for the detail card's Standard /
+  // Mythic toggle. Null when that type has no categorized pulls.
+  standardCasesByRarity: CaseRarityCounts | null
+  mythicCasesByRarity: CaseRarityCounts | null
   // Per-rarity pull counts (case1+case2 merged, from the getUserById scrape),
   // flat so the Cases columns can sort and heat-tint. Null when no case stats
   // were captured.
@@ -215,11 +219,14 @@ export interface GroupWealthParts {
  * have run.
  */
 export interface GroupFactoryStats {
+  // Average factories owned per member (1 decimal). Null when no members.
+  factoryAvgCount: number | null
+  factoryAvgCountRank: number | null
   factoryPpPerDay: number
   factoryPpPerDayRank: number | null
   factoryNetPerDay: number
   factoryNetPerDayRank: number | null
-  // Net split: engine (passive) vs employees (workforce, net of wages); together
+  // Net split: engine vs employees (workforce, net of wages); together
   // they equal factoryNetPerDay. Plus the member-summed employee headcount.
   factoryEngineNetPerDay: number
   factoryEngineNetPerDayRank: number | null

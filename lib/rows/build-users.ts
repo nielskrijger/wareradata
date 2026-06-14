@@ -147,7 +147,7 @@ function buildUserRow(u: User, ctx: UserRowContext) {
   const luck = caseLuckScores(u.stats)
 
   // Per-user factory totals (null when the factory scrape hasn't reached them),
-  // summed by member-agg into the entity Industry columns.
+  // summed by member-agg into the entity Factories columns.
   const factory = factoryAggByUser.get(u._id)
 
   return {

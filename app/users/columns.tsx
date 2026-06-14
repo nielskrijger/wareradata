@@ -173,7 +173,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       compactNumberColumn<UserRow>('bounty', 'Bounty', { heat: 'median', width: 110, tooltip: 'Coins this player has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
       localeNumberColumn<UserRow>('referrals', 'Referrals', { heat: 'ramp', width: 120, tooltip: 'Players this user has referred.' }),
     ],
-    industry: [
+    factories: [
       localeNumberColumn<UserRow>('factoryCount', 'Factories', { heat: 'ramp', width: 105, tooltip: 'Number of factories this player owns.' }),
       compactNumberColumn<UserRow>('factoryNetPerDay', 'Net / day', { heat: 'median', width: 115, tooltip: 'Daily factory profit (revenue − inputs − wages).' }),
       compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', { heat: 'median', width: 110, tooltip: 'Production points produced per day across this player\'s factories.' }),

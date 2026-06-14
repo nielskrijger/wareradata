@@ -107,8 +107,8 @@ export interface UserRow {
   weeklyDamage: number | null
   weeklyDamageRank: number | null
   // Per-user factory totals from the factory scrape. PpPerDay / netPerDay /
-  // count are shown in the user table's Industry group; topPotential backs the
-  // per-user efficiency and is summed by member-agg into the entity Industry
+  // count are shown in the user table's Factories group; topPotential backs the
+  // per-user efficiency and is summed by member-agg into the entity Factories
   // columns. Null when the scrape hasn't captured this user.
   factoryCount: number | null
   factoryPpPerDay: number | null

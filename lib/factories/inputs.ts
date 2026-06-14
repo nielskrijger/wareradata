@@ -57,7 +57,7 @@ export function factoryInputFromData(f: FactoryData, regionName: (id: string) =>
     itemCode: f.company.itemCode,
     regionName: regionName(f.company.region),
     bonusPct: f.bonus?.total ?? 0,
-    workerCount: Array.isArray(f.company.workers) ? f.company.workers.length : 0,
+    workerCount: f.company.workerCount ?? 0,
     pointsPerDay: avgCompleteStat(f.stats, 'total'),
     grossWagePerDay: avgCompleteStat(f.stats, 'wage'),
   }

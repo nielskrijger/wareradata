@@ -56,7 +56,7 @@ export async function scrapeFactories(userIds: string[], opts: { limit?: number 
               bonusPct: f.bonus?.total ?? 0,
               pointsPerDay: avgCompleteStat(f.stats, 'total'),
               grossWagePerDay: avgCompleteStat(f.stats, 'wage'),
-              workerCount: Array.isArray(f.company.workers) ? f.company.workers.length : 0,
+              workerCount: f.company.workerCount ?? 0,
             }))
             await write(`${JSON.stringify({ userId, rows })}\n`)
             withFactories++

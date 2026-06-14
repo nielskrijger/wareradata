@@ -95,13 +95,13 @@ interface FactoryStatsRow {
 }
 
 /**
- * The Industry column group: combined factory profit and production per day
+ * The Factories column group: combined factory profit and production per day
  * (total + per-member), and efficiency (realized net vs the game-best Top
  * potential). `who` names the collective in the tooltips and the per-member
  * header. Shared by the country / MU / alliance tables; empty until the slow
  * factory scrape has run.
  */
-export function industryColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
+export function factoriesColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
   const one = who.slice(0, -1)
 
   return [

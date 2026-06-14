@@ -59,7 +59,7 @@ export const PREMIUM_FIELD_ALIASES: FieldAliases = {
 export const COMBAT_SORT_KEYS = ['damage', 'damageRank', 'weeklyDamage'] as const
 
 /**
- * Industry filter aliases shared by the country / MU / alliance tables.
+ * Factories filter aliases shared by the country / MU / alliance tables.
  */
 export const FACTORY_FIELD_ALIASES: FieldAliases = {
   pp: 'factoryPpPerDay',
@@ -69,7 +69,7 @@ export const FACTORY_FIELD_ALIASES: FieldAliases = {
 }
 
 /**
- * Industry sort/filter passthrough keys shared by the country / MU / alliance
+ * Factories sort/filter passthrough keys shared by the country / MU / alliance
  * tables: production points/day (total + per-member), net gold/day, and
  * efficiency. Re-exported from {@link FACTORY_RANK_KEYS} so the sortable set and
  * the ranked set never drift.

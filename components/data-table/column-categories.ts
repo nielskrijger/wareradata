@@ -25,7 +25,7 @@ export const CATEGORIES = [
   'government',
   'muSpecific',
   'wealth',
-  'industry',
+  'factories',
   'premium',
   'cases',
 ] as const
@@ -51,7 +51,7 @@ export const CATEGORY_META: Record<Category, { label: string, Icon: LucideIcon, 
   government: { label: 'Government', Icon: Landmark, color: 'var(--heat-slate)' },
   muSpecific: { label: 'MU-specific', Icon: Building2, color: 'var(--heat-slate)' },
   wealth: { label: 'Wealth', Icon: Coins, color: 'var(--heat-gold)' },
-  industry: { label: 'Industry', Icon: Factory, color: 'var(--heat-orange)' },
+  factories: { label: 'Factories', Icon: Factory, color: 'var(--heat-orange)' },
   premium: { label: 'Premium', Icon: Sparkles, color: 'var(--heat-purple)' },
   cases: { label: 'Cases', Icon: PackageOpen, color: 'var(--heat-cyan)' },
 }

@@ -22,7 +22,7 @@ export interface MemberAgg {
   premiumMonthsTotal: number
   total: number
   // Sums of members' per-user factory totals (production points/day, net gold/day,
-  // and Top-potential gold/day), for the entity's Industry columns. Members with
+  // and Top-potential gold/day), for the entity's Factories columns. Members with
   // no scraped factories contribute 0; efficiency = factoryNet / factoryTop.
   factoryPpPerDay: number
   factoryNetPerDay: number

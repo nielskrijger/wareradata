@@ -138,15 +138,16 @@ export interface SnapshotMeta {
 //    the leaderboard data stays fresh.
 //  - urgentClient:  latency-sensitive on-demand traffic (MU refreshes, live
 //    battles, the user-page factory fetch).
-//  - factoryClient: the all-users factory scrape. The first full pass is done,
-//    so this is back to a maintenance share (a full re-pass takes ~7h, fine for
-//    slow-changing factory economics).
+//  - factoryClient: the all-users factory scrape. TEMPORARILY boosted to finish
+//    the next full pass sooner (it must re-run to write the new per-source
+//    engine/employee points). Drop back to a maintenance share (~40) once that
+//    pass has populated, and give scrape its headroom back.
 //
 // The three sum to 200, the API's authenticated cap, so all three together stay
 // within budget. Tune them here; rebalancing is a code change, not config.
-const SCRAPE_RATE_LIMIT = 120
-const URGENT_RATE_LIMIT = 40
-export const FACTORY_RATE_LIMIT = 40
+const SCRAPE_RATE_LIMIT = 50
+const URGENT_RATE_LIMIT = 10
+export const FACTORY_RATE_LIMIT = 140
 
 const scrapeClient = createAPIClient({
   apiKey: process.env.WARERA_API_KEY,

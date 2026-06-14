@@ -35,6 +35,9 @@ export interface LedgerWorker {
   revenuePerDay: number
   inputCostPerDay: number
   wagePerDay: number
+  // The worker's contracted wage rate (gold per work), shown next to the
+  // apportioned daily wage.
+  wageRate: number
   netPerDay: number
 }
 
@@ -106,6 +109,7 @@ export function buildFactoryLedgerRow(
       revenuePerDay,
       inputCostPerDay,
       wagePerDay,
+      wageRate: w.wage,
       netPerDay: revenuePerDay - inputCostPerDay - wagePerDay,
     }
   })

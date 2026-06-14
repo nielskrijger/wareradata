@@ -42,12 +42,11 @@ function humanizeItem(code: string): string {
 }
 
 /**
- * Signed gold for deltas: "+50 g", "−12 g", "0 g". `decimals` defaults to whole
- * gold for the table; the expanded ledger passes 1, since per-worker/day figures
- * are small (often near zero) and whole-gold rounding both hides the value and
- * stops the breakdown lines from summing to the net.
+ * Signed gold for deltas: "+50.0 g", "−12.3 g", "0.0 g". One decimal by default —
+ * per-worker/day figures are small (often near zero), so coarser rounding both
+ * hides the value and stops the ledger's breakdown lines from summing to the net.
  */
-function goldSigned(value: number, decimals = 0): string {
+function goldSigned(value: number, decimals = 1): string {
   const factor = 10 ** decimals
   const rounded = Math.round(value * factor) / factor
   const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : ''
@@ -100,6 +99,15 @@ function PotentialCell({ value, opportunity }: { value: number, opportunity: num
 }
 
 /**
+ * A row is worth expanding only when it has hired workers: the ledger's value is
+ * the per-worker breakdown and the full-loyalty projection. An engine-only or
+ * idle factory would just restate the summary row, so it stays non-expandable.
+ */
+function hasWorkers(row: FactoryLedgerRow): boolean {
+  return row.workers.length > 0
+}
+
+/**
  * The user-page factories table: one dense row per factory (output, net, and
  * relocation potentials per day), each expandable into an accounting ledger —
  * every producer (engine, each worker) and cost (inputs, per-worker wages)
@@ -110,7 +118,8 @@ function PotentialCell({ value, opportunity }: { value: number, opportunity: num
 export function FactoriesTable({ rows, totals }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
 
-  const allExpanded = rows.length > 0 && rows.every(row => expanded.has(row.id))
+  const expandableIds = rows.filter(hasWorkers).map(row => row.id)
+  const allExpanded = expandableIds.length > 0 && expandableIds.every(id => expanded.has(id))
   const champion = rows[0]
   const projectedTotal = rows.reduce((sum, row) => sum + row.projectedNetPerDay, 0)
 
@@ -127,7 +136,7 @@ export function FactoriesTable({ rows, totals }: Props) {
   }
 
   function toggleAll() {
-    setExpanded(allExpanded ? new Set() : new Set(rows.map(row => row.id)))
+    setExpanded(allExpanded ? new Set() : new Set(expandableIds))
   }
 
   return (
@@ -208,20 +217,24 @@ interface RowProps {
  * A factory's summary row plus its expandable ledger.
  */
 function FactoryRows({ row, isOpen, onToggle }: RowProps) {
+  const expandable = hasWorkers(row)
+
   return (
     <>
       <TableRow
-        role="button"
-        tabIndex={0}
-        aria-expanded={isOpen}
-        onClick={onToggle}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            onToggle()
-          }
-        }}
-        className={cn('cursor-pointer', row.isIdle && 'opacity-60')}
+        role={expandable ? 'button' : undefined}
+        tabIndex={expandable ? 0 : undefined}
+        aria-expanded={expandable ? isOpen : undefined}
+        onClick={expandable ? onToggle : undefined}
+        onKeyDown={expandable
+          ? (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                onToggle()
+              }
+            }
+          : undefined}
+        className={cn(expandable && 'cursor-pointer', row.isIdle && 'opacity-60')}
       >
         <TableCell>
           <span className="font-medium">{row.name}</span>
@@ -240,11 +253,11 @@ function FactoryRows({ row, isOpen, onToggle }: RowProps) {
         <PotentialCell value={row.movePotentialNetPerDay} opportunity={row.moveOpportunityPerDay} />
         <PotentialCell value={row.bestPotentialNetPerDay} opportunity={row.bestOpportunityPerDay} />
         <TableCell className="text-muted-foreground text-right">
-          <ChevronDown className={cn('inline size-4 transition-transform', isOpen && 'rotate-180')} />
+          {expandable && <ChevronDown className={cn('inline size-4 transition-transform', isOpen && 'rotate-180')} />}
         </TableCell>
       </TableRow>
 
-      {isOpen && <FactoryLedger row={row} />}
+      {expandable && isOpen && <FactoryLedger row={row} />}
     </>
   )
 }
@@ -281,7 +294,7 @@ function WorkerNet({ w }: { w: LedgerWorker }) {
         <div className="space-y-0.5">
           <div className="flex justify-between gap-6"><span>Revenue</span><span className="tabular-nums text-green-700 dark:text-green-400">{goldSigned(w.revenuePerDay, 1)}</span></div>
           {w.inputCostPerDay >= 0.05 && <div className="flex justify-between gap-6"><span>Inputs</span><span className="tabular-nums text-red-700 dark:text-red-400">{goldSigned(-w.inputCostPerDay, 1)}</span></div>}
-          <div className="flex justify-between gap-6"><span>Wage</span><span className="tabular-nums text-red-700 dark:text-red-400">{goldSigned(-w.wagePerDay, 1)}</span></div>
+          <div className="flex justify-between gap-6"><span>Wage <span className="text-muted-foreground">({w.wageRate.toLocaleString('en', { maximumFractionDigits: 3 })})</span></span><span className="tabular-nums text-red-700 dark:text-red-400">{goldSigned(-w.wagePerDay, 1)}</span></div>
           <div className="mt-0.5 flex justify-between gap-6 border-t border-current/25 pt-0.5 font-medium"><span>Net</span><span className={cn('tabular-nums', netClass(w.netPerDay))}>{goldSigned(w.netPerDay, 1)}</span></div>
         </div>
       </TooltipContent>

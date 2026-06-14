@@ -118,6 +118,16 @@ export interface UserRow {
   // at its best region), capped 100 — how close to the game's best production.
   // Null when nothing's produced. The user-table Efficiency column.
   factoryEfficiencyPct: number | null
+  // Net split by source and the employee headcount, for the Factories group.
+  // factoryEngineNetPerDay + factoryEmployeeNetPerDay = factoryNetPerDay.
+  factoryEngineNetPerDay: number | null
+  factoryEmployeeNetPerDay: number | null
+  factoryWorkers: number | null
+  // Trained skill values (not shown directly): production = per-work output,
+  // energy = max energy. Used to weight a worker's share of a factory's output
+  // in the user-page factory ledger. Null when skills aren't captured.
+  productionSkill: number | null
+  energySkill: number | null
 }
 
 /**
@@ -198,18 +208,25 @@ export interface GroupWealthParts {
 
 /**
  * Member-summed factory economics shared by the country / MU / alliance rows:
- * production points/day (total + per-member), net gold/day, and location
- * efficiency (Σ net ÷ Σ Move-potential, capped at 100). Each ranked value
- * carries a snapshot rank. Sourced from the slow factory scrape, so all fields
- * read 0 / null until it (and a main scrape carrying market data) have run.
+ * net gold/day (split into engine vs employees), hired-worker headcount,
+ * production points/day, and efficiency (Σ net ÷ Σ Top-potential, capped at 100).
+ * Each ranked value carries a snapshot rank. Sourced from the slow factory scrape,
+ * so all fields read 0 / null until it (and a main scrape carrying market data)
+ * have run.
  */
 export interface GroupFactoryStats {
   factoryPpPerDay: number
   factoryPpPerDayRank: number | null
-  factoryPpPerMember: number | null
-  factoryPpPerMemberRank: number | null
   factoryNetPerDay: number
   factoryNetPerDayRank: number | null
+  // Net split: engine (passive) vs employees (workforce, net of wages); together
+  // they equal factoryNetPerDay. Plus the member-summed employee headcount.
+  factoryEngineNetPerDay: number
+  factoryEngineNetPerDayRank: number | null
+  factoryEmployeeNetPerDay: number
+  factoryEmployeeNetPerDayRank: number | null
+  factoryWorkers: number
+  factoryWorkersRank: number | null
   factoryEfficiencyPct: number | null
   factoryEfficiencyRank: number | null
 }

@@ -2,7 +2,7 @@ import type { FactoryRawRow } from '@/lib/cache/factory-store'
 
 import { factoriesNdjsonPath } from '@/lib/cache/factory-store'
 import { writeFileAtomic } from '@/lib/cache/ndjson'
-import { avgCompleteStat, effectiveProductionPoints } from '@/lib/factories/inputs'
+import { avgCompleteStat } from '@/lib/factories/inputs'
 import { logger, memoryUsage } from '@/lib/log'
 
 import { FACTORY_RATE_LIMIT, getUserCompaniesSlow } from './api'
@@ -54,7 +54,9 @@ export async function scrapeFactories(userIds: string[], opts: { limit?: number 
               itemCode: f.company.itemCode,
               regionId: f.company.region,
               bonusPct: f.bonus?.total ?? 0,
-              pointsPerDay: effectiveProductionPoints(f.stats),
+              enginePoints: avgCompleteStat(f.stats, 'automatedEngine'),
+              employeePoints: avgCompleteStat(f.stats, 'employeeProd'),
+              selfPoints: avgCompleteStat(f.stats, 'selfWork'),
               grossWagePerDay: avgCompleteStat(f.stats, 'wage'),
               workerCount: f.company.workerCount ?? 0,
             }))

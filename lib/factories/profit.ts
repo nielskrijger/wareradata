@@ -323,28 +323,14 @@ export function computeFactoryProfit(
  */
 export interface UserFactoryAgg {
   factoryCount: number
+  workerCount: number
   ppPerDay: number
   netPerDay: number
-  movePotentialNetPerDay: number
+  // Net split by source: engine (passive) vs employees (workforce, net of wages).
+  // engineNetPerDay + employeeNetPerDay = netPerDay.
+  engineNetPerDay: number
+  employeeNetPerDay: number
   topPotentialNetPerDay: number
-}
-
-/**
- * Sums one user's computed factories into the per-user aggregate the scrape
- * persists.
- */
-export function aggregateUserFactories(rows: FactoryProfit[]): UserFactoryAgg {
-  const agg: UserFactoryAgg = { factoryCount: 0, ppPerDay: 0, netPerDay: 0, movePotentialNetPerDay: 0, topPotentialNetPerDay: 0 }
-
-  for (const row of rows) {
-    agg.factoryCount += 1
-    agg.ppPerDay += row.pointsPerDay
-    agg.netPerDay += row.netPerDay
-    agg.movePotentialNetPerDay += row.movePotentialNetPerDay
-    agg.topPotentialNetPerDay += row.bestPotentialNetPerDay
-  }
-
-  return agg
 }
 
 /**

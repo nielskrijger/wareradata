@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import type { FactoryLedgerRow } from '@/lib/factories/ledger'
+import type { FactoryLedgerRow, LedgerWorker } from '@/lib/factories/ledger'
 import type { PortfolioTotals } from '@/lib/factories/profit'
 
 import { ChevronDown } from 'lucide-react'
@@ -42,12 +42,16 @@ function humanizeItem(code: string): string {
 }
 
 /**
- * Signed gold for deltas: "+50 g", "−12 g", "0 g".
+ * Signed gold for deltas: "+50 g", "−12 g", "0 g". `decimals` defaults to whole
+ * gold for the table; the expanded ledger passes 1, since per-worker/day figures
+ * are small (often near zero) and whole-gold rounding both hides the value and
+ * stops the breakdown lines from summing to the net.
  */
-function goldSigned(value: number): string {
-  const rounded = Math.round(value)
+function goldSigned(value: number, decimals = 0): string {
+  const factor = 10 ** decimals
+  const rounded = Math.round(value * factor) / factor
   const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : ''
-  return `${sign}${Math.abs(rounded).toLocaleString('en')} g`
+  return `${sign}${Math.abs(rounded).toLocaleString('en', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} g`
 }
 
 /**
@@ -263,9 +267,33 @@ function LedgerRow({ label, amount, divider }: { label: ReactNode, amount: React
 }
 
 /**
+ * A worker's net amount with the calculation (revenue − inputs − wage = net) on
+ * hover. The line itself stays short to fit the Net/day column; the arithmetic
+ * lives in the tooltip.
+ */
+function WorkerNet({ w }: { w: LedgerWorker }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger render={<span className={cn('cursor-help text-xs underline decoration-dotted underline-offset-2', netClass(w.netPerDay))} />}>
+        {goldSigned(w.netPerDay, 1)}
+      </TooltipTrigger>
+      <TooltipContent side="top" className="text-xs">
+        <div className="space-y-0.5">
+          <div className="flex justify-between gap-6"><span>Revenue</span><span className="tabular-nums text-green-700 dark:text-green-400">{goldSigned(w.revenuePerDay, 1)}</span></div>
+          {w.inputCostPerDay >= 0.05 && <div className="flex justify-between gap-6"><span>Inputs</span><span className="tabular-nums text-red-700 dark:text-red-400">{goldSigned(-w.inputCostPerDay, 1)}</span></div>}
+          <div className="flex justify-between gap-6"><span>Wage</span><span className="tabular-nums text-red-700 dark:text-red-400">{goldSigned(-w.wagePerDay, 1)}</span></div>
+          <div className="mt-0.5 flex justify-between gap-6 border-t border-current/25 pt-0.5 font-medium"><span>Net</span><span className={cn('tabular-nums', netClass(w.netPerDay))}>{goldSigned(w.netPerDay, 1)}</span></div>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+/**
  * The expanded ledger: the automated engine and each worker as a single net line
- * (output net of inputs, minus that worker's wage), summing to Net, then the net
- * projected at full worker loyalty. Self-work is excluded.
+ * (output net of inputs, minus that worker's wage; the worker's calculation is in
+ * a tooltip), summing to Net, then the net projected at full worker loyalty.
+ * Self-work is excluded.
  */
 function FactoryLedger({ row }: { row: FactoryLedgerRow }) {
   if (row.isIdle) {
@@ -280,27 +308,27 @@ function FactoryLedger({ row }: { row: FactoryLedgerRow }) {
 
   return (
     <>
-      {row.engineNetPerDay >= 1 && (
+      {row.engineNetPerDay >= 0.05 && (
         <LedgerRow
           label={<span className="text-muted-foreground text-xs">Automated engine · Lvl {row.engineLevel}</span>}
-          amount={<span className={cn('text-xs', netClass(row.engineNetPerDay))}>{goldSigned(row.engineNetPerDay)}</span>}
+          amount={<span className={cn('text-xs', netClass(row.engineNetPerDay))}>{goldSigned(row.engineNetPerDay, 1)}</span>}
         />
       )}
       {row.workers.map(w => (
         <LedgerRow
           key={w.id}
           label={<span className="text-muted-foreground text-xs">{w.name} · {w.fidelity}/10</span>}
-          amount={<span className={cn('text-xs', netClass(w.netPerDay))}>{goldSigned(w.netPerDay)}</span>}
+          amount={<WorkerNet w={w} />}
         />
       ))}
       <LedgerRow
         divider
         label="Net"
-        amount={<span className={cn('font-medium', netClass(row.netPerDay))}>{goldSigned(row.netPerDay)}</span>}
+        amount={<span className={cn('font-medium', netClass(row.netPerDay))}>{goldSigned(row.netPerDay, 1)}</span>}
       />
       <LedgerRow
         label={<span className="font-medium">At full loyalty <span className="text-muted-foreground text-xs font-normal">+10% fidelity</span></span>}
-        amount={<span className={cn('font-medium', netClass(row.projectedNetPerDay))}>{goldSigned(row.projectedNetPerDay)}</span>}
+        amount={<span className={cn('font-medium', netClass(row.projectedNetPerDay))}>{goldSigned(row.projectedNetPerDay, 1)}</span>}
       />
     </>
   )

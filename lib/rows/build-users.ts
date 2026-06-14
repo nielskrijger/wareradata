@@ -239,6 +239,11 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     factoryEfficiencyPct: factory && factory.topPotentialNetPerDay > 0
       ? Math.min(100, (factory.netPerDay / factory.topPotentialNetPerDay) * 100)
       : null,
+    factoryEngineNetPerDay: factory?.engineNetPerDay ?? null,
+    factoryEmployeeNetPerDay: factory?.employeeNetPerDay ?? null,
+    factoryWorkers: factory?.workerCount ?? null,
+    productionSkill: skills?.production?.value ?? null,
+    energySkill: skills?.energy?.value ?? null,
   } satisfies UserRow
 }
 

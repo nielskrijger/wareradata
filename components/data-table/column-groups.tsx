@@ -89,25 +89,28 @@ export function wealthColumns<T extends WealthComponentsRow>(
  */
 interface FactoryStatsRow {
   factoryPpPerDay: number
-  factoryPpPerMember: number | null
   factoryNetPerDay: number
+  factoryEngineNetPerDay: number
+  factoryEmployeeNetPerDay: number
+  factoryWorkers: number
   factoryEfficiencyPct: number | null
 }
 
 /**
- * The Factories column group: combined factory profit and production per day
- * (total + per-member), and efficiency (realized net vs the game-best Top
- * potential). `who` names the collective in the tooltips and the per-member
- * header. Shared by the country / MU / alliance tables; empty until the slow
- * factory scrape has run.
+ * The Factories column group: combined factory profit per day split into Engine
+ * (passive) and Employees (workforce, net of wages), the hired-worker headcount,
+ * production points/day, and efficiency (realized net vs the game-best Top
+ * potential). Net excludes self-work. `who` names the collective in the tooltips.
+ * Shared by the country / MU / alliance tables; empty until the slow factory
+ * scrape has run.
  */
 export function factoriesColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
-  const one = who.slice(0, -1)
-
   return [
-    compactNumberColumn<T>('factoryNetPerDay' as Key<T>, 'Net / day', { heat: 'median', width: 115, tooltip: `Combined factory profit per day across ${who} (revenue − inputs − wages).` }),
+    compactNumberColumn<T>('factoryNetPerDay' as Key<T>, 'Net / day', { heat: 'median', width: 115, tooltip: `Combined factory profit per day across ${who}: automated engines + hired workers, net of wages.` }),
+    compactNumberColumn<T>('factoryEngineNetPerDay' as Key<T>, 'Engine', { heat: 'median', width: 110, tooltip: `Profit per day from automated engines (passive) across ${who}.` }),
+    compactNumberColumn<T>('factoryEmployeeNetPerDay' as Key<T>, 'Employees', { heat: 'median', width: 120, tooltip: `Profit per day from hired workers across ${who}, after their wages.` }),
+    localeNumberColumn<T>('factoryWorkers' as Key<T>, 'Workers', { heat: 'ramp', width: 105, tooltip: `Hired workers across ${who}.` }),
     compactNumberColumn<T>('factoryPpPerDay' as Key<T>, 'PP / day', { heat: 'median', width: 110, tooltip: `Combined production points per day across ${who}.` }),
-    compactNumberColumn<T>('factoryPpPerMember' as Key<T>, who === 'citizens' ? 'PP / citizen' : 'PP / member', { heat: 'median', width: 130, tooltip: `Production points per day per ${one}.` }),
     percentColumn<T>('factoryEfficiencyPct' as Key<T>, 'Efficiency', { heat: 'median', decimals: 0, width: 115, tooltip: `How close net is to the game's top production. 100% = optimal.` }),
   ]
 }

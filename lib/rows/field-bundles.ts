@@ -63,8 +63,10 @@ export const COMBAT_SORT_KEYS = ['damage', 'damageRank', 'weeklyDamage'] as cons
  */
 export const FACTORY_FIELD_ALIASES: FieldAliases = {
   pp: 'factoryPpPerDay',
-  ppPerMember: 'factoryPpPerMember',
   factoryNet: 'factoryNetPerDay',
+  engine: 'factoryEngineNetPerDay',
+  employees: 'factoryEmployeeNetPerDay',
+  workers: 'factoryWorkers',
   efficiency: 'factoryEfficiencyPct',
 }
 

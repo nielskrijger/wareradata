@@ -175,7 +175,10 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
     ],
     factories: [
       localeNumberColumn<UserRow>('factoryCount', 'Factories', { heat: 'ramp', width: 105, tooltip: 'Number of factories this player owns.' }),
-      compactNumberColumn<UserRow>('factoryNetPerDay', 'Net / day', { heat: 'median', width: 115, tooltip: 'Daily factory profit (revenue − inputs − wages).' }),
+      compactNumberColumn<UserRow>('factoryNetPerDay', 'Net / day', { heat: 'median', width: 115, tooltip: 'Daily factory profit: automated engines + hired workers, net of wages.' }),
+      compactNumberColumn<UserRow>('factoryEngineNetPerDay', 'Engine', { heat: 'median', width: 110, tooltip: 'Daily profit from this player\'s automated engines (passive).' }),
+      compactNumberColumn<UserRow>('factoryEmployeeNetPerDay', 'Employees', { heat: 'median', width: 120, tooltip: 'Daily profit from this player\'s hired workers, after their wages.' }),
+      localeNumberColumn<UserRow>('factoryWorkers', 'Workers', { heat: 'ramp', width: 105, tooltip: 'Hired workers across this player\'s factories.' }),
       compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', { heat: 'median', width: 110, tooltip: 'Production points produced per day across this player\'s factories.' }),
       percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', { heat: 'median', decimals: 0, width: 115, tooltip: 'How close net is to the game\'s top production. 100% = optimal.' }),
     ],

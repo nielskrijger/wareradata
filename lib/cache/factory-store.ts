@@ -5,17 +5,27 @@ import { streamNdjson } from './ndjson'
 
 /**
  * One factory's raw, slow-changing facts, captured by the all-users factory
- * scrape. Net/profit and the Move/Top potentials are NOT stored — the row
- * builders compute them at build time from these plus the snapshot's market
- * data (prices + best-region frontier).
+ * scrape. Stored as raw per-source production points (no derived totals or net) —
+ * the readers decide what to include (e.g. exclude self-work) and compute net,
+ * the engine/employee split, and the Move/Top potentials at build time from these
+ * plus the snapshot's market data (prices + best-region frontier).
  */
 export interface FactoryRawRow {
   itemCode: string
   regionId: string
   bonusPct: number
-  pointsPerDay: number
+  // Average production points/day per source (complete days). Self-work is kept
+  // raw here but excluded from net by the readers (it's the owner's discretionary
+  // labour, not tied to the factory).
+  enginePoints: number
+  employeePoints: number
+  selfPoints: number
   grossWagePerDay: number
   workerCount: number
+  // Legacy: pre-split lines stored a single combined points/day. Read-only
+  // fallback so Net/day keeps working until the next pass rewrites the file in
+  // the per-source shape; remove once one pass has run in each environment.
+  pointsPerDay?: number
 }
 
 /**

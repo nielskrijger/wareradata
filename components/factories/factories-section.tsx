@@ -41,14 +41,20 @@ async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | nul
     const itemBonus = buildItemBonus(bestRegions, regionName)
     const frontier = buildFrontier(prices, recipe, itemBonus)
     const workersByCompany = new Map(companyWorkers.map(c => [c.companyId, c.workers]))
-    const nameById = new Map(users.map(u => [u.id, u.username]))
-    const nameOf = (id: string) => nameById.get(id) ?? `${id.slice(0, 6)}…`
+    const userById = new Map(users.map(u => [u.id, u]))
+    const nameOf = (id: string) => userById.get(id)?.username ?? `${id.slice(0, 6)}…`
+    const skillOf = (id: string) => {
+      const u = userById.get(id)
+      return u && u.productionSkill !== null && u.energySkill !== null
+        ? { production: u.productionSkill, energy: u.energySkill }
+        : null
+    }
 
     return factories
       .map((f) => {
         const profit = computeFactoryProfit(factoryInputFromData(f, regionName), prices, recipe, itemBonus, frontier)
         const productionPoints = recipe[f.company.itemCode]?.productionPoints ?? 1
-        return buildFactoryLedgerRow(profit, f.stats, workersByCompany.get(f.company._id) ?? [], f.company.activeUpgradeLevels?.automatedEngine ?? 0, productionPoints, nameOf)
+        return buildFactoryLedgerRow(profit, f.stats, workersByCompany.get(f.company._id) ?? [], f.company.activeUpgradeLevels?.automatedEngine ?? 0, productionPoints, nameOf, skillOf)
       })
       .sort((a, b) => b.projectedNetPerDay - a.projectedNetPerDay)
   } catch (error) {

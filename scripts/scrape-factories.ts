@@ -1,6 +1,8 @@
 import { factoriesNdjsonPath } from '@/lib/cache/factory-store'
-import { loadCompanyOwnerIds } from '@/lib/cache/users-store'
+import { loadFactoryScrapeInputs } from '@/lib/cache/users-store'
+import { buildTheoreticalModel } from '@/lib/factories/theoretical'
 import { logger } from '@/lib/log'
+import { getGameConfig } from '@/lib/warera/api'
 import { scrapeFactories } from '@/lib/warera/scrape-factories'
 
 const log = logger.child({ component: 'factory-scrape' })
@@ -14,13 +16,14 @@ async function main() {
   const limitArg = process.argv.find(a => a.startsWith('--limit='))
   const limit = limitArg ? Number(limitArg.split('=')[1]) : undefined
 
-  const userIds = await loadCompanyOwnerIds()
-  if (!userIds.length) {
+  const { ownerIds, skillByUser } = await loadFactoryScrapeInputs()
+  if (!ownerIds.length) {
     log.error('no users yet; run the main scrape first')
     process.exit(1)
   }
 
-  const count = await scrapeFactories(userIds, { limit })
+  const model = buildTheoreticalModel(await getGameConfig())
+  const count = await scrapeFactories(ownerIds, skillByUser, model, { limit })
   log.info({ withFactories: count, path: factoriesNdjsonPath() }, 'done')
 }
 

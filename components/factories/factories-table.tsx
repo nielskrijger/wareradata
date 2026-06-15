@@ -21,8 +21,8 @@ interface Props {
 // Plain-language explanations for the metric column headers. Factory, Item and
 // Workers are self-explanatory, so they get no tooltip.
 const HEADER_TIPS = {
-  out: 'Units produced per day by the automated engine + hired workers (excludes self-work).',
-  net: 'Daily profit: revenue − input cost − wages, from the automated engine + hired workers. Excludes self-work (the owner\'s discretionary labour).',
+  out: 'Theoretical units/day at full output: the automated engine plus hired workers clicking to full energy daily. Excludes self-work.',
+  net: 'Theoretical daily profit at full output: revenue − input cost − wages, from the automated engine + hired workers. Excludes self-work (the owner\'s discretionary labour).',
   move: 'Move potential: same item, relocated to its best region. Net/day for this factory\'s capacity there.',
   best: 'Top potential: the most profitable item globally at its best region. Net/day for this factory\'s capacity there.',
 }
@@ -100,20 +100,20 @@ function PotentialCell({ value, opportunity }: { value: number, opportunity: num
 
 /**
  * A row is worth expanding only when it has hired workers: the ledger's value is
- * the per-worker breakdown and the full-loyalty projection. An engine-only or
- * idle factory would just restate the summary row, so it stays non-expandable.
+ * the per-worker breakdown. An engine-only or idle factory would just restate the
+ * summary row, so it stays non-expandable.
  */
 function hasWorkers(row: FactoryLedgerRow): boolean {
   return row.workers.length > 0
 }
 
 /**
- * The user-page factories table: one dense row per factory (output, net, and
- * relocation potentials per day), each expandable into an accounting ledger —
- * every producer (engine, each worker) and cost (inputs, per-worker wages)
- * summing to Net, then the net projected at full worker loyalty. Net excludes
- * self-work. The header carries a portfolio roll-up and an expand/collapse-all
- * toggle; the footer sums net and potentials.
+ * The user-page factories table: one dense row per factory (theoretical output,
+ * net, and relocation potentials per day at full effort), each expandable into an
+ * accounting ledger — every producer (engine, each worker) and cost (inputs,
+ * per-worker wages) summing to Net. Net excludes self-work. The header carries a
+ * portfolio roll-up and an expand/collapse-all toggle; the footer sums net and
+ * potentials.
  */
 export function FactoriesTable({ rows, totals }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
@@ -121,7 +121,6 @@ export function FactoriesTable({ rows, totals }: Props) {
   const expandableIds = rows.filter(hasWorkers).map(row => row.id)
   const allExpanded = expandableIds.length > 0 && expandableIds.every(id => expanded.has(id))
   const champion = rows[0]
-  const projectedTotal = rows.reduce((sum, row) => sum + row.projectedNetPerDay, 0)
 
   function toggleRow(id: string) {
     setExpanded((prev) => {
@@ -147,9 +146,7 @@ export function FactoriesTable({ rows, totals }: Props) {
           <span className="text-muted-foreground text-xs tabular-nums">
             {totals.activeCount} of {totals.count} active ·{' '}
             <span className={netClass(totals.netPerDay)}>{goldSigned(totals.netPerDay)}</span>
-            {' net → '}
-            <span className="text-green-700 dark:text-green-400">{goldSigned(projectedTotal)}</span>
-            {' at full loyalty'}
+            {' net/day at full output'}
           </span>
           {champion && (
             <span className="text-muted-foreground text-xs">
@@ -305,8 +302,7 @@ function WorkerNet({ w }: { w: LedgerWorker }) {
 /**
  * The expanded ledger: the automated engine and each worker as a single net line
  * (output net of inputs, minus that worker's wage; the worker's calculation is in
- * a tooltip), summing to Net, then the net projected at full worker loyalty.
- * Self-work is excluded.
+ * a tooltip), summing to Net. Self-work is excluded.
  */
 function FactoryLedger({ row }: { row: FactoryLedgerRow }) {
   if (row.isIdle) {
@@ -330,7 +326,7 @@ function FactoryLedger({ row }: { row: FactoryLedgerRow }) {
       {row.workers.map(w => (
         <LedgerRow
           key={w.id}
-          label={<span className="text-muted-foreground text-xs">{w.name} · {w.fidelity}/10</span>}
+          label={<span className="text-muted-foreground text-xs">{w.name}</span>}
           amount={<WorkerNet w={w} />}
         />
       ))}
@@ -338,10 +334,6 @@ function FactoryLedger({ row }: { row: FactoryLedgerRow }) {
         divider
         label="Net"
         amount={<span className={cn('font-medium', netClass(row.netPerDay))}>{goldSigned(row.netPerDay, 1)}</span>}
-      />
-      <LedgerRow
-        label={<span className="font-medium">At full loyalty <span className="text-muted-foreground text-xs font-normal">+10% fidelity</span></span>}
-        amount={<span className={cn('font-medium', netClass(row.projectedNetPerDay))}>{goldSigned(row.projectedNetPerDay, 1)}</span>}
       />
     </>
   )

@@ -1,9 +1,10 @@
 import type { FactoryLedgerRow } from '@/lib/factories/ledger'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { buildItemBonus, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
+import { buildItemBonus, engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
 import { buildFactoryLedgerRow } from '@/lib/factories/ledger'
 import { buildFrontier, computeFactoryProfit, portfolioTotals } from '@/lib/factories/profit'
+import { buildTheoreticalModel } from '@/lib/factories/theoretical'
 import { logger } from '@/lib/log'
 import { getItemBestRegions, getItemPrices, getUserCompanies, getUserWorkers } from '@/lib/warera/api'
 
@@ -12,11 +13,12 @@ import { FactoriesTable } from './factories-table'
 const log = logger.child({ component: 'factories' })
 
 /**
- * Fetches and computes a user's factory ledger rows: daily profit, the Move / Top
- * relocation potentials, the net projected at full worker loyalty, and a
- * per-worker revenue/wage breakdown. Fetches live on the urgent client (companies
- * and their workers; prices and the per-item best-region frontier are cached and
- * shared across users). Net excludes self-work — see {@link effectiveProductionPoints}.
+ * Fetches and computes a user's factory ledger rows: theoretical daily profit
+ * (the engine at its level plus workers clicking to full energy each day), the
+ * Move / Top relocation potentials, and a per-worker revenue/wage breakdown.
+ * Fetches live on the urgent client (companies and their workers; prices and the
+ * per-item best-region frontier are cached and shared across users). Net excludes
+ * self-work — see {@link buildTheoreticalModel}.
  *
  * Returns null when the user owns none, or when a live API call fails — the
  * section is best-effort enrichment, so a price/company outage just omits it
@@ -31,6 +33,7 @@ async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | nul
 
     const { gameConfig, lookups, users } = await getSnapshot()
     const recipe = recipeFromGameConfig(gameConfig)
+    const model = buildTheoreticalModel(gameConfig)
 
     const [prices, bestRegions] = await Promise.all([
       getItemPrices(),
@@ -52,11 +55,13 @@ async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | nul
 
     return factories
       .map((f) => {
-        const profit = computeFactoryProfit(factoryInputFromData(f, regionName), prices, recipe, itemBonus, frontier)
+        const workers = workersByCompany.get(f.company._id) ?? []
+        const profit = computeFactoryProfit(factoryInputFromData(f, workers, skillOf, regionName, model), prices, recipe, itemBonus, frontier)
+        const engineLevel = engineLevelOf(f)
         const productionPoints = recipe[f.company.itemCode]?.productionPoints ?? 1
-        return buildFactoryLedgerRow(profit, f.stats, workersByCompany.get(f.company._id) ?? [], f.company.activeUpgradeLevels?.automatedEngine ?? 0, productionPoints, nameOf, skillOf)
+        return buildFactoryLedgerRow(profit, workers, engineLevel, productionPoints, model, nameOf, skillOf)
       })
-      .sort((a, b) => b.projectedNetPerDay - a.projectedNetPerDay)
+      .sort((a, b) => b.netPerDay - a.netPerDay)
   } catch (error) {
     log.error({ userId, err: error }, 'failed to load factories')
     return null

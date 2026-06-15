@@ -52,9 +52,10 @@ export async function loadFactoryAggregates(
     const agg: UserFactoryAgg = { factoryCount: 0, workerCount: 0, ppPerDay: 0, netPerDay: 0, engineNetPerDay: 0, employeeNetPerDay: 0, topPotentialNetPerDay: 0 }
 
     for (const r of rows) {
-      // Effective production excludes self-work (the readers' policy). Legacy
-      // lines stored only the combined `pointsPerDay`; fall back to it so Net/day
-      // keeps working until the next pass rewrites the file in the per-source shape.
+      // Theoretical production (engine + workers at full daily effort), already
+      // excluding self-work. Legacy lines stored only a combined `pointsPerDay`;
+      // fall back to it so Net/day keeps working until the next pass rewrites the
+      // file in the per-source shape.
       const hasSplit = r.enginePoints !== undefined || r.employeePoints !== undefined
       const enginePts = r.enginePoints ?? 0
       const employeePts = r.employeePoints ?? 0

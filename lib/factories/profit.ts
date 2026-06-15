@@ -1,17 +1,19 @@
 /**
  * Pure daily-profit model for a user's factories (companies).
  *
- * Inputs come from WarEra: `company.getById` (identity + item + region),
- * `work.getStatsByCompany` (daily production, already bonus-inclusive),
- * `company.getProductionBonus` (the factory's current item bonus),
- * `itemTrading.getPrices` + `gameConfig.items` (sell prices and recipes), and
+ * Inputs come from WarEra: `company.getById` (identity + item + region + engine
+ * level), `company.getProductionBonus` (the factory's current item bonus),
+ * `worker.getWorkers` (the hired roster), `itemTrading.getPrices` +
+ * `gameConfig.items` (sell prices and recipes), and
  * `company.getRecommendedRegionIdsByItemCode` scraped per item (the global best
  * region + bonus for each item). Nothing here calls the API; the page fetches
  * and feeds plain data in.
  *
- * Key unit fact: work-stats values are production POINTS per day, not item
- * units. Units = points / productionPoints[item]. The production bonus is a
- * multiplier on output, so base capacity = points / (1 + bonus).
+ * Key unit fact: `pointsPerDay` is theoretical production POINTS per day (the
+ * engine at its level plus workers at full daily effort — see theoretical.ts),
+ * not item units and not scraped history. Units = points / productionPoints[item].
+ * The production bonus is a multiplier on output, so base capacity =
+ * points / (1 + bonus).
  */
 
 /**
@@ -89,11 +91,11 @@ export interface Frontier {
 }
 
 /**
- * The per-factory data the model needs. `pointsPerDay` is the smoothed
- * `work.getStatsByCompany` total (post-bonus production points); `bonusPct` is
- * the factory's current production bonus, used to recover the bonus-free base
- * capacity; `grossWagePerDay` is the gold the owner pays employees (the owner
- * bears the gross wage, the wage tax is the employee's).
+ * The per-factory data the model needs. `pointsPerDay` is the theoretical total
+ * (post-bonus production points: engine + workers at full daily effort);
+ * `bonusPct` is the factory's current production bonus, used to recover the
+ * bonus-free base capacity; `grossWagePerDay` is the gold the owner pays
+ * employees (the owner bears the gross wage, the wage tax is the employee's).
  */
 export interface FactoryInput {
   id: string
@@ -125,7 +127,7 @@ export interface FactoryProfit {
   itemCode: string
   bonusPct: number
   workerCount: number
-  // Production points/day (post-bonus, = the work-stats total). Summed into the
+  // Production points/day (post-bonus, theoretical). Summed into the
   // entity PP aggregates; units = pointsPerDay / productionPoints.
   pointsPerDay: number
   unitsPerDay: number

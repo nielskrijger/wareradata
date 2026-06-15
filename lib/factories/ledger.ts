@@ -1,83 +1,57 @@
 import type { FactoryProfit } from './profit'
-import type { FactoryData, WorkerInfo } from '@/lib/warera/api'
+import type { TheoreticalModel, WorkerSkill } from './theoretical'
+import type { WorkerInfo } from '@/lib/warera/api'
 
-import { avgCompleteStat } from './inputs'
-
-// Worker loyalty caps at +10% production (gameConfig.worker.maxFidelity).
-const MAX_FIDELITY = 10
-
-// Skill baselines for a worker not in our user set: the level-0 values
-// (skills.production lvl0 = 10, skills.energy lvl0 = 30).
-const DEFAULT_PRODUCTION = 10
-const DEFAULT_ENERGY = 30
+import { engineTheoreticalPoints, workerProductions } from './theoretical'
 
 /**
- * A worker's trained skills, used to weight their share of factory output.
- */
-export interface WorkerSkill {
-  production: number
-  energy: number
-}
-
-/**
- * One worker's net benefit to the factory per day: their output (net of input
- * cost) minus their wage. The factory's realized production and wage are split
- * across its workers by capacity (production skill × energy), with revenue also
- * scaled by fidelity and wage left on the un-boosted base — so a worker's net
- * plus the engine's net sum to the factory's Net, and higher fidelity reads as
- * higher net (the loyalty bonus is effectively un-waged production).
+ * One worker's theoretical net benefit to the factory per day: the value of the
+ * output they'd produce clicking to full energy (net of the inputs it consumes),
+ * minus the wage those works cost.
  */
 export interface LedgerWorker {
   id: string
   name: string
-  fidelity: number
   // The breakdown behind netPerDay: revenue − inputCost − wage = net.
   revenuePerDay: number
   inputCostPerDay: number
   wagePerDay: number
-  // The worker's contracted wage rate (gold per work), shown next to the
-  // apportioned daily wage.
+  // The worker's contracted wage rate (gold per work), shown next to the wage.
   wageRate: number
   netPerDay: number
 }
 
 /**
- * A {@link FactoryProfit} enriched for the user-page ledger: the net projected at
- * full worker loyalty, the automated engine's net contribution, and a per-worker
- * net breakdown. Net and potentials already exclude self-work (the `pointsPerDay`
- * fed into the profit model is engine + workers only).
+ * A {@link FactoryProfit} enriched for the user-page ledger: the automated
+ * engine's net contribution and a per-worker net breakdown. Both the factory's
+ * net and these lines are theoretical (engine at its level, workers at full daily
+ * effort); self-work is excluded.
  */
 export interface FactoryLedgerRow extends FactoryProfit {
-  projectedNetPerDay: number
   engineLevel: number
   engineNetPerDay: number
   workers: LedgerWorker[]
 }
 
 /**
- * Splits a factory's realized production into its ledger lines and projects net
- * to full worker loyalty. `profit.pointsPerDay` is the engine + employee total
- * (self-work already excluded). Each worker is weighted by their capacity
- * (production skill × energy via `skillOf`): revenue/inputs scale with fidelity
- * (their share of total output), wage scales with the un-boosted base capacity
- * (the fidelity bonus is un-waged) — which is why a higher-fidelity worker nets
- * more. The splits are normalized to the realized totals, so the per-worker nets
- * plus the engine's net always sum to the factory's Net. The full-loyalty net
- * raises every worker's fidelity to the +10% cap; engine and wage are unchanged.
+ * Splits a factory's theoretical production into its ledger lines: the automated
+ * engine plus each hired worker. The same model that produced `profit` is used
+ * to recover each source's production points, then the factory's per-point value
+ * (revenue net of inputs, recovered from the computed net) is applied — so the
+ * engine's net plus the per-worker nets always sum to the factory's Net. Wages
+ * come from each worker's theoretical works/day. Self-work is excluded.
  */
 export function buildFactoryLedgerRow(
   profit: FactoryProfit,
-  stats: FactoryData['stats'],
   workers: WorkerInfo[],
   engineLevel: number,
   productionPoints: number,
+  model: TheoreticalModel,
   nameOf: (userId: string) => string,
   skillOf: (userId: string) => WorkerSkill | null,
 ): FactoryLedgerRow {
   const pp = productionPoints || 1
   const effPts = profit.pointsPerDay
-  const enginePts = avgCompleteStat(stats, 'automatedEngine')
-  const empProd = avgCompleteStat(stats, 'employeeProd')
 
   // Gold earned per production point, net of input cost, recovered from the
   // already computed net: net = (effPts / pp) × unitNet − wages.
@@ -85,43 +59,25 @@ export function buildFactoryLedgerRow(
   const netOf = (pts: number) => (pts / pp) * unitNet
   const grossOf = (pts: number) => (pts / pp) * profit.sellPrice
 
-  // Per-worker weights: base capacity = production skill × energy. Revenue/inputs
-  // track total output (× fidelity); wage tracks the un-boosted base × wage rate.
-  const weighted = workers.map((w) => {
-    const skill = skillOf(w.userId)
-    const baseCapacity = (skill?.production ?? DEFAULT_PRODUCTION) * (skill?.energy ?? DEFAULT_ENERGY)
-    return { w, baseCapacity, revWeight: baseCapacity * (1 + w.fidelity / 100), wageWeight: baseCapacity * w.wage }
-  })
-  const revWeightSum = weighted.reduce((sum, x) => sum + x.revWeight, 0) || 1
-  const wageWeightSum = weighted.reduce((sum, x) => sum + x.wageWeight, 0) || 1
-  const baseCapacitySum = weighted.reduce((sum, x) => sum + x.baseCapacity, 0)
+  const enginePts = engineTheoreticalPoints(engineLevel, profit.bonusPct, model)
 
-  const empGross = grossOf(empProd)
-  const empInput = empGross - netOf(empProd)
-  const ledgerWorkers: LedgerWorker[] = weighted.map(({ w, revWeight, wageWeight }) => {
-    const revenuePerDay = empGross * revWeight / revWeightSum
-    const inputCostPerDay = empInput * revWeight / revWeightSum
-    const wagePerDay = profit.grossWagePerDay * wageWeight / wageWeightSum
+  const ledgerWorkers: LedgerWorker[] = workerProductions(workers, skillOf, profit.bonusPct, model).map((line) => {
+    const revenuePerDay = grossOf(line.productionPerDay)
+    const inputCostPerDay = revenuePerDay - netOf(line.productionPerDay)
+
     return {
-      id: w.userId,
-      name: nameOf(w.userId),
-      fidelity: w.fidelity,
+      id: line.userId,
+      name: nameOf(line.userId),
       revenuePerDay,
       inputCostPerDay,
-      wagePerDay,
-      wageRate: w.wage,
-      netPerDay: revenuePerDay - inputCostPerDay - wagePerDay,
+      wagePerDay: line.wagePerDay,
+      wageRate: line.wageRate,
+      netPerDay: revenuePerDay - inputCostPerDay - line.wagePerDay,
     }
   })
 
-  // Full loyalty: every worker's base capacity earns at the +10% cap instead of
-  // their current fidelity. Wage is unchanged (the bonus is un-waged).
-  const projectedEmpProd = workers.length ? empProd * (1 + MAX_FIDELITY / 100) * baseCapacitySum / revWeightSum : empProd
-  const projectedNetPerDay = profit.netPerDay + netOf(projectedEmpProd - empProd)
-
   return {
     ...profit,
-    projectedNetPerDay,
     engineLevel,
     engineNetPerDay: netOf(enginePts),
     workers: ledgerWorkers,

@@ -17,7 +17,6 @@ import type {
   RecommendedRegion,
   RegionsObjectItem,
   UserGetUserLiteResponse,
-  WorkStatsItem,
 } from '@wareraprojects/api'
 
 import { createAPIClient } from '@wareraprojects/api'
@@ -502,22 +501,19 @@ export async function getTournamentInfo(): Promise<TournamentInfo> {
 // A factory (company) as returned by company.getById.
 export type Factory = CompanyGetByIdResponse
 
-// One factory's daily work stats (production points + wages per day).
-export type FactoryWorkStat = WorkStatsItem
-
-// What getUserCompanies returns per factory: identity + daily stats + the
-// current production bonus (null if that call failed).
+// What getUserCompanies returns per factory: identity + the current production
+// bonus (null if that call failed). Engine level lives on `company`
+// (activeUpgradeLevels); the hired roster is fetched separately via getUserWorkers.
 export interface FactoryData {
   company: Factory
-  stats: FactoryWorkStat[]
   bonus: CompanyProductionBonusResponse | null
 }
 
 /**
  * Fetches a user's factories with everything the profit model needs, in two
  * HTTP round-trips: one to list the company ids, then one batched request that
- * hydrates each (getById + work stats + production bonus). Returns [] for a user
- * with no factories. `client` picks the rate-limit budget.
+ * hydrates each (getById + production bonus). Returns [] for a user with no
+ * factories. `client` picks the rate-limit budget.
  */
 async function fetchUserCompanies(client: Client, userId: string): Promise<FactoryData[]> {
   const list = await client.company.getCompanies({ userId, perPage: 100 })
@@ -526,16 +522,15 @@ async function fetchUserCompanies(client: Client, userId: string): Promise<Facto
     return []
   }
 
-  // All three hydration calls are dispatched in one tick, so the tRPC client
-  // coalesces them into a single batched HTTP request (≤ 50 ops covers the
-  // 12-factory cap). Stats/bonus tolerate a per-factory error.
-  const [companies, stats, bonuses] = await Promise.all([
+  // Both hydration calls are dispatched in one tick, so the tRPC client coalesces
+  // them into a single batched HTTP request (≤ 50 ops covers the 12-factory cap).
+  // The bonus tolerates a per-factory error.
+  const [companies, bonuses] = await Promise.all([
     Promise.all(ids.map(id => client.company.getById({ companyId: id }))),
-    Promise.all(ids.map(id => client.work.getStatsByCompany({ companyId: id, days: 8, timezone: 'UTC' }).catch(() => [] as FactoryWorkStat[]))),
     Promise.all(ids.map(id => client.company.getProductionBonus({ companyId: id }).catch(() => null))),
   ])
 
-  return ids.map((_, i) => ({ company: companies[i], stats: stats[i], bonus: bonuses[i] }))
+  return ids.map((_, i) => ({ company: companies[i], bonus: bonuses[i] }))
 }
 
 /**
@@ -552,13 +547,12 @@ export function getUserCompaniesSlow(userId: string): Promise<FactoryData[]> {
   return fetchUserCompanies(factoryClient, userId)
 }
 
-// One worker a user employs: their user id, per-work wage (gold), and fidelity
-// (loyalty days, 0–10). Fidelity adds +1% to that worker's production per day,
-// capped at +10% (gameConfig.worker.maxFidelity).
+// One worker a user employs: their user id and per-work wage (gold). The
+// theoretical model assumes the loyalty cap for everyone, so current fidelity
+// isn't carried.
 export interface WorkerInfo {
   userId: string
   wage: number
-  fidelity: number
 }
 
 // The workers a user employs, grouped by company.
@@ -570,19 +564,33 @@ export interface CompanyWorkers {
 /**
  * Fetches every worker a user employs, grouped by company, via `worker.getWorkers`.
  * The roster is no longer inlined on `company.getById`, so this is the source for
- * who works where, their wage, and how loyal they are. Urgent client.
+ * who works where and their wage. `client` picks the rate-limit budget.
  */
-export async function getUserWorkers(userId: string): Promise<CompanyWorkers[]> {
-  const client = urgentClient as unknown as {
+async function fetchUserWorkers(client: Client, userId: string): Promise<CompanyWorkers[]> {
+  const typed = client as unknown as {
     worker: { getWorkers: (input: { userId: string }) => Promise<{
-      workersPerCompany?: Array<{ company: { _id: string }, workers?: Array<{ user?: string, wage?: number, fidelity?: number }> }>
+      workersPerCompany?: Array<{ company: { _id: string }, workers?: Array<{ user?: string, wage?: number }> }>
     }> }
   }
-  const res = await client.worker.getWorkers({ userId })
+  const res = await typed.worker.getWorkers({ userId })
   return (res.workersPerCompany ?? []).map(c => ({
     companyId: c.company._id,
-    workers: (c.workers ?? []).map(w => ({ userId: w.user ?? '', wage: w.wage ?? 0, fidelity: w.fidelity ?? 0 })),
+    workers: (c.workers ?? []).map(w => ({ userId: w.user ?? '', wage: w.wage ?? 0 })),
   }))
+}
+
+/**
+ * A user's hired workers on the urgent client, for the on-demand user page.
+ */
+export function getUserWorkers(userId: string): Promise<CompanyWorkers[]> {
+  return fetchUserWorkers(urgentClient, userId)
+}
+
+/**
+ * A user's hired workers on the slow factory client, for the all-users scrape.
+ */
+export function getUserWorkersSlow(userId: string): Promise<CompanyWorkers[]> {
+  return fetchUserWorkers(factoryClient, userId)
 }
 
 // Current market price per item code. Aliased so the snapshot store and row

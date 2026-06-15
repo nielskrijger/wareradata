@@ -1,7 +1,9 @@
 import type { FactoryInput, ItemBonusInfo, RecipeLookup } from './profit'
-import type { FactoryData, GameConfig, ItemBestRegion } from '@/lib/warera/api'
+import type { TheoreticalModel, WorkerSkill } from './theoretical'
+import type { FactoryData, GameConfig, ItemBestRegion, WorkerInfo } from '@/lib/warera/api'
 
 import { buildRecipeLookup } from './profit'
+import { engineTheoreticalPoints, sumWorkerProduction, workerProductions } from './theoretical'
 
 /**
  * Builds the recipe lookup from the game config. gameConfig.items is a fixed
@@ -10,30 +12,6 @@ import { buildRecipeLookup } from './profit'
  */
 export function recipeFromGameConfig(gameConfig: GameConfig): RecipeLookup {
   return buildRecipeLookup(gameConfig.items as unknown as Record<string, { productionPoints?: number, productionNeeds?: Record<string, number> }>)
-}
-
-/**
- * Averages a work-stat over the user's complete days, dropping the most recent
- * (today's partial day). Returns 0 when there's no usable history.
- */
-export function avgCompleteStat(stats: FactoryData['stats'], key: 'total' | 'wage' | 'employeeProd' | 'selfWork' | 'automatedEngine'): number {
-  const sorted = [...stats].sort((a, b) => a.dailyDate.localeCompare(b.dailyDate))
-  const complete = sorted.length > 1 ? sorted.slice(0, -1) : sorted
-  if (!complete.length) {
-    return 0
-  }
-
-  return complete.reduce((acc, day) => acc + (day[key] ?? 0), 0) / complete.length
-}
-
-/**
- * The factory's predictable production points/day: the automated engine plus
- * hired workers. Self-work (`selfWork`) is excluded — the owner distributes their
- * own labour by hand across factories, so it isn't tied to any one and can't be
- * predicted. Net, potentials, and output all derive from this.
- */
-export function effectiveProductionPoints(stats: FactoryData['stats']): number {
-  return avgCompleteStat(stats, 'automatedEngine') + avgCompleteStat(stats, 'employeeProd')
 }
 
 /**
@@ -58,17 +36,38 @@ export function buildItemBonus(
 }
 
 /**
- * Maps one fetched factory into the profit model's input.
+ * A factory's automated-engine level, 0 when it has no engine.
  */
-export function factoryInputFromData(f: FactoryData, regionName: (id: string) => string): FactoryInput {
+export function engineLevelOf(f: FactoryData): number {
+  return f.company.activeUpgradeLevels?.automatedEngine ?? 0
+}
+
+/**
+ * Maps one fetched factory into the profit model's input, using theoretical
+ * production: the automated engine's fixed daily output plus every hired worker
+ * clicking to full energy each day. `skillOf` resolves a worker's skills (null ⇒
+ * the level-0 defaults for someone outside our user set); `model` carries the
+ * static engine/energy/loyalty constants. Self-work is excluded.
+ */
+export function factoryInputFromData(
+  f: FactoryData,
+  workers: WorkerInfo[],
+  skillOf: (userId: string) => WorkerSkill | null,
+  regionName: (id: string) => string,
+  model: TheoreticalModel,
+): FactoryInput {
+  const bonusPct = f.bonus?.total ?? 0
+  const enginePoints = engineTheoreticalPoints(engineLevelOf(f), bonusPct, model)
+  const { employeePoints, grossWagePerDay } = sumWorkerProduction(workerProductions(workers, skillOf, bonusPct, model))
+
   return {
     id: f.company._id,
     name: f.company.name,
     itemCode: f.company.itemCode,
     regionName: regionName(f.company.region),
-    bonusPct: f.bonus?.total ?? 0,
-    workerCount: f.company.workerCount ?? 0,
-    pointsPerDay: effectiveProductionPoints(f.stats),
-    grossWagePerDay: avgCompleteStat(f.stats, 'wage'),
+    bonusPct,
+    workerCount: workers.length,
+    pointsPerDay: enginePoints + employeePoints,
+    grossWagePerDay,
   }
 }

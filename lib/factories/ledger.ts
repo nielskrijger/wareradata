@@ -12,6 +12,9 @@ import { engineTheoreticalPoints, workerProductions } from './theoretical'
 export interface LedgerWorker {
   id: string
   name: string
+  // Current loyalty (0–10), shown in the ledger: it lifts this worker's output
+  // and so their net.
+  fidelity: number
   // The breakdown behind netPerDay: revenue − inputCost − wage = net.
   revenuePerDay: number
   inputCostPerDay: number
@@ -68,6 +71,7 @@ export function buildFactoryLedgerRow(
     return {
       id: line.userId,
       name: nameOf(line.userId),
+      fidelity: line.fidelity,
       revenuePerDay,
       inputCostPerDay,
       wagePerDay: line.wagePerDay,

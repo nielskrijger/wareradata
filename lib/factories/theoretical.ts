@@ -1,12 +1,12 @@
 import type { GameConfig } from '@/lib/warera/api'
 
 /**
- * Theoretical production model: what a factory WOULD produce at full daily
- * effort, derived from static game rules rather than from scraped history. The
- * automated engine runs itself, so its output is fixed by level and bonus; each
- * hired worker is assumed to click to full energy every day (so their loyalty
- * also sits at the cap). This is the "top possible" production, independent of
- * how active the factory has actually been.
+ * Theoretical production model: what a factory WOULD produce if everyone clicks
+ * to full energy every day, derived from static game rules rather than from
+ * scraped history. The automated engine runs itself, so its output is fixed by
+ * level and bonus; each hired worker produces at full daily clicks and their
+ * CURRENT loyalty (not an assumed cap). Independent of how active the factory has
+ * actually been recently.
  *
  * Self-work (the owner's own labour) is NOT modelled here: the owner spreads a
  * finite energy budget by hand across all their factories, so it can't be pinned
@@ -41,10 +41,10 @@ export interface TheoreticalModel {
   // one work costs. A worker who clicks whenever energy allows does
   // `energyValue × worksPerEnergy` works/day.
   worksPerEnergy: number
-  // Loyalty-cap bonus in percentage POINTS (maxFidelity × per-level %). Production
-  // bonuses combine ADDITIVELY, so this is summed with the factory bonus and the
-  // total applied once. Daily clicking drives loyalty to this cap.
-  maxFidelityPct: number
+  // Production-bonus percentage points per loyalty level (gameConfig.worker.
+  // fidelityProductionBonusPercent). A worker's fidelity × this is ADDED to the
+  // factory bonus; production bonuses combine additively and apply once.
+  fidelityPctPerLevel: number
 }
 
 /**
@@ -63,10 +63,9 @@ export function buildTheoreticalModel(gameConfig: GameConfig): TheoreticalModel 
   const { regenDividedBy, energyCostPerAction } = gameConfig.user
   const worksPerEnergy = 24 / (regenDividedBy * energyCostPerAction)
 
-  const { maxFidelity, fidelityProductionBonusPercent } = gameConfig.worker
-  const maxFidelityPct = maxFidelity * fidelityProductionBonusPercent
+  const { fidelityProductionBonusPercent } = gameConfig.worker
 
-  return { engineDailyProd, worksPerEnergy, maxFidelityPct }
+  return { engineDailyProd, worksPerEnergy, fidelityPctPerLevel: fidelityProductionBonusPercent }
 }
 
 /**
@@ -89,13 +88,14 @@ function worksPerDay(skill: WorkerSkill, model: TheoreticalModel): number {
 
 /**
  * One worker's theoretical contribution to a factory per day: output points
- * (full daily clicks, then scaled by the loyalty cap and the factory bonus) and
- * the wage those works cost. The wage is the rate per BASE unit produced — the
- * owner pays for the worker's raw labour, while the loyalty and factory bonuses
- * boost output only. So the owner's margin is exactly those two multipliers.
+ * (full daily clicks, then scaled by the worker's current loyalty and the factory
+ * bonus) and the wage those works cost. The wage is the rate per BASE unit
+ * produced — the owner pays for the worker's raw labour, while the loyalty and
+ * factory bonuses boost output only. So the owner's margin is exactly those two.
  */
 export interface WorkerProduction {
   userId: string
+  fidelity: number
   wageRate: number
   productionPerDay: number
   wagePerDay: number
@@ -109,16 +109,17 @@ export interface WorkerProduction {
  * bonus; `skillOf` resolves a worker's skills (null ⇒ the defaults).
  */
 export function workerProductions(
-  workers: ReadonlyArray<{ userId: string, wage: number }>,
+  workers: ReadonlyArray<{ userId: string, wage: number, fidelity: number }>,
   skillOf: (userId: string) => WorkerSkill | null,
   bonusPct: number,
   model: TheoreticalModel,
 ): WorkerProduction[] {
-  // The factory bonus and the loyalty cap are percentage POINTS that combine
-  // ADDITIVELY into one multiplier applied to base output (not compounded).
-  const outputMult = 1 + (bonusPct + model.maxFidelityPct) / 100
   return workers.map((w) => {
     const skill = skillOf(w.userId) ?? DEFAULT_WORKER_SKILL
+
+    // The factory bonus and the worker's CURRENT loyalty are percentage points
+    // that combine ADDITIVELY into one multiplier on base output (not compounded).
+    const outputMult = 1 + (bonusPct + w.fidelity * model.fidelityPctPerLevel) / 100
 
     // Base output (pre-bonus): each work produces `production` units. Wage is the
     // contracted rate per base unit — the bonuses lift output, never the wage — so
@@ -126,6 +127,7 @@ export function workerProductions(
     const basePerDay = skill.production * worksPerDay(skill, model)
     return {
       userId: w.userId,
+      fidelity: w.fidelity,
       wageRate: w.wage,
       productionPerDay: basePerDay * outputMult,
       wagePerDay: w.wage * basePerDay,

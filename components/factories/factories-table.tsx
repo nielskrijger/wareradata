@@ -326,7 +326,7 @@ function FactoryLedger({ row }: { row: FactoryLedgerRow }) {
       {row.workers.map(w => (
         <LedgerRow
           key={w.id}
-          label={<span className="text-muted-foreground text-xs">{w.name}</span>}
+          label={<span className="text-muted-foreground text-xs">{w.name} · {w.fidelity}/10</span>}
           amount={<WorkerNet w={w} />}
         />
       ))}

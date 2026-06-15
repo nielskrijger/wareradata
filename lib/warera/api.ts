@@ -547,12 +547,13 @@ export function getUserCompaniesSlow(userId: string): Promise<FactoryData[]> {
   return fetchUserCompanies(factoryClient, userId)
 }
 
-// One worker a user employs: their user id and per-work wage (gold). The
-// theoretical model assumes the loyalty cap for everyone, so current fidelity
-// isn't carried.
+// One worker a user employs: their user id, per-work wage (gold), and current
+// fidelity (loyalty level 0–10, +1%/level production, capped at +10%). Fidelity
+// adds to the factory's production bonus.
 export interface WorkerInfo {
   userId: string
   wage: number
+  fidelity: number
 }
 
 // The workers a user employs, grouped by company.
@@ -564,18 +565,19 @@ export interface CompanyWorkers {
 /**
  * Fetches every worker a user employs, grouped by company, via `worker.getWorkers`.
  * The roster is no longer inlined on `company.getById`, so this is the source for
- * who works where and their wage. `client` picks the rate-limit budget.
+ * who works where, their wage, and their loyalty. `client` picks the rate-limit
+ * budget.
  */
 async function fetchUserWorkers(client: Client, userId: string): Promise<CompanyWorkers[]> {
   const typed = client as unknown as {
     worker: { getWorkers: (input: { userId: string }) => Promise<{
-      workersPerCompany?: Array<{ company: { _id: string }, workers?: Array<{ user?: string, wage?: number }> }>
+      workersPerCompany?: Array<{ company: { _id: string }, workers?: Array<{ user?: string, wage?: number, fidelity?: number }> }>
     }> }
   }
   const res = await typed.worker.getWorkers({ userId })
   return (res.workersPerCompany ?? []).map(c => ({
     companyId: c.company._id,
-    workers: (c.workers ?? []).map(w => ({ userId: w.user ?? '', wage: w.wage ?? 0 })),
+    workers: (c.workers ?? []).map(w => ({ userId: w.user ?? '', wage: w.wage ?? 0, fidelity: w.fidelity ?? 0 })),
   }))
 }
 

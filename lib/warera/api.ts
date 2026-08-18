@@ -133,20 +133,20 @@ export interface SnapshotMeta {
 // enforced per client at the fetch level). Splitting by purpose means urgent,
 // on-demand work never waits behind the long continuous scrape, and vice versa.
 //
-//  - scrapeClient:  the background main-scrape loop. Gets the largest share so
-//    the leaderboard data stays fresh.
+//  - scrapeClient:  the background main-scrape loop. Steady share so the
+//    leaderboard data stays fresh.
 //  - urgentClient:  latency-sensitive on-demand traffic (MU refreshes, live
-//    battles, the user-page factory fetch).
-//  - factoryClient: the all-users factory scrape. TEMPORARILY boosted to finish
-//    the next full pass sooner (it must re-run to write the new per-source
-//    engine/employee points). Drop back to a maintenance share (~40) once that
-//    pass has populated, and give scrape its headroom back.
+//    battles, the user-page factory fetch). Needs real headroom: its queue is
+//    shared by every visitor-triggered fetch, and the limiter spaces requests
+//    at 60s/limit, so a small budget serializes page loads behind each other.
+//  - factoryClient: the all-users factory scrape. Bulk work with no latency
+//    requirement; it just takes proportionally longer on a smaller share.
 //
 // The three sum to 200, the API's authenticated cap, so all three together stay
 // within budget. Tune them here; rebalancing is a code change, not config.
 const SCRAPE_RATE_LIMIT = 50
-const URGENT_RATE_LIMIT = 10
-export const FACTORY_RATE_LIMIT = 140
+const URGENT_RATE_LIMIT = 50
+export const FACTORY_RATE_LIMIT = 100
 
 const scrapeClient = createAPIClient({
   apiKey: process.env.WARERA_API_KEY,

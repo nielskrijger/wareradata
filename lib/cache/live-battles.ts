@@ -14,18 +14,25 @@ import 'server-only'
 const log = logger.child({ component: 'live-battles' })
 
 /**
- * Live active battles as enriched {@link BattleRow}s, cached for 60s via
- * Cache Components. Backs both the /battles active tab and the active-battle
+ * Live active battles as enriched {@link BattleRow}s, cached via Cache
+ * Components. Backs both the /battles active tab and the active-battle
  * detail page, so a click-through stays consistent within the cache window.
+ *
+ * Stale-while-revalidate: past `revalidate` the cached rows are served as-is
+ * and refreshed in the background, so a slow WarEra fetch (rate-limiter queue,
+ * API under load) delays freshness instead of blocking every render. Only
+ * after a full hour without a successful refresh does a request block on the
+ * fetch (`expire`).
  *
  * The live layer is an enhancement, not load-bearing: if the WarEra API is
  * down (it 503s under load), we degrade to an empty list rather than crashing
  * every page that shows the ⚔ pill. The empty list itself gets cached for the
- * full 60s window — acceptable trade for letting the framework own the TTL.
+ * full revalidate window — acceptable trade for letting the framework own the
+ * TTL.
  */
 export async function getLiveActiveBattles(): Promise<BattleRow[]> {
   'use cache'
-  cacheLife({ stale: 0, revalidate: 60, expire: 60 })
+  cacheLife({ stale: 60, revalidate: 60, expire: 3600 })
   try {
     // Enrich the raw live battles against the warm snapshot lookups (country
     // / MU / region names, tournament team → MU), exactly as the hourly rows

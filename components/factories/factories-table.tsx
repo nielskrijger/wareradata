@@ -13,6 +13,8 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
+import { goldSigned, humanizeItem, netClass } from './format'
+
 interface Props {
   rows: FactoryLedgerRow[]
   totals: PortfolioTotals
@@ -33,38 +35,6 @@ const HEADER_TIPS = {
 const LABEL_SPAN = 4
 const TRAILING_SPAN = 3
 const TOTAL_COLS = LABEL_SPAN + 1 + TRAILING_SPAN
-
-/**
- * camelCase item code → readable label ("cookedFish" → "cooked fish").
- */
-function humanizeItem(code: string): string {
-  return code.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
-}
-
-/**
- * Signed gold for deltas: "+50.0 g", "−12.3 g", "0.0 g". One decimal by default —
- * per-worker/day figures are small (often near zero), so coarser rounding both
- * hides the value and stops the ledger's breakdown lines from summing to the net.
- */
-function goldSigned(value: number, decimals = 1): string {
-  const factor = 10 ** decimals
-  const rounded = Math.round(value * factor) / factor
-  const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : ''
-  return `${sign}${Math.abs(rounded).toLocaleString('en', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} g`
-}
-
-/**
- * Profit colour: green for gains, red for losses, muted for zero/idle.
- */
-function netClass(value: number): string {
-  if (value > 0) {
-    return 'text-green-700 dark:text-green-400'
-  }
-  if (value < 0) {
-    return 'text-red-700 dark:text-red-400'
-  }
-  return 'text-muted-foreground'
-}
 
 /**
  * A metric header cell wrapped in an explanatory tooltip.
@@ -111,16 +81,15 @@ function hasWorkers(row: FactoryLedgerRow): boolean {
  * The user-page factories table: one dense row per factory (theoretical output,
  * net, and relocation potentials per day at full effort), each expandable into an
  * accounting ledger — every producer (engine, each worker) and cost (inputs,
- * per-worker wages) summing to Net. Net excludes self-work. The header carries a
- * portfolio roll-up and an expand/collapse-all toggle; the footer sums net and
- * potentials.
+ * per-worker wages) summing to Net. Net excludes self-work. The portfolio roll-up
+ * lives in the stats card above; the header carries the expand/collapse-all
+ * toggle; the footer sums net and potentials.
  */
 export function FactoriesTable({ rows, totals }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
 
   const expandableIds = rows.filter(hasWorkers).map(row => row.id)
   const allExpanded = expandableIds.length > 0 && expandableIds.every(id => expanded.has(id))
-  const champion = rows[0]
 
   function toggleRow(id: string) {
     setExpanded((prev) => {
@@ -140,24 +109,8 @@ export function FactoriesTable({ rows, totals }: Props) {
 
   return (
     <section className="bg-card overflow-hidden rounded-md border">
-      <div className="flex flex-wrap items-center justify-between gap-2 p-3">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium">Factories</span>
-          <span className="text-muted-foreground text-xs tabular-nums">
-            {totals.activeCount} of {totals.count} active ·{' '}
-            <span className={netClass(totals.netPerDay)}>{goldSigned(totals.netPerDay)}</span>
-            {' net/day at full output'}
-          </span>
-          {champion && (
-            <span className="text-muted-foreground text-xs">
-              Best item now:{' '}
-              <span className="text-foreground font-medium">{humanizeItem(champion.bestProductCode)}</span>
-              {' in '}
-              {champion.bestRegionName}
-            </span>
-          )}
-        </div>
-
+      <div className="flex items-center justify-between gap-2 p-3">
+        <span className="text-muted-foreground text-xs">Per factory</span>
         <Button variant="outline" size="sm" onClick={toggleAll} aria-expanded={allExpanded}>
           {allExpanded ? 'Collapse all' : 'Expand all'}
         </Button>

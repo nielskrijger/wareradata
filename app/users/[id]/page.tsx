@@ -26,6 +26,7 @@ import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { VitalsCard } from '@/components/detail/vitals-card'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { FactoriesSection } from '@/components/factories/factories-section'
+import { FactoryStatsCard } from '@/components/factories/factory-stats-card'
 import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -215,6 +216,15 @@ export default async function UserDetailPage({ params }: PageProps) {
             { label: 'Weapons', value: user.weaponsWealth, range: ranges.weaponsWealth, rank: user.weaponsWealthRank },
           ]}
         />
+        {user.factoryCount != null && (
+          <FactoryStatsCard
+            className="sm:col-span-2"
+            totalNet={user.factoryNetPerDay ?? 0}
+            autoNet={user.factoryEngineNetPerDay ?? 0}
+            workersNet={user.factoryEmployeeNetPerDay ?? 0}
+            count={user.factoryCount}
+          />
+        )}
         <CasesCard
           combinedOpened={user.casesOpened}
           rank={user.casesOpenedRank}

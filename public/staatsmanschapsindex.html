@@ -143,7 +143,7 @@ for(const c of COMP){
   D.forEach(r=>{r.push(hi===lo?0:(f(r[c.i])-lo)/(hi-lo));});
 }
 D.forEach(r=>{
-  let s=0; COMP.forEach((c,j)=>{s+=c.w*r[11+j];});
+  let s=0; COMP.forEach((c,j)=>{s+=c.w*r[10+j];});
   r[10]=Math.round(s*1000)/10;
   r.length=11;
 });

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Staatsmanschapsindex — Congres augustus 2026</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#F3F5F2; --ink:#14181A; --ink-2:#4A5459; --ink-3:#78838A;
+  --rule:#DDE2DD; --rule-2:#C9D0CA; --delft:#2C5F7C; --soft:#E7EFF3; --brass:#8A6A2F;
+  --pos:#2F6B4F; --neg:#8C3A2E;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#121618; --ink:#E8EDEA; --ink-2:#A6B1B4; --ink-3:#78868B;
+  --rule:#2A3236; --rule-2:#3A4449; --delft:#7FB4D0; --soft:#1D2A32; --brass:#C8A560;
+  --pos:#6FB48D; --neg:#D08476;
+}}
+:root[data-theme="dark"]{
+  --paper:#121618; --ink:#E8EDEA; --ink-2:#A6B1B4; --ink-3:#78868B;
+  --rule:#2A3236; --rule-2:#3A4449; --delft:#7FB4D0; --soft:#1D2A32; --brass:#C8A560;
+  --pos:#6FB48D; --neg:#D08476;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);margin:0;
+  font:400 16px/1.6 "IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:52px 24px 80px}
+h1{font-family:Spectral,Georgia,serif;font-size:clamp(28px,4.2vw,40px);font-weight:700;
+  line-height:1.14;letter-spacing:-.015em;margin:0;text-wrap:balance}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 10px}
+.sub{color:var(--ink-2);margin:14px 0 0;max-width:64ch}
+.legend{margin:26px 0 0;padding:16px 0 0;border-top:1px solid var(--rule);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px 28px;
+  font-size:13.5px;color:var(--ink-2)}
+.legend b{font-family:"IBM Plex Mono",monospace;color:var(--delft);font-weight:500}
+
+.tablewrap{overflow-x:auto;margin-top:28px;border-top:2px solid var(--ink);
+  border-bottom:2px solid var(--ink)}
+table{border-collapse:collapse;width:100%;min-width:840px;font-size:14px}
+th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;text-align:right;
+  padding:12px 9px 9px;border-bottom:1px solid var(--rule-2);white-space:nowrap;
+  cursor:pointer;user-select:none}
+th.l{text-align:left}
+th:hover{color:var(--delft)}
+th[aria-sort]{color:var(--ink)}
+th[aria-sort]::after{content:" ↓"}
+th[aria-sort="ascending"]::after{content:" ↑"}
+th:focus-visible{outline:2px solid var(--delft);outline-offset:-2px}
+td{padding:8px 9px;border-bottom:1px solid var(--rule);text-align:right;
+  font-family:"IBM Plex Mono",monospace;font-size:13.5px;font-variant-numeric:tabular-nums}
+td.l{text-align:left;font-family:"IBM Plex Sans",sans-serif;font-size:14.5px;font-weight:500;
+  white-space:nowrap}
+tbody tr:hover{background:var(--soft)}
+tr.me{box-shadow:inset 3px 0 0 var(--brass)}
+td.idx{font-weight:600;font-size:14.5px}
+td.q.p{color:var(--pos)} td.q.n{color:var(--neg)}
+td.zero{color:var(--ink-3)}
+footer{margin-top:30px;font-size:13.5px;color:var(--ink-3);max-width:74ch}
+footer p{margin:0 0 10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Congres der Nederlanden · Warera · 7 aug – 4 sep 2026</p>
+  <h1>Staatsmanschapsindex</h1>
+  <p class="sub">Zes componenten uit de debatanalyse van 24 debatten en 1.129 beurten, elk genormaliseerd naar 0–1 en gewogen opgeteld tot een cijfer van 0 tot 100. Klik op een kolomkop om te sorteren.</p>
+
+  <div class="legend">
+    <div><b>Q · 25%</b> Argumentkwaliteit per beurt, gecorrigeerd voor de zwaarte van de draad</div>
+    <div><b>H · 25%</b> Aantal beurten op niveau 4 of 5</div>
+    <div><b>W · 15%</b> Uitgelokte antwoorden van niveau 3 of hoger</div>
+    <div><b>E · 15%</b> Fout toegeven en onzekerheid benoemen, minus stroman en vijandigheid</div>
+    <div><b>P · 10%</b> Voorzitters- en procedurebeurten</div>
+    <div><b>I · 10%</b> Geopende debatten, gewogen op kwaliteit van de openingspost</div>
+  </div>
+
+  <div class="tablewrap">
+    <table id="t">
+      <thead><tr>
+        <th class="l" data-k="0" data-txt>Congreslid</th>
+        <th data-k="10" aria-sort="descending">Index</th>
+        <th data-k="1">Q</th><th data-k="2">H</th><th data-k="3">W</th>
+        <th data-k="4">E</th><th data-k="5">P</th><th data-k="6">I</th>
+        <th data-k="7">Arg.<br>beurten</th><th data-k="9">Beurten</th><th data-k="8">Berichten</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <p>Tellingen (H, W, E, P, I) zijn wortelgetransformeerd vóór normalisatie omdat ze scheef verdeeld zijn; Q niet. Deelnemers met minder dan vijf argumentbeurten krijgen Q = 0,00 omdat hun kwaliteit niet te schatten is, wat hen licht bevoordeelt.</p>
+    <p>De weging is een keuze en geen uitkomst. Vier van de zes componenten zijn tellingen, waardoor de index grotendeels aanwezigheid meet. De losse kolommen zeggen meer dan het samengestelde cijfer.</p>
+  </footer>
+</div>
+
+<script>
+const D=[["Rita_Verdronk",0.23,46,66,14,5,6,102,186,141],
+["RealMariskaBauer",0.33,33,44,13,5,6,74,160,100],
+["Puppaganda_News",0.24,17,32,6,6,6,43,74,65],
+["Nootmuskater",0.01,10,42,7,11,11,61,129,88],
+["KapiteinKarel",-0.03,14,28,10,1,9,42,93,50],
+["GrachtViper",-0.07,10,28,5,32,5,42,107,86],
+["Flaky",0.44,18,22,5,0,0,27,32,29],
+["AdmiraalAap",0.08,7,15,3,3,4,25,61,37],
+["Twentiny",0.23,9,13,5,1,0,24,50,31],
+["Valkyrrr",0.29,11,13,1,4,0,31,70,43],
+["Lampekap",-0.07,8,21,7,0,0,29,47,40],
+["DarthDuskie",-0.19,9,30,3,2,0,50,86,73],
+["Bebs",0.04,3,8,1,2,2,9,18,17],
+["Dijkstra",0.33,7,4,0,0,0,11,15,14],
+["DeKapitein",0.21,8,9,0,0,0,14,28,16],
+["Paniek",0.02,3,6,3,0,0,8,21,17],
+["360Jeroen69",-0.65,1,14,8,2,5,23,48,40],
+["ZenMeisteah",-0.13,3,8,1,0,0,15,28,15],
+["tiebs",-0.09,1,6,2,0,0,5,9,9],
+["lolpot22",0,0,1,1,0,4,2,4,3],
+["RealMarijn",0,2,2,0,1,0,4,9,5],
+["YungMarnix",-0.33,1,14,2,0,0,17,36,34],
+["DiligentDoubt",0,0,1,0,2,2,2,8,7],
+["JuiceWrld",-0.73,2,32,4,0,0,51,132,71],
+["NicolasKing",0,0,1,0,0,3,4,23,11],
+["Krabifant",-0.25,0,8,3,0,0,9,23,14],
+["Roas_fan_Fryslan",-0.17,2,6,0,0,0,10,24,17],
+["FireLynx",0,0,4,0,0,0,3,19,17],
+["HenkFopneus",0,0,1,0,0,0,1,2,2],
+["Oba_Michiel_II",0,0,1,0,0,0,1,3,3],
+["2sa",0,0,1,0,0,0,3,7,7],
+["Oog70",0,0,1,0,0,0,1,1,1],
+["Daedalus",0,0,1,0,0,0,2,3,3],
+["Luv2Mars",-0.16,0,6,0,0,0,5,17,11],
+["Glorfindel",0,0,0,0,0,0,2,2,2],
+["BoBsMoK",0,0,0,0,0,0,1,2,1],
+["Rembrandt",-0.28,0,3,0,0,0,7,9,9]];
+
+const COMP=[{i:1,w:.25,s:0},{i:2,w:.25,s:1},{i:3,w:.15,s:1},
+            {i:4,w:.15,s:1},{i:5,w:.10,s:1},{i:6,w:.10,s:1}];
+for(const c of COMP){
+  const f=v=>c.s?Math.sqrt(Math.max(v,0)):v;
+  const vals=D.map(r=>f(r[c.i])), lo=Math.min(...vals), hi=Math.max(...vals);
+  D.forEach(r=>{r.push(hi===lo?0:(f(r[c.i])-lo)/(hi-lo));});
+}
+D.forEach(r=>{
+  let s=0; COMP.forEach((c,j)=>{s+=c.w*r[11+j];});
+  r[10]=Math.round(s*1000)/10;
+  r.length=11;
+});
+
+const nl=n=>n.toLocaleString("nl-NL");
+const tb=document.querySelector("#t tbody");
+function draw(rows){
+  tb.innerHTML=rows.map((r,i)=>{
+    const q=r[1], qc=q>0?"p":q<0?"n":"";
+    const cell=v=>'<td'+(v===0?' class="zero"':'')+'>'+(v===0?"·":nl(v))+'</td>';
+    return '<tr'+(r[0]==="Flaky"?' class="me"':'')+'>'
+      +'<td class="l">'+r[0]+'</td>'
+      +'<td class="idx">'+r[10].toFixed(1).replace(".",",")+'</td>'
+      +'<td class="q '+qc+'">'+(q>0?"+":"")+q.toFixed(2).replace(".",",")+'</td>'
+      +cell(r[2])+cell(r[3])+cell(r[4])+cell(r[5])+cell(r[6])
+      +'<td>'+nl(r[7])+'</td><td>'+nl(r[9])+'</td><td>'+nl(r[8])+'</td></tr>';
+  }).join("");
+}
+let cur=10, asc=false;
+document.querySelectorAll("#t th").forEach(th=>{
+  th.tabIndex=0;
+  const go=()=>{
+    const k=+th.dataset.k, txt="txt" in th.dataset;
+    if(k===cur){asc=!asc;}else{cur=k;asc=txt;}
+    document.querySelectorAll("#t th").forEach(x=>x.removeAttribute("aria-sort"));
+    th.setAttribute("aria-sort",asc?"ascending":"descending");
+    const s=[...D].sort((a,b)=>txt
+      ? a[k].localeCompare(b[k],"nl")*(asc?1:-1)
+      : (a[k]-b[k])*(asc?1:-1));
+    draw(s);
+  };
+  th.addEventListener("click",go);
+  th.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
+});
+draw([...D].sort((a,b)=>b[10]-a[10]));
+</script>
+</body>
+</html>

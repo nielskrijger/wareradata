@@ -5,7 +5,6 @@ import type { ReadinessPill } from '@/lib/rows'
 import type { RankingTier } from '@/lib/warera/api'
 
 import { GearScorePill } from '@/components/badges/gear-score-pill'
-import { ScaleBadge } from '@/components/badges/scale-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CombatModeShareCell } from '@/components/cells/combat-mode-share-cell'
 import { CompactNumber } from '@/components/cells/compact-number'
@@ -84,7 +83,14 @@ export function localeNumberColumn<T>(
     header,
     cell: ({ row }) => (row.original[key] as number | null)?.toLocaleString() ?? null,
     sortDescFirst: true,
-    meta: { heat: opts.heat, heatCenter: opts.center, heatLogScale: opts.logScale, align: 'right', width: opts.width ?? 100, tooltip: opts.tooltip },
+    meta: {
+      heat: opts.heat,
+      heatCenter: opts.center,
+      heatLogScale: opts.logScale,
+      align: 'right',
+      width: opts.width ?? 100,
+      tooltip: opts.tooltip,
+    },
   }
 }
 
@@ -259,30 +265,21 @@ export function countryColumn<
 }
 
 /**
- * A bounded value on the diverging {@link ScaleBadge} ramp (e.g. party ethics).
- */
-export function scaleBadgeColumn<T>(
-  key: Key<T>,
-  header: string,
-  opts: { width?: number } = {},
-): ColumnDef<T> {
-  return {
-    accessorKey: key,
-    header,
-    cell: ({ row }) => <ScaleBadge value={row.original[key] as number | null} />,
-    sortDescFirst: true,
-    meta: { align: 'right', width: opts.width ?? 110 },
-  }
-}
-
-/**
  * A null-safe percentage cell (`12%`, or `1.5%` with `decimals`), for policy
- * rates (taxes, unrest, production bonus) where the stored value is the percent.
+ * rates (taxes, unrest) where the stored value is the percent.
  */
 export function percentColumn<T>(
   key: Key<T>,
   header: string,
-  opts: { heat?: HeatMode, center?: number, decimals?: number, sortInvert?: boolean, width?: number, tooltip?: string, rankKey?: Key<T> } = {},
+  opts: {
+    heat?: HeatMode
+    center?: number
+    decimals?: number
+    sortInvert?: boolean
+    width?: number
+    tooltip?: string
+    rankKey?: Key<T>
+  } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
@@ -304,6 +301,13 @@ export function percentColumn<T>(
       )
     },
     sortDescFirst: true,
-    meta: { heat: opts.heat, heatCenter: opts.center, sortInvert: opts.sortInvert, align: 'right', width: opts.width ?? 110, tooltip: opts.tooltip },
+    meta: {
+      heat: opts.heat,
+      heatCenter: opts.center,
+      sortInvert: opts.sortInvert,
+      align: 'right',
+      width: opts.width ?? 110,
+      tooltip: opts.tooltip,
+    },
   }
 }

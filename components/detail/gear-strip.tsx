@@ -190,8 +190,22 @@ export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }
 
         return (
           <div key={slot} className={cn('flex flex-col items-center gap-0.5', tileW)}>
-            <div className={cn('relative flex items-center justify-center overflow-hidden rounded-md', tileSize, tileBg, rarityRing(t, surface))}>
-              <Image src={iconUrl(slot, code)} alt={code} width={28} height={28} className={cn('object-contain', imgSize)} unoptimized />
+            <div
+              className={cn(
+                'relative flex items-center justify-center overflow-hidden rounded-md',
+                tileSize,
+                tileBg,
+                rarityRing(t, surface),
+              )}
+            >
+              <Image
+                src={iconUrl(slot, code)}
+                alt={code}
+                width={28}
+                height={28}
+                className={cn('object-contain', imgSize)}
+                unoptimized
+              />
               <div className="absolute inset-x-0.5 bottom-0.5 h-0.5 overflow-hidden rounded-sm bg-black/40">
                 <div className="h-full rounded-sm" style={{ width: `${dur}%`, background: rgb }} />
               </div>

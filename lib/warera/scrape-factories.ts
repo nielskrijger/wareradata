@@ -1,13 +1,12 @@
 import type { FactoryRawRow } from '@/lib/cache/factory-store'
-import type { TheoreticalModel, WorkerSkill } from '@/lib/factories/theoretical'
+import type { EngineModel } from '@/lib/factories/engine'
 
 import { factoriesNdjsonPath } from '@/lib/cache/factory-store'
 import { writeFileAtomic } from '@/lib/cache/ndjson'
-import { engineLevelOf } from '@/lib/factories/inputs'
-import { engineTheoreticalPoints, sumWorkerProduction, workerProductions } from '@/lib/factories/theoretical'
+import { factoryInputFromData } from '@/lib/factories/inputs'
 import { logger, memoryUsage } from '@/lib/log'
 
-import { FACTORY_RATE_LIMIT, getUserCompaniesSlow, getUserWorkersSlow } from './api'
+import { FACTORY_RATE_LIMIT, getUserCompaniesSlow } from './api'
 
 const log = logger.child({ component: 'factory-scrape' })
 
@@ -22,13 +21,12 @@ const PROGRESS_EVERY = 250
 
 /**
  * The all-users factory pass on the slow factory client: for each company-owning
- * user, enumerate their factories and their hired workers, and record each
- * factory's THEORETICAL daily production — the engine at its level plus each
- * worker clicking to full energy (see {@link TheoreticalModel}). `skillByUser`
- * resolves a worker's skills (level-0 defaults when absent); `model` carries the
- * static engine/energy/loyalty constants. Net and the potentials are NOT computed
- * here — the readers derive those at build time from these points plus the
- * snapshot's market data.
+ * user, enumerate their factories with their NPC employee rosters, and record
+ * each factory's daily production per source (the engine at its level, the
+ * employees from the roster's hourly estimate) and its wages. `model` carries the
+ * engine output per level. Net and the Top potential are NOT computed here — the
+ * readers derive those at build time from these points plus the snapshot's
+ * market data.
  *
  * Streams NDJSON (one user per line) to a temp file, then renames over
  * `factories.ndjson` once the pass completes — so it holds no accumulator in
@@ -39,8 +37,7 @@ const PROGRESS_EVERY = 250
  */
 export async function scrapeFactories(
   userIds: string[],
-  skillByUser: Map<string, WorkerSkill>,
-  model: TheoreticalModel,
+  model: EngineModel,
   opts: { limit?: number } = {},
 ): Promise<number> {
   const ids = opts.limit && Number.isFinite(opts.limit) ? userIds.slice(0, opts.limit) : userIds
@@ -58,24 +55,19 @@ export async function scrapeFactories(
       while (cursor < ids.length) {
         const userId = ids[cursor++]
         try {
-          const [factories, workerGroups] = await Promise.all([getUserCompaniesSlow(userId), getUserWorkersSlow(userId)])
+          const factories = await getUserCompaniesSlow(userId)
           if (factories.length) {
-            const workersByCompany = new Map(workerGroups.map(g => [g.companyId, g.workers]))
             const rows = factories.map<FactoryRawRow>((f) => {
-              const bonusPct = f.bonus?.total ?? 0
-              const workers = workersByCompany.get(f.company._id) ?? []
-              const { employeePoints, grossWagePerDay } = sumWorkerProduction(
-                workerProductions(workers, id => skillByUser.get(id) ?? null, bonusPct, model),
-              )
-
+              const input = factoryInputFromData(f, () => '', model)
               return {
-                itemCode: f.company.itemCode,
+                itemCode: input.itemCode,
                 regionId: f.company.region,
-                bonusPct,
-                enginePoints: engineTheoreticalPoints(engineLevelOf(f), bonusPct, model),
-                employeePoints,
-                grossWagePerDay,
-                workerCount: workers.length,
+                enginePoints: input.enginePointsPerDay,
+                employeePoints: input.employeePointsPerDay,
+                wagePerDay: input.wagePerDay,
+                managerPerDay: input.managerPerDay,
+                employeeCount: input.employeeCount,
+                employeeCap: input.employeeCap,
               }
             })
             await write(`${JSON.stringify({ userId, rows })}\n`)

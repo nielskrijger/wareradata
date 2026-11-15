@@ -117,7 +117,10 @@ export function ColumnsMenu<TData>({ table }: { table: Table<TData> }) {
                   className="hover:bg-accent flex flex-1 items-center gap-1.5 rounded-md px-2 py-1.5"
                 >
                   <Chevron className="text-muted-foreground size-4 shrink-0" />
-                  <Icon className={cn('size-3.5 shrink-0', !meta.color && 'text-muted-foreground')} style={meta.color ? { color: meta.color } : undefined} />
+                  <Icon
+                    className={cn('size-3.5 shrink-0', !meta.color && 'text-muted-foreground')}
+                    style={meta.color ? { color: meta.color } : undefined}
+                  />
                   {meta.label}
                   <span className="text-muted-foreground ml-auto text-xs tabular-nums">
                     {onCount}

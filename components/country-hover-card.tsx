@@ -57,7 +57,11 @@ function pctInRange(value: number, range: Range | undefined): number {
  * entity to look up, so no tooltip is shown.
  */
 export function CountryHoverCard({ countryId, children, triggerClassName = 'block min-w-0' }: Props) {
-  const { status, data, onOpenChange } = useEntityHover<CountryDetails>(countryId ? `/api/countries/${countryId}` : null)
+  const {
+    status,
+    data,
+    onOpenChange,
+  } = useEntityHover<CountryDetails>(countryId ? `/api/countries/${countryId}` : null)
 
   return (
     <HoverCardShell
@@ -84,12 +88,51 @@ function Body({ data }: { data: CountryDetails }) {
       </div>
 
       <div className="grid grid-cols-3 gap-1.5 px-3 pb-2">
-        <Tile icon={<Users className={ICON} />} label="Population" value={c.activePopulation} rank={c.activePopulationRank} range={ranges.activePopulation} />
-        <Tile icon={<Swords className={ICON} />} label="Weekly" value={c.weeklyDamage} rank={c.weeklyDamageRank} range={ranges.weeklyDamage} display={<CompactNumber value={c.weeklyDamage} />} />
-        <Tile icon={<Trophy className={ICON} />} label="Wealth" value={c.citizenWealth} rank={c.citizenWealthRank} range={ranges.citizenWealth} display={<CompactNumber value={c.citizenWealth} />} />
-        <Tile icon={<Shield className={ICON} />} label="Gear" value={c.avgGearScore} rank={c.avgGearScoreRank} range={ranges.avgGearScore} />
-        <Tile icon={<Building2 className={ICON} />} label="MUs" value={c.musCount} rank={c.musCountRank} range={ranges.musCount} />
-        <Tile icon={<Flame className={ICON} />} label="War" value={c.avgWarShare} rank={c.avgWarShareRank} range={ranges.avgWarShare} display={war != null ? `${war}%` : undefined} />
+        <Tile
+          icon={<Users className={ICON} />}
+          label="Population"
+          value={c.activePopulation}
+          rank={c.activePopulationRank}
+          range={ranges.activePopulation}
+        />
+        <Tile
+          icon={<Swords className={ICON} />}
+          label="Weekly"
+          value={c.weeklyDamage}
+          rank={c.weeklyDamageRank}
+          range={ranges.weeklyDamage}
+          display={<CompactNumber value={c.weeklyDamage} />}
+        />
+        <Tile
+          icon={<Trophy className={ICON} />}
+          label="Wealth"
+          value={c.citizenWealth}
+          rank={c.citizenWealthRank}
+          range={ranges.citizenWealth}
+          display={<CompactNumber value={c.citizenWealth} />}
+        />
+        <Tile
+          icon={<Shield className={ICON} />}
+          label="Gear"
+          value={c.avgGearScore}
+          rank={c.avgGearScoreRank}
+          range={ranges.avgGearScore}
+        />
+        <Tile
+          icon={<Building2 className={ICON} />}
+          label="MUs"
+          value={c.musCount}
+          rank={c.musCountRank}
+          range={ranges.musCount}
+        />
+        <Tile
+          icon={<Flame className={ICON} />}
+          label="War"
+          value={c.avgWarShare}
+          rank={c.avgWarShareRank}
+          range={ranges.avgWarShare}
+          display={war != null ? `${war}%` : undefined}
+        />
       </div>
 
       <div className="space-y-1 border-t border-neutral-50/15 px-3 py-2">
@@ -122,7 +165,9 @@ function Tile({ icon, label, value, rank, range, display }: TileProps) {
       </div>
       <div className="mt-0.5 whitespace-nowrap text-sm font-semibold tabular-nums" style={{ color }}>
         {value == null ? <span className="text-neutral-50/40">—</span> : (display ?? intFull.format(value))}
-        {value != null && rank != null && <span className="ml-1 text-[10px] font-normal text-neutral-50/40">{`#${rank}`}</span>}
+        {value != null && rank != null && (
+          <span className="ml-1 text-[10px] font-normal text-neutral-50/40">{`#${rank}`}</span>
+        )}
       </div>
     </div>
   )

@@ -5,7 +5,6 @@ import { connection } from 'next/server'
 
 import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
-import { ScaleBadge } from '@/components/badges/scale-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
@@ -98,10 +97,6 @@ export default async function PartyDetailPage({ params }: PageProps) {
               </UserHoverCard>
             </span>
           )}
-          <span className="inline-flex items-center gap-1">Militarism <ScaleBadge value={p.militarism} /></span>
-          <span className="inline-flex items-center gap-1">Isolationism <ScaleBadge value={p.isolationism} /></span>
-          <span className="inline-flex items-center gap-1">Imperialism <ScaleBadge value={p.imperialism} /></span>
-          <span className="inline-flex items-center gap-1">Industrialism <ScaleBadge value={p.industrialism} /></span>
         </FactRow>
       </DetailHeader>
 
@@ -117,26 +112,61 @@ export default async function PartyDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Society"
           rows={[
-            { label: 'Members', value: p.memberCount, range: ranges.memberCount, heat: 'ramp', rank: p.memberCountRank },
+            {
+              label: 'Members',
+              value: p.memberCount,
+              range: ranges.memberCount,
+              heat: 'ramp',
+              rank: p.memberCountRank,
+            },
             { label: 'Avg level', value: p.avgLevel, range: ranges.avgLevel, heat: 'median', rank: p.avgLevelRank },
           ]}
         />
         <WealthCompositionCard
           perCapita={{ count: p.memberCount, unit: 'member' }}
           parts={[
-            { label: 'Companies', value: p.companiesWealth, range: ranges.companiesWealth, rank: p.companiesWealthRank },
+            {
+              label: 'Companies',
+              value: p.companiesWealth,
+              range: ranges.companiesWealth,
+              rank: p.companiesWealthRank,
+            },
             { label: 'Items', value: p.itemsWealth, range: ranges.itemsWealth, rank: p.itemsWealthRank },
             { label: 'Cash', value: p.cashWealth, range: ranges.cashWealth, rank: p.cashWealthRank },
-            { label: 'Equipment', value: p.equipmentWealth, range: ranges.equipmentWealth, rank: p.equipmentWealthRank },
+            {
+              label: 'Equipment',
+              value: p.equipmentWealth,
+              range: ranges.equipmentWealth,
+              rank: p.equipmentWealthRank,
+            },
             { label: 'Weapons', value: p.weaponsWealth, range: ranges.weaponsWealth, rank: p.weaponsWealthRank },
           ]}
         />
         <MultiStatCard
           label="Premium"
           rows={[
-            { label: 'Gems bought', value: p.gemsPurchasedTotal, display: <CompactNumber value={p.gemsPurchasedTotal} />, range: ranges.gemsPurchasedTotal, heat: 'ramp', rank: p.gemsPurchasedTotalRank },
-            { label: 'Months', value: p.premiumMonthsTotal, range: ranges.premiumMonthsTotal, heat: 'ramp', rank: p.premiumMonthsTotalRank },
-            { label: 'Gifts', value: p.premiumGiftsTotal, range: ranges.premiumGiftsTotal, heat: 'ramp', rank: p.premiumGiftsTotalRank },
+            {
+              label: 'Gems bought',
+              value: p.gemsPurchasedTotal,
+              display: <CompactNumber value={p.gemsPurchasedTotal} />,
+              range: ranges.gemsPurchasedTotal,
+              heat: 'ramp',
+              rank: p.gemsPurchasedTotalRank,
+            },
+            {
+              label: 'Months',
+              value: p.premiumMonthsTotal,
+              range: ranges.premiumMonthsTotal,
+              heat: 'ramp',
+              rank: p.premiumMonthsTotalRank,
+            },
+            {
+              label: 'Gifts',
+              value: p.premiumGiftsTotal,
+              range: ranges.premiumGiftsTotal,
+              heat: 'ramp',
+              rank: p.premiumGiftsTotalRank,
+            },
           ]}
         />
       </StatCardGrid>

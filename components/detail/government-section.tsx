@@ -159,13 +159,22 @@ export function GovernmentSection({ government }: Props) {
       <div className="bg-card space-y-4 rounded-md border p-4">
         {seats.length > 0 && (
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:gap-x-6">
-            <span className="text-muted-foreground text-[10px] uppercase tracking-wide sm:w-20 sm:shrink-0 sm:pt-1">Executive</span>
+            <span className="text-muted-foreground text-[10px] uppercase tracking-wide sm:w-20 sm:shrink-0 sm:pt-1">
+              Executive
+            </span>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 sm:justify-start">
               {seats.map(seat => (
                 <div key={seat.label} className="flex w-20 flex-col items-center gap-1 text-center">
                   <GovFace official={seat.official} size={48} color={colorFor(seat.official.partyId, colors)} />
-                  <span className="text-muted-foreground text-[10px] uppercase">{ROLE_SHORT[seat.label] ?? seat.label}</span>
-                  <InternalLink href={`/users/${seat.official.id}`} bold title={seat.official.name} className="block w-full truncate text-xs">
+                  <span className="text-muted-foreground text-[10px] uppercase">
+                    {ROLE_SHORT[seat.label] ?? seat.label}
+                  </span>
+                  <InternalLink
+                    href={`/users/${seat.official.id}`}
+                    bold
+                    title={seat.official.name}
+                    className="block w-full truncate text-xs"
+                  >
                     {seat.official.name}
                   </InternalLink>
                 </div>
@@ -185,15 +194,27 @@ export function GovernmentSection({ government }: Props) {
                 <div className="flex items-center gap-2 sm:w-48 sm:shrink-0">
                   {bench.avatarUrl
                     ? <Avatar src={bench.avatarUrl} name={bench.name} size={20} />
-                    : <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: `rgb(${bench.color})` }} />}
+                    : (
+                        <span
+                          className="size-3 shrink-0 rounded-full"
+                          style={{ backgroundColor: `rgb(${bench.color})` }}
+                        />
+                      )}
                   {bench.id === INDEPENDENT_KEY
                     ? <span className="truncate text-xs font-medium" title={bench.name}>{bench.name}</span>
                     : (
-                        <InternalLink href={`/parties/${bench.id}`} bold title={bench.name} className="min-w-0 truncate text-xs">
+                        <InternalLink
+                          href={`/parties/${bench.id}`}
+                          bold
+                          title={bench.name}
+                          className="min-w-0 truncate text-xs"
+                        >
                           {bench.name}
                         </InternalLink>
                       )}
-                  <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">{bench.members.length}</span>
+                  <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
+                    {bench.members.length}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {bench.members.map(member => (

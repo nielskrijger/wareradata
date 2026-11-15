@@ -60,8 +60,20 @@ export function CombatModeCell({ mode, warPoints, ecoPoints, warPointsRank, ecoP
           <span className="text-neutral-50/60 text-[11px] tabular-nums">{total} pts</span>
         </div>
         <dl className="space-y-2">
-          <BreakdownRow label="War" value={warPoints} total={total} color={WAR_COLOR} icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />} />
-          <BreakdownRow label="Eco" value={ecoPoints} total={total} color={ECO_COLOR} icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />} />
+          <BreakdownRow
+            label="War"
+            value={warPoints}
+            total={total}
+            color={WAR_COLOR}
+            icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
+          />
+          <BreakdownRow
+            label="Eco"
+            value={ecoPoints}
+            total={total}
+            color={ECO_COLOR}
+            icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
+          />
         </dl>
         <Footer mode={mode} warPointsRank={warPointsRank} ecoPointsRank={ecoPointsRank} />
       </TooltipContent>
@@ -72,7 +84,13 @@ export function CombatModeCell({ mode, warPoints, ecoPoints, warPointsRank, ecoP
 // One discipline: the label/value/share on a single text line, the proportion
 // bar full-width beneath. Stacking the text above the bar (rather than sharing a
 // row with a fixed numeric column) means a 3-digit value at 100% can't wrap.
-function BreakdownRow({ label, value, total, color, icon }: { label: string, value: number, total: number, color: string, icon: React.ReactNode }) {
+function BreakdownRow({ label, value, total, color, icon }: {
+  label: string
+  value: number
+  total: number
+  color: string
+  icon: React.ReactNode
+}) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0
   return (
     <div>
@@ -95,7 +113,11 @@ function BreakdownRow({ label, value, total, color, icon }: { label: string, val
 // Closing line: the leading discipline's leaderboard position, so the tooltip
 // answers "how invested is this player, really?". Hybrid/untrained get a plain
 // label.
-function Footer({ mode, warPointsRank, ecoPointsRank }: { mode: CombatMode, warPointsRank: number | null, ecoPointsRank: number | null }) {
+function Footer({ mode, warPointsRank, ecoPointsRank }: {
+  mode: CombatMode
+  warPointsRank: number | null
+  ecoPointsRank: number | null
+}) {
   let line: string | null = null
   if (mode === 'war' && warPointsRank != null) {
     line = `#${warPointsRank.toLocaleString()} most-invested fighter`

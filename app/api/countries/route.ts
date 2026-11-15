@@ -5,7 +5,17 @@ import { withActiveBattleCounts } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
 import { readinessScore } from '@/lib/rows'
-import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, COMBAT_SORT_KEYS, FACTORY_FIELD_ALIASES, FACTORY_SORT_KEYS, PREMIUM_FIELD_ALIASES, PREMIUM_KEYS, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
+import {
+  CASE_FIELD_ALIASES,
+  CASE_SORT_KEYS,
+  COMBAT_SORT_KEYS,
+  FACTORY_FIELD_ALIASES,
+  FACTORY_SORT_KEYS,
+  PREMIUM_FIELD_ALIASES,
+  PREMIUM_KEYS,
+  WEALTH_FIELD_ALIASES,
+  WEALTH_PART_KEYS,
+} from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
@@ -26,7 +36,6 @@ const countryFieldAliases: FieldAliases = {
   ppd: 'avgPointsPerDay',
   population: 'activePopulation',
   rank: 'damageRank',
-  specialty: 'specializedItem',
   treasury: 'money',
   unrest: 'unrestPercent',
   wars: 'warsCount',
@@ -54,17 +63,15 @@ const countrySortValue = makeSortValue<CountryRow>({
     'bounty',
     'money',
     'development',
-    'productionBonus',
     'activePopulation',
     'musCount',
     'partyCount',
     'alliesCount',
     'warsCount',
     'code',
-    'specializedItem',
     'taxIncome',
     'taxMarket',
-    'taxSelfWork',
+    'taxManager',
     'unrestPercent',
   ],
   text: ['name'],

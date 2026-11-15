@@ -120,7 +120,9 @@ export default async function UserDetailPage({ params }: PageProps) {
         titleSuffix={(
           <>
             {user.levelTier && <TierBadge tier={user.levelTier} />}
-            {user.readinessStatus != null && <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} />}
+            {user.readinessStatus != null && (
+              <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} />
+            )}
           </>
         )}
         bannerStyle={{ background: `linear-gradient(100deg, rgba(${rgb}, 0.38), rgba(${rgb}, 0.06))` }}
@@ -133,7 +135,9 @@ export default async function UserDetailPage({ params }: PageProps) {
             style={{ boxShadow: `0 0 0 4px var(--card), 0 0 0 5px rgb(${rgb})` }}
           />
         )}
-        footer={hasGearData ? <GearBand score={user.gearScore} equipment={equipment} gearLookup={gearLookup} /> : undefined}
+        footer={hasGearData
+          ? <GearBand score={user.gearScore} equipment={equipment} gearLookup={gearLookup} />
+          : undefined}
       >
         <FactRow>
           <CountryCell countryCode={user.countryCode} countryName={user.countryName} countryId={user.countryId} />
@@ -159,11 +163,15 @@ export default async function UserDetailPage({ params }: PageProps) {
             <span className="inline-flex items-center gap-1">MU <MUCell muName={user.muName} muId={user.muId} /></span>
           )}
           {user.partyName && (
-            <span className="inline-flex max-w-[16rem] items-center gap-1">Party <PartyCell partyName={user.partyName} partyId={user.partyId} /></span>
+            <span className="inline-flex max-w-[16rem] items-center gap-1">
+              Party <PartyCell partyName={user.partyName} partyId={user.partyId} />
+            </span>
           )}
           <span>Joined {user.createdAt?.slice(0, 10) ?? EMPTY}</span>
           <Tooltip>
-            <TooltipTrigger render={<span className="inline-flex items-center gap-1 hover:text-foreground cursor-default" />}>
+            <TooltipTrigger
+              render={<span className="inline-flex items-center gap-1 hover:text-foreground cursor-default" />}
+            >
               <Clock className="size-3.5 shrink-0" />
               <RelativeTime iso={user.lastConnectionAt} />
             </TooltipTrigger>
@@ -192,27 +200,77 @@ export default async function UserDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Damage"
           total={total}
-          hero={{ label: 'Total', value: user.damage, display: <CompactNumber value={user.damage} />, range: ranges.damage, heat: 'median', rank: user.damageRank }}
+          hero={{
+            label: 'Total',
+            value: user.damage,
+            display: <CompactNumber value={user.damage} />,
+            range: ranges.damage,
+            heat: 'median',
+            rank: user.damageRank,
+          }}
           rows={[
-            { label: 'Weekly', value: user.weeklyDamage, display: <CompactNumber value={user.weeklyDamage} />, range: ranges.weeklyDamage, heat: 'median', rank: user.weeklyDamageRank },
-            { label: 'Military rank', value: user.militaryRank, range: ranges.militaryRank, heat: 'median', rank: user.militaryRankPos },
+            {
+              label: 'Weekly',
+              value: user.weeklyDamage,
+              display: <CompactNumber value={user.weeklyDamage} />,
+              range: ranges.weeklyDamage,
+              heat: 'median',
+              rank: user.weeklyDamageRank,
+            },
+            {
+              label: 'Military rank',
+              value: user.militaryRank,
+              range: ranges.militaryRank,
+              heat: 'median',
+              rank: user.militaryRankPos,
+            },
             { label: 'Terrain', value: user.terrain, range: ranges.terrain, heat: 'median', rank: user.terrainRank },
           ]}
         />
         <MultiStatCard
           label="Economy"
           rows={[
-            { label: 'Wealth', value: user.wealth, display: <CompactNumber value={user.wealth} />, range: ranges.wealth, heat: 'median', rank: user.wealthRank },
-            { label: 'Bounty', value: user.bounty, display: <CompactNumber value={user.bounty} />, range: ranges.bounty, heat: 'median', rank: user.bountyRank },
-            { label: 'Referrals', value: user.referrals, range: ranges.referrals, heat: 'ramp', rank: user.referralsRank },
+            {
+              label: 'Wealth',
+              value: user.wealth,
+              display: <CompactNumber value={user.wealth} />,
+              range: ranges.wealth,
+              heat: 'median',
+              rank: user.wealthRank,
+            },
+            {
+              label: 'Bounty',
+              value: user.bounty,
+              display: <CompactNumber value={user.bounty} />,
+              range: ranges.bounty,
+              heat: 'median',
+              rank: user.bountyRank,
+            },
+            {
+              label: 'Referrals',
+              value: user.referrals,
+              range: ranges.referrals,
+              heat: 'ramp',
+              rank: user.referralsRank,
+            },
           ]}
         />
         <WealthCompositionCard
           parts={[
-            { label: 'Companies', value: user.companiesWealth, range: ranges.companiesWealth, rank: user.companiesWealthRank },
+            {
+              label: 'Companies',
+              value: user.companiesWealth,
+              range: ranges.companiesWealth,
+              rank: user.companiesWealthRank,
+            },
             { label: 'Items', value: user.itemsWealth, range: ranges.itemsWealth, rank: user.itemsWealthRank },
             { label: 'Cash', value: user.cashWealth, range: ranges.cashWealth, rank: user.cashWealthRank },
-            { label: 'Equipment', value: user.equipmentWealth, range: ranges.equipmentWealth, rank: user.equipmentWealthRank },
+            {
+              label: 'Equipment',
+              value: user.equipmentWealth,
+              range: ranges.equipmentWealth,
+              rank: user.equipmentWealthRank,
+            },
             { label: 'Weapons', value: user.weaponsWealth, range: ranges.weaponsWealth, rank: user.weaponsWealthRank },
           ]}
         />
@@ -221,7 +279,7 @@ export default async function UserDetailPage({ params }: PageProps) {
             className="sm:col-span-2"
             totalNet={user.factoryNetPerDay ?? 0}
             autoNet={user.factoryEngineNetPerDay ?? 0}
-            workersNet={user.factoryEmployeeNetPerDay ?? 0}
+            employeesNet={user.factoryEmployeeNetPerDay ?? 0}
             count={user.factoryCount}
           />
         )}
@@ -234,14 +292,39 @@ export default async function UserDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Premium"
           rows={[
-            { label: 'Gems bought', value: user.gemsPurchased, display: <CompactNumber value={user.gemsPurchased} />, range: ranges.gemsPurchased, heat: 'ramp', rank: user.gemsPurchasedRank },
-            { label: 'Months', value: user.premiumMonths, range: ranges.premiumMonths, heat: 'ramp', rank: user.premiumMonthsRank },
-            { label: 'Gifts', value: user.premiumGifts, range: ranges.premiumGifts, heat: 'ramp', rank: user.premiumGiftsRank },
+            {
+              label: 'Gems bought',
+              value: user.gemsPurchased,
+              display: <CompactNumber value={user.gemsPurchased} />,
+              range: ranges.gemsPurchased,
+              heat: 'ramp',
+              rank: user.gemsPurchasedRank,
+            },
+            {
+              label: 'Months',
+              value: user.premiumMonths,
+              range: ranges.premiumMonths,
+              heat: 'ramp',
+              rank: user.premiumMonthsRank,
+            },
+            {
+              label: 'Gifts',
+              value: user.premiumGifts,
+              range: ranges.premiumGifts,
+              heat: 'ramp',
+              rank: user.premiumGiftsRank,
+            },
           ]}
         />
       </StatCardGrid>
 
-      <Suspense fallback={<div className="bg-card text-muted-foreground rounded-md border p-3 text-sm">Loading factories…</div>}>
+      <Suspense
+        fallback={(
+          <div className="bg-card text-muted-foreground rounded-md border p-3 text-sm">
+            Loading factories…
+          </div>
+        )}
+      >
         <FactoriesSection userId={user.id} />
       </Suspense>
     </main>

@@ -1,4 +1,16 @@
-import type { Alliance, Battle, Country, GameConfig, Government, ItemBestRegion, MarketPrices, MU, Party, Region, SnapshotMeta, TournamentSnapshot } from '@/lib/warera/api'
+import type {
+  Alliance,
+  Battle,
+  Country,
+  GameConfig,
+  Government,
+  MarketPrices,
+  MU,
+  Party,
+  Region,
+  SnapshotMeta,
+  TournamentSnapshot,
+} from '@/lib/warera/api'
 
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
@@ -36,12 +48,10 @@ export interface RawSnapshot {
   // The game's static config (item stats, skill cost curves, …), captured every
   // scrape. The gear-score roll bounds and skill cost curve are derived from it.
   gameConfig: GameConfig
-  // Market context for the factory profit model, captured each cycle (~2 extra
-  // requests): current item prices, and the best-region bonus per item (the
-  // "production frontier"). Kept here so the row builders can value factories at
-  // build time without any network. Empty on a legacy/cold snapshot.
+  // Market context for the factory profit model, captured each cycle (one extra
+  // request): current item prices. Kept here so the row builders can value
+  // factories at build time without any network. Empty on a legacy/cold snapshot.
   prices: MarketPrices
-  itemBestRegions: Record<string, ItemBestRegion>
   meta: SnapshotMeta
 }
 
@@ -105,7 +115,6 @@ export function emptyRawSnapshot(): RawSnapshot {
     // scrape replaces this with the real config.
     gameConfig: {} as GameConfig,
     prices: {} as MarketPrices,
-    itemBestRegions: {},
     meta: {},
   }
 }
@@ -137,7 +146,6 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   parsed.governments ??= {}
   parsed.alliances ??= []
   parsed.prices ??= {} as RawSnapshot['prices']
-  parsed.itemBestRegions ??= {}
 
   // Legacy snapshots embedded users (now in users.ndjson) and equipment (now in
   // equipment.ndjson). Drop the dead keys so a pre-migration file doesn't pin
@@ -146,8 +154,15 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   // has run in each environment this is dead and can be removed.
   delete (parsed as { users?: unknown }).users
   delete (parsed as { equipment?: unknown }).equipment
+  // Per-item best regions went away with the game's regional production bonuses.
+  delete (parsed as { itemBestRegions?: unknown }).itemBestRegions
 
-  log.info({ path, sizeMb: Number((raw.length / 1_000_000).toFixed(1)), countries: parsed.countries?.length ?? 0, readMs }, 'read snapshot')
+  log.info({
+    path,
+    sizeMb: Number((raw.length / 1_000_000).toFixed(1)),
+    countries: parsed.countries?.length ?? 0,
+    readMs,
+  }, 'read snapshot')
   return parsed
 }
 
@@ -169,7 +184,6 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
   yield `,"tournament":${JSON.stringify(snapshot.tournament)}`
   yield `,"gameConfig":${JSON.stringify(snapshot.gameConfig)}`
   yield `,"prices":${JSON.stringify(snapshot.prices)}`
-  yield `,"itemBestRegions":${JSON.stringify(snapshot.itemBestRegions)}`
   yield `,"meta":${JSON.stringify(snapshot.meta)}`
   yield '}'
 }

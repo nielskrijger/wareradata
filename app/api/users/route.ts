@@ -3,7 +3,13 @@ import type { UserRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
-import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, FACTORY_FIELD_ALIASES, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
+import {
+  CASE_FIELD_ALIASES,
+  CASE_SORT_KEYS,
+  FACTORY_FIELD_ALIASES,
+  WEALTH_FIELD_ALIASES,
+  WEALTH_PART_KEYS,
+} from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
 /**

@@ -11,8 +11,24 @@ import { UserNameCell } from '@/components/cells/user-name-cell'
 import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { CountryHoverCard } from '@/components/country-hover-card'
 import { buildColumns } from '@/components/data-table/column-categories'
-import { combatModeColumn, compactNumberColumn, dateColumn, gearColumn, localeNumberColumn, percentBarColumn, rankTooltipColumn, readinessColumn, tierColumn } from '@/components/data-table/column-factories'
-import { casesColumns, factoriesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
+import {
+  combatModeColumn,
+  compactNumberColumn,
+  dateColumn,
+  gearColumn,
+  localeNumberColumn,
+  percentBarColumn,
+  rankTooltipColumn,
+  readinessColumn,
+  tierColumn,
+} from '@/components/data-table/column-factories'
+import {
+  casesColumns,
+  factoriesColumns,
+  pointsColumns,
+  premiumColumns,
+  wealthColumns,
+} from '@/components/data-table/column-groups'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
@@ -112,7 +128,12 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
         cell: ({ row }) =>
           row.original.development !== null ? row.original.development.toFixed(1) : null,
         sortDescFirst: true,
-        meta: { heat: 'median', align: 'right', width: 150, tooltip: 'Combined development of the regions the members currently hold; drives the tier.' },
+        meta: {
+          heat: 'median',
+          align: 'right',
+          width: 150,
+          tooltip: 'Combined development of the regions the members currently hold; drives the tier.',
+        },
       },
       {
         accessorKey: 'coreDevelopment',
@@ -120,7 +141,12 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
         cell: ({ row }) =>
           row.original.coreDevelopment !== null ? row.original.coreDevelopment.toFixed(1) : null,
         sortDescFirst: true,
-        meta: { heat: 'median', align: 'right', width: 115, tooltip: 'Combined development of the members’ core (original) regions.' },
+        meta: {
+          heat: 'median',
+          align: 'right',
+          width: 115,
+          tooltip: 'Combined development of the members’ core (original) regions.',
+        },
       },
       {
         accessorKey: 'averageDevelopment',
@@ -133,9 +159,15 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
       tierColumn<AllianceRow>('developmentTier'),
     ],
     combat: [
-      gearColumn<AllianceRow>('avgGearScore', 'Avg Gear', { width: 120, tooltip: 'Average gear score across citizens. Higher means better-equipped fighters.' }),
+      gearColumn<AllianceRow>('avgGearScore', 'Avg Gear', {
+        width: 120,
+        tooltip: 'Average gear score across citizens. Higher means better-equipped fighters.',
+      }),
       percentBarColumn<AllianceRow>('avgHealth', 'Avg Health', { tooltip: 'Average health across citizens.' }),
-      percentBarColumn<AllianceRow>('avgHunger', 'Avg Hunger', { width: 140, tooltip: 'Average hunger across citizens.' }),
+      percentBarColumn<AllianceRow>('avgHunger', 'Avg Hunger', {
+        width: 140,
+        tooltip: 'Average hunger across citizens.',
+      }),
       readinessColumn<AllianceRow>(),
       combatModeColumn<AllianceRow>(),
       tierColumn<AllianceRow>('damageTier'),

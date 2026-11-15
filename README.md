@@ -28,7 +28,8 @@ shadcn / Base UI primitives, TanStack Table, and the
 Prereqs:
 
 - Node 22
-- A `WARERA_API_KEY` (issued by the game; raises the request-rate tier)
+- A `WARERA_API_KEY` (issued by the game; raises the request-rate tier to
+  500/min and is required for factory data, since the employee rosters need it)
 
 ```bash
 cp .env.example .env.local
@@ -44,10 +45,10 @@ server, use `npm run scrape-main`.
 
 ### Environment
 
-| Var              | Default   | Purpose                                     |
-| ---------------- | --------- | ------------------------------------------- |
-| `WARERA_API_KEY` | (none)    | API key; raises the request-rate tier.      |
-| `DATA_DIR`       | `./.data` | Where the snapshot and battle archive live. |
+| Var              | Default   | Purpose                                                 |
+| ---------------- | --------- | ------------------------------------------------------- |
+| `WARERA_API_KEY` | (none)    | API key; raises the rate tier, needed for factory data. |
+| `DATA_DIR`       | `./.data` | Where the snapshot and battle archive live.             |
 
 ## The scraper
 
@@ -83,7 +84,7 @@ phases, then publishes and immediately starts the next:
    dropped.
 2. **User IDs per country**: paginate `user.getUsersByCountry`, bounded
    concurrency 10.
-3. **Hydrate users**: `user.getUserLite` per id (~15k users), streamed to a
+3. **Hydrate users**: `user.getUserById` per id (~15k users), streamed to a
    separate `users.ndjson` file rather than the snapshot.
    3b. **Equipment**: currently-equipped gear, one call per user (batched),
    streamed to a separate `equipment.ndjson` file rather than the snapshot. Many come

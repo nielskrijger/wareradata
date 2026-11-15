@@ -5,8 +5,8 @@ import { recordBattleHistory } from '@/lib/cache/archive'
 import { appendEquipmentLines } from '@/lib/cache/equipment-store'
 import { readRawSnapshot, writeRawSnapshot } from '@/lib/cache/file-store'
 import { buildSnapshotFromRaw, swapSnapshot } from '@/lib/cache/memory'
-import { loadFactoryScrapeInputs } from '@/lib/cache/users-store'
-import { buildTheoreticalModel } from '@/lib/factories/theoretical'
+import { loadFactoryOwnerIds } from '@/lib/cache/users-store'
+import { buildEngineModel } from '@/lib/factories/engine'
 import { logger, logMemory, logRetainedMemory } from '@/lib/log'
 import { getEquipmentUrgent, getGameConfig, getMuMembers, getUsersUrgent } from '@/lib/warera/api'
 import { scrapeFactories } from '@/lib/warera/scrape-factories'
@@ -104,7 +104,7 @@ async function mainScrapeLoop(): Promise<void> {
 async function factoryScrapeLoop(): Promise<void> {
   for (;;) {
     try {
-      const { ownerIds, skillByUser } = await loadFactoryScrapeInputs()
+      const ownerIds = await loadFactoryOwnerIds()
       if (!ownerIds.length) {
         await new Promise(resolve => setTimeout(resolve, 60_000))
         continue
@@ -112,8 +112,8 @@ async function factoryScrapeLoop(): Promise<void> {
 
       logMemory(factoryLog, 'factory-pass start')
       factoryLog.info('all-users pass starting')
-      const model = buildTheoreticalModel(await getGameConfig())
-      const count = await scrapeFactories(ownerIds, skillByUser, model)
+      const model = buildEngineModel(await getGameConfig())
+      const count = await scrapeFactories(ownerIds, model)
       factoryLog.info({ withFactories: count }, 'all-users pass done')
       logRetainedMemory(factoryLog, 'factory-pass end')
     } catch (err) {

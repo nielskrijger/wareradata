@@ -34,7 +34,12 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, caption, cl
   ].sort((a, b) => b.value - a.value)
 
   return (
-    <section className={cn('bg-card grid grid-cols-1 gap-6 rounded-md border p-3 sm:grid-cols-[auto_1fr] sm:items-center', className)}>
+    <section
+      className={cn(
+        'bg-card grid grid-cols-1 gap-6 rounded-md border p-3 sm:grid-cols-[auto_1fr] sm:items-center',
+        className,
+      )}
+    >
       <div className="sm:border-r sm:pr-6">
         <div className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
           <Trophy className="size-3.5" />

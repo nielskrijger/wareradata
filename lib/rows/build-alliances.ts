@@ -3,9 +3,25 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance } from '@/lib/warera/api'
 
 import { leaderFields, rankAll, rankPair, toTier } from '@/lib/rows/lookups'
-import { aggCases, aggFactories, aggPoints, aggPremium, aggregateMembers, aggVitals, FACTORY_RANK_KEYS, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
+import {
+  aggCases,
+  aggFactories,
+  aggPoints,
+  aggPremium,
+  aggregateMembers,
+  aggVitals,
+  FACTORY_RANK_KEYS,
+  POINTS_RANK_KEYS,
+  PREMIUM_KEYS,
+  WEALTH_PART_KEYS,
+} from '@/lib/rows/member-agg'
 
-export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow[], userRows: UserRow[], lookups: Lookups): AllianceRow[] {
+export function buildAllianceRows(
+  alliances: Alliance[],
+  countryRows: CountryRow[],
+  userRows: UserRow[],
+  lookups: Lookups,
+): AllianceRow[] {
   const countryRowById = new Map(countryRows.map(c => [c.id, c]))
 
   // Aggregate the member countries' citizens per alliance for the points
@@ -26,7 +42,15 @@ export function buildAllianceRows(alliances: Alliance[], countryRows: CountryRow
       // Citizen wealth is the sum of the member countries' citizen-summed
       // figures. Countries partition users, so summing the already-aggregated
       // country rows equals aggregating the alliance's citizens directly.
-      const wealth = { citizenWealth: 0, companiesWealth: 0, stockpileWealth: 0, itemsWealth: 0, cashWealth: 0, equipmentWealth: 0, weaponsWealth: 0 }
+      const wealth = {
+        citizenWealth: 0,
+        companiesWealth: 0,
+        stockpileWealth: 0,
+        itemsWealth: 0,
+        cashWealth: 0,
+        equipmentWealth: 0,
+        weaponsWealth: 0,
+      }
       for (const m of a.memberCountries) {
         const c = countryRowById.get(m.country)
         if (!c) {

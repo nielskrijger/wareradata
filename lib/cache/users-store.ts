@@ -1,4 +1,3 @@
-import type { WorkerSkill } from '@/lib/factories/theoretical'
 import type { User } from '@/lib/warera/api'
 
 import path from 'node:path'
@@ -37,26 +36,17 @@ export function writeUsersNdjson(users: User[]): Promise<void> {
 }
 
 /**
- * Streams the user file once and returns the two inputs the factory scrape needs:
- * the ids of users who own company wealth (the only users it enumerates, skipping
- * the ~98% with none), and a production/energy skills map for EVERY user so any
- * hired worker's theoretical output can be resolved — workers are frequently not
- * themselves company owners. Streams rather than loading the array so the slow
- * pass and its CLI don't pull the whole user set into memory just to filter it.
+ * Streams the user file once and returns the ids of users who own company wealth:
+ * the only users the factory scrape enumerates, skipping the ~98% with none.
+ * Streams rather than loading the array so the slow pass and its CLI don't pull
+ * the whole user set into memory just to filter it.
  */
-export async function loadFactoryScrapeInputs(): Promise<{ ownerIds: string[], skillByUser: Map<string, WorkerSkill> }> {
+export async function loadFactoryOwnerIds(): Promise<string[]> {
   const ownerIds: string[] = []
-  const skillByUser = new Map<string, WorkerSkill>()
   await streamUsers((u) => {
     if ((u.stats?.wealth?.companies ?? 0) > 0) {
       ownerIds.push(u._id)
     }
-
-    const production = u.skills?.production?.value
-    const energy = u.skills?.energy?.value
-    if (typeof production === 'number' && typeof energy === 'number') {
-      skillByUser.set(u._id, { production, energy })
-    }
   })
-  return { ownerIds, skillByUser }
+  return ownerIds
 }

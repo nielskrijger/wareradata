@@ -8,7 +8,7 @@ import { PartyCell } from '@/components/cells/party-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { buildColumns } from '@/components/data-table/column-categories'
-import { countryColumn, dateColumn, localeNumberColumn, scaleBadgeColumn } from '@/components/data-table/column-factories'
+import { countryColumn, dateColumn, localeNumberColumn } from '@/components/data-table/column-factories'
 import { casesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
 import { UserHoverCard } from '@/components/user-hover-card'
 
@@ -59,12 +59,6 @@ export const partyColumns: ColumnDef<PartyRow>[] = buildColumns<PartyRow>(
         meta: { width: 220 },
       },
       dateColumn<PartyRow>('createdAt', 'Founded'),
-    ],
-    ethics: [
-      scaleBadgeColumn<PartyRow>('militarism', 'Militarism', { width: 125 }),
-      scaleBadgeColumn<PartyRow>('isolationism', 'Isolationism', { width: 140 }),
-      scaleBadgeColumn<PartyRow>('imperialism', 'Imperialism', { width: 140 }),
-      scaleBadgeColumn<PartyRow>('industrialism', 'Industrialism', { width: 145 }),
     ],
     wealth: wealthColumns<PartyRow>('memberWealth', 'members'),
     premium: premiumColumns<PartyRow>(),

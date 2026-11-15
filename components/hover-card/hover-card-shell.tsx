@@ -25,7 +25,14 @@ interface Props {
  * a bare passthrough when disabled. Pairs with {@link useEntityHover}, which
  * supplies `onOpenChange` and the status that picks the `content`.
  */
-export function HoverCardShell({ enabled, triggerClassName, contentClassName, onOpenChange, children, content }: Props) {
+export function HoverCardShell({
+  enabled,
+  triggerClassName,
+  contentClassName,
+  onOpenChange,
+  children,
+  content,
+}: Props) {
   if (!enabled) {
     return <>{children}</>
   }

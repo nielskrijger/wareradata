@@ -29,7 +29,17 @@ export const CASE_FIELD_ALIASES: FieldAliases = {
  * Cases sort/filter passthrough keys shared by every table: luck, the two
  * case-type opens, and the six per-rarity counts.
  */
-export const CASE_SORT_KEYS = ['caseLuck', 'standardCasesOpened', 'mythicCasesOpened', 'casesCommon', 'casesUncommon', 'casesRare', 'casesEpic', 'casesLegendary', 'casesMythic'] as const
+export const CASE_SORT_KEYS = [
+  'caseLuck',
+  'standardCasesOpened',
+  'mythicCasesOpened',
+  'casesCommon',
+  'casesUncommon',
+  'casesRare',
+  'casesEpic',
+  'casesLegendary',
+  'casesMythic',
+] as const
 
 /**
  * Wealth-component filter aliases shared by every table.
@@ -68,7 +78,9 @@ export const FACTORY_FIELD_ALIASES: FieldAliases = {
   factoryNet: 'factoryNetPerDay',
   auto: 'factoryEngineNetPerDay',
   workersNet: 'factoryEmployeeNetPerDay',
+  employeesNet: 'factoryEmployeeNetPerDay',
   workers: 'factoryWorkers',
+  employees: 'factoryWorkers',
   efficiency: 'factoryEfficiencyPct',
 }
 

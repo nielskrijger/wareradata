@@ -43,7 +43,9 @@ function pointsForLevel(level: number | undefined, costs: readonly number[]): nu
  * if the devs retune skill costs.
  */
 export function deriveSkillPointCost(config: GameConfig): readonly number[] {
-  const levels = (config.skills as unknown as { attack?: { levels?: Record<string, { totalCost?: number }> } } | undefined)?.attack?.levels
+  const levels = (config.skills as unknown as { attack?: {
+    levels?: Record<string, { totalCost?: number }>
+  } } | undefined)?.attack?.levels
   const costs: number[] = []
   for (let level = 0; level <= 10; level++) {
     const cost = levels?.[String(level)]?.totalCost

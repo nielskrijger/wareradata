@@ -46,8 +46,7 @@ function rarityRing(t: number, surface: Surface): string {
 // Icon URL for an equipped item. The filename comes from the live config's
 // `iconImg` (armor tiers share one icon per slot, e.g. helmet1..6 →
 // helmet.webp). Without a config entry we fall back to the slot (armor) or code
-// (weapons, ammo) with .webp, WarEra's current icon format. Skin overrides are
-// intentionally not applied here.
+// (weapons, ammo) with .webp. Skin overrides are not applied here.
 function iconUrl(slot: Slot, code: string, lookup: GearLookup): string {
   const isArmor = slot === 'helmet' || slot === 'chest' || slot === 'pants' || slot === 'gloves' || slot === 'boots'
   const filename = lookup.iconByCode?.[code] ?? `${isArmor ? slot : code}.webp`
@@ -148,8 +147,8 @@ interface Props {
  * gloves · pants · shoes. Empty slots render a dimmed silhouette so the
  * footprint stays stable regardless of what's equipped.
  *
- * Item icons come from `app.warera.io/images/items/<iconImg>` (the
- * config's icon filename, .webp since WarEra's icon change); skin
+ * Item icons come from `app.warera.io/images/items/<iconImg>`, the
+ * config's icon filename; skin
  * overrides from `equippedSkinKeys` are not applied here.
  */
 export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }: Props) {

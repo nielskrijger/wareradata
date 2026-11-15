@@ -34,8 +34,7 @@ export interface GearLookup {
   tierByCode: Record<string, number>
   ammoBonusByCode: Record<string, number>
   // Icon filename per item code (e.g. `helmet.webp`), from the config's
-  // `iconImg`. WarEra switched its item icons from .png to .webp, so the
-  // filename comes from the config instead of being hardcoded.
+  // `iconImg`.
   iconByCode: Record<string, string>
 }
 

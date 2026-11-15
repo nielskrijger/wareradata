@@ -8,7 +8,7 @@ import { buildSnapshotFromRaw, swapSnapshot } from '@/lib/cache/memory'
 import { loadFactoryOwnerIds } from '@/lib/cache/users-store'
 import { buildEngineModel } from '@/lib/factories/engine'
 import { logger, logMemory, logRetainedMemory } from '@/lib/log'
-import { getEquipmentUrgent, getGameConfig, getMuMembers, getUsersUrgent } from '@/lib/warera/api'
+import { getEquipmentUrgent, getGameConfig, getMuMembers, getUsersUrgent, takeRetryStats } from '@/lib/warera/api'
 import { scrapeFactories } from '@/lib/warera/scrape-factories'
 import { scrapeMain } from '@/lib/warera/scrape-main'
 
@@ -114,7 +114,7 @@ async function factoryScrapeLoop(): Promise<void> {
       factoryLog.info('all-users pass starting')
       const model = buildEngineModel(await getGameConfig())
       const count = await scrapeFactories(ownerIds, model)
-      factoryLog.info({ withFactories: count }, 'all-users pass done')
+      factoryLog.info({ withFactories: count, ...takeRetryStats('factory') }, 'all-users pass done')
       logRetainedMemory(factoryLog, 'factory-pass end')
     } catch (err) {
       factoryLog.error({ err }, 'pass failed')
@@ -197,16 +197,20 @@ async function refreshUsersInSnapshot(
     return
   }
 
-  const [fresh, freshEquipment] = await Promise.all([
+  const [freshRaw, equipmentRaw] = await Promise.all([
     getUsersUrgent(userIds),
     getEquipmentUrgent(userIds),
   ])
+  const fresh = freshRaw.filter(u => u !== null)
+  const equipmentIds = userIds.filter((_, i) => equipmentRaw[i] !== null)
+  const freshEquipment = equipmentRaw.filter(e => e !== null)
 
   // Append the fresh gear to the equipment file. The reader takes the last
   // line per user, so this overrides the scrape's line until the next main cycle
   // rewrites the file; the rebuild below streams it back for gear scoring and
-  // the user page / hover-card lookups.
-  await appendEquipmentLines(userIds, freshEquipment)
+  // the user page / hover-card lookups. Users whose fetch failed keep what the
+  // snapshot already has.
+  await appendEquipmentLines(equipmentIds, freshEquipment)
 
   // Stash the fresh profiles in the overlay (keyed by id) so the rebuild below
   // streams users.ndjson with these merged on top — no rewrite of the 84 MB file

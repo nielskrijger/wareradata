@@ -184,20 +184,50 @@ const SCRAPE_RATE_LIMIT = 150
 const URGENT_RATE_LIMIT = 100
 export const FACTORY_RATE_LIMIT = 250
 
-const scrapeClient = createAPIClient({
-  apiKey: process.env.WARERA_API_KEY,
-  rateLimit: SCRAPE_RATE_LIMIT,
-})
+/**
+ * Retries per client since the last {@link takeRetryStats} call: every retried
+ * HTTP request, and how many of those the server answered with 429. The loops
+ * log these at the end of each cycle or pass, so throttling shows up in the logs.
+ */
+type ClientName = 'scrape' | 'urgent' | 'factory'
+interface RetryStats { retries: number, rateLimited: number }
+const retryStats: Record<ClientName, RetryStats> = {
+  scrape: { retries: 0, rateLimited: 0 },
+  urgent: { retries: 0, rateLimited: 0 },
+  factory: { retries: 0, rateLimited: 0 },
+}
 
-const urgentClient = createAPIClient({
-  apiKey: process.env.WARERA_API_KEY,
-  rateLimit: URGENT_RATE_LIMIT,
-})
+/**
+ * Returns one client's retry counts and resets them to zero.
+ */
+export function takeRetryStats(name: ClientName): RetryStats {
+  const stats = retryStats[name]
+  retryStats[name] = { retries: 0, rateLimited: 0 }
+  return stats
+}
 
-const factoryClient = createAPIClient({
-  apiKey: process.env.WARERA_API_KEY,
-  rateLimit: FACTORY_RATE_LIMIT,
-})
+// A request whose response headers take longer than this is aborted and retried.
+const REQUEST_TIMEOUT_MS = 60_000
+
+function createClient(name: ClientName, rateLimit: number) {
+  return createAPIClient({
+    apiKey: process.env.WARERA_API_KEY,
+    rateLimit,
+    timeoutMs: REQUEST_TIMEOUT_MS,
+    retry: {
+      onRetry: ({ status }) => {
+        retryStats[name].retries++
+        if (status === 429) {
+          retryStats[name].rateLimited++
+        }
+      },
+    },
+  })
+}
+
+const scrapeClient = createClient('scrape', SCRAPE_RATE_LIMIT)
+const urgentClient = createClient('urgent', URGENT_RATE_LIMIT)
+const factoryClient = createClient('factory', FACTORY_RATE_LIMIT)
 
 type Client = typeof scrapeClient
 
@@ -239,9 +269,13 @@ export function getGameConfig(): Promise<GameConfig> {
   return scrapeClient.gameConfig.getGameConfig()
 }
 
+// The endpoint's maximum page size; its default is 10.
+const USERS_BY_COUNTRY_PAGE_SIZE = 100
+
 export async function getUserIdsForCountry(countryId: string): Promise<string[]> {
   const ids: string[] = []
-  for await (const page of scrapeClient.user.getUsersByCountry({ countryId, autoPaginate: true })) {
+  const input = { countryId, limit: USERS_BY_COUNTRY_PAGE_SIZE, autoPaginate: true as const }
+  for await (const page of scrapeClient.user.getUsersByCountry(input)) {
     for (const item of page.items) {
       ids.push(item._id)
     }
@@ -249,28 +283,33 @@ export async function getUserIdsForCountry(countryId: string): Promise<string[]>
   return ids
 }
 
-async function hydrateUsers(client: Client, userIds: string[]): Promise<User[]> {
-  // getUserById returns a superset of the lite endpoint (verified field-by-field:
-  // same rankings/skills/infos/dates, plus richer stats such as the per-rarity
-  // case breakdown). Storage is no longer capped, so we capture the whole payload
-  // and project what we need on read. The response shape is looser than User
-  // (partial rankings, opaque skills), but every field we read is present at
-  // runtime, so we narrow it here.
-  const users = await Promise.all(userIds.map(userId => client.user.getUserById({ userId })))
-  return users as unknown as User[]
+/**
+ * Fetches each user's full profile, in input order. A call that still fails after
+ * the client's retries yields null for that user instead of failing the rest, so
+ * one bad batch doesn't throw away thousands of good results.
+ *
+ * getUserById returns a superset of the lite endpoint (same rankings, skills,
+ * infos and dates, plus richer stats such as the per-rarity case breakdown). Its
+ * response type is looser than User (partial rankings, opaque skills), but every
+ * field we read is present at runtime, so we narrow it here.
+ */
+function hydrateUsers(client: Client, userIds: string[]): Promise<(User | null)[]> {
+  return Promise.all(userIds.map(userId =>
+    (client.user.getUserById({ userId }) as Promise<unknown> as Promise<User>).catch(() => null),
+  ))
 }
 
 /**
  * Hydrates users via the scrape client, for the main-scrape user phase.
  */
-export function getUsers(userIds: string[]): Promise<User[]> {
+export function getUsers(userIds: string[]): Promise<(User | null)[]> {
   return hydrateUsers(scrapeClient, userIds)
 }
 
 /**
  * Hydrates users via the urgent client, for on-demand piecemeal refreshes.
  */
-export function getUsersUrgent(userIds: string[]): Promise<User[]> {
+export function getUsersUrgent(userIds: string[]): Promise<(User | null)[]> {
   return hydrateUsers(urgentClient, userIds)
 }
 
@@ -384,27 +423,28 @@ export async function getUserCasesByType(userId: string): Promise<CasesByType | 
   }
 }
 
-function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<Equipment[]> {
-  return Promise.all(userIds.map(userId => client.inventory.fetchCurrentEquipment({ userId })))
+function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<(Equipment | null)[]> {
+  return Promise.all(userIds.map(userId => client.inventory.fetchCurrentEquipment({ userId }).catch(() => null)))
 }
 
 /**
- * Fetches each user's currently-equipped gear. Same per-user fan-out shape as
- * {@link getUsers} — one HTTP call per id, batched by the tRPC client up to
- * 50 ops per request and paced by the rate limiter.
+ * Fetches each user's currently-equipped gear, in input order. Same per-user
+ * fan-out shape as {@link getUsers}: one call per id, batched by the tRPC client
+ * up to 50 calls per request and paced by the rate limiter. A call that still
+ * fails after retries yields null for that user.
  *
  * Equipment is the most volatile field on a user (durability ticks down per
  * hit, items get swapped between battles), so the per-cycle freshness is only
  * a rough snapshot of what someone happened to be wearing at scrape time.
  */
-export function getEquipment(userIds: string[]): Promise<Equipment[]> {
+export function getEquipment(userIds: string[]): Promise<(Equipment | null)[]> {
   return fetchEquipmentBatch(scrapeClient, userIds)
 }
 
 /**
  * Urgent variant for piecemeal on-demand refreshes (mirrors getUsersUrgent).
  */
-export function getEquipmentUrgent(userIds: string[]): Promise<Equipment[]> {
+export function getEquipmentUrgent(userIds: string[]): Promise<(Equipment | null)[]> {
   return fetchEquipmentBatch(urgentClient, userIds)
 }
 

@@ -10,10 +10,12 @@ import { FACTORY_RATE_LIMIT, getUserCompaniesSlow } from './api'
 
 const log = logger.child({ component: 'factory-scrape' })
 
-// Users hydrated concurrently. The factory client's rate limit is the real
-// throttle; concurrency just keeps the request pipe full behind it. Kept low so
-// the in-flight payloads stay small on a memory-tight box.
-const CONCURRENCY = 6
+// Owners fetched together. Their getCompanies calls go out in one tick, and so
+// do the hydration calls that follow, so the tRPC client packs a chunk into a
+// handful of batched requests (measured: 40 owners in 4 requests). The factory
+// client's rate limit is the real throttle. Kept at one batch's worth so the
+// in-flight payloads stay small on a memory-tight box.
+const CHUNK_SIZE = 50
 
 // How often to emit a progress line (every N users scanned). A full pass is
 // thousands of users over hours, so log frequently enough to see it advancing.
@@ -45,46 +47,46 @@ export async function scrapeFactories(
 
   let withFactories = 0
   let done = 0
-  let cursor = 0
 
   // writeFileAtomic streams to a temp file and renames over factories.ndjson once
-  // every worker drains, so a crashed/partial pass leaves the previous file
+  // every chunk is written, so a crashed/partial pass leaves the previous file
   // intact and nothing is accumulated in memory.
   await writeFileAtomic(factoriesNdjsonPath(), async (write) => {
-    async function worker(): Promise<void> {
-      while (cursor < ids.length) {
-        const userId = ids[cursor++]
-        try {
-          const factories = await getUserCompaniesSlow(userId)
-          if (factories.length) {
-            const rows = factories.map<FactoryRawRow>((f) => {
-              const input = factoryInputFromData(f, () => '', model)
-              return {
-                itemCode: input.itemCode,
-                regionId: f.company.region,
-                enginePoints: input.enginePointsPerDay,
-                employeePoints: input.employeePointsPerDay,
-                wagePerDay: input.wagePerDay,
-                managerPerDay: input.managerPerDay,
-                employeeCount: input.employeeCount,
-                employeeCap: input.employeeCap,
-              }
-            })
-            await write(`${JSON.stringify({ userId, rows })}\n`)
-            withFactories++
-          }
-        } catch (err) {
-          log.warn({ userId, err }, 'user failed')
-        }
+    for (let start = 0; start < ids.length; start += CHUNK_SIZE) {
+      const chunk = ids.slice(start, start + CHUNK_SIZE)
+      const results = await Promise.all(chunk.map(userId => getUserCompaniesSlow(userId).catch((err) => {
+        log.warn({ userId, err }, 'user failed')
+        return []
+      })))
 
-        done++
-        if (done % PROGRESS_EVERY === 0) {
-          log.info({ scanned: done, total: ids.length, withFactories, ...memoryUsage() }, 'progress')
+      for (let i = 0; i < chunk.length; i++) {
+        const factories = results[i]
+        if (!factories.length) {
+          continue
         }
+        const rows = factories.map<FactoryRawRow>((f) => {
+          const input = factoryInputFromData(f, () => '', model)
+          return {
+            itemCode: input.itemCode,
+            regionId: f.company.region,
+            enginePoints: input.enginePointsPerDay,
+            employeePoints: input.employeePointsPerDay,
+            wagePerDay: input.wagePerDay,
+            managerPerDay: input.managerPerDay,
+            employeeCount: input.employeeCount,
+            employeeCap: input.employeeCap,
+          }
+        })
+        await write(`${JSON.stringify({ userId: chunk[i], rows })}\n`)
+        withFactories++
+      }
+
+      const before = done
+      done += chunk.length
+      if (Math.floor(done / PROGRESS_EVERY) > Math.floor(before / PROGRESS_EVERY)) {
+        log.info({ scanned: done, total: ids.length, withFactories, ...memoryUsage() }, 'progress')
       }
     }
-
-    await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()))
   })
 
   return withFactories

@@ -1,9 +1,9 @@
-import type { Government, SnapshotMeta, StrategicBonuses } from './api'
+import type { Equipment, Government, SnapshotMeta, StrategicBonuses, User } from './api'
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
-import { writeEquipmentNdjson } from '@/lib/cache/equipment-store'
+import { loadEquipmentByIds, writeEquipmentNdjson } from '@/lib/cache/equipment-store'
 import { writeRawSnapshot } from '@/lib/cache/file-store'
-import { writeUsersNdjson } from '@/lib/cache/users-store'
+import { loadUsersByIds, writeUsersNdjson } from '@/lib/cache/users-store'
 
 import { logger } from '@/lib/log'
 
@@ -22,6 +22,7 @@ import {
   getUserIdsForCountry,
   getUsers,
   scrapeItemPrices,
+  takeRetryStats,
 } from './api'
 
 const log = logger.child({ component: 'scrape' })
@@ -136,22 +137,44 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   // Streamed straight to users.ndjson (not held in the RawSnapshot) — the raw
   // user array is the biggest collection (~84 MB), so keeping it off the
   // persisted snapshot and the scraper's resident heap is the main memory win;
-  // the build streams it back into the rows.
+  // the build streams it back into the rows. A user whose fetch failed keeps
+  // their previous line, with its older timestamp.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
-  const users = usersRaw.map(u => ({ ...u, lastRefreshedAt: usersCapturedAt }))
+  const failedUsers = failedIds(userIds, usersRaw)
+  const previousUsers = await loadUsersByIds(failedUsers)
+  const users: User[] = []
+  usersRaw.forEach((u, i) => {
+    const user = u ? { ...u, lastRefreshedAt: usersCapturedAt } : previousUsers.get(userIds[i])
+    if (user) {
+      users.push(user)
+    }
+  })
   await writeUsersNdjson(users)
+  logFailures('users', failedUsers.size, previousUsers.size)
   log.info({ users: users.length }, 'hydrated users')
 
   // 5. Per-user equipment. One HTTP call per user, batched by the tRPC client
   // up to 50 ops. Streamed straight to a separate equipment.ndjson file (not held
   // in the RawSnapshot), keeping ~14 MB out of snapshot.json and off the
-  // scraper's resident heap; the build streams it back for gear scoring. Many
-  // entries come back `{}` (player stripped gear between battles); a line is
-  // written for each so readers can tell "captured, none equipped" from "not
-  // captured".
-  const equipmentList = await getEquipment(userIds)
-  await writeEquipmentNdjson(userIds, equipmentList)
+  // scraper's resident heap; the build streams it back for gear scoring.
+  // Many entries come back `{}` (player stripped gear between battles); a line
+  // is written for each so readers can tell "captured, none equipped" from "not
+  // captured". A failed fetch keeps the user's previous line, or writes none.
+  const equipmentRaw = await getEquipment(userIds)
+  const failedEquipment = failedIds(userIds, equipmentRaw)
+  const previousEquipment = await loadEquipmentByIds(failedEquipment)
+  const equipmentIds: string[] = []
+  const equipmentList: Equipment[] = []
+  equipmentRaw.forEach((e, i) => {
+    const equipment = e ?? previousEquipment.get(userIds[i])
+    if (equipment) {
+      equipmentIds.push(userIds[i])
+      equipmentList.push(equipment)
+    }
+  })
+  await writeEquipmentNdjson(equipmentIds, equipmentList)
+  logFailures('equipment', failedEquipment.size, previousEquipment.size)
   log.info({ users: equipmentList.length }, 'wrote equipment file')
 
   // 6. MUs: single cursor-paginated stream. Stamp each with the capture time so
@@ -200,6 +223,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   log.info({ items: Object.keys(prices).length }, 'fetched prices')
 
   const durationMs = Date.now() - start
+  log.info({ durationMs, ...takeRetryStats('scrape') }, 'scrape client retries this cycle')
   const meta: SnapshotMeta = {
     scrapedAt: new Date().toISOString(),
     entityCounts: {
@@ -227,6 +251,23 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     gameConfig,
     prices,
     meta,
+  }
+}
+
+/**
+ * The ids whose fetch failed (a null result at the same index).
+ */
+function failedIds(ids: string[], results: unknown[]): Set<string> {
+  return new Set(ids.filter((_, i) => results[i] === null))
+}
+
+/**
+ * Logs a phase's failed fetches, if any, and how many of those kept their
+ * previous capture.
+ */
+function logFailures(phase: string, failed: number, keptPrevious: number): void {
+  if (failed) {
+    log.warn({ phase, failed, keptPrevious }, 'fetches failed after retries')
   }
 }
 

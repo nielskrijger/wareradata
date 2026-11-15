@@ -15,6 +15,7 @@ import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
+import { cn } from '@/lib/utils'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -64,7 +65,13 @@ function BattleSideEmblem({ side, won }: { side: BattleSide, won: boolean }) {
     : (
         <Flag
           code={side.code}
-          style={{ width: 96, height: 72, backgroundSize: 'cover', borderRadius: 8, boxShadow: '0 0 0 1px var(--border)' }}
+          style={{
+            width: 96,
+            height: 72,
+            backgroundSize: 'cover',
+            borderRadius: 8,
+            boxShadow: '0 0 0 1px var(--border)',
+          }}
         />
       )
 
@@ -120,11 +127,21 @@ export default async function BattleDetailPage({ params }: PageProps) {
 
       <section className="flex flex-col items-center gap-3">
         <div className="flex items-baseline gap-4 tabular-nums">
-          <span className={`font-brand text-5xl ${b.attackerWonRounds >= b.defenderWonRounds ? 'text-foreground' : 'text-muted-foreground'}`}>
+          <span
+            className={cn(
+              'font-brand text-5xl',
+              b.attackerWonRounds >= b.defenderWonRounds ? 'text-foreground' : 'text-muted-foreground',
+            )}
+          >
             {b.attackerWonRounds}
           </span>
           <span className="text-muted-foreground text-2xl">–</span>
-          <span className={`font-brand text-5xl ${b.defenderWonRounds >= b.attackerWonRounds ? 'text-foreground' : 'text-muted-foreground'}`}>
+          <span
+            className={cn(
+              'font-brand text-5xl',
+              b.defenderWonRounds >= b.attackerWonRounds ? 'text-foreground' : 'text-muted-foreground',
+            )}
+          >
             {b.defenderWonRounds}
           </span>
         </div>

@@ -129,54 +129,163 @@ export default async function MUDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Damage"
           total={total}
-          hero={{ label: 'Total', value: mu.damage, display: <CompactNumber value={mu.damage} />, range: ranges.damage, heat: 'median', rank: mu.damageRank }}
+          hero={{
+            label: 'Total',
+            value: mu.damage,
+            display: <CompactNumber value={mu.damage} />,
+            range: ranges.damage,
+            heat: 'median',
+            rank: mu.damageRank,
+          }}
           rows={[
-            { label: 'Weekly', value: mu.weeklyDamage, display: <CompactNumber value={mu.weeklyDamage} />, range: ranges.weeklyDamage, heat: 'median', rank: mu.weeklyDamageRank },
-            { label: 'Avg gear', value: mu.avgGearScore, range: ranges.avgGearScore, heat: 'median', rank: mu.avgGearScoreRank },
+            {
+              label: 'Weekly',
+              value: mu.weeklyDamage,
+              display: <CompactNumber value={mu.weeklyDamage} />,
+              range: ranges.weeklyDamage,
+              heat: 'median',
+              rank: mu.weeklyDamageRank,
+            },
+            {
+              label: 'Avg gear',
+              value: mu.avgGearScore,
+              range: ranges.avgGearScore,
+              heat: 'median',
+              rank: mu.avgGearScoreRank,
+            },
             { label: 'Terrain', value: mu.terrain, range: ranges.terrain, heat: 'median', rank: mu.terrainRank },
           ]}
         />
         <MultiStatCard
           label="Economy"
           rows={[
-            { label: 'MU Wealth', value: mu.wealth, display: <CompactNumber value={mu.wealth} />, range: ranges.wealth, heat: 'median', rank: mu.wealthRank },
-            { label: 'Member Wealth', value: mu.memberWealth, display: <CompactNumber value={mu.memberWealth} />, range: ranges.memberWealth, heat: 'median', rank: mu.memberWealthRank },
-            { label: 'Bounty', value: mu.bounty, display: <CompactNumber value={mu.bounty} />, range: ranges.bounty, heat: 'median', rank: mu.bountyRank },
-            { label: 'Invested', value: mu.investedMoney, display: <CompactNumber value={mu.investedMoney} />, range: ranges.investedMoney, heat: 'ramp', rank: mu.investedMoneyRank },
+            {
+              label: 'MU Wealth',
+              value: mu.wealth,
+              display: <CompactNumber value={mu.wealth} />,
+              range: ranges.wealth,
+              heat: 'median',
+              rank: mu.wealthRank,
+            },
+            {
+              label: 'Member Wealth',
+              value: mu.memberWealth,
+              display: <CompactNumber value={mu.memberWealth} />,
+              range: ranges.memberWealth,
+              heat: 'median',
+              rank: mu.memberWealthRank,
+            },
+            {
+              label: 'Bounty',
+              value: mu.bounty,
+              display: <CompactNumber value={mu.bounty} />,
+              range: ranges.bounty,
+              heat: 'median',
+              rank: mu.bountyRank,
+            },
+            {
+              label: 'Invested',
+              value: mu.investedMoney,
+              display: <CompactNumber value={mu.investedMoney} />,
+              range: ranges.investedMoney,
+              heat: 'ramp',
+              rank: mu.investedMoneyRank,
+            },
           ]}
         />
         <WealthCompositionCard
           perCapita={{ count: mu.memberCount, unit: 'member' }}
           parts={[
-            { label: 'Companies', value: mu.companiesWealth, range: ranges.companiesWealth, rank: mu.companiesWealthRank },
+            {
+              label: 'Companies',
+              value: mu.companiesWealth,
+              range: ranges.companiesWealth,
+              rank: mu.companiesWealthRank,
+            },
             { label: 'Items', value: mu.itemsWealth, range: ranges.itemsWealth, rank: mu.itemsWealthRank },
             { label: 'Cash', value: mu.cashWealth, range: ranges.cashWealth, rank: mu.cashWealthRank },
-            { label: 'Equipment', value: mu.equipmentWealth, range: ranges.equipmentWealth, rank: mu.equipmentWealthRank },
+            {
+              label: 'Equipment',
+              value: mu.equipmentWealth,
+              range: ranges.equipmentWealth,
+              rank: mu.equipmentWealthRank,
+            },
             { label: 'Weapons', value: mu.weaponsWealth, range: ranges.weaponsWealth, rank: mu.weaponsWealthRank },
           ]}
         />
         <MultiStatCard
           label="Society"
           rows={[
-            { label: 'Members', value: mu.memberCount, range: ranges.memberCount, heat: 'ramp', rank: mu.memberCountRank },
+            {
+              label: 'Members',
+              value: mu.memberCount,
+              range: ranges.memberCount,
+              heat: 'ramp',
+              rank: mu.memberCountRank,
+            },
             { label: 'Avg level', value: mu.avgLevel, range: ranges.avgLevel, heat: 'median', rank: mu.avgLevelRank },
-            { label: 'Avg points', value: mu.avgPoints, range: ranges.avgPoints, heat: 'median', rank: mu.avgPointsRank },
-            { label: 'Reputation', value: mu.reputation, range: ranges.reputation, heat: 'median', center: 0, rank: mu.reputationRank },
+            {
+              label: 'Avg points',
+              value: mu.avgPoints,
+              range: ranges.avgPoints,
+              heat: 'median',
+              rank: mu.avgPointsRank,
+            },
+            {
+              label: 'Reputation',
+              value: mu.reputation,
+              range: ranges.reputation,
+              heat: 'median',
+              center: 0,
+              rank: mu.reputationRank,
+            },
           ]}
         />
         <MultiStatCard
           label="Facilities"
           rows={[
-            { label: 'Dorms', value: mu.dormitoriesLevel, range: ranges.dormitoriesLevel, heat: 'median', rank: mu.dormitoriesLevelRank },
-            { label: 'HQ', value: mu.headquartersLevel, range: ranges.headquartersLevel, heat: 'median', center: 2.5, rank: mu.headquartersLevelRank },
+            {
+              label: 'Dorms',
+              value: mu.dormitoriesLevel,
+              range: ranges.dormitoriesLevel,
+              heat: 'median',
+              rank: mu.dormitoriesLevelRank,
+            },
+            {
+              label: 'HQ',
+              value: mu.headquartersLevel,
+              range: ranges.headquartersLevel,
+              heat: 'median',
+              center: 2.5,
+              rank: mu.headquartersLevelRank,
+            },
           ]}
         />
         <MultiStatCard
           label="Premium"
           rows={[
-            { label: 'Gems bought', value: mu.gemsPurchasedTotal, display: <CompactNumber value={mu.gemsPurchasedTotal} />, range: ranges.gemsPurchasedTotal, heat: 'ramp', rank: mu.gemsPurchasedTotalRank },
-            { label: 'Months', value: mu.premiumMonthsTotal, range: ranges.premiumMonthsTotal, heat: 'ramp', rank: mu.premiumMonthsTotalRank },
-            { label: 'Gifts', value: mu.premiumGiftsTotal, range: ranges.premiumGiftsTotal, heat: 'ramp', rank: mu.premiumGiftsTotalRank },
+            {
+              label: 'Gems bought',
+              value: mu.gemsPurchasedTotal,
+              display: <CompactNumber value={mu.gemsPurchasedTotal} />,
+              range: ranges.gemsPurchasedTotal,
+              heat: 'ramp',
+              rank: mu.gemsPurchasedTotalRank,
+            },
+            {
+              label: 'Months',
+              value: mu.premiumMonthsTotal,
+              range: ranges.premiumMonthsTotal,
+              heat: 'ramp',
+              rank: mu.premiumMonthsTotalRank,
+            },
+            {
+              label: 'Gifts',
+              value: mu.premiumGiftsTotal,
+              range: ranges.premiumGiftsTotal,
+              heat: 'ramp',
+              rank: mu.premiumGiftsTotalRank,
+            },
           ]}
         />
       </StatCardGrid>

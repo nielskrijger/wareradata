@@ -7,7 +7,21 @@ import { writeUsersNdjson } from '@/lib/cache/users-store'
 
 import { logger } from '@/lib/log'
 
-import { getAllAlliances, getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers, scrapeItemPrices } from './api'
+import {
+  getAllAlliances,
+  getAllBattles,
+  getAllCountries,
+  getAllMUs,
+  getAllParties,
+  getAllRegions,
+  getEquipment,
+  getGameConfig,
+  getGovernmentForCountry,
+  getTournamentInfo,
+  getUserIdsForCountry,
+  getUsers,
+  scrapeItemPrices,
+} from './api'
 
 const log = logger.child({ component: 'scrape' })
 
@@ -15,7 +29,15 @@ const COUNTRY_PAGINATION_CONCURRENCY = 10
 
 interface ScrapeResult {
   scrapedAt: string
-  counts: { countries: number, users: number, mus: number, regions: number, parties: number, alliances: number, battles: number }
+  counts: {
+    countries: number
+    users: number
+    mus: number
+    regions: number
+    parties: number
+    alliances: number
+    battles: number
+  }
   durationMs: number
 }
 
@@ -168,7 +190,19 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, meta }
+  return {
+    countries,
+    governments,
+    mus,
+    regions,
+    parties,
+    alliances,
+    battles,
+    tournament: tournamentSnapshot,
+    gameConfig,
+    prices,
+    meta,
+  }
 }
 
 /**

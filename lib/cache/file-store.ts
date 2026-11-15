@@ -1,4 +1,16 @@
-import type { Alliance, Battle, Country, GameConfig, Government, MarketPrices, MU, Party, Region, SnapshotMeta, TournamentSnapshot } from '@/lib/warera/api'
+import type {
+  Alliance,
+  Battle,
+  Country,
+  GameConfig,
+  Government,
+  MarketPrices,
+  MU,
+  Party,
+  Region,
+  SnapshotMeta,
+  TournamentSnapshot,
+} from '@/lib/warera/api'
 
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
@@ -145,7 +157,12 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   // Per-item best regions went away with the game's regional production bonuses.
   delete (parsed as { itemBestRegions?: unknown }).itemBestRegions
 
-  log.info({ path, sizeMb: Number((raw.length / 1_000_000).toFixed(1)), countries: parsed.countries?.length ?? 0, readMs }, 'read snapshot')
+  log.info({
+    path,
+    sizeMb: Number((raw.length / 1_000_000).toFixed(1)),
+    countries: parsed.countries?.length ?? 0,
+    readMs,
+  }, 'read snapshot')
   return parsed
 }
 

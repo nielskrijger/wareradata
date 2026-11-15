@@ -83,7 +83,14 @@ export function localeNumberColumn<T>(
     header,
     cell: ({ row }) => (row.original[key] as number | null)?.toLocaleString() ?? null,
     sortDescFirst: true,
-    meta: { heat: opts.heat, heatCenter: opts.center, heatLogScale: opts.logScale, align: 'right', width: opts.width ?? 100, tooltip: opts.tooltip },
+    meta: {
+      heat: opts.heat,
+      heatCenter: opts.center,
+      heatLogScale: opts.logScale,
+      align: 'right',
+      width: opts.width ?? 100,
+      tooltip: opts.tooltip,
+    },
   }
 }
 
@@ -264,7 +271,15 @@ export function countryColumn<
 export function percentColumn<T>(
   key: Key<T>,
   header: string,
-  opts: { heat?: HeatMode, center?: number, decimals?: number, sortInvert?: boolean, width?: number, tooltip?: string, rankKey?: Key<T> } = {},
+  opts: {
+    heat?: HeatMode
+    center?: number
+    decimals?: number
+    sortInvert?: boolean
+    width?: number
+    tooltip?: string
+    rankKey?: Key<T>
+  } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
@@ -286,6 +301,13 @@ export function percentColumn<T>(
       )
     },
     sortDescFirst: true,
-    meta: { heat: opts.heat, heatCenter: opts.center, sortInvert: opts.sortInvert, align: 'right', width: opts.width ?? 110, tooltip: opts.tooltip },
+    meta: {
+      heat: opts.heat,
+      heatCenter: opts.center,
+      sortInvert: opts.sortInvert,
+      align: 'right',
+      width: opts.width ?? 110,
+      tooltip: opts.tooltip,
+    },
   }
 }

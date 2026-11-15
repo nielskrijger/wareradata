@@ -80,7 +80,11 @@ function hasStaff(row: FactoryLedgerRow): boolean {
 /**
  * The user-page factories table: one dense row per factory (output, net and Top
  * potential per day), each expandable into an accounting ledger — every producer
- * (engine, each employee) and cost (inputs, wages, manager) summing to Net. Net excludes self-work. The portfolio roll-up
+ * (engine, each employee) and cost (
+   inputs,
+   wages,
+   manager,
+ ) summing to Net. Net excludes self-work. The portfolio roll-up
  * lives in the stats card above; the header carries the expand/collapse-all
  * toggle; the footer sums net and potentials.
  */
@@ -193,7 +197,9 @@ function FactoryRows({ row, isOpen, onToggle }: RowProps) {
           {row.employeeCap > 0 && <span className="text-muted-foreground">/{row.employeeCap}</span>}
         </TableCell>
         <TableCell className="text-right tabular-nums">
-          {row.isIdle ? <span className="text-muted-foreground">idle</span> : Math.round(row.unitsPerDay).toLocaleString('en')}
+          {row.isIdle
+            ? <span className="text-muted-foreground">idle</span>
+            : Math.round(row.unitsPerDay).toLocaleString('en')}
         </TableCell>
         <TableCell className={cn('text-right tabular-nums', netClass(row.netPerDay))}>
           {goldSigned(row.netPerDay)}
@@ -219,7 +225,9 @@ function LedgerRow({ label, amount, divider }: { label: ReactNode, amount: React
   const top = divider ? '[&]:border-t' : ''
   return (
     <TableRow className="hover:bg-transparent border-b-0">
-      <TableCell colSpan={LABEL_SPAN} className={cn('bg-muted/30 py-0.5 pl-8', top, divider && 'font-medium')}>{label}</TableCell>
+      <TableCell colSpan={LABEL_SPAN} className={cn('bg-muted/30 py-0.5 pl-8', top, divider && 'font-medium')}>
+        {label}
+      </TableCell>
       <TableCell className={cn('bg-muted/30 py-0.5 text-right tabular-nums', top)}>{amount}</TableCell>
       <TableCell colSpan={TRAILING_SPAN} className={cn('bg-muted/30 py-0.5', top)} />
     </TableRow>
@@ -232,20 +240,54 @@ function LedgerRow({ label, amount, divider }: { label: ReactNode, amount: React
  * lives in the tooltip.
  */
 function EmployeeNet({ w }: { w: LedgerEmployee }) {
+  const wageRate = w.wagePerHour.toLocaleString('en', { maximumFractionDigits: 3 })
+  const triggerClass = cn('cursor-help text-xs underline decoration-dotted underline-offset-2', netClass(w.netPerDay))
+
   return (
     <Tooltip>
-      <TooltipTrigger render={<span className={cn('cursor-help text-xs underline decoration-dotted underline-offset-2', netClass(w.netPerDay))} />}>
+      <TooltipTrigger render={<span className={triggerClass} />}>
         {goldSigned(w.netPerDay, 1)}
       </TooltipTrigger>
       <TooltipContent side="top" className="text-xs">
         <div className="space-y-0.5">
-          <div className="flex justify-between gap-6"><span>Revenue</span><span className="tabular-nums text-green-700 dark:text-green-400">{goldSigned(w.revenuePerDay, 1)}</span></div>
-          {w.inputCostPerDay >= 0.05 && <div className="flex justify-between gap-6"><span>Inputs</span><span className="tabular-nums text-red-700 dark:text-red-400">{goldSigned(-w.inputCostPerDay, 1)}</span></div>}
-          <div className="flex justify-between gap-6"><span>Wage <span className="text-muted-foreground">({w.wagePerHour.toLocaleString('en', { maximumFractionDigits: 3 })}/h)</span></span><span className="tabular-nums text-red-700 dark:text-red-400">{goldSigned(-w.wagePerDay, 1)}</span></div>
-          <div className="mt-0.5 flex justify-between gap-6 border-t border-current/25 pt-0.5 font-medium"><span>Net</span><span className={cn('tabular-nums', netClass(w.netPerDay))}>{goldSigned(w.netPerDay, 1)}</span></div>
+          <TipRow label="Revenue" value={w.revenuePerDay} className="text-green-700 dark:text-green-400" />
+          {w.inputCostPerDay >= 0.05 && (
+            <TipRow label="Inputs" value={-w.inputCostPerDay} className="text-red-700 dark:text-red-400" />
+          )}
+          <TipRow
+            label={<>Wage <span className="text-muted-foreground">({wageRate}/h)</span></>}
+            value={-w.wagePerDay}
+            className="text-red-700 dark:text-red-400"
+          />
+          <TipRow
+            label="Net"
+            value={w.netPerDay}
+            className={netClass(w.netPerDay)}
+            total
+          />
         </div>
       </TooltipContent>
     </Tooltip>
+  )
+}
+
+interface TipRowProps {
+  label: ReactNode
+  value: number
+  className?: string
+  total?: boolean
+}
+
+/**
+ * One label/amount line in the employee tooltip. `total` draws the rule above the
+ * Net line.
+ */
+function TipRow({ label, value, className, total }: TipRowProps) {
+  return (
+    <div className={cn('flex justify-between gap-6', total && 'mt-0.5 border-t border-current/25 pt-0.5 font-medium')}>
+      <span>{label}</span>
+      <span className={cn('tabular-nums', className)}>{goldSigned(value, 1)}</span>
+    </div>
   )
 }
 
@@ -270,7 +312,14 @@ function FactoryLedger({ row }: { row: FactoryLedgerRow }) {
       {row.engineNetPerDay >= 0.05 && (
         <LedgerRow
           label={<span className="text-muted-foreground text-xs">Automated engine · Lvl {row.engineLevel}</span>}
-          amount={<span className={cn('text-xs', netClass(row.engineNetPerDay))}>{goldSigned(row.engineNetPerDay, 1)}</span>}
+          amount={(
+            <span className={cn(
+              'text-xs',
+              netClass(row.engineNetPerDay),
+            )}
+            >{goldSigned(row.engineNetPerDay, 1)}
+            </span>
+          )}
         />
       )}
       {row.employees.map(w => (
@@ -283,7 +332,14 @@ function FactoryLedger({ row }: { row: FactoryLedgerRow }) {
       {row.managerPerDay >= 0.05 && (
         <LedgerRow
           label={<span className="text-muted-foreground text-xs">Manager wage</span>}
-          amount={<span className={cn('text-xs', netClass(-row.managerPerDay))}>{goldSigned(-row.managerPerDay, 1)}</span>}
+          amount={(
+            <span className={cn(
+              'text-xs',
+              netClass(-row.managerPerDay),
+            )}
+            >{goldSigned(-row.managerPerDay, 1)}
+            </span>
+          )}
         />
       )}
       <LedgerRow

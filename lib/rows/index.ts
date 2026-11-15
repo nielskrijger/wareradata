@@ -321,7 +321,14 @@ export interface LeaderFields {
 /**
  * Projected country row used by /countries and /api/countries.
  */
-export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupFactoryStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats {
+export interface CountryRow extends
+  GroupCaseStats,
+  GroupWealthParts,
+  GroupFactoryStats,
+  GroupPointsStats,
+  GroupPremiumStats,
+  GroupVitals,
+  GroupDamageStats {
   // Count of active battles this country is in (attacker or defender). Live
   // data, stamped on by withActiveBattleCounts(); 0 when not populated.
   activeBattles: number
@@ -404,7 +411,15 @@ export interface GovernmentRow {
 /**
  * Projected MU (military unit) row used by /mus and /api/mus.
  */
-export interface MURow extends GroupCaseStats, GroupWealthParts, GroupFactoryStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats, LeaderFields {
+export interface MURow extends
+  GroupCaseStats,
+  GroupWealthParts,
+  GroupFactoryStats,
+  GroupPointsStats,
+  GroupPremiumStats,
+  GroupVitals,
+  GroupDamageStats,
+  LeaderFields {
   avatarUrl: string | null
   avgLevel: number | null
   avgLevelRank: number | null
@@ -572,7 +587,15 @@ export interface AllianceMemberRow {
  * API ranks all alliances, so its ranks are authoritative); members are
  * resolved and sorted by development contribution at build time.
  */
-export interface AllianceRow extends GroupCaseStats, GroupWealthParts, GroupFactoryStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupDamageStats, LeaderFields {
+export interface AllianceRow extends
+  GroupCaseStats,
+  GroupWealthParts,
+  GroupFactoryStats,
+  GroupPointsStats,
+  GroupPremiumStats,
+  GroupVitals,
+  GroupDamageStats,
+  LeaderFields {
   id: string
   name: string
   // WarEra color scheme name (same palette as user profiles), the alliance's

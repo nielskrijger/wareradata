@@ -18,7 +18,13 @@ import {
   readinessColumn,
   tierColumn,
 } from '@/components/data-table/column-factories'
-import { casesColumns, factoriesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
+import {
+  casesColumns,
+  factoriesColumns,
+  pointsColumns,
+  premiumColumns,
+  wealthColumns,
+} from '@/components/data-table/column-groups'
 
 export type { MURow }
 
@@ -59,7 +65,10 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
       localeNumberColumn<MURow>('memberCount', 'Members', { heat: 'median', width: 100 }),
     ],
     combat: [
-      gearColumn<MURow>('avgGearScore', 'Avg Gear', { width: 120, tooltip: 'Average gear score across members. Higher means better-equipped fighters.' }),
+      gearColumn<MURow>('avgGearScore', 'Avg Gear', {
+        width: 120,
+        tooltip: 'Average gear score across members. Higher means better-equipped fighters.',
+      }),
       percentBarColumn<MURow>('avgHealth', 'Avg Health', { tooltip: 'Average health across members.' }),
       percentBarColumn<MURow>('avgHunger', 'Avg Hunger', { width: 140, tooltip: 'Average hunger across members.' }),
       readinessColumn<MURow>(),
@@ -88,9 +97,20 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
     ],
     wealth: [
       ...wealthColumns<MURow>('memberWealth', 'members'),
-      compactNumberColumn<MURow>('investedMoney', 'Invested', { heat: 'ramp', width: 120, tooltip: 'Total money members have invested in the MU.' }),
-      compactNumberColumn<MURow>('bounty', 'Bounty', { heat: 'median', width: 110, tooltip: 'Coins this MU has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
-      rankTooltipColumn<MURow>('wealth', 'wealthRank', 'MU Wealth', { width: 135, tooltip: 'Wealth held by the MU itself (its own account and inventory), not the combined member Total.' }),
+      compactNumberColumn<MURow>('investedMoney', 'Invested', {
+        heat: 'ramp',
+        width: 120,
+        tooltip: 'Total money members have invested in the MU.',
+      }),
+      compactNumberColumn<MURow>('bounty', 'Bounty', {
+        heat: 'median',
+        width: 110,
+        tooltip: 'Coins this MU has put up as a battle bounty, paid to fighters per 1k damage dealt.',
+      }),
+      rankTooltipColumn<MURow>('wealth', 'wealthRank', 'MU Wealth', {
+        width: 135,
+        tooltip: 'Wealth held by the MU itself (its own account and inventory), not the combined member Total.',
+      }),
     ],
     factories: factoriesColumns<MURow>('members'),
     premium: premiumColumns<MURow>(),

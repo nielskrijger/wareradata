@@ -112,7 +112,15 @@ function Body({ data }: { data: FetchedData }) {
       <div className="border-b border-neutral-50/15 px-3 py-2">
         <div className="mb-1.5 flex items-center justify-between">
           <span className="text-[10px] uppercase tracking-wide text-neutral-50/50">Gear score</span>
-          {user.gearScore != null && <GearScorePill score={user.gearScore} tier={computeGearTier(equipment, gearLookup)} />}
+          {user.gearScore != null && (
+            <GearScorePill
+              score={user.gearScore}
+              tier={computeGearTier(
+                equipment,
+                gearLookup,
+              )}
+            />
+          )}
         </div>
         <GearStrip equipment={equipment} gearLookup={gearLookup} />
       </div>
@@ -121,7 +129,12 @@ function Body({ data }: { data: FetchedData }) {
         <div className="mb-1 text-[10px] uppercase tracking-wide text-neutral-50/50">Performance</div>
         <div className="space-y-0.5 text-[11px]">
           <StatRow icon={<Trophy className={ICON_CLS} />} label="Points" value={user.points} range={ranges.points} />
-          <StatRow icon={<Swords className={ICON_CLS} />} label="Damage" value={user.weeklyDamage} range={ranges.weeklyDamage} />
+          <StatRow
+            icon={<Swords className={ICON_CLS} />}
+            label="Damage"
+            value={user.weeklyDamage}
+            range={ranges.weeklyDamage}
+          />
           <StatRow icon={<Coins className={ICON_CLS} />} label="Wealth" value={user.wealth} range={ranges.wealth} />
         </div>
       </div>
@@ -129,7 +142,12 @@ function Body({ data }: { data: FetchedData }) {
   )
 }
 
-function StatRow({ icon, label, value, range }: { icon: ReactNode, label: string, value: number | null, range: Range | undefined }) {
+function StatRow({ icon, label, value, range }: {
+  icon: ReactNode
+  label: string
+  value: number | null
+  range: Range | undefined
+}) {
   return (
     <div className="flex justify-between">
       <span className="inline-flex items-center gap-1.5">{icon}{label}</span>

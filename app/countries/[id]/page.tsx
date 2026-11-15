@@ -78,7 +78,17 @@ export default async function CountryDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
-  const { country: c, government, ranges, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList } = result
+  const {
+    country: c,
+    government,
+    ranges,
+    total,
+    citizenPage,
+    muPage,
+    partyPage,
+    battlePage,
+    activeBattlesList,
+  } = result
 
   return (
     <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
@@ -141,37 +151,114 @@ export default async function CountryDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Damage"
           total={total}
-          hero={{ label: 'Total', value: c.damage, display: <CompactNumber value={c.damage} />, range: ranges.damage, heat: 'median', rank: c.damageRank }}
+          hero={{
+            label: 'Total',
+            value: c.damage,
+            display: <CompactNumber value={c.damage} />,
+            range: ranges.damage,
+            heat: 'median',
+            rank: c.damageRank,
+          }}
           rows={[
-            { label: 'Weekly', value: c.weeklyDamage, display: <CompactNumber value={c.weeklyDamage} />, range: ranges.weeklyDamage, heat: 'median', rank: c.weeklyDamageRank },
-            { label: 'Per citizen', value: c.weeklyDamagePerCitizen, display: <CompactNumber value={c.weeklyDamagePerCitizen} />, range: ranges.weeklyDamagePerCitizen, heat: 'median', rank: c.weeklyDamagePerCitizenRank },
-            { label: 'Avg gear', value: c.avgGearScore, range: ranges.avgGearScore, heat: 'median', rank: c.avgGearScoreRank },
+            {
+              label: 'Weekly',
+              value: c.weeklyDamage,
+              display: <CompactNumber value={c.weeklyDamage} />,
+              range: ranges.weeklyDamage,
+              heat: 'median',
+              rank: c.weeklyDamageRank,
+            },
+            {
+              label: 'Per citizen',
+              value: c.weeklyDamagePerCitizen,
+              display: <CompactNumber value={c.weeklyDamagePerCitizen} />,
+              range: ranges.weeklyDamagePerCitizen,
+              heat: 'median',
+              rank: c.weeklyDamagePerCitizenRank,
+            },
+            {
+              label: 'Avg gear',
+              value: c.avgGearScore,
+              range: ranges.avgGearScore,
+              heat: 'median',
+              rank: c.avgGearScoreRank,
+            },
           ]}
         />
         <MultiStatCard
           label="Economy"
           rows={[
-            { label: 'Treasury', value: c.money, display: <CompactNumber value={c.money} />, range: ranges.money, heat: 'median', rank: c.moneyRank },
-            { label: 'Country Wealth', value: c.wealth, display: <CompactNumber value={c.wealth} />, range: ranges.wealth, heat: 'median', rank: c.wealthRank },
-            { label: 'Citizen Wealth', value: c.citizenWealth, display: <CompactNumber value={c.citizenWealth} />, range: ranges.citizenWealth, heat: 'median', rank: c.citizenWealthRank },
-            { label: 'Bounty', value: c.bounty, display: <CompactNumber value={c.bounty} />, range: ranges.bounty, heat: 'ramp', rank: c.bountyRank },
-            { label: 'Development', value: c.development, range: ranges.development, heat: 'median', rank: c.developmentRank },
+            {
+              label: 'Treasury',
+              value: c.money,
+              display: <CompactNumber value={c.money} />,
+              range: ranges.money,
+              heat: 'median',
+              rank: c.moneyRank,
+            },
+            {
+              label: 'Country Wealth',
+              value: c.wealth,
+              display: <CompactNumber value={c.wealth} />,
+              range: ranges.wealth,
+              heat: 'median',
+              rank: c.wealthRank,
+            },
+            {
+              label: 'Citizen Wealth',
+              value: c.citizenWealth,
+              display: <CompactNumber value={c.citizenWealth} />,
+              range: ranges.citizenWealth,
+              heat: 'median',
+              rank: c.citizenWealthRank,
+            },
+            {
+              label: 'Bounty',
+              value: c.bounty,
+              display: <CompactNumber value={c.bounty} />,
+              range: ranges.bounty,
+              heat: 'ramp',
+              rank: c.bountyRank,
+            },
+            {
+              label: 'Development',
+              value: c.development,
+              range: ranges.development,
+              heat: 'median',
+              rank: c.developmentRank,
+            },
           ]}
         />
         <WealthCompositionCard
           perCapita={{ count: citizenPage.total, unit: 'citizen' }}
           parts={[
-            { label: 'Companies', value: c.companiesWealth, range: ranges.companiesWealth, rank: c.companiesWealthRank },
+            {
+              label: 'Companies',
+              value: c.companiesWealth,
+              range: ranges.companiesWealth,
+              rank: c.companiesWealthRank,
+            },
             { label: 'Items', value: c.itemsWealth, range: ranges.itemsWealth, rank: c.itemsWealthRank },
             { label: 'Cash', value: c.cashWealth, range: ranges.cashWealth, rank: c.cashWealthRank },
-            { label: 'Equipment', value: c.equipmentWealth, range: ranges.equipmentWealth, rank: c.equipmentWealthRank },
+            {
+              label: 'Equipment',
+              value: c.equipmentWealth,
+              range: ranges.equipmentWealth,
+              rank: c.equipmentWealthRank,
+            },
             { label: 'Weapons', value: c.weaponsWealth, range: ranges.weaponsWealth, rank: c.weaponsWealthRank },
           ]}
         />
         <MultiStatCard
           label="Society"
           rows={[
-            { label: 'Active pop.', value: c.activePopulation, range: ranges.activePopulation, heat: 'ramp', rank: c.activePopulationRank },
+            {
+              label: 'Active pop.',
+              value: c.activePopulation,
+              range: ranges.activePopulation,
+              heat: 'ramp',
+              rank: c.activePopulationRank,
+            },
             { label: 'Avg level', value: c.avgLevel, range: ranges.avgLevel, heat: 'median', rank: c.avgLevelRank },
             { label: 'MUs', value: c.musCount, range: ranges.musCount, heat: 'ramp', rank: c.musCountRank },
             { label: 'Parties', value: c.partyCount, range: ranges.partyCount, heat: 'ramp', rank: c.partyCountRank },
@@ -187,18 +274,62 @@ export default async function CountryDetailPage({ params }: PageProps) {
         <MultiStatCard
           label="Policies"
           rows={[
-            { label: 'Income tax', value: c.taxIncome, display: c.taxIncome != null ? `${c.taxIncome}%` : undefined, range: ranges.taxIncome, heat: 'invert', center: 10 },
-            { label: 'Market tax', value: c.taxMarket, display: c.taxMarket != null ? `${c.taxMarket}%` : undefined, range: ranges.taxMarket, heat: 'invert' },
-            { label: 'Manager tax', value: c.taxManager, display: c.taxManager != null ? `${c.taxManager}%` : undefined, range: ranges.taxManager, heat: 'invert' },
-            { label: 'Unrest', value: c.unrestPercent, display: c.unrestPercent != null ? `${c.unrestPercent.toFixed(1)}%` : undefined, range: ranges.unrestPercent, heat: 'invert' },
+            {
+              label: 'Income tax',
+              value: c.taxIncome,
+              display: c.taxIncome != null ? `${c.taxIncome}%` : undefined,
+              range: ranges.taxIncome,
+              heat: 'invert',
+              center: 10,
+            },
+            {
+              label: 'Market tax',
+              value: c.taxMarket,
+              display: c.taxMarket != null ? `${c.taxMarket}%` : undefined,
+              range: ranges.taxMarket,
+              heat: 'invert',
+            },
+            {
+              label: 'Manager tax',
+              value: c.taxManager,
+              display: c.taxManager != null ? `${c.taxManager}%` : undefined,
+              range: ranges.taxManager,
+              heat: 'invert',
+            },
+            {
+              label: 'Unrest',
+              value: c.unrestPercent,
+              display: c.unrestPercent != null ? `${c.unrestPercent.toFixed(1)}%` : undefined,
+              range: ranges.unrestPercent,
+              heat: 'invert',
+            },
           ]}
         />
         <MultiStatCard
           label="Premium"
           rows={[
-            { label: 'Gems bought', value: c.gemsPurchasedTotal, display: <CompactNumber value={c.gemsPurchasedTotal} />, range: ranges.gemsPurchasedTotal, heat: 'ramp', rank: c.gemsPurchasedTotalRank },
-            { label: 'Months', value: c.premiumMonthsTotal, range: ranges.premiumMonthsTotal, heat: 'ramp', rank: c.premiumMonthsTotalRank },
-            { label: 'Gifts', value: c.premiumGiftsTotal, range: ranges.premiumGiftsTotal, heat: 'ramp', rank: c.premiumGiftsTotalRank },
+            {
+              label: 'Gems bought',
+              value: c.gemsPurchasedTotal,
+              display: <CompactNumber value={c.gemsPurchasedTotal} />,
+              range: ranges.gemsPurchasedTotal,
+              heat: 'ramp',
+              rank: c.gemsPurchasedTotalRank,
+            },
+            {
+              label: 'Months',
+              value: c.premiumMonthsTotal,
+              range: ranges.premiumMonthsTotal,
+              heat: 'ramp',
+              rank: c.premiumMonthsTotalRank,
+            },
+            {
+              label: 'Gifts',
+              value: c.premiumGiftsTotal,
+              range: ranges.premiumGiftsTotal,
+              heat: 'ramp',
+              rank: c.premiumGiftsTotalRank,
+            },
           ]}
         />
       </StatCardGrid>

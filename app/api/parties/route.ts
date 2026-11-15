@@ -3,7 +3,14 @@ import type { PartyRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
-import { CASE_FIELD_ALIASES, CASE_SORT_KEYS, PREMIUM_FIELD_ALIASES, PREMIUM_KEYS, WEALTH_FIELD_ALIASES, WEALTH_PART_KEYS } from '@/lib/rows/field-bundles'
+import {
+  CASE_FIELD_ALIASES,
+  CASE_SORT_KEYS,
+  PREMIUM_FIELD_ALIASES,
+  PREMIUM_KEYS,
+  WEALTH_FIELD_ALIASES,
+  WEALTH_PART_KEYS,
+} from '@/lib/rows/field-bundles'
 
 /**
  * Friendly field names for the advanced filter. Keep in sync with the

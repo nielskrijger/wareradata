@@ -48,7 +48,13 @@ export function MultiStatCard({ label, rows, hero, total }: Props) {
             {hero.value == null
               ? <EmptyDash />
               : (
-                  <HeatCell value={hero.value} range={hero.range} mode={hero.heat} center={hero.center} logScale={hero.logScale}>
+                  <HeatCell
+                    value={hero.value}
+                    range={hero.range}
+                    mode={hero.heat}
+                    center={hero.center}
+                    logScale={hero.logScale}
+                  >
                     {hero.display ?? hero.value.toLocaleString()}
                   </HeatCell>
                 )}

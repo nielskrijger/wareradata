@@ -18,7 +18,10 @@ export function goldSigned(value: number, decimals = 1): string {
   const factor = 10 ** decimals
   const rounded = Math.round(value * factor) / factor
   const sign = rounded > 0 ? '+' : rounded < 0 ? '−' : ''
-  return `${sign}${Math.abs(rounded).toLocaleString('en', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} g`
+  return `${sign}${Math.abs(rounded).toLocaleString('en', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })} g`
 }
 
 /**

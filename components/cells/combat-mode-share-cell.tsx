@@ -55,8 +55,18 @@ export function CombatModeShareCell({ avgWarShare, width = 84 }: Props) {
       <TooltipContent side="top" className="w-48 px-3 py-2">
         <div className="mb-2 font-medium">Avg member lean</div>
         <dl className="space-y-1.5">
-          <LeanRow label="War" pct={warPct} color={WAR_COLOR} icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />} />
-          <LeanRow label="Eco" pct={ecoPct} color={ECO_COLOR} icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />} />
+          <LeanRow
+            label="War"
+            pct={warPct}
+            color={WAR_COLOR}
+            icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
+          />
+          <LeanRow
+            label="Eco"
+            pct={ecoPct}
+            color={ECO_COLOR}
+            icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
+          />
         </dl>
       </TooltipContent>
     </Tooltip>

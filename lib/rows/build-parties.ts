@@ -3,7 +3,16 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Party } from '@/lib/warera/api'
 
 import { leaderFields, rankAll } from '@/lib/rows/lookups'
-import { aggCases, aggPoints, aggPremium, aggregateMembers, aggWealthParts, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
+import {
+  aggCases,
+  aggPoints,
+  aggPremium,
+  aggregateMembers,
+  aggWealthParts,
+  POINTS_RANK_KEYS,
+  PREMIUM_KEYS,
+  WEALTH_PART_KEYS,
+} from '@/lib/rows/member-agg'
 
 export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: Lookups): PartyRow[] {
   // partyByUser is built once in buildBaseLookups (also consumed by buildUserRows

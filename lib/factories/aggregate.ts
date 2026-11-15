@@ -35,7 +35,15 @@ export async function loadFactoryAggregates(
 
   const out = new Map<string, UserFactoryAgg>()
   await streamFactoryUsers(({ userId, rows }) => {
-    const agg: UserFactoryAgg = { factoryCount: 0, workerCount: 0, ppPerDay: 0, netPerDay: 0, engineNetPerDay: 0, employeeNetPerDay: 0, topPotentialNetPerDay: 0 }
+    const agg: UserFactoryAgg = {
+      factoryCount: 0,
+      workerCount: 0,
+      ppPerDay: 0,
+      netPerDay: 0,
+      engineNetPerDay: 0,
+      employeeNetPerDay: 0,
+      topPotentialNetPerDay: 0,
+    }
 
     for (const r of rows) {
       // Lines written before the employee rework have no `wagePerDay`, and their

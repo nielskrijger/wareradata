@@ -20,7 +20,9 @@ export function BattleTypeBadge({ isTournament, isResistance, tournamentName, to
   if (isTournament) {
     return (
       <span className="flex min-w-0 items-center gap-1.5">
-        <Badge className="bg-sky-500/15 text-sky-800 truncate dark:text-sky-300">{tournamentName ?? 'Tournament'}</Badge>
+        <Badge className="bg-sky-500/15 text-sky-800 truncate dark:text-sky-300">
+          {tournamentName ?? 'Tournament'}
+        </Badge>
         {tournamentRound != null && (
           <Badge variant="ghost" className="bg-fire/12 text-fire ring-fire/25 ring-1">{`R${tournamentRound}`}</Badge>
         )}

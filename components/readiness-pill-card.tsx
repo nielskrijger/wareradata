@@ -6,7 +6,13 @@ import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
 import { GREEN, pct, RED, SLATE } from '@/components/readiness-pill-colors'
 
-function CardRow({ icon, label, n, total, color }: { icon: ReactNode, label: string, n: number, total: number, color: string }) {
+function CardRow({ icon, label, n, total, color }: {
+  icon: ReactNode
+  label: string
+  n: number
+  total: number
+  color: string
+}) {
   return (
     <div className="flex items-center gap-2 text-sm">
       <span className="inline-flex w-16 items-center gap-1" style={{ color }}>

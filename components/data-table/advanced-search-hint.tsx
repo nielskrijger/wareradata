@@ -15,11 +15,13 @@ interface Props {
    * matches against ("Type plain text to search across name, country…").
    */
   introText: string
+
   /**
    * Cheatsheet rows. Caller controls the full list — order, content, and
    * any page-specific field names.
    */
   examples: SearchExample[]
+
   /**
    * Trailing comma-separated list of available field names.
    */

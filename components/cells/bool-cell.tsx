@@ -2,9 +2,12 @@ import { EmptyDash } from '@/components/empty-dash'
 
 interface Props {
   value: boolean | null | undefined
-  // What to render when the value is false. 'no' colors a red "No";
-  // 'dash' renders a muted em-dash for facts where only the true state
-  // is meaningful (e.g. a region being a capital).
+
+  /**
+   * What to render when the value is false. 'no' colors a red "No";
+   * 'dash' renders a muted em-dash for facts where only the true state
+   * is meaningful (e.g. a region being a capital).
+   */
   falsy?: 'no' | 'dash'
 }
 

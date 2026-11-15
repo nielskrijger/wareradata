@@ -3,10 +3,15 @@ import { StackedBar } from '@/components/stacked-bar'
 import { classifyWarShare } from '@/lib/skills/classify'
 
 interface Props {
-  // Mean of members' war shares (0 = pure eco … 1 = pure war), or null.
+  /**
+   * Mean of members' war shares (0 = pure eco … 1 = pure war), or null.
+   */
   avgWarShare: number | null
-  // Leaderboard position by war lean and the ranked-entity total, for the
-  // "#X of N" line (matching the StatCard frame).
+
+  /**
+   * Leaderboard position by war lean and the ranked-entity total, for the
+   * "#X of N" line (matching the StatCard frame).
+   */
   rank?: number | null
   total?: number
 }

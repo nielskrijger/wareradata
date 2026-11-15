@@ -12,29 +12,44 @@ export interface UserRow {
   bountyRank: number | null
   casesOpened: number | null
   casesOpenedRank: number | null
-  // Opens split by case type: case1 (the standard daily-reward case) and
-  // case2 (the premium mythic case). Null when no case stats were captured.
+
+  /**
+   * Opens split by case type: case1 (the standard daily-reward case) and
+   * case2 (the premium mythic case). Null when no case stats were captured.
+   */
   standardCasesOpened: number | null
   mythicCasesOpened: number | null
-  // Per-rarity pull counts split by case type, for the detail card's Standard /
-  // Mythic toggle. Null when that type has no categorized pulls.
+
+  /**
+   * Per-rarity pull counts split by case type, for the detail card's Standard /
+   * Mythic toggle. Null when that type has no categorized pulls.
+   */
   standardCasesByRarity: CaseRarityCounts | null
   mythicCasesByRarity: CaseRarityCounts | null
-  // Per-rarity pull counts (case1+case2 merged, from the getUserById scrape),
-  // flat so the Cases columns can sort and heat-tint. Null when no case stats
-  // were captured.
+
+  /**
+   * Per-rarity pull counts (case1+case2 merged, from the getUserById scrape),
+   * flat so the Cases columns can sort and heat-tint. Null when no case stats
+   * were captured.
+   */
   casesCommon: number | null
   casesUncommon: number | null
   casesRare: number | null
   casesEpic: number | null
   casesLegendary: number | null
   casesMythic: number | null
-  // Pull luck vs the official drop rates (100 = exactly the published odds).
-  // Null under MIN_LUCK_PULLS categorized pulls (see lib/cases.ts).
+
+  /**
+   * Pull luck vs the official drop rates (100 = exactly the published odds).
+   * Null under MIN_LUCK_PULLS categorized pulls (see lib/cases.ts).
+   */
   caseLuck: number | null
   caseLuckRank: number | null
-  // Weighted luck score inputs, kept on the row so group builders pool
-  // members' scores instead of averaging their percentages.
+
+  /**
+   * Weighted luck score inputs, kept on the row so group builders pool
+   * members' scores instead of averaging their percentages.
+   */
   caseLuckActual: number
   caseLuckExpected: number
   combatMode: CombatMode
@@ -77,16 +92,25 @@ export interface UserRow {
   premiumMonths: number | null
   premiumMonthsRank: number | null
   readinessStatus: 'buff' | 'debuff' | 'neither' | null
-  // ISO timestamp when the active buff/debuff ends (buffs.buffEndAt /
-  // debuffEndAt from the scrape), or null when no effect is active. Drives the
-  // live countdown on the Buff column.
+
+  /**
+   * ISO timestamp when the active buff/debuff ends (buffs.buffEndAt /
+   * debuffEndAt from the scrape), or null when no effect is active. Drives the
+   * live countdown on the Buff column.
+   */
   readinessEndsAt: string | null
   referrals: number | null
   referralsRank: number | null
-  // Times the player has prestiged (reset from level 50). 0 for most.
+
+  /**
+   * Times the player has prestiged (reset from level 50). 0 for most.
+   */
   prestige: number | null
-  // Lifetime milestone tiers reached and skins owned, from the rankings block
-  // (`userMilestoneTiers` / `userSkinsOwned`).
+
+  /**
+   * Lifetime milestone tiers reached and skins owned, from the rankings block
+   * (`userMilestoneTiers` / `userSkinsOwned`).
+   */
   milestoneTiers: number | null
   milestoneTiersRank: number | null
   skinsOwned: number | null
@@ -96,16 +120,22 @@ export interface UserRow {
   username: string
   warPoints: number
   warPointsRank: number | null
-  // War's share of war+eco skill investment (0 = pure eco … 1 = pure war), or
-  // null when neither is trained. The Mode column sorts on this distribution.
+
+  /**
+   * War's share of war+eco skill investment (0 = pure eco … 1 = pure war), or
+   * null when neither is trained. The Mode column sorts on this distribution.
+   */
   warShare: number | null
   wealthPoints: number
   wealthRank: number | null
   wealth: number | null
-  // The five parts that make up wealth (gold), from the getUserById
-  // `stats.wealth` payload. Null when a scrape hasn't captured the breakdown for
-  // this user yet (a small fraction). Surfaced as the "Wealth composition" card
-  // and the per-component table columns.
+
+  /**
+   * The five parts that make up wealth (gold), from the getUserById
+   * `stats.wealth` payload. Null when a scrape hasn't captured the breakdown for
+   * this user yet (a small fraction). Surfaced as the "Wealth composition" card
+   * and the per-component table columns.
+   */
   companiesWealth: number | null
   companiesWealthRank: number | null
   itemsWealth: number | null
@@ -116,26 +146,38 @@ export interface UserRow {
   equipmentWealthRank: number | null
   weaponsWealth: number | null
   weaponsWealthRank: number | null
-  // Stockpile: tradeable wealth held outside companies (items + cash +
-  // equipment + weapons). Null when the wealth breakdown is absent.
+
+  /**
+   * Stockpile: tradeable wealth held outside companies (items + cash +
+   * equipment + weapons). Null when the wealth breakdown is absent.
+   */
   stockpileWealth: number | null
   stockpileWealthRank: number | null
   weeklyDamage: number | null
   weeklyDamageRank: number | null
-  // Per-user factory totals from the factory scrape. PpPerDay / netPerDay /
-  // count are shown in the user table's Factories group; topPotential backs the
-  // per-user efficiency and is summed by member-agg into the entity Factories
-  // columns. Null when the scrape hasn't captured this user.
+
+  /**
+   * Per-user factory totals from the factory scrape. PpPerDay / netPerDay /
+   * count are shown in the user table's Factories group; topPotential backs the
+   * per-user efficiency and is summed by member-agg into the entity Factories
+   * columns. Null when the scrape hasn't captured this user.
+   */
   factoryCount: number | null
   factoryPpPerDay: number | null
   factoryNetPerDay: number | null
   factoryTopPotential: number | null
-  // Per-user efficiency: net ÷ Top-potential (the same production on the most
-  // profitable item), capped 100 — how close to the best item choice.
-  // Null when nothing's produced. The user-table Efficiency column.
+
+  /**
+   * Per-user efficiency: net ÷ Top-potential (the same production on the most
+   * profitable item), capped 100 — how close to the best item choice.
+   * Null when nothing's produced. The user-table Efficiency column.
+   */
   factoryEfficiencyPct: number | null
-  // Net split by source and the employee headcount, for the Factories group.
-  // factoryEngineNetPerDay + factoryEmployeeNetPerDay = factoryNetPerDay.
+
+  /**
+   * Net split by source and the employee headcount, for the Factories group.
+   * factoryEngineNetPerDay + factoryEmployeeNetPerDay = factoryNetPerDay.
+   */
   factoryEngineNetPerDay: number | null
   factoryEmployeeNetPerDay: number | null
   factoryWorkers: number | null
@@ -148,7 +190,10 @@ export interface UserRow {
  */
 export interface ActiveBattleSummary {
   id: string
-  // The other side (country flag/name), from this country's perspective.
+
+  /**
+   * The other side (country flag/name), from this country's perspective.
+   */
   opponentName: string | null
   opponentCode: string | null
   regionName: string | null
@@ -215,8 +260,11 @@ export interface GroupWealthParts {
   equipmentWealthRank: number | null
   weaponsWealth: number
   weaponsWealthRank: number | null
-  // Stockpile: member-summed tradeable wealth outside companies (items + cash +
-  // equipment + weapons).
+
+  /**
+   * Stockpile: member-summed tradeable wealth outside companies (items + cash +
+   * equipment + weapons).
+   */
   stockpileWealth: number
   stockpileWealthRank: number | null
 }
@@ -230,15 +278,20 @@ export interface GroupWealthParts {
  * have run.
  */
 export interface GroupFactoryStats {
-  // Total factories owned across members (member-summed). 0 when none.
+  /**
+   * Total factories owned across members (member-summed). 0 when none.
+   */
   factoryCount: number
   factoryCountRank: number | null
   factoryPpPerDay: number
   factoryPpPerDayRank: number | null
   factoryNetPerDay: number
   factoryNetPerDayRank: number | null
-  // Net split: engine vs employees (workforce, net of wages); together
-  // they equal factoryNetPerDay. Plus the member-summed employee headcount.
+
+  /**
+   * Net split: engine vs employees (workforce, net of wages); together
+   * they equal factoryNetPerDay. Plus the member-summed employee headcount.
+   */
   factoryEngineNetPerDay: number
   factoryEngineNetPerDayRank: number | null
   factoryEmployeeNetPerDay: number
@@ -337,17 +390,25 @@ export interface CountryRow extends
   GroupPremiumStats,
   GroupVitals,
   GroupDamageStats {
-  // Count of active battles this country is in (attacker or defender). Live
-  // data, stamped on by withActiveBattleCounts(); 0 when not populated.
+  /**
+   * Count of active battles this country is in (attacker or defender). Live
+   * data, stamped on by withActiveBattleCounts(); 0 when not populated.
+   */
   activeBattles: number
-  // The battles behind `activeBattles`, for the pill's hover tooltip. Stamped
-  // alongside the count by withActiveBattleCounts(); empty when not populated.
+
+  /**
+   * The battles behind `activeBattles`, for the pill's hover tooltip. Stamped
+   * alongside the count by withActiveBattleCounts(); empty when not populated.
+   */
   activeBattlesList: ActiveBattleSummary[]
   activePopulation: number | null
   activePopulationRank: number | null
-  // The alliance this country belongs to, derived from the alliances' member
-  // lists (not the country payload, so it works even on a snapshot whose
-  // countries predate the alliances feature). Null when unaligned.
+
+  /**
+   * The alliance this country belongs to, derived from the alliances' member
+   * lists (not the country payload, so it holds even when a country payload
+   * lacks allianceId). Null when unaligned.
+   */
   allianceId: string | null
   allianceName: string | null
   alliesCount: number
@@ -356,19 +417,28 @@ export interface CountryRow extends
   avgLevelRank: number | null
   bounty: number | null
   bountyRank: number | null
-  // Sum of citizens' actual wealth in gold (real holdings, not the wealthPoints
-  // points derivative). Surfaced as the "Citizen Wealth" column.
+
+  /**
+   * Sum of citizens' actual wealth in gold (real holdings, not the wealthPoints
+   * points derivative). Surfaced as the "Citizen Wealth" column.
+   */
   citizenWealth: number
   citizenWealthRank: number | null
   code: string
-  // Daily national income in money (development, taxes, strategic resources,
-  // government type), from the country's `income.total`.
+
+  /**
+   * Daily national income in money (development, taxes, strategic resources,
+   * government type), from the country's `income.total`.
+   */
   dailyIncome: number | null
   dailyIncomeRank: number | null
   development: number | null
   developmentRank: number | null
-  // Government type code: provisional, republic, homelandFront, federation,
-  // plutocracy or autocracy. Null when the country payload has none.
+
+  /**
+   * Government type code: provisional, republic, homelandFront, federation,
+   * plutocracy or autocracy. Null when the country payload has none.
+   */
   govType: string | null
   id: string
   money: number | null
@@ -400,9 +470,12 @@ export interface GovernmentOfficial {
   name: string
   avatarUrl: string | null
   colorScheme: string | null
-  // The official's political party, resolved from the party-membership lookup,
-  // so the government view can colour and group officials by party. Null when
-  // the official belongs to no party (an independent).
+
+  /**
+   * The official's political party, resolved from the party-membership lookup,
+   * so the government view can colour and group officials by party. Null when
+   * the official belongs to no party (an independent).
+   */
   partyId: string | null
   partyName: string | null
   partyAvatarUrl: string | null
@@ -417,9 +490,12 @@ export interface GovernmentOfficial {
 export interface GovernmentRow {
   president: GovernmentOfficial | null
   vicePresident: GovernmentOfficial | null
-  // Appointed ministers in the order the API lists them, each with a display
-  // title (known codes like `minOfDefense` mapped to a short label, custom
-  // titles kept as written). Vacant or unknown users are skipped.
+
+  /**
+   * Appointed ministers in the order the API lists them, each with a display
+   * title (known codes like `minOfDefense` mapped to a short label, custom
+   * titles kept as written). Vacant or unknown users are skipped.
+   */
   ministers: { title: string, official: GovernmentOfficial }[]
   congressMembers: GovernmentOfficial[]
 }
@@ -430,13 +506,21 @@ export interface GovernmentRow {
  * and read only by the country and alliance detail pages.
  */
 export interface StrategicBonusRow {
-  // The alliance sharing these bonuses, or null for a country on its own.
+  /**
+   * The alliance sharing these bonuses, or null for a country on its own.
+   */
   allianceId: string | null
   countryCount: number
-  // Regions held per resource and the bonus level they reach (1, 4, 9 copies
-  // give levels 1 to 3), most regions first.
+
+  /**
+   * Regions held per resource and the bonus level they reach (1, 4, 9 copies
+   * give levels 1 to 3), most regions first.
+   */
   resources: { resource: string, regionCount: number, level: number }[]
-  // Bonus points per skill code (e.g. production +3), largest first.
+
+  /**
+   * Bonus points per skill code (e.g. production +3), largest first.
+   */
   skills: { skill: string, value: number }[]
 }
 
@@ -470,8 +554,11 @@ export interface MURow extends
   lastRefreshedAt: string | null
   memberCount: number
   memberCountRank: number | null
-  // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
-  // points derivative). Surfaced as the "Member Wealth" column.
+
+  /**
+   * Sum of members' actual wealth in gold (real holdings, not the wealthPoints
+   * points derivative). Surfaced as the "Member Wealth" column.
+   */
   memberWealth: number
   memberWealthRank: number | null
   name: string
@@ -492,17 +579,29 @@ export interface RegionRow {
   biome: string | null
   climate: string | null
   code: string
-  // Companies and NPC employees located in the region.
+
+  /**
+   * Companies and NPC employees located in the region.
+   */
   companyCount: number | null
   employeeCount: number | null
-  // Daily income the region yields its owner, from `income.total`.
+
+  /**
+   * Daily income the region yields its owner, from `income.total`.
+   */
   dailyIncome: number | null
-  // Current (occupying) owner.
+
+  /**
+   * Current (occupying) owner.
+   */
   countryCode: string | null
   countryId: string | null
   countryName: string | null
-  // Core (original) owner, from the region's initialCountry. Equals the current
-  // owner for a home region; differs when the region is occupied.
+
+  /**
+   * Core (original) owner, from the region's initialCountry. Equals the current
+   * owner for a home region; differs when the region is occupied.
+   */
   coreCountryCode: string | null
   coreCountryId: string | null
   coreCountryName: string | null
@@ -513,7 +612,10 @@ export interface RegionRow {
   mainCity: string | null
   name: string
   neighborCount: number
-  // Players living in the region.
+
+  /**
+   * Players living in the region.
+   */
   population: number | null
   strategicResource: string | null
 }
@@ -526,13 +628,25 @@ export interface RegionRow {
  */
 export interface BattleSide {
   kind: 'country' | 'mu'
-  // Country or MU id, for the detail-page link. Null if unresolved.
+
+  /**
+   * Country or MU id, for the detail-page link. Null if unresolved.
+   */
   id: string | null
-  // Country name, MU name, or "Team #N" fallback.
+
+  /**
+   * Country name, MU name, or "Team #N" fallback.
+   */
   name: string | null
-  // ISO-3166 code for the flag (country sides only).
+
+  /**
+   * ISO-3166 code for the flag (country sides only).
+   */
   code: string | null
-  // MU avatar url (mu sides only).
+
+  /**
+   * MU avatar url (mu sides only).
+   */
   avatarUrl: string | null
 }
 
@@ -591,8 +705,11 @@ export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsS
   id: string
   memberCount: number
   memberCountRank: number | null
-  // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
-  // points derivative). Surfaced as the "Total" wealth column.
+
+  /**
+   * Sum of members' actual wealth in gold (real holdings, not the wealthPoints
+   * points derivative). Surfaced as the "Total" wealth column.
+   */
   memberWealth: number
   name: string
 }
@@ -605,14 +722,20 @@ export interface AllianceMemberRow {
   countryId: string
   code: string | null
   name: string
-  // This member's development contribution; the members' coreDevelopments sum
-  // to the alliance's, which is what the roster share column leans on.
+
+  /**
+   * This member's development contribution; the members' coreDevelopments sum
+   * to the alliance's, which is what the roster share column leans on.
+   */
   coreDevelopment: number
   averageDevelopment: number
   suspended: boolean
-  // Country stats joined from the member's CountryRow, so the members table
-  // can show what each country brings beyond development (the in-game view
-  // shows development only).
+
+  /**
+   * Country stats joined from the member's CountryRow, so the members table
+   * can show what each country brings beyond development (the in-game view
+   * shows development only).
+   */
   activePopulation: number | null
   weeklyDamage: number | null
   citizenWealth: number | null
@@ -637,18 +760,27 @@ export interface AllianceRow extends
   LeaderFields {
   id: string
   name: string
-  // WarEra color scheme name (same palette as user profiles), the alliance's
-  // visual identity across the map and our list/detail pages.
+
+  /**
+   * WarEra color scheme name (same palette as user profiles), the alliance's
+   * visual identity across the map and our list/detail pages.
+   */
   scheme: string
   avatarUrl: string | null
   memberCount: number
   members: AllianceMemberRow[]
-  // Concatenated member names + codes, so free-text and `country:` searches
-  // can match an alliance by any member country.
+
+  /**
+   * Concatenated member names + codes, so free-text and `country:` searches
+   * can match an alliance by any member country.
+   */
   memberNames: string
-  // Citizen-summed wealth: the member countries' citizenWealth added up (its
-  // five components, from GroupWealthParts, are summed the same way). Feeds the
-  // table's wealth column group.
+
+  /**
+   * Citizen-summed wealth: the member countries' citizenWealth added up (its
+   * five components, from GroupWealthParts, are summed the same way). Feeds the
+   * table's wealth column group.
+   */
   citizenWealth: number
   citizenWealthRank: number | null
   createdAt: string | null

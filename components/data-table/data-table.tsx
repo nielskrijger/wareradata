@@ -39,6 +39,7 @@ declare module '@tanstack/react-table' {
   // eslint-disable-next-line unused-imports/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     align?: 'left' | 'right'
+
     /**
      * Column width in px. With table-layout: fixed (set on the <Table>),
      * this is the actual rendered width — content overflowing gets the
@@ -122,7 +123,10 @@ export interface PageRequest {
 export interface PageResult<TData> {
   rows: TData[]
   total: number
-  // Per-column [min, max, median] over the full filtered set, for heat coloring.
+
+  /**
+   * Per-column [min, max, median] over the full filtered set, for heat coloring.
+   */
   ranges?: Record<string, Range>
 }
 
@@ -133,6 +137,7 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number
   fetchPage: (req: PageRequest) => Promise<PageResult<TData>>
   searchPlaceholder?: string
+
   /**
    * Optional element rendered next to the search input — typically a help
    * affordance (info icon + popover) for pages that support advanced
@@ -144,8 +149,7 @@ interface DataTableProps<TData, TValue> {
 /**
  * Wraps the table in a Suspense boundary because the inner component reads URL
  * search params (via nuqs `useTableUrlState` -> `useSearchParams`). Next
- * requires that boundary so a statically prerendered list page (those with
- * `revalidate`, e.g. /users, /parties) doesn't bail out of CSR.
+ * requires a Suspense boundary around any client component that reads them.
  */
 export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
   return (

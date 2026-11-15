@@ -25,52 +25,70 @@ import type {
 
 import { createAPIClient } from '@wareraprojects/api'
 
-// The package's generated types are narrower than what the live API returns
-// (the OpenAPI spec doesn't document every field). We re-widen here so our
-// code can keep reading fields that exist at runtime but are missing from
-// MuListItem / CountryListItem.
+/**
+ * The package's generated types are narrower than what the live API returns
+ * (the OpenAPI spec doesn't document every field). We re-widen here so our
+ * code can keep reading fields that exist at runtime but are missing from
+ * MuListItem / CountryListItem.
+ */
 export type Country = CountryListItem
 export type MU = Omit<MuListItem, 'rankings'> & {
   investedMoneyByUsers?: Record<string, number>
   rankings?: MuRankingsOptional & { muReputation?: RankingValueTier }
-  // Not from the API: stamped by the scraper at capture time, and updated by an
-  // on-demand member refresh, so the UI can show how fresh an MU's data is.
+
+  /**
+   * Not from the API: stamped by the scraper at capture time, and updated by an
+   * on-demand member refresh, so the UI can show how fresh an MU's data is.
+   */
   lastRefreshedAt?: string
 }
 export type Party = PartyGetManyPaginatedResponse['items'][number]
 export type Region = RegionsObjectItem
-// Multi-country bloc (the alliances feature shipped 2026-06-10). The SDK types
-// this natively since v0.3.3; re-exported so the rest of the codebase imports
-// every WarEra entity from this module.
+
+/**
+ * Multi-country bloc, re-exported from the SDK so the rest of the codebase
+ * imports every WarEra entity from this module.
+ */
 export type { Alliance } from '@wareraprojects/api'
 
-// The live API returns more on a battle than the generated BattleListItem: the
-// finished-battle outcome (`wonBy`, `endedAt`) and per-side `moneyPool` /
-// `bountyEffectiveAt` are present at runtime but missing from the spec. We
-// re-widen here, same as MU / Country above.
+/**
+ * The live API returns more on a battle than the generated BattleListItem: the
+ * finished-battle outcome (`wonBy`, `endedAt`) and per-side `moneyPool` /
+ * `bountyEffectiveAt` are present at runtime but missing from the spec. We
+ * re-widen here, same as MU / Country above.
+ */
 export type Battle = BattleListItem & {
   endedAt?: string
   wonBy?: 'attacker' | 'defender'
-  // Tournament battles carry these instead of a `war`; each side has a
-  // `tournamentTeam` rather than a `country`.
+
+  /**
+   * Tournament battles carry these instead of a `war`; each side has a
+   * `tournamentTeam` rather than a `country`.
+   */
   tournament?: string
   tournamentRoundNumber?: number
   attacker: BattleListItem['attacker'] & { moneyPool?: number, bountyEffectiveAt?: string, tournamentTeam?: string }
   defender: BattleListItem['defender'] & { moneyPool?: number, bountyEffectiveAt?: string, tournamentTeam?: string }
 }
-// One case type's opening counts, broken down by loot rarity. Present in the
-// getUserById stats payload (which the scrape now uses), absent on the old lite
-// payload — hence optional everywhere.
+
+/**
+ * One case type's opening counts, broken down by loot rarity. Present in the
+ * getUserById stats payload (which the scrape uses), absent on the lite payload,
+ * hence optional everywhere.
+ */
 export interface CaseStat {
   byRarity?: Record<string, number>
   openedCount?: number
 }
-// The components that sum to a user's total wealth (all in gold), from the
-// getUserById `stats.wealth` payload: companies owned, items in storage, cash on
-// hand, equipped gear, and weapons. `total` is their sum (≈ the userWealth
-// ranking value, modulo capture timing). Every field is optional (absent on the
-// old lite payload and on the small fraction of users a fresh scrape hasn't
-// reached), so readers default to null.
+
+/**
+ * The components that sum to a user's total wealth (all in gold), from the
+ * getUserById `stats.wealth` payload: companies owned, items in storage, cash on
+ * hand, equipped gear, and weapons. `total` is their sum (≈ the userWealth
+ * ranking value, modulo capture timing). Every field is optional (absent on the
+ * lite payload and on the small fraction of users a fresh scrape hasn't
+ * reached), so readers default to null.
+ */
 export interface WealthBreakdown {
   companies?: number
   items?: number
@@ -79,26 +97,37 @@ export interface WealthBreakdown {
   weapons?: number
   total?: number
 }
-// Users are hydrated via getUserById, whose payload is a superset of the lite
-// endpoint's. We base this type on the generated lite-response type only because
-// it types the fields we read (rankings, …) precisely, whereas the getUserById
-// response type is looser (Record-typed); both describe the same runtime object.
-// The extra getUserById fields we consume are surfaced below. See hydrateUsers.
+
+/**
+ * Users are hydrated via getUserById, whose payload is a superset of the lite
+ * endpoint's. We base this type on the generated lite-response type only because
+ * it types the fields we read (rankings, …) precisely, whereas the getUserById
+ * response type is looser (Record-typed); both describe the same runtime object.
+ * The extra getUserById fields we consume are surfaced below. See hydrateUsers.
+ */
 export type User = UserGetUserLiteResponse & {
-  // Dropped from the lite payload (now `user.getUserSkills`), but getUserById
-  // still carries the same object, and that is what hydrateUsers calls.
+  /**
+   * Not on the lite payload (it has its own `user.getUserSkills` endpoint), but
+   * getUserById carries the same object, and that is what hydrateUsers calls.
+   */
   skills?: UserSkills
   skillsExpiration?: UserSkillsExpiration
   infos?: { isBanned?: boolean, colorScheme?: string }
   dates?: { lastConnectionAt?: string }
   stats?: UserGetUserLiteResponse['stats'] & { case1?: CaseStat, case2?: CaseStat, wealth?: WealthBreakdown }
-  // Not from the API: stamped by the scraper at capture time, and updated by an
-  // on-demand refresh, so the user page can show how fresh the data is.
+
+  /**
+   * Not from the API: stamped by the scraper at capture time, and updated by an
+   * on-demand refresh, so the user page can show how fresh the data is.
+   */
   lastRefreshedAt?: string
-  // Active drug effect (cocaine: +60% attack for 8h, then -60% for 16h). Present
-  // in the getUserById payload but absent from the SDK types, so we widen it
-  // here. Only the buff* or the debuff* pair is set at a time; the whole object
-  // is absent when no effect is active.
+
+  /**
+   * Active drug effect (cocaine: +60% attack for 8h, then -60% for 16h). Present
+   * in the getUserById payload but absent from the SDK types, so we widen it
+   * here. Only the buff* or the debuff* pair is set at a time; the whole object
+   * is absent when no effect is active.
+   */
   buffs?: {
     buffCodes?: string[]
     buffEndAt?: string
@@ -106,16 +135,25 @@ export type User = UserGetUserLiteResponse & {
     debuffEndAt?: string
   }
 }
-// One user's currently-equipped gear. Each slot is optional: players strip gear
-// between battles to preserve durability, so the response is often `{}`.
+
+/**
+ * One user's currently-equipped gear. Each slot is optional: players strip gear
+ * between battles to preserve durability, so the response is often `{}`.
+ */
 export type Equipment = InventoryFetchCurrentEquipmentResponse
-// The game's static config (item catalog, skill cost curves, upgrade tiers, …).
-// Scraped once per cycle so derived constants (e.g. gear roll bounds, skill
-// point costs) can read from live data instead of being hardcoded.
+
+/**
+ * The game's static config (item catalog, skill cost curves, upgrade tiers, …).
+ * Scraped once per cycle so derived constants (e.g. gear roll bounds, skill
+ * point costs) can read from live data instead of being hardcoded.
+ */
 export type GameConfig = GameConfigGetGameConfigResponse
-// One appointed minister. The president names up to 20 ministers, each with a
-// title (a known code such as `minOfDefense`, or a custom string) and a set of
-// rights.
+
+/**
+ * One appointed minister. The president names up to 20 ministers, each with a
+ * title (a known code such as `minOfDefense`, or a custom string) and a set of
+ * rights.
+ */
 export interface GovernmentMinister {
   user: string
   title: string
@@ -123,14 +161,17 @@ export interface GovernmentMinister {
   appointedAt?: string
   badgeGrantedAt?: string
 }
-// A country's elected officials, all as user ids: the president, vice
-// president, the appointed ministers and the congress roster. Dormant or
-// unoccupied countries may have empty-string offices and an empty congress.
-//
-// The SDK types three per-title seat fields while the live API sends a
-// `ministers` array, so both shapes are optional here and the row builder
-// reads either. `congressSeats` is not part of the response: the scrape merges
-// in `government.getCongressSeats`, which gives each seat's party list.
+
+/**
+ * A country's elected officials, all as user ids: the president, vice
+ * president, the appointed ministers and the congress roster. Dormant or
+ * unoccupied countries may have empty-string offices and an empty congress.
+ *
+ * The SDK types three per-title seat fields while the live API sends a
+ * `ministers` array, so both shapes are optional here and the row builder
+ * reads either. `congressSeats` is not part of the response: the scrape merges
+ * in `government.getCongressSeats`, which gives each seat's party list.
+ */
 export type Government = Omit<
   GovernmentGetByCountryIdResponse,
   'minOfDefense' | 'minOfEconomy' | 'minOfForeignAffairs'
@@ -141,9 +182,12 @@ export type Government = Omit<
   minOfForeignAffairs?: string
   congressSeats?: CongressSeat[]
 }
-// Strategic resource bonuses a country's citizens get (shared across its
-// alliance): bonus points per skill code plus the region ids holding each
-// resource.
+
+/**
+ * Strategic resource bonuses a country's citizens get (shared across its
+ * alliance): bonus points per skill code plus the region ids holding each
+ * resource.
+ */
 export type StrategicBonuses = StrategicResourceBonuses
 
 export const RANKING_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'] as const
@@ -164,22 +208,24 @@ export interface SnapshotMeta {
   scrapeDurationMs?: number
 }
 
-// Three independent clients, each with its own rate-limit budget (the limit is
-// enforced per client at the fetch level). Splitting by purpose means urgent,
-// on-demand work never waits behind the long continuous scrape, and vice versa.
-//
-//  - scrapeClient:  the background main-scrape loop. Steady share so the
-//    leaderboard data stays fresh.
-//  - urgentClient:  latency-sensitive on-demand traffic (MU refreshes, live
-//    battles, the user-page factory fetch). Needs real headroom: its queue is
-//    shared by every visitor-triggered fetch, and the limiter spaces requests
-//    at 60s/limit, so a small budget serializes page loads behind each other.
-//  - factoryClient: the all-users factory scrape. Bulk work with no latency
-//    requirement; it just takes proportionally longer on a smaller share.
-//
-// The three sum to 500, the API's authenticated cap (per minute, per key), so all
-// three together stay within budget. Tune them here; rebalancing is a code
-// change, not config.
+/**
+ * Three independent clients, each with its own rate-limit budget (the limit is
+ * enforced per client at the fetch level). Splitting by purpose means urgent,
+ * on-demand work never waits behind the long continuous scrape, and vice versa.
+ *
+ *  - scrapeClient:  the background main-scrape loop. Steady share so the
+ *    leaderboard data stays fresh.
+ *  - urgentClient:  latency-sensitive on-demand traffic (MU refreshes, live
+ *    battles, the user-page factory fetch). Needs real headroom: its queue is
+ *    shared by every visitor-triggered fetch, and the limiter spaces requests
+ *    at 60s/limit, so a small budget serializes page loads behind each other.
+ *  - factoryClient: the all-users factory scrape. Bulk work with no latency
+ *    requirement; it just takes proportionally longer on a smaller share.
+ *
+ * The three sum to 500, the API's authenticated cap (per minute, per key), so all
+ * three together stay within budget. Tune them here; rebalancing is a code
+ * change, not config.
+ */
 const SCRAPE_RATE_LIMIT = 150
 const URGENT_RATE_LIMIT = 100
 export const FACTORY_RATE_LIMIT = 250
@@ -252,10 +298,9 @@ export async function getUserIdsForCountry(countryId: string): Promise<string[]>
 async function hydrateUsers(client: Client, userIds: string[]): Promise<User[]> {
   // getUserById returns a superset of the lite endpoint (verified field-by-field:
   // same rankings/skills/infos/dates, plus richer stats such as the per-rarity
-  // case breakdown). Storage is no longer capped, so we capture the whole payload
-  // and project what we need on read. The response shape is looser than User
-  // (partial rankings, opaque skills), but every field we read is present at
-  // runtime, so we narrow it here.
+  // case breakdown). We capture the whole payload and project what we need on
+  // read. The response shape is looser than User (partial rankings, opaque
+  // skills), but every field we read is present at runtime, so we narrow it here.
   const users = await Promise.all(userIds.map(userId => client.user.getUserById({ userId })))
   return users as unknown as User[]
 }
@@ -274,8 +319,10 @@ export function getUsersUrgent(userIds: string[]): Promise<User[]> {
   return hydrateUsers(urgentClient, userIds)
 }
 
-// Case loot rarities, weakest to strongest. Doubles as the render order for the
-// user page's per-rarity breakdown.
+/**
+ * Case loot rarities, weakest to strongest. Doubles as the render order for the
+ * user page's per-rarity breakdown.
+ */
 export const CASE_RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] as const
 export type CaseRarity = (typeof CASE_RARITIES)[number]
 
@@ -449,9 +496,11 @@ export async function getAllAlliances(): Promise<Alliance[]> {
   return all
 }
 
-// Recent finished battles to retain. Active battles are always fetched in full
-// (there are only ~15 at a time), but finished battles are unbounded history,
-// so we keep just the most recent page-fulls.
+/**
+ * Recent finished battles to retain. Active battles are always fetched in full
+ * (there are only ~15 at a time), but finished battles are unbounded history,
+ * so we keep just the most recent page-fulls.
+ */
 const FINISHED_BATTLES_LIMIT = 100
 const BATTLES_PAGE_SIZE = 50
 
@@ -510,9 +559,11 @@ export function getFinishedBattles(maxBattles = 1000): Promise<Battle[]> {
   return pageBattles(scrapeClient, false, maxBattles)
 }
 
-// Tournament battles are fought between teams (not countries). In the current
-// "MU Tournament" each team is a single MU, so a team resolves to an MU we can
-// link to. `name` is the tournament's name; `teams` maps teamId → its roster.
+/**
+ * Tournament battles are fought between teams (not countries). In the current
+ * "MU Tournament" each team is a single MU, so a team resolves to an MU we can
+ * link to. `name` is the tournament's name; `teams` maps teamId → its roster.
+ */
 export interface TournamentTeamInfo {
   number: number
   muId: string | null
@@ -525,7 +576,9 @@ export interface TournamentInfo {
   teams: Map<string, TournamentTeamInfo>
 }
 
-// JSON-serializable form stored in the snapshot (Map → record).
+/**
+ * JSON-serializable form stored in the snapshot (Map → record).
+ */
 export interface TournamentSnapshot {
   id: string | null
   name: string | null
@@ -556,21 +609,27 @@ export async function getTournamentInfo(): Promise<TournamentInfo> {
   return { id: tournament._id, name: tournament.name ?? null, teams: map }
 }
 
-// A factory (company) as returned by company.getById.
+/**
+ * A factory (company) as returned by company.getById.
+ */
 export type Factory = CompanyGetByIdResponse
 
-// A company's hourly economics, the `hourly` block of `employee.getCompanyRoster`:
-// the employees' summed production points and wages, the manager's wage, and the
-// employee slots. Engine output is NOT included; it comes
-// from the engine level (see lib/factories/engine). Needs an API key.
+/**
+ * A company's hourly economics, the `hourly` block of `employee.getCompanyRoster`:
+ * the employees' summed production points and wages, the manager's wage, and the
+ * employee slots. Engine output is NOT included; it comes
+ * from the engine level (see lib/factories/engine). Needs an API key.
+ */
 export type CompanyHourly = EmployeeCompanyHourly
 // One NPC employee, as `employee.getCompanyRoster` returns it.
 export type { Employee }
 
-// What getUserCompanies returns per factory: the company (identity, item, region,
-// engine level in `activeUpgradeLevels`), its hourly employee/manager figures and
-// its NPC employee roster. `hourly` is null and `employees` empty when the roster
-// call failed (e.g. no API key).
+/**
+ * What getUserCompanies returns per factory: the company (identity, item, region,
+ * engine level in `activeUpgradeLevels`), its hourly employee/manager figures and
+ * its NPC employee roster. `hourly` is null and `employees` empty when the roster
+ * call failed (e.g. no API key).
+ */
 export interface FactoryData {
   company: Factory
   hourly: CompanyHourly | null
@@ -619,12 +678,16 @@ export function getUserCompaniesSlow(userId: string): Promise<FactoryData[]> {
   return fetchUserCompanies(factoryClient, userId)
 }
 
-// Current market price per item code. Aliased so the snapshot store and row
-// builders can name the type without reaching into the SDK.
+/**
+ * Current market price per item code. Aliased so the snapshot store and row
+ * builders can name the type without reaching into the SDK.
+ */
 export type MarketPrices = ItemTradingGetPricesResponse
 
-// Market prices change constantly, but a couple-minute cache is plenty for the
-// factory profit views; one fetch serves every user page in that window.
+/**
+ * Market prices change constantly, but a couple-minute cache is plenty for the
+ * factory profit views; one fetch serves every user page in that window.
+ */
 let pricesCache: { at: number, data: MarketPrices } | null = null
 const PRICES_TTL_MS = 2 * 60_000
 

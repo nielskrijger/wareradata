@@ -4,14 +4,23 @@ import { goldSigned, humanizeItem, netClass } from './format'
 
 interface Props {
   className?: string
-  // Net/day; auto + employees sum to total.
+
+  /**
+   * Net/day; auto + employees sum to total.
+   */
   totalNet: number
   autoNet: number
   employeesNet: number
   count: number
-  // Active-factory count, when known (the live view has it; the snapshot doesn't).
+
+  /**
+   * Active-factory count, when known (the live view has it; the snapshot doesn't).
+   */
   activeCount?: number
-  // The most profitable item right now, when known.
+
+  /**
+   * The most profitable item right now, when known.
+   */
   bestItem?: string
 }
 

@@ -28,8 +28,8 @@ export function buildCountryRows(
   const musCountByCountry = countMusByCountry(mus, lookups)
 
   // Country → alliance, derived from the alliances' member lists rather than
-  // the country payload's allianceId, so it stays correct even on a snapshot
-  // whose countries were scraped before the alliances feature existed.
+  // the country payload's allianceId, so it holds even when a country payload
+  // lacks that field.
   const allianceByCountry = new Map<string, { id: string, name: string }>()
   for (const a of alliances) {
     for (const m of a.memberCountries) {

@@ -10,20 +10,30 @@ type HeatMode = 'ramp' | 'median' | 'invert' | 'invertMedian'
 export interface StatRowSpec {
   label: string
   value: number | null | undefined
-  // Pre-formatted display (e.g. <CompactNumber> or "5%"). Falls back to the raw value.
+
+  /**
+   * Pre-formatted display (e.g. <CompactNumber> or "5%"). Falls back to the raw value.
+   */
   display?: ReactNode
   range?: Range
   heat?: HeatMode
   center?: number
-  // Log-scale the heat tint, for highly skewed stats (e.g. cases opened).
+
+  /**
+   * Log-scale the heat tint, for highly skewed stats (e.g. cases opened).
+   */
   logScale?: boolean
-  // Leaderboard position, shown muted after the value. Omit for unranked rates.
+
+  /**
+   * Leaderboard position, shown muted after the value. Omit for unranked rates.
+   */
   rank?: number | null
 }
 
 interface Props {
   label: string
   rows: StatRowSpec[]
+
   /**
    * Optional headline stat rendered large above the rows (e.g. Total Damage),
    * with its full "#rank of N". Pass `total` for the rank's denominator.
@@ -35,8 +45,8 @@ interface Props {
 /**
  * A single card holding several related stats that don't each warrant their own
  * StatCard (premium spend, policy rates, demographic counts, the damage family).
- * Each row keeps the heat-tint and rank of the StatCard it replaces, so density
- * drops without losing the at-a-glance color or leaderboard context.
+ * Each row keeps a StatCard's heat tint and rank, so the card stays dense
+ * without losing the at-a-glance color or leaderboard context.
  */
 export function MultiStatCard({ label, rows, hero, total }: Props) {
   return (

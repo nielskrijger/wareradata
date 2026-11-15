@@ -46,9 +46,9 @@ export async function loadFactoryAggregates(
     }
 
     for (const r of rows) {
-      // Lines written before the employee rework have no `wagePerDay`, and their
-      // employeePoints are for the old player workers: count them as engine-only
-      // until the next pass rewrites the file.
+      // A line without `wagePerDay` carries no NPC employee data (its
+      // employeePoints count player workers), so it counts as engine-only until
+      // the next pass rewrites the file.
       const isLegacy = r.wagePerDay === undefined
       const enginePts = r.enginePoints ?? 0
       const employeePts = isLegacy ? 0 : (r.employeePoints ?? 0)

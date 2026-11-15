@@ -4,17 +4,21 @@ import { StackedBar } from '@/components/stacked-bar'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
-  // 0-100 readings; a player's own values, or a member average per entity.
+  /**
+   * 0-100 readings; a player's own values, or a member average per entity.
+   */
   health: number | null
   hunger: number | null
-  // Prefix the labels with "Avg" — the MU / country cards show member averages,
-  // the user card shows the player's own values.
+
+  /**
+   * Prefix the labels with "Avg" — the MU / country cards show member averages,
+   * the user card shows the player's own values.
+   */
   average?: boolean
 }
 
 /**
- * Detail-page card pairing health and hunger in one block (replacing the two
- * separate VitalCards). Each reading is an icon-led row whose percent and bar
+ * Detail-page card pairing health and hunger in one block. Each reading is an icon-led row whose percent and bar
  * are heat-tinted red->green by value. Rows with a null value are skipped; the
  * card renders nothing when both are null.
  */

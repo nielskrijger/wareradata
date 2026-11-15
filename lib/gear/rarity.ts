@@ -1,7 +1,6 @@
 /**
  * Rarity palette shared by every gear-rendering surface: the tile rings on
- * the gear strip, the score pill on the hover-card, and any future ranking
- * UI that needs the same color language.
+ * the gear strip and the score pill on the hover-card.
  *
  * Tier 1 (common, neutral) → tier 6 (mythic, fuchsia). Kept as raw hex so
  * the same color can drive a Tailwind ring (via inline style) and an
@@ -33,8 +32,10 @@ export function rarityLabel(tier: number): string {
   return RARITY_LABELS[Math.max(0, Math.min(5, tier - 1))]
 }
 
-// Rarity name as the API spells it → tier 1..6 (the inverse of RARITY_LABELS).
-// Lets gear code read an item's tier straight off its config `rarity` string.
+/**
+ * Rarity name as the API spells it → tier 1..6 (the inverse of RARITY_LABELS).
+ * Lets gear code read an item's tier straight off its config `rarity` string.
+ */
 const RARITY_TIER: Record<string, number> = {
   common: 1,
   uncommon: 2,

@@ -3,6 +3,7 @@ import { SEAM } from '@/components/readiness-pill-colors'
 export interface BarSegment {
   key: string
   value: number
+
   /**
    * CSS color for the segment fill (token, oklch, hex, …).
    */
@@ -11,6 +12,7 @@ export interface BarSegment {
 
 interface Props {
   segments: BarSegment[]
+
   /**
    * Denominator for each segment's width. Defaults to the sum of the segment
    * values, so the segments fill the whole track. Pass a larger total (an
@@ -18,6 +20,7 @@ interface Props {
    * remainder shows the track background.
    */
   total?: number
+
   /**
    * Track utilities (height, width, background). `flex overflow-hidden
    * rounded-full` are always applied.

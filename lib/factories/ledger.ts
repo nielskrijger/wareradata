@@ -9,13 +9,22 @@ import type { Employee } from '@/lib/warera/api'
 export interface LedgerEmployee {
   id: string
   name: string
-  // The employee's total production bonus (percent), already in their output.
+
+  /**
+   * The employee's total production bonus (percent), already in their output.
+   */
   bonusPct: number
-  // The breakdown behind netPerDay: revenue − inputCost − wage = net.
+
+  /**
+   * The breakdown behind netPerDay: revenue − inputCost − wage = net.
+   */
   revenuePerDay: number
   inputCostPerDay: number
   wagePerDay: number
-  // The employee's wage rate (gold per hour), shown next to the wage.
+
+  /**
+   * The employee's wage rate (gold per hour), shown next to the wage.
+   */
   wagePerHour: number
   netPerDay: number
 }

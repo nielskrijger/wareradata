@@ -4,17 +4,20 @@ import { InternalLink } from '@/components/links'
 
 interface Props {
   partyName: string | null
+
   /**
    * Party id; when set the name links to the party detail page. Without it the
    * name falls back to a `/users?q=party:"<name>"` filter link (used where we
    * only know the name).
    */
   partyId?: string | null
+
   /**
    * Party avatar; when set, shown as a small round image in front of the name.
    * Parties have no color scheme, so the avatar never gets a ring.
    */
   avatarUrl?: string | null
+
   /**
    * Render the name in medium weight. Use when party is the row's primary
    * identifier (e.g. the first column on /parties).

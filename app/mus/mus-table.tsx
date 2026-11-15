@@ -13,6 +13,7 @@ import { muColumns } from './columns'
 
 interface Props {
   initial: PageResult<MURow>
+
   /**
    * Scopes the table via a structured filter that's always applied (e.g.
    * `countryCode:<code>` on the country page). Combined with the user's search.

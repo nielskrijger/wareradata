@@ -4,10 +4,12 @@ import { useState } from 'react'
 
 export type HoverStatus = 'idle' | 'loading' | 'ready' | 'error'
 
-// Memoizes in-flight and resolved fetches across the page, keyed by the full
-// URL, so two cells for the same entity share one network request and
-// re-hovers are instant. Shared by every hover card (users, countries, …); the
-// URL already namespaces by entity, so there's no cross-type collision.
+/**
+ * Memoizes in-flight and resolved fetches across the page, keyed by the full
+ * URL, so two cells for the same entity share one network request and
+ * re-hovers are instant. Shared by every hover card (users, countries, …); the
+ * URL already namespaces by entity, so there's no cross-type collision.
+ */
 const cache = new Map<string, Promise<unknown>>()
 
 function fetchEntity<T>(url: string): Promise<T> {
@@ -32,7 +34,10 @@ function fetchEntity<T>(url: string): Promise<T> {
 interface EntityHover<T> {
   status: HoverStatus
   data: T | null
-  // Pass to the tooltip's `onOpenChange`; fetches lazily on first open.
+
+  /**
+   * Pass to the tooltip's `onOpenChange`; fetches lazily on first open.
+   */
   onOpenChange: (open: boolean) => void
 }
 

@@ -10,13 +10,17 @@ import { FACTORY_RATE_LIMIT, getUserCompaniesSlow } from './api'
 
 const log = logger.child({ component: 'factory-scrape' })
 
-// Users hydrated concurrently. The factory client's rate limit is the real
-// throttle; concurrency just keeps the request pipe full behind it. Kept low so
-// the in-flight payloads stay small on a memory-tight box.
+/**
+ * Users hydrated concurrently. The factory client's rate limit is the real
+ * throttle; concurrency just keeps the request pipe full behind it. Kept low so
+ * the in-flight payloads stay small on a memory-tight box.
+ */
 const CONCURRENCY = 6
 
-// How often to emit a progress line (every N users scanned). A full pass is
-// thousands of users over hours, so log frequently enough to see it advancing.
+/**
+ * How often to emit a progress line (every N users scanned). A full pass is
+ * thousands of users over hours, so log frequently enough to see it advancing.
+ */
 const PROGRESS_EVERY = 250
 
 /**

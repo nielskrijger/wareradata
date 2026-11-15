@@ -28,34 +28,51 @@ const log = logger.child({ component: 'file-store' })
  * scraper publishes a globally consistent snapshot with one atomic rename.
  */
 export interface RawSnapshot {
-  // The raw user array lives in a separate users.ndjson file, and currently-
-  // equipped gear in equipment.ndjson — neither is held here, so the persisted
-  // snapshot is small (~5 MB) and the build streams those files into the rows
-  // (see lib/cache/users-store and lib/cache/equipment-store).
+  /**
+   * The raw user array lives in a separate users.ndjson file, and currently-
+   * equipped gear in equipment.ndjson — neither is held here, so the persisted
+   * snapshot is small (~5 MB) and the build streams those files into the rows
+   * (see lib/cache/users-store and lib/cache/equipment-store).
+   */
   countries: Country[]
-  // Each occupied country's elected officials (president, ministers, congress),
-  // keyed by country id, all as user ids. Captured once per scrape via the
-  // per-country government endpoint. Dormant countries with no government are
-  // simply absent from the map.
+
+  /**
+   * Each occupied country's elected officials (president, ministers, congress),
+   * keyed by country id, all as user ids. Captured once per scrape via the
+   * per-country government endpoint. Dormant countries with no government are
+   * simply absent from the map.
+   */
   governments: Record<string, Government>
-  // Strategic resource bonuses per country id (the alliance-wide bonus for
-  // alliance members). Countries holding no resource are absent. Optional, so
-  // a snapshot without it still loads.
+
+  /**
+   * Strategic resource bonuses per country id (the alliance-wide bonus for
+   * alliance members). Countries holding no resource are absent. Optional, so
+   * a snapshot without it still loads.
+   */
   strategicBonuses?: Record<string, StrategicBonuses>
   mus: MU[]
   regions: Region[]
   parties: Party[]
-  // Multi-country blocs, captured whole (currently ~10). Members and rankings
-  // ride along on each alliance, so no per-alliance fan-out is needed.
+
+  /**
+   * Multi-country blocs, captured whole (currently ~10). Members and rankings
+   * ride along on each alliance, so no per-alliance fan-out is needed.
+   */
   alliances: Alliance[]
   battles: Battle[]
   tournament: TournamentSnapshot
-  // The game's static config (item stats, skill cost curves, …), captured every
-  // scrape. The gear-score roll bounds and skill cost curve are derived from it.
+
+  /**
+   * The game's static config (item stats, skill cost curves, …), captured every
+   * scrape. The gear-score roll bounds and skill cost curve are derived from it.
+   */
   gameConfig: GameConfig
-  // Market context for the factory profit model, captured each cycle (one extra
-  // request): current item prices. Kept here so the row builders can value
-  // factories at build time without any network. Empty on a legacy/cold snapshot.
+
+  /**
+   * Market context for the factory profit model, captured each cycle (one extra
+   * request): current item prices. Kept here so the row builders can value
+   * factories at build time without any network. Empty on a legacy/cold snapshot.
+   */
   prices: MarketPrices
   meta: SnapshotMeta
 }
@@ -173,14 +190,15 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   parsed.alliances ??= []
   parsed.prices ??= {} as RawSnapshot['prices']
 
-  // Legacy snapshots embedded users (now in users.ndjson) and equipment (now in
-  // equipment.ndjson). Drop the dead keys so a pre-migration file doesn't pin
-  // ~100 MB of unused data until the next scrape rewrites the snapshot without
-  // them. Transitional: serializeSnapshot never emits these, so once one cycle
-  // has run in each environment this is dead and can be removed.
+  // An older snapshot file can still embed `users` and `equipment`, which live in
+  // users.ndjson and equipment.ndjson. Drop those keys so such a file doesn't pin
+  // ~100 MB of unused data until the next scrape rewrites the snapshot.
+  // serializeSnapshot never emits them, so this only matters for a file no cycle
+  // has rewritten yet.
   delete (parsed as { users?: unknown }).users
   delete (parsed as { equipment?: unknown }).equipment
-  // Per-item best regions went away with the game's regional production bonuses.
+  // `itemBestRegions` is unused (regions don't affect production); drop it from
+  // an older snapshot file.
   delete (parsed as { itemBestRegions?: unknown }).itemBestRegions
 
   log.info({
@@ -194,7 +212,7 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
 
 /**
  * Streams the snapshot as JSON one field at a time. The two big collections
- * (users, equipment) now live in their own NDJSON files, so what remains here is
+ * (users, equipment) live in their own NDJSON files, so what remains here is
  * small (~5 MB) — but the streamed write keeps the atomic temp-file + rename
  * guarantee and avoids holding a second copy in a write buffer. Key order is
  * irrelevant to a parser.
@@ -246,9 +264,9 @@ export async function sweepStaleTempFiles(): Promise<void> {
  * directory, then rename over the live file. A same-filesystem rename is atomic
  * on POSIX, so a concurrent reader sees either the old or the fully-written new
  * file, never a half-written one. Streaming keeps peak memory flat instead of
- * holding the whole serialized blob plus its write buffer (which was OOM-ing the
- * scraper). On failure the partial temp file is removed; on success any stale
- * temp files from earlier crashed writes are swept.
+ * holding the whole serialized blob plus its write buffer. On failure the
+ * partial temp file is removed; on success any stale temp files from earlier
+ * crashed writes are swept.
  */
 export async function writeRawSnapshot(snapshot: RawSnapshot): Promise<void> {
   const dir = dataDir()

@@ -20,8 +20,10 @@ interface Props {
   totals: PortfolioTotals
 }
 
-// Plain-language explanations for the metric column headers. Factory and Item are
-// self-explanatory, so they get no tooltip.
+/**
+ * Plain-language explanations for the metric column headers. Factory and Item are
+ * self-explanatory, so they get no tooltip.
+ */
 const HEADER_TIPS = {
   employees: 'NPC employees hired / employee slots.',
   out: 'Units/day: the automated engine plus the NPC employees at the game\'s current hourly estimate. Excludes self-work.',
@@ -29,9 +31,11 @@ const HEADER_TIPS = {
   best: 'Top potential: Net/day if this factory\'s production went into the most profitable item instead. Approximate: employees\' item specialization would not carry over.',
 }
 
-// Column spans for the ledger sub-rows and the footer. Four label columns
-// (Factory, Item, Employees, Out/day) sit left of Net/day; two trailing cells
-// (Top potential, chevron) sit right of it — seven columns total.
+/**
+ * Column spans for the ledger sub-rows and the footer. Four label columns
+ * (Factory, Item, Employees, Out/day) sit left of Net/day; two trailing cells
+ * (Top potential, chevron) sit right of it — seven columns total.
+ */
 const LABEL_SPAN = 4
 const TRAILING_SPAN = 2
 const TOTAL_COLS = LABEL_SPAN + 1 + TRAILING_SPAN

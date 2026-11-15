@@ -7,8 +7,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface Props {
   mix: ReadinessPill
-  // Bar track width. Defaults to 96px (a touch wider than the 64px health/
-  // hunger bars, since this packs three segments).
+
+  /**
+   * Bar track width. Defaults to 96px (a touch wider than the 64px health/
+   * hunger bars, since this packs three segments).
+   */
   width?: number
 }
 

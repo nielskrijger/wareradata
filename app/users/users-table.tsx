@@ -13,6 +13,7 @@ import { userColumns } from './columns'
 
 interface Props {
   initial: PageResult<UserRow>
+
   /**
    * Scopes the table to a subset of users via a structured filter that's
    * always applied (e.g. `muId:<id>`). Combined with the user's search.

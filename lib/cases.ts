@@ -23,17 +23,25 @@ const CASE_DROP_RATES: Record<'case1' | 'case2', Record<CaseRarity, number>> = {
 export const MIN_LUCK_PULLS = 25
 
 interface LuckScores {
-  // Inverse-probability-weighted sum of actual pulls: a pull of rarity r in
-  // case type t scores 1/p(t,r), so a mythic counts proportionally to its
-  // rareness under that case's own odds.
+  /**
+   * Inverse-probability-weighted sum of actual pulls: a pull of rarity r in
+   * case type t scores 1/p(t,r), so a mythic counts proportionally to its
+   * rareness under that case's own odds.
+   */
   actual: number
-  // What `actual` is expected to be under the official odds for the same pull
-  // counts: per categorized pull, sum(p * 1/p) = the number of droppable
-  // rarities of that case type.
+
+  /**
+   * What `actual` is expected to be under the official odds for the same pull
+   * counts: per categorized pull, sum(p * 1/p) = the number of droppable
+   * rarities of that case type.
+   */
   expected: number
-  // Total pulls with a rarity bucket. byRarity sums to less than openedCount
-  // (some opens drop non-rarity loot like money), so this is the denominator
-  // population, not openedCount.
+
+  /**
+   * Total pulls with a rarity bucket. byRarity sums to less than openedCount
+   * (some opens drop non-rarity loot like money), so this is the denominator
+   * population, not openedCount.
+   */
   categorized: number
 }
 

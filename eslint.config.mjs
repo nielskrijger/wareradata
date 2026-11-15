@@ -31,6 +31,38 @@ export default antfu({
     'style/max-statements-per-line': 'off',
     // JSDoc blocks (`/** ... */`) must span multiple lines.
     'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
+    // Comments documenting a declaration (function, type, interface field,
+    // top-level const, …) are `/** … */` doc blocks so editors show them on
+    // hover. `//` stays for comments inside function bodies.
+    'jsdoc/convert-to-jsdoc-comments': ['error', {
+      contexts: [
+        'FunctionDeclaration',
+        'ClassDeclaration',
+        'PropertyDefinition',
+        'TSInterfaceDeclaration',
+        'TSTypeAliasDeclaration',
+        'TSEnumDeclaration',
+        'TSEnumMember',
+        'TSMethodSignature',
+        'Program > VariableDeclaration',
+        'Program > ExportNamedDeclaration > VariableDeclaration',
+      ],
+      contextsBeforeAndAfter: ['TSPropertySignature'],
+      enforceJsdocLineStyle: 'multi',
+    }],
+    // A doc block is separated from the code above it by a blank line, except
+    // as the first thing in a block, object, interface or type literal.
+    'style/lines-around-comment': ['error', {
+      beforeBlockComment: true,
+      allowBlockStart: true,
+      allowClassStart: true,
+      allowObjectStart: true,
+      allowArrayStart: true,
+      allowInterfaceStart: true,
+      allowTypeStart: true,
+      allowEnumStart: true,
+      allowModuleStart: true,
+    }],
     // Keep lines readable. Stylistic can't auto-wrap, so long lines are wrapped by
     // hand. Exempt: URLs, regexes, and a line that is nothing but one string
     // (`key: '…',`, `attr="…"`), since splitting prose or a class list only hurts.

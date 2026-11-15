@@ -16,9 +16,11 @@ import { compactNumberColumn, localeNumberColumn, percentColumn, pointsBreakdown
  * table keeps its own per-player variants where the wording differs.
  */
 
-// Top-level string keys of a row — what `accessorKey` and `row.original[key]`
-// accept. Duplicated from column-factories (a one-line internal alias) rather
-// than widening that file's API to export it.
+/**
+ * Top-level string keys of a row — what `accessorKey` and `row.original[key]`
+ * accept. Duplicated from column-factories (a one-line internal alias) rather
+ * than widening that file's API to export it.
+ */
 type Key<T> = Extract<keyof T, string>
 
 /**
@@ -225,7 +227,9 @@ interface CasesRow {
   caseLuckRank: number | null
 }
 
-// Header widths per rarity column; keys and order come from CASE_RARITIES.
+/**
+ * Header widths per rarity column; keys and order come from CASE_RARITIES.
+ */
 const CASE_RARITY_WIDTHS: Record<CaseRarity, number> = {
   common: 110,
   uncommon: 125,

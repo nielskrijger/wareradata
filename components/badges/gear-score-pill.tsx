@@ -2,12 +2,17 @@ import { rarityHex } from '@/lib/gear/rarity'
 import { gearScoreTier } from '@/lib/gear/score'
 
 interface Props {
-  // 0-100 gear score, or null when the user hasn't been hydrated with
-  // equipment yet (renders nothing).
+  /**
+   * 0-100 gear score, or null when the user hasn't been hydrated with
+   * equipment yet (renders nothing).
+   */
   score: number | null | undefined
-  // Rarity tier (1-6) from the actual equipped items, so the pill color matches
-  // the gear tiles. When omitted (e.g. the MU/country tables, which show an
-  // average score with no equipment) it falls back to the score-derived band.
+
+  /**
+   * Rarity tier (1-6) from the actual equipped items, so the pill color matches
+   * the gear tiles. When omitted (e.g. the MU/country tables, which show an
+   * average score with no equipment) it falls back to the score-derived band.
+   */
   tier?: number | null
 }
 

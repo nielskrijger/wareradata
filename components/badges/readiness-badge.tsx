@@ -10,12 +10,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface Props {
   status: 'buff' | 'debuff' | 'neither' | null
-  // ISO timestamp when the active buff/debuff ends. When set, the pill shows a
-  // live countdown ("3h12m") that ticks down on its own; without it the pill
-  // falls back to a plain "Buff" / "Debuff" label.
+
+  /**
+   * ISO timestamp when the active buff/debuff ends. When set, the pill shows a
+   * live countdown ("3h12m") that ticks down on its own; without it the pill
+   * falls back to a plain "Buff" / "Debuff" label.
+   */
   endsAt?: string | null
-  // Wrap the buff/debuff pill in a hover tooltip (effect + exact end time).
-  // Off inside the user hover-card, where it would nest a tooltip in a tooltip.
+
+  /**
+   * Wrap the buff/debuff pill in a hover tooltip (effect + exact end time).
+   * Off inside the user hover-card, where it would nest a tooltip in a tooltip.
+   */
   withTooltip?: boolean
 }
 

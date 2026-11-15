@@ -14,16 +14,22 @@
 
 import type { GameConfig } from '@/lib/warera/api'
 
-// Combat skills count toward "War".
+/**
+ * Combat skills count toward "War".
+ */
 export const WAR_SKILLS = ['attack', 'armor', 'criticalChance', 'criticalDamages', 'dodge', 'precision'] as const
 
-// Pure-economy skills count toward "Eco". `lootChance` is intentionally
-// excluded: it's battle-adjacent income (you only loot by fighting), so it
-// muddies the split rather than cleanly belonging to either side.
+/**
+ * Pure-economy skills count toward "Eco". `lootChance` is intentionally
+ * excluded: it's battle-adjacent income (you only loot by fighting), so it
+ * muddies the split rather than cleanly belonging to either side.
+ */
 export const ECO_SKILLS = ['management', 'companies', 'production'] as const
 
-// A player is decisively War/Eco once their points lean past this share of the
-// war+eco total; the band in between reads as Hybrid.
+/**
+ * A player is decisively War/Eco once their points lean past this share of the
+ * war+eco total; the band in between reads as Hybrid.
+ */
 const WAR_THRESHOLD = 0.6
 const ECO_THRESHOLD = 0.4
 

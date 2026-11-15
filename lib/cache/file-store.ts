@@ -9,6 +9,7 @@ import type {
   Party,
   Region,
   SnapshotMeta,
+  StrategicBonuses,
   TournamentSnapshot,
 } from '@/lib/warera/api'
 
@@ -37,6 +38,10 @@ export interface RawSnapshot {
   // per-country government endpoint. Dormant countries with no government are
   // simply absent from the map.
   governments: Record<string, Government>
+  // Strategic resource bonuses per country id (the alliance-wide bonus for
+  // alliance members). Countries holding no resource are absent. Optional, so
+  // a snapshot without it still loads.
+  strategicBonuses?: Record<string, StrategicBonuses>
   mus: MU[]
   regions: Region[]
   parties: Party[]

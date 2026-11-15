@@ -35,14 +35,6 @@ const INDEPENDENT_RGB = '130, 130, 140'
 // Sentinel bench id for the no-party group, which has no party page to link to.
 const INDEPENDENT_KEY = '__independent'
 
-const ROLE_SHORT: Record<string, string> = {
-  'President': 'President',
-  'Vice President': 'Vice President',
-  'Min. of Defense': 'Defense',
-  'Min. of Economy': 'Economy',
-  'Min. of Foreign Affairs': 'Foreign',
-}
-
 interface Bench {
   id: string
   name: string
@@ -137,13 +129,18 @@ export function GovernmentSection({ government }: Props) {
     return null
   }
 
+  // The executive bench: president and VP, then every appointed minister
+  // under their title. Titles can repeat (two Defense ministers), so seats are
+  // keyed by user and title.
   const seats = [
-    { label: 'President', official: government.president },
-    { label: 'Vice President', official: government.vicePresident },
-    { label: 'Min. of Defense', official: government.minOfDefense },
-    { label: 'Min. of Economy', official: government.minOfEconomy },
-    { label: 'Min. of Foreign Affairs', official: government.minOfForeignAffairs },
-  ].filter((s): s is { label: string, official: GovernmentOfficial } => s.official !== null)
+    { key: 'president', label: 'President', official: government.president },
+    { key: 'vice-president', label: 'Vice President', official: government.vicePresident },
+    ...government.ministers.map(m => ({
+      key: `minister-${m.official.id}-${m.title}`,
+      label: m.title,
+      official: m.official,
+    })),
+  ].filter((s): s is { key: string, label: string, official: GovernmentOfficial } => s.official !== null)
 
   const congress = dedupeById(government.congressMembers)
   if (seats.length === 0 && congress.length === 0) {
@@ -164,10 +161,13 @@ export function GovernmentSection({ government }: Props) {
             </span>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 sm:justify-start">
               {seats.map(seat => (
-                <div key={seat.label} className="flex w-20 flex-col items-center gap-1 text-center">
+                <div key={seat.key} className="flex w-20 flex-col items-center gap-1 text-center">
                   <GovFace official={seat.official} size={48} color={colorFor(seat.official.partyId, colors)} />
-                  <span className="text-muted-foreground text-[10px] uppercase">
-                    {ROLE_SHORT[seat.label] ?? seat.label}
+                  <span
+                    className="text-muted-foreground block w-full truncate text-[10px] uppercase"
+                    title={seat.label}
+                  >
+                    {seat.label}
                   </span>
                   <InternalLink
                     href={`/users/${seat.official.id}`}

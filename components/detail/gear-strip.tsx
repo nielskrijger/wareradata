@@ -44,13 +44,13 @@ function rarityRing(t: number, surface: Surface): string {
 }
 
 // Base icon filename. Armor pieces of all 6 tiers share one icon per
-// usage category (helmet1..6 → helmet.png); weapons and ammo use the code
+// usage category (helmet1..6 → helmet.webp); weapons and ammo use the code
 // itself. Skin overrides are intentionally not applied here.
 function iconUrl(slot: Slot, code: string): string {
   const filename = slot === 'helmet' || slot === 'chest' || slot === 'pants' || slot === 'gloves' || slot === 'boots'
     ? slot
     : code
-  return `https://app.warera.io/images/items/${filename}.png`
+  return `https://app.warera.io/images/items/${filename}.webp`
 }
 
 // Pull the surfacing skill + value off a piece. Each piece really has one
@@ -147,7 +147,7 @@ interface Props {
  * gloves · pants · shoes. Empty slots render a dimmed silhouette so the
  * footprint stays stable regardless of what's equipped.
  *
- * Item icons come from `app.warera.io/images/items/<slot|code>.png`; skin
+ * Item icons come from `app.warera.io/images/items/<slot|code>.webp`; skin
  * overrides from `equippedSkinKeys` are not applied here.
  */
 export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }: Props) {

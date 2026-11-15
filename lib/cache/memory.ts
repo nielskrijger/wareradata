@@ -2,7 +2,17 @@ import type { RawSnapshot } from './file-store'
 import type { UserFactoryAgg } from '@/lib/factories/profit'
 import type { GearLookup } from '@/lib/gear/score'
 import type { Range } from '@/lib/query'
-import type { AllianceRow, BattleRow, CountryRow, GovernmentRow, MURow, PartyRow, RegionRow, UserRow } from '@/lib/rows'
+import type {
+  AllianceRow,
+  BattleRow,
+  CountryRow,
+  GovernmentRow,
+  MURow,
+  PartyRow,
+  RegionRow,
+  StrategicBonusRow,
+  UserRow,
+} from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 
 import type { Equipment, GameConfig, TournamentSnapshot, User } from '@/lib/warera/api'
@@ -18,6 +28,7 @@ import { buildGovernmentRows } from '@/lib/rows/build-governments'
 import { buildMURows } from '@/lib/rows/build-mus'
 import { buildPartyRows } from '@/lib/rows/build-parties'
 import { buildRegionRows } from '@/lib/rows/build-regions'
+import { buildStrategicRows } from '@/lib/rows/build-strategic'
 import { buildUserRows } from '@/lib/rows/build-users'
 import { buildBaseLookups } from '@/lib/rows/lookups'
 
@@ -54,6 +65,12 @@ export interface Snapshot {
   // from RawSnapshot.governments + the user lookups. Read only by the country
   // detail page; absent for countries with no government.
   governments: Record<string, GovernmentRow>
+  // Strategic resource bonuses by country id and by alliance id (all members
+  // of an alliance share one). Empty when the snapshot has none.
+  strategicBonuses: {
+    byCountry: Record<string, StrategicBonusRow>
+    byAlliance: Record<string, StrategicBonusRow>
+  }
   mus: MURow[]
   parties: PartyRow[]
   alliances: AllianceRow[]
@@ -137,6 +154,7 @@ export async function buildSnapshot(
   )
   const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups, raw.alliances)
   const governmentRows = buildGovernmentRows(raw.governments, lookups)
+  const strategicBonuses = buildStrategicRows(raw.strategicBonuses)
   const muRows = buildMURows(raw.mus, userRows, lookups)
   const partyRows = buildPartyRows(raw.parties, userRows, lookups)
   const allianceRows = buildAllianceRows(raw.alliances, countryRows, userRows, lookups)
@@ -149,6 +167,7 @@ export async function buildSnapshot(
     userRanges,
     countries: countryRows,
     governments: governmentRows,
+    strategicBonuses,
     mus: muRows,
     parties: partyRows,
     alliances: allianceRows,

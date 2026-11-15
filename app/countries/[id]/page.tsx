@@ -13,6 +13,7 @@ import { GovernmentSection } from '@/components/detail/government-section'
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
+import { StrategicBonusCard } from '@/components/detail/strategic-bonus-card'
 import { VitalsCard } from '@/components/detail/vitals-card'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { Flag } from '@/components/flag'
@@ -21,6 +22,7 @@ import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { computeRanges, firstPage } from '@/lib/query'
+import { formatGovType } from '@/lib/warera/gov-type'
 import { wareraUrl } from '@/lib/warera/urls'
 
 import { CountryTables } from './country-tables'
@@ -34,17 +36,19 @@ interface PageProps {
  * `generateMetadata` and the page share one load per request.
  */
 const getCountry = cache(async (id: string) => {
-  const [{ countries, users, mus, parties, governments }, liveActive, activeBattlesByCountry] = await Promise.all([
+  const [snapshot, liveActive, activeBattlesByCountry] = await Promise.all([
     getSnapshot(),
     getLiveActiveBattles(),
     getActiveBattlesByCountry(),
   ])
+  const { countries, users, mus, parties, governments, strategicBonuses } = snapshot
   const country = countries.find(c => c.id === id)
   if (!country) {
     return null
   }
 
   const government = governments[id] ?? null
+  const strategicBonus = strategicBonuses.byCountry[id] ?? null
 
   // Ranges over the full set, same as the /countries table, so each stat can
   // show where this country sits.
@@ -61,7 +65,18 @@ const getCountry = cache(async (id: string) => {
   // cell uses (each battle from this country's point of view).
   const activeBattlesList = activeBattlesByCountry.get(id) ?? []
 
-  return { country, government, ranges, total, citizenPage, muPage, partyPage, battlePage, activeBattlesList }
+  return {
+    country,
+    government,
+    strategicBonus,
+    ranges,
+    total,
+    citizenPage,
+    muPage,
+    partyPage,
+    battlePage,
+    activeBattlesList,
+  }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -86,6 +101,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
   const {
     country: c,
     government,
+    strategicBonus,
     ranges,
     total,
     citizenPage,
@@ -129,6 +145,11 @@ export default async function CountryDetailPage({ params }: PageProps) {
             {' '}
             parties
           </span>
+          {c.govType && (
+            <span className="text-muted-foreground">
+              <span className="text-foreground font-medium">{formatGovType(c.govType)}</span>
+            </span>
+          )}
           {c.allianceId && c.allianceName && (
             <span className="text-muted-foreground">
               alliance
@@ -216,6 +237,14 @@ export default async function CountryDetailPage({ params }: PageProps) {
               range: ranges.citizenWealth,
               heat: 'median',
               rank: c.citizenWealthRank,
+            },
+            {
+              label: 'Daily income',
+              value: c.dailyIncome,
+              display: <CompactNumber value={c.dailyIncome} />,
+              range: ranges.dailyIncome,
+              heat: 'median',
+              rank: c.dailyIncomeRank,
             },
             {
               label: 'Bounty',
@@ -310,6 +339,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
             },
           ]}
         />
+        <StrategicBonusCard bonus={strategicBonus} scope="country" />
         <MultiStatCard
           label="Premium"
           rows={[

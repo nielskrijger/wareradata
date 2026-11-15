@@ -16,10 +16,24 @@ const regionFieldAliases: FieldAliases = {
   capital: 'isCapital',
   dev: 'development',
   neighbors: 'neighborCount',
+  pop: 'population',
+  companies: 'companyCount',
+  employees: 'employeeCount',
+  income: 'dailyIncome',
 }
 
 const regionSortValue = makeSortValue<RegionRow>({
-  passthrough: ['development', 'neighborCount', 'biome', 'climate', 'strategicResource'],
+  passthrough: [
+    'development',
+    'neighborCount',
+    'biome',
+    'climate',
+    'strategicResource',
+    'population',
+    'companyCount',
+    'employeeCount',
+    'dailyIncome',
+  ],
   text: ['name', 'countryName', 'coreCountryName', 'mainCity'],
   boolean: ['isCapital', 'isLinkedToCapital'],
   default: 'development',

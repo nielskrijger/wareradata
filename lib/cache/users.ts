@@ -9,17 +9,26 @@ import 'server-only'
 
 export interface UserDetails {
   user: UserRow
-  // Per-field [min, max, median] over the full user set, mirroring the shape
-  // used by the data table's HeatCell so the hover-card can heat-tint values
-  // against the same baseline.
+
+  /**
+   * Per-field [min, max, median] over the full user set, mirroring the shape
+   * used by the data table's HeatCell so the hover-card can heat-tint values
+   * against the same baseline.
+   */
   ranges: Record<string, Range>
   total: number
-  // Currently-equipped gear from the latest scrape, read from the separate
-  // equipment file (not the snapshot). Empty object when the user stripped
-  // between battles (the scraper captured no slots) or before the first scrape.
+
+  /**
+   * Currently-equipped gear from the latest scrape, read from the separate
+   * equipment file (not the snapshot). Empty object when the user stripped
+   * between battles (the scraper captured no slots) or before the first scrape.
+   */
   equipment: Equipment
-  // The small code→tier + ammo-bonus lookup, so the client hover-card's gear
-  // strip can resolve tiers/bonuses without the full config (see Snapshot).
+
+  /**
+   * The small code→tier + ammo-bonus lookup, so the client hover-card's gear
+   * strip can resolve tiers/bonuses without the full config (see Snapshot).
+   */
   gearLookup: GearLookup
 }
 

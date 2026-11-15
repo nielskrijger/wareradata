@@ -8,16 +8,25 @@ import { cn } from '@/lib/utils'
 export interface WealthPart {
   label: string
   value: number | null | undefined
-  // Dataset range for the heat tint, from the page's `ranges` map.
+
+  /**
+   * Dataset range for the heat tint, from the page's `ranges` map.
+   */
   range?: Range
-  // Leaderboard position among same-kind entities, shown muted after the value.
+
+  /**
+   * Leaderboard position among same-kind entities, shown muted after the value.
+   */
   rank?: number | null
 }
 
 interface Props {
   parts: WealthPart[]
-  // For an MU/country: the member/citizen count, to show a per-capita average of
-  // the summed total. Omit for a single user.
+
+  /**
+   * For an MU/country: the member/citizen count, to show a per-capita average of
+   * the summed total. Omit for a single user.
+   */
   perCapita?: { count: number, unit: string }
   className?: string
 }

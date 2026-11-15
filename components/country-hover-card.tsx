@@ -17,15 +17,23 @@ import { useEntityHover } from '@/components/hover-card/use-entity-hover'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
-  // Country id used as both the fetch key and the route param. When null, the
-  // children render bare (no tooltip wrapper).
+  /**
+   * Country id used as both the fetch key and the route param. When null, the
+   * children render bare (no tooltip wrapper).
+   */
   countryId: string | null | undefined
-  // The trigger element (typically a <CountryCell>'s flag + name). Tooltip
-  // opens on hover.
+
+  /**
+   * The trigger element (typically a <CountryCell>'s flag + name). Tooltip
+   * opens on hover.
+   */
   children: ReactNode
-  // Classes for the trigger wrapper span. Defaults to a block flex-item that
-  // lets a truncating child shrink (the country-cell case); a flag roster
-  // passes `inline-flex` so each trigger sits inline among wrapped flags.
+
+  /**
+   * Classes for the trigger wrapper span. Defaults to a block flex-item that
+   * lets a truncating child shrink (the country-cell case); a flag roster
+   * passes `inline-flex` so each trigger sits inline among wrapped flags.
+   */
   triggerClassName?: string
 }
 
@@ -33,8 +41,10 @@ const intFull = new Intl.NumberFormat('en', { maximumFractionDigits: 0 })
 
 const ICON = 'size-3 text-neutral-50/70'
 
-// Position of a value within its [min, max] range as a 0–100 percent, for the
-// heat tint. Clamped so out-of-range values stay in gamut.
+/**
+ * Position of a value within its [min, max] range as a 0–100 percent, for the
+ * heat tint. Clamped so out-of-range values stay in gamut.
+ */
 function pctInRange(value: number, range: Range | undefined): number {
   if (!range) {
     return 0
@@ -146,12 +156,18 @@ function Body({ data }: { data: CountryDetails }) {
 interface TileProps {
   icon: ReactNode
   label: string
-  // The raw value, used for the heat tint against `range`.
+
+  /**
+   * The raw value, used for the heat tint against `range`.
+   */
   value: number | null
   rank: number | null
   range: Range | undefined
-  // Overrides the displayed text (e.g. a CompactNumber or a "%" suffix). Falls
-  // back to the integer-formatted value.
+
+  /**
+   * Overrides the displayed text (e.g. a CompactNumber or a "%" suffix). Falls
+   * back to the integer-formatted value.
+   */
   display?: ReactNode
 }
 
@@ -173,9 +189,11 @@ function Tile({ icon, label, value, rank, range, display }: TileProps) {
   )
 }
 
-// Fixed-size placeholder matching the loaded layout's footprint so the popover
-// doesn't jump when data arrives. Loading uses subtle pulses; error swaps in a
-// one-line message.
+/**
+ * Fixed-size placeholder matching the loaded layout's footprint so the popover
+ * doesn't jump when data arrives. Loading uses subtle pulses; error swaps in a
+ * one-line message.
+ */
 function Placeholder({ status }: { status: HoverStatus }) {
   if (status === 'error') {
     return (

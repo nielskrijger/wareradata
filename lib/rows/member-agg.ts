@@ -25,13 +25,21 @@ export interface MemberAgg {
   level: number
   readyCount: number
   levelCount: number
-  levelSum: number // Tracked seperately from count because not every user has a level value
+
+  /**
+   * Sum over members that have a level. Paired with `levelCount` rather than
+   * `count`, since not every user has a level value.
+   */
+  levelSum: number
   premiumGiftsTotal: number
   premiumMonthsTotal: number
   total: number
-  // Sums of members' per-user factory totals (production points/day, net gold/day,
-  // and Top-potential gold/day), for the entity's Factories columns. Members with
-  // no scraped factories contribute 0; efficiency = factoryNet / factoryTop.
+
+  /**
+   * Sums of members' per-user factory totals (production points/day, net gold/day,
+   * and Top-potential gold/day), for the entity's Factories columns. Members with
+   * no scraped factories contribute 0; efficiency = factoryNet / factoryTop.
+   */
   factoryCount: number
   factoryPpPerDay: number
   factoryNetPerDay: number
@@ -39,36 +47,54 @@ export interface MemberAgg {
   factoryEmployeeNetPerDay: number
   factoryWorkers: number
   factoryTopPotential: number
-  // Sum and count of members' warShare (war / war+eco). Counts only members
-  // with a non-null share (i.e. who've trained war or eco), so the mean is a
-  // one-member-one-vote average of leans, untrained members excluded — same
-  // null-handling as the gear/health/hunger means.
+
+  /**
+   * Sum and count of members' warShare (war / war+eco). Counts only members
+   * with a non-null share (i.e. who've trained war or eco), so the mean is a
+   * one-member-one-vote average of leans, untrained members excluded — same
+   * null-handling as the gear/health/hunger means.
+   */
   warShareSum: number
   warShareCount: number
-  // Sum of members' point-scored wealth (feeds each entity's wealthPoints and
-  // the points total). Equal to `wealth` today because WEALTH_DIVISOR is 1
-  // gold/point.
+
+  /**
+   * Sum of members' point-scored wealth (feeds each entity's wealthPoints and
+   * the points total). Equal to `wealth` today because WEALTH_DIVISOR is 1
+   * gold/point.
+   */
   wealthPoints: number
-  // Sum of members' actual wealth in gold, mirroring UserRow.wealth. Tracked
-  // apart from wealthPoints so the Member/Citizen Wealth column reflects real
-  // holdings rather than the points derivative, which would diverge if the
-  // scoring divisor ever changed.
+
+  /**
+   * Sum of members' actual wealth in gold, mirroring UserRow.wealth. Tracked
+   * apart from wealthPoints so the Member/Citizen Wealth column reflects real
+   * holdings rather than the points derivative, which would diverge if the
+   * scoring divisor ever changed.
+   */
   wealth: number
-  // Sums of members' five wealth parts (UserRow.{companies,items,cash,equipment,
-  // weapons}Wealth), for the entity's "Wealth composition" breakdown. Members
-  // missing a breakdown contribute 0.
+
+  /**
+   * Sums of members' five wealth parts (UserRow.{companies,items,cash,equipment,
+   * weapons}Wealth), for the entity's "Wealth composition" breakdown. Members
+   * missing a breakdown contribute 0.
+   */
   companiesWealth: number
   itemsWealth: number
   cashWealth: number
   equipmentWealth: number
   weaponsWealth: number
-  // Sum + count of members' points/day, for the per-member average rate. Counts
-  // only members with a non-null rate (accounts <7 days old have none).
+
+  /**
+   * Sum + count of members' points/day, for the per-member average rate. Counts
+   * only members with a non-null rate (accounts <7 days old have none).
+   */
   pointsPerDaySum: number
   pointsPerDayCount: number
-  // Case pulls: total opens, per-rarity sums, and the pooled luck score inputs
-  // (see lib/cases.ts), so group luck judges the group's combined pulls against
-  // the official odds rather than averaging member percentages.
+
+  /**
+   * Case pulls: total opens, per-rarity sums, and the pooled luck score inputs
+   * (see lib/cases.ts), so group luck judges the group's combined pulls against
+   * the official odds rather than averaging member percentages.
+   */
   casesOpened: number
   standardCasesOpened: number
   mythicCasesOpened: number

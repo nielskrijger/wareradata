@@ -14,6 +14,7 @@ import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 interface Props {
   initial: PageResult<BattleRow>
   columns: ColumnDef<BattleRow>[]
+
   /**
    * Locked filter scoping the table to active or finished battles.
    */

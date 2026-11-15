@@ -10,14 +10,18 @@ interface Props<TData> {
   row: Row<TData>
 }
 
-// Pins the first column while the rest scroll horizontally. bg-table-surface
-// matches the table fill (opaque, so scrolled columns don't bleed through);
-// a soft right-edge shadow signals the pin without recoloring the column.
+/**
+ * Pins the first column while the rest scroll horizontally. bg-table-surface
+ * matches the table fill (opaque, so scrolled columns don't bleed through);
+ * a soft right-edge shadow signals the pin without recoloring the column.
+ */
 const STICKY = 'bg-table-surface sticky left-0 z-10 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.35)]'
 
-// Mobile-narrow / sm-full width for the pinned column, mirroring the header
-// cell. The CSS var lets these classes win over what would otherwise be an
-// inline `width`.
+/**
+ * Mobile-narrow / sm-full width for the pinned column, mirroring the header
+ * cell. The CSS var lets these classes win over what would otherwise be an
+ * inline `width`.
+ */
 const STICKY_WIDTH = 'w-[140px] sm:w-[var(--col-w)]'
 
 export function DataTableRow<TData>({ row }: Props<TData>) {

@@ -10,6 +10,7 @@ interface InternalLinkProps {
   href: string
   children: ReactNode
   bold?: boolean
+
   /**
    * Native browser tooltip. Useful when the visible text is truncated.
    */
@@ -36,11 +37,13 @@ export function InternalLink({ href, children, bold, title, className }: Interna
 
 interface ExternalLinkProps {
   href: string
+
   /**
    * Visible link text rendered before the icon. Omit for an icon-only link
    * (in which case `label` is required for the aria-label).
    */
   children?: ReactNode
+
   /**
    * Aria label for icon-only links (used when `children` is omitted).
    * Ignored when `children` is present.

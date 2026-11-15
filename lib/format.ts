@@ -1,5 +1,7 @@
-// Placeholder shown wherever a value is missing. DataTableRow detects this
-// sentinel and renders it muted, so cells can keep returning the bare string.
+/**
+ * Placeholder shown wherever a value is missing. DataTableRow detects this
+ * sentinel and renders it muted, so cells can keep returning the bare string.
+ */
 export const EMPTY = '—'
 
 /**

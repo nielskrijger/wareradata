@@ -2,9 +2,11 @@ import type { CombatMode } from '@/lib/skills/classify'
 
 import { Badge } from '@/components/ui/badge'
 
-// Per-mode tint, following the house badge style (bg-*/15 + dark-aware text),
-// matching TierBadge / ReadinessBadge. War reads red (combat), Eco green
-// (growth), Hybrid amber (split), Untrained muted.
+/**
+ * Per-mode tint, following the house badge style (a 15% tinted background + dark-aware text),
+ * matching TierBadge / ReadinessBadge. War reads red (combat), Eco green
+ * (growth), Hybrid amber (split), Untrained muted.
+ */
 const MODE_META: Record<CombatMode, { label: string, className: string }> = {
   war: { label: 'War', className: 'bg-red-500/15 text-red-800 dark:text-red-300' },
   eco: { label: 'Eco', className: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300' },

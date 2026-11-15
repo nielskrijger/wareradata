@@ -1,8 +1,10 @@
 import type { StrategicBonusRow } from '@/lib/rows'
 import type { StrategicBonuses } from '@/lib/warera/api'
 
-// Copies of a resource needed for each bonus level: 1, 4 and 9 give
-// levels 1 to 3; copies in between add nothing.
+/**
+ * Copies of a resource needed for each bonus level: 1, 4 and 9 give
+ * levels 1 to 3; copies in between add nothing.
+ */
 const LEVEL_THRESHOLDS = [1, 4, 9] as const
 
 function resourceLevel(copies: number): number {
@@ -30,7 +32,7 @@ function toRow(b: StrategicBonuses): StrategicBonusRow {
 /**
  * Resolves the per-country strategic resource bonuses into display rows, keyed
  * by country id and (for alliance members, who all share one bonus) by
- * alliance id. Empty on snapshots captured before the bonuses were scraped.
+ * alliance id. Empty when the snapshot has no bonuses.
  */
 export function buildStrategicRows(raw: Record<string, StrategicBonuses> | undefined): {
   byCountry: Record<string, StrategicBonusRow>

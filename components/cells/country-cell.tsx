@@ -10,13 +10,17 @@ interface Props {
   countryCode: string | null
   countryName: string | null
   countryId: string | null
+
   /**
    * Active-battle count; when > 0 a small ⚔ pill is shown after the name.
    * Omit (or pass 0) to hide it, e.g. on the /battles page where it'd be
    * redundant next to the battle itself.
    */
   activeBattles?: number
-  // Matchups behind `activeBattles`, shown in the pill's hover tooltip.
+
+  /**
+   * Matchups behind `activeBattles`, shown in the pill's hover tooltip.
+   */
   activeBattlesList?: ActiveBattleSummary[]
 }
 

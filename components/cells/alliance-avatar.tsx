@@ -21,6 +21,7 @@ function firstGrapheme(value: string): string {
 interface Props {
   name: string
   avatarUrl: string | null
+
   /**
    * WarEra color scheme name, the monogram fallback's fill.
    */

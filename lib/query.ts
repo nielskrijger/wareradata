@@ -1,6 +1,6 @@
 /**
- * Shared filter / sort / paginate helpers for the in-memory row caches.
- * Used by both /api/users and /api/countries.
+ * Shared filter / sort / paginate helpers for the in-memory row caches,
+ * used by every `/api/<entity>` table route.
  */
 
 import { filter as liqeFilter, parse as liqeParse } from 'liqe'
@@ -11,6 +11,7 @@ export interface QueryParams {
   sort: string | null
   dir: 'asc' | 'desc'
   filter: string
+
   /**
    * A locked-in scope (e.g. `muId:<id>` on a detail page), kept separate from
    * the user's `filter` so a malformed user filter can't widen past it. Empty
@@ -40,16 +41,21 @@ export function parseQuery(searchParams: URLSearchParams): QueryParams {
   return { page, pageSize, sort, dir, filter, baseFilter }
 }
 
-// [min, max, median] over the full filtered set. The median lets the client
-// anchor a ramp at a typical value (skewed columns like avgLevel) instead of
-// the minimum, so low/typical rows stay calm.
+/**
+ * [min, max, median] over the full filtered set. The median lets the client
+ * anchor a ramp at a typical value (skewed columns like avgLevel) instead of
+ * the minimum, so low/typical rows stay calm.
+ */
 export type Range = [number, number, number]
 
 export interface PagedResult<T> {
   rows: T[]
   total: number
-  // Per-numeric-column range over the full filtered set (not just the page),
-  // for client-side heat coloring. The client uses whichever keys it needs.
+
+  /**
+   * Per-numeric-column range over the full filtered set (not just the page),
+   * for client-side heat coloring. The client uses whichever keys it needs.
+   */
   ranges?: Record<string, Range>
 }
 
@@ -265,18 +271,22 @@ export interface SortSpec<T> {
    * Returned as-is: numbers, country codes, ISO date strings, enum strings.
    */
   passthrough?: (keyof T)[]
+
   /**
    * Lowercased for case-insensitive ordering (display names).
    */
   text?: (keyof T)[]
+
   /**
    * Booleans mapped to 1 / 0 so `true` sorts after `false`.
    */
   boolean?: (keyof T)[]
+
   /**
    * Bespoke comparators keyed by sort id (tier lookups, derived scores).
    */
   custom?: Record<string, (row: T) => number | string | null>
+
   /**
    * Used when the sort id matches nothing above (the table's natural order).
    */
@@ -285,8 +295,7 @@ export interface SortSpec<T> {
 
 /**
  * Turns a {@link SortSpec} into the `(row, sort) => comparable` function that
- * {@link applyStructuredQuery} expects, replacing the per-route switch that
- * mapped each column id to a row value. Columns needing special handling
+ * {@link applyStructuredQuery} expects. Columns needing special handling
  * (tier progression, readiness score) go in `custom`.
  */
 export function makeSortValue<T>(
@@ -321,7 +330,7 @@ export function makeSortValue<T>(
  * Builds the GET handler shared by every `/api/<entity>` table route: parse the
  * query, load the rows (`loadRows` is route-specific — usually a snapshot slice,
  * sometimes enriched/merged), then filter / sort / paginate via
- * {@link applyStructuredQuery}. Collapses the boilerplate each route repeated.
+ * {@link applyStructuredQuery}.
  */
 export function createTableRoute<T extends object>(
   loadRows: () => Promise<T[]>,

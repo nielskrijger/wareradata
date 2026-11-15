@@ -12,17 +12,25 @@ interface Props {
   mode: CombatMode
   warPoints: number
   ecoPoints: number
-  // Leaderboard positions for each discipline, shown in the tooltip footer.
+
+  /**
+   * Leaderboard positions for each discipline, shown in the tooltip footer.
+   */
   warPointsRank: number | null
   ecoPointsRank: number | null
-  // Bar track width. Defaults to 84px to sit inside the Mode column.
+
+  /**
+   * Bar track width. Defaults to 84px to sit inside the Mode column.
+   */
   width?: number
 }
 
-// Shared heat tokens so war/eco read as one consistent red/green across the
-// table cells and the detail-page card (which also uses --heat-red/green).
-const WAR_COLOR = 'var(--heat-red)' // red (combat)
-const ECO_COLOR = 'var(--heat-green)' // green (growth)
+/**
+ * Shared heat tokens so war/eco read as one consistent red/green across the
+ * table cells and the detail-page card (which also uses --heat-red/green).
+ */
+const WAR_COLOR = 'var(--heat-red)'
+const ECO_COLOR = 'var(--heat-green)'
 
 /**
  * A player's War / Eco lean as a two-tone bar (red war / green eco), sized by
@@ -81,9 +89,11 @@ export function CombatModeCell({ mode, warPoints, ecoPoints, warPointsRank, ecoP
   )
 }
 
-// One discipline: the label/value/share on a single text line, the proportion
-// bar full-width beneath. Stacking the text above the bar (rather than sharing a
-// row with a fixed numeric column) means a 3-digit value at 100% can't wrap.
+/**
+ * One discipline: the label/value/share on a single text line, the proportion
+ * bar full-width beneath. Stacking the text above the bar (rather than sharing a
+ * row with a fixed numeric column) means a 3-digit value at 100% can't wrap.
+ */
 function BreakdownRow({ label, value, total, color, icon }: {
   label: string
   value: number
@@ -110,9 +120,11 @@ function BreakdownRow({ label, value, total, color, icon }: {
   )
 }
 
-// Closing line: the leading discipline's leaderboard position, so the tooltip
-// answers "how invested is this player, really?". Hybrid/untrained get a plain
-// label.
+/**
+ * Closing line: the leading discipline's leaderboard position, so the tooltip
+ * answers "how invested is this player, really?". Hybrid/untrained get a plain
+ * label.
+ */
 function Footer({ mode, warPointsRank, ecoPointsRank }: {
   mode: CombatMode
   warPointsRank: number | null

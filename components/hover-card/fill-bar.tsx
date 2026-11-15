@@ -3,9 +3,14 @@ import type { ReactNode } from 'react'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
-  // 0–100; null renders an empty track with a muted dash.
+  /**
+   * 0–100; null renders an empty track with a muted dash.
+   */
   pct: number | null
-  // Optional leading icon (e.g. a Heart for health).
+
+  /**
+   * Optional leading icon (e.g. a Heart for health).
+   */
   icon?: ReactNode
 }
 

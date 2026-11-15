@@ -15,13 +15,17 @@ interface Props<TData> {
   sticky?: boolean
 }
 
-// Above the body's sticky cells (z-10) so the top-left corner stays on top.
+/**
+ * Above the body's sticky cells (z-10) so the top-left corner stays on top.
+ */
 const STICKY = 'bg-table-surface sticky left-0 z-20 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.35)]'
 
-// The pinned first column is capped narrow on mobile (names ellipsize) to leave
-// more room for the scrolling data columns, then takes its real width from sm
-// up. Width comes from a CSS var so the mobile-first w-* classes win — an inline
-// `width` would always override them.
+/**
+ * The pinned first column is capped narrow on mobile (names ellipsize) to leave
+ * more room for the scrolling data columns, then takes its real width from sm
+ * up. Width comes from a CSS var so the mobile-first w-* classes win — an inline
+ * `width` would always override them.
+ */
 const STICKY_WIDTH = 'w-[140px] sm:w-[var(--col-w)]'
 
 export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {

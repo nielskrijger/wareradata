@@ -8,24 +8,30 @@ import { rarityHex } from '@/lib/gear/rarity'
 import { tierOfCode } from '@/lib/gear/score'
 import { cn } from '@/lib/utils'
 
-// Slot order mirrors the in-game UI (weapon, ammo, head, chest, gloves,
-// pants, shoes). Layout downstream depends on this order; do not reshuffle.
+/**
+ * Slot order mirrors the in-game UI (weapon, ammo, head, chest, gloves,
+ * pants, shoes). Layout downstream depends on this order; do not reshuffle.
+ */
 const SLOT_ORDER = ['weapon', 'ammo', 'helmet', 'chest', 'gloves', 'pants', 'boots'] as const
 type Slot = (typeof SLOT_ORDER)[number]
 
-// Two surfaces this strip renders on:
-//  - 'dark': the user hover-card, whose TooltipContent is fixed dark in both
-//    themes, so white-alpha chrome reads correctly.
-//  - 'card': a theme-variable detail-page card (bg-card), where white-alpha
-//    tiles and the neutral tier-1 ring would vanish in light mode, so we swap
-//    to theme tokens (bg-muted / ring-border) that adapt.
+/**
+ * Two surfaces this strip renders on:
+ *  - 'dark': the user hover-card, whose TooltipContent is fixed dark in both
+ *    themes, so white-alpha chrome reads correctly.
+ *  - 'card': a theme-variable detail-page card (bg-card), where white-alpha
+ *    tiles and the neutral tier-1 ring would vanish in light mode, so we swap
+ *    to theme tokens (bg-muted / ring-border) that adapt.
+ */
 type Surface = 'dark' | 'card'
 
-// Tailwind ring classes mirror the RARITY_HEX palette. Kept as classes (not
-// inline style) so Tailwind's compiler can scope them properly; the matching
-// hex is imported from lib/gear/rarity for the inline-style consumers
-// (durability fill, bonus text, score pill). Only the tier-1 (neutral) ring is
-// surface-dependent; the colored rings read on both light and dark cards.
+/**
+ * Tailwind ring classes mirror the RARITY_HEX palette. Kept as classes (not
+ * inline style) so Tailwind's compiler can scope them properly; the matching
+ * hex is imported from lib/gear/rarity for the inline-style consumers
+ * (durability fill, bonus text, score pill). Only the tier-1 (neutral) ring is
+ * surface-dependent; the colored rings read on both light and dark cards.
+ */
 const RARITY_RING = [
   'ring-1 ring-neutral-50/15',
   'ring-1 ring-emerald-400/40',
@@ -43,9 +49,11 @@ function rarityRing(t: number, surface: Surface): string {
   return RARITY_RING[i]
 }
 
-// Base icon filename. Armor pieces of all 6 tiers share one icon per
-// usage category (helmet1..6 → helmet.webp); weapons and ammo use the code
-// itself. Skin overrides are not applied here.
+/**
+ * Base icon filename. Armor pieces of all 6 tiers share one icon per
+ * usage category (helmet1..6 → helmet.webp); weapons and ammo use the code
+ * itself. Skin overrides are not applied here.
+ */
 function iconUrl(slot: Slot, code: string): string {
   const filename = slot === 'helmet' || slot === 'chest' || slot === 'pants' || slot === 'gloves' || slot === 'boots'
     ? slot
@@ -53,9 +61,11 @@ function iconUrl(slot: Slot, code: string): string {
   return `https://media.warera.io/images/itemsv2/${filename}.webp?v=2`
 }
 
-// Pull the surfacing skill + value off a piece. Each piece really has one
-// dominant bonus (helmet → criticalDamages, chest → armor, etc.). Weapons
-// have two (attack, criticalChance); we surface attack as primary.
+/**
+ * Pull the surfacing skill + value off a piece. Each piece really has one
+ * dominant bonus (helmet → criticalDamages, chest → armor, etc.). Weapons
+ * have two (attack, criticalChance); we surface attack as primary.
+ */
 interface SkillsBag {
   attack?: number
   criticalChance?: number
@@ -80,9 +90,11 @@ function primarySkill(skills: SkillsBag | undefined): { skill: string, value: nu
   return null
 }
 
-// Lucide-style trousers SVG (lucide has no pants icon). Two visually
-// separate rectangular legs joined by a thin waistband, designed to read
-// at 14px in the empty-slot placeholder.
+/**
+ * Lucide-style trousers SVG (lucide has no pants icon). Two visually
+ * separate rectangular legs joined by a thin waistband, designed to read
+ * at 14px in the empty-slot placeholder.
+ */
 function PantsIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -127,14 +139,20 @@ function SlotIcon({ slot, className }: { slot: Slot, className?: string }) {
 
 interface Props {
   equipment: Equipment | undefined
-  // The code→tier + ammo-bonus lookup derived from the live config (Snapshot
-  // .gearLookup). Server pages read it from getSnapshot(); the client hover-card
-  // gets it in the /api/users/[id] payload.
+
+  /**
+   * The code→tier + ammo-bonus lookup derived from the live config (Snapshot
+   * .gearLookup). Server pages read it from getSnapshot(); the client hover-card
+   * gets it in the /api/users/[id] payload.
+   */
   gearLookup: GearLookup
   className?: string
-  // The backdrop this strip sits on; see {@link Surface}. Defaults to 'dark'
-  // (the hover-card tooltip). The detail page passes 'card' so tiles stay
-  // visible on a light theme.
+
+  /**
+   * The backdrop this strip sits on; see {@link Surface}. Defaults to 'dark'
+   * (the hover-card tooltip). The detail page passes 'card' so tiles stay
+   * visible on a light theme.
+   */
   surface?: Surface
 }
 

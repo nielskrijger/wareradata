@@ -8,8 +8,10 @@ import { EmptyDash } from '@/components/empty-dash'
 import { cn } from '@/lib/utils'
 import { CASE_RARITIES } from '@/lib/warera/api'
 
-// Rarity accents reuse the shared heat tokens so the dots match the rest of the
-// app's palette; common stays muted since it's the floor.
+/**
+ * Rarity accents reuse the shared heat tokens so the dots match the rest of the
+ * app's palette; common stays muted since it's the floor.
+ */
 const RARITY_COLOR: Record<CaseRarity, string> = {
   common: 'var(--muted-foreground)',
   uncommon: 'var(--heat-green)',
@@ -20,11 +22,16 @@ const RARITY_COLOR: Record<CaseRarity, string> = {
 }
 
 interface Props extends CasesByType {
-  // Combined opens (case1 + case2) from the snapshot row; null when no case
-  // stats were captured. The per-type opens and rarity maps come from
-  // CasesByType; the combined ladder is derived from the two maps.
+  /**
+   * Combined opens (case1 + case2) from the snapshot row; null when no case
+   * stats were captured. The per-type opens and rarity maps come from
+   * CasesByType; the combined ladder is derived from the two maps.
+   */
   combinedOpened: number | null
-  // Leaderboard position on combined opens (shown on the All segment only).
+
+  /**
+   * Leaderboard position on combined opens (shown on the All segment only).
+   */
   rank?: number | null
   rankOf?: number
 }

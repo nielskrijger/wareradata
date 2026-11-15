@@ -10,8 +10,8 @@
  * Key unit fact: production is in POINTS per day (engine + employees), not item
  * units. Units = points / productionPoints[item]. Employee points already include
  * each employee's production bonus (management, manager, tool, specialization,
- * happiness, …); the engine has no bonus. Game v0.27 removed regional production
- * bonuses, so where a factory sits no longer changes its output.
+ * happiness, …); the engine has no bonus. A factory's region doesn't affect its
+ * output.
  */
 
 /**
@@ -36,8 +36,8 @@ export type ItemPrices = Record<string, number>
 
 /**
  * The single most profitable item to produce right now: the item that earns the
- * most gold per production point, net of its inputs. With regional bonuses gone,
- * this is the same everywhere.
+ * most gold per production point, net of its inputs. It is the same in every
+ * region.
  */
 export interface Frontier {
   itemCode: string
@@ -82,8 +82,11 @@ export interface FactoryProfit {
   itemCode: string
   employeeCount: number
   employeeCap: number
-  // Production points/day (engine + employees). Summed into the entity PP
-  // aggregates; units = pointsPerDay / productionPoints.
+
+  /**
+   * Production points/day (engine + employees). Summed into the entity PP
+   * aggregates; units = pointsPerDay / productionPoints.
+   */
   pointsPerDay: number
   enginePointsPerDay: number
   employeePointsPerDay: number
@@ -96,9 +99,12 @@ export interface FactoryProfit {
   managerPerDay: number
   netPerDay: number
   isIdle: boolean
-  // Top potential: the same production points spent on the most profitable item
-  // instead. Approximate, since employees' item specialization bonus would not
-  // carry over. Always ≥ net when a frontier is known.
+
+  /**
+   * Top potential: the same production points spent on the most profitable item
+   * instead. Approximate, since employees' item specialization bonus would not
+   * carry over. Always ≥ net when a frontier is known.
+   */
   bestProductCode: string
   bestPotentialNetPerDay: number
   bestOpportunityPerDay: number
@@ -252,12 +258,18 @@ export function computeFactoryProfit(
  */
 export interface UserFactoryAgg {
   factoryCount: number
-  // NPC employees across the user's factories.
+
+  /**
+   * NPC employees across the user's factories.
+   */
   workerCount: number
   ppPerDay: number
   netPerDay: number
-  // Net split by source: engine vs employees (net of wages and manager).
-  // engineNetPerDay + employeeNetPerDay = netPerDay.
+
+  /**
+   * Net split by source: engine vs employees (net of wages and manager).
+   * engineNetPerDay + employeeNetPerDay = netPerDay.
+   */
   engineNetPerDay: number
   employeeNetPerDay: number
   topPotentialNetPerDay: number

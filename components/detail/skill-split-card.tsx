@@ -7,8 +7,10 @@ import { Coins, Swords } from 'lucide-react'
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
 import { StackedBar } from '@/components/stacked-bar'
 
-// Shared heat tokens so War/Eco read as the same red/green as the table's
-// CombatModeCell and the country/MU aggregate card.
+/**
+ * Shared heat tokens so War/Eco read as the same red/green as the table's
+ * CombatModeCell and the country/MU aggregate card.
+ */
 const WAR_COLOR = 'var(--heat-red)'
 const ECO_COLOR = 'var(--heat-green)'
 
@@ -16,7 +18,10 @@ interface Props {
   mode: CombatMode
   warPoints: number
   ecoPoints: number
-  // Leaderboard position within each discipline, for the leading-side footer.
+
+  /**
+   * Leaderboard position within each discipline, for the leading-side footer.
+   */
   warPointsRank: number | null
   ecoPointsRank: number | null
 }
@@ -75,7 +80,9 @@ interface SplitRowProps {
   icon: ReactNode
 }
 
-// One discipline line: icon + label on the left, points and share on the right.
+/**
+ * One discipline line: icon + label on the left, points and share on the right.
+ */
 function SplitRow({ label, points, total, icon }: SplitRowProps) {
   const pct = total > 0 ? Math.round((points / total) * 100) : 0
 
@@ -94,8 +101,10 @@ function SplitRow({ label, points, total, icon }: SplitRowProps) {
   )
 }
 
-// Closing line: the leading discipline's leaderboard position, so the card
-// answers "how invested is this player, really?". Hybrid/untrained omit it.
+/**
+ * Closing line: the leading discipline's leaderboard position, so the card
+ * answers "how invested is this player, really?". Hybrid/untrained omit it.
+ */
 function Footer({ mode, warPointsRank, ecoPointsRank }: {
   mode: CombatMode
   warPointsRank: number | null

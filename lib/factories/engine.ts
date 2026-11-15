@@ -1,9 +1,9 @@
 import type { GameConfig } from '@/lib/warera/api'
 
 /**
- * Automated-engine production model. Since game v0.27 a factory produces from two
- * sources: its automated engine and its NPC employees. The employees' output and
- * wages come straight from the API (`employee.getCompanyEstimate`, which already
+ * Automated-engine production model. A factory produces from two sources: its
+ * automated engine and its NPC employees. The employees' output and wages come
+ * straight from the API (`employee.getCompanyEstimate`, which already
  * folds in every employee's production bonus), but that estimate leaves the
  * engine out, so the engine's share is derived here from the static game config.
  *
@@ -12,8 +12,10 @@ import type { GameConfig } from '@/lib/warera/api'
  * one.
  */
 export interface EngineModel {
-  // Automated-engine production points/day by engine level, from
-  // gameConfig.upgradesConfig.automatedEngine. Missing level ⇒ no engine.
+  /**
+   * Automated-engine production points/day by engine level, from
+   * gameConfig.upgradesConfig.automatedEngine. Missing level ⇒ no engine.
+   */
   dailyProdByLevel: Record<number, number>
 }
 

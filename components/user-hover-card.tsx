@@ -23,10 +23,15 @@ import { formatRelativeTime } from '@/lib/format'
 import { computeGearTier } from '@/lib/gear/score'
 
 interface Props {
-  // User id used as both the fetch key and the route param. When null, the
-  // children render bare (no tooltip wrapper).
+  /**
+   * User id used as both the fetch key and the route param. When null, the
+   * children render bare (no tooltip wrapper).
+   */
   userId: string | null | undefined
-  // The trigger element (typically a <UserNameCell>). Tooltip opens on hover.
+
+  /**
+   * The trigger element (typically a <UserNameCell>). Tooltip opens on hover.
+   */
   children: ReactNode
 }
 
@@ -164,9 +169,11 @@ function StatRow({ icon, label, value, range }: {
   )
 }
 
-// Fixed-size placeholder matching the loaded layout's footprint so the popover
-// doesn't jump when data arrives. Loading uses subtle pulses; error swaps in
-// a one-line message.
+/**
+ * Fixed-size placeholder matching the loaded layout's footprint so the popover
+ * doesn't jump when data arrives. Loading uses subtle pulses; error swaps in
+ * a one-line message.
+ */
 function Placeholder({ status }: { status: HoverStatus }) {
   if (status === 'error') {
     return (

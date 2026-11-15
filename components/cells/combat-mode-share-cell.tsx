@@ -7,17 +7,24 @@ import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
-  // Mean of members' war shares (0 = pure eco … 1 = pure war), or null when no
-  // members have trained war or eco. Aggregated on the MU / country row.
+  /**
+   * Mean of members' war shares (0 = pure eco … 1 = pure war), or null when no
+   * members have trained war or eco. Aggregated on the MU / country row.
+   */
   avgWarShare: number | null
-  // Bar track width. Defaults to 84px to sit inside the Mode column.
+
+  /**
+   * Bar track width. Defaults to 84px to sit inside the Mode column.
+   */
   width?: number
 }
 
-// Shared heat tokens so war/eco read as one consistent red/green across the
-// table cells and the detail-page card (which also uses --heat-red/green).
-const WAR_COLOR = 'var(--heat-red)' // red (combat)
-const ECO_COLOR = 'var(--heat-green)' // green (growth)
+/**
+ * Shared heat tokens so war/eco read as one consistent red/green across the
+ * table cells and the detail-page card (which also uses --heat-red/green).
+ */
+const WAR_COLOR = 'var(--heat-red)'
+const ECO_COLOR = 'var(--heat-green)'
 
 /**
  * A MU / country's collective War / Eco lean as a two-tone bar (red war / green

@@ -3,9 +3,14 @@ import { StackedBar } from '@/components/stacked-bar'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
-  // 0-100; null renders an em-dash placeholder.
+  /**
+   * 0-100; null renders an em-dash placeholder.
+   */
   value: number | null
-  // Bar track width. Defaults to a compact 64px for table cells.
+
+  /**
+   * Bar track width. Defaults to a compact 64px for table cells.
+   */
   width?: number
 }
 

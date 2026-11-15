@@ -8,19 +8,17 @@ import { rarityTier } from '@/lib/gear/rarity'
  * (common … mythic), and the actual stat roll within that tier nudges the score
  * up or down inside the band. So a max-rolled Epic outscores a min-rolled Epic,
  * but both stay in the Epic band — and the band always matches the rarity rings
- * on the gear tiles.
- *
- * Earlier the score was "% of a perfectly-rolled mythic", which ran ~1 tier
- * below the items' named rarity (a full-Epic loadout scored ~40 → "Rare"). The
- * tier-anchored model below fixes that: full-Epic now scores in the 45-64 range,
- * squarely "Epic".
+ * on the gear tiles. A full-Epic loadout scores in the 45-64 range, squarely
+ * "Epic".
  */
 
-// The item codes that fill the weapon slot, weakest to strongest. This is the
-// one structural fact the config doesn't hand us (which items are weapons); each
-// weapon's tier and roll bounds still come from the live config (its rarity and
-// dynamicStats). Armor pieces follow the `{slot}{tier}` naming, so they need no
-// such list.
+/**
+ * The item codes that fill the weapon slot, weakest to strongest. This is the
+ * one structural fact the config doesn't hand us (which items are weapons); each
+ * weapon's tier and roll bounds still come from the live config (its rarity and
+ * dynamicStats). Armor pieces follow the `{slot}{tier}` naming, so they need no
+ * such list.
+ */
 const WEAPON_CODES = ['knife', 'gun', 'rifle', 'sniper', 'tank', 'jet'] as const
 
 /**
@@ -38,8 +36,8 @@ export interface GearLookup {
 /**
  * Builds the {@link GearLookup} from the live gameConfig: every item's tier from
  * its `rarity`, and every item's flat percentAttack (ammo's under-tile bonus)
- * from its `flatStats`. The scrape always captures the config, so this replaces
- * the old hardcoded weapon/ammo tier maps and ammo-bonus table outright.
+ * from its `flatStats`. The scrape always captures the config, so nothing here
+ * is hardcoded.
  */
 export function deriveGearLookup(config: GameConfig): GearLookup {
   const items = (config.items ?? {}) as unknown as Record<string, {
@@ -72,9 +70,11 @@ export function tierOfCode(code: string, lookup: GearLookup): number {
   return lookup.tierByCode[code] ?? 1
 }
 
-// Each gear slot's dominant rolled stat. The [min, max] roll range per rarity
-// tier is read from the live game config (see {@link deriveSlotSpecs}); this map
-// only fixes which stat each slot rolls (weapon → attack, helmet → crit dmg, …).
+/**
+ * Each gear slot's dominant rolled stat. The [min, max] roll range per rarity
+ * tier is read from the live game config (see {@link deriveSlotSpecs}); this map
+ * only fixes which stat each slot rolls (weapon → attack, helmet → crit dmg, …).
+ */
 type Bounds = Record<number, [number, number]>
 export interface SlotSpec { stat: string, bounds: Bounds }
 const SLOT_STATS: Record<string, string> = {
@@ -119,7 +119,9 @@ export function deriveSlotSpecs(config: GameConfig): Record<string, SlotSpec> {
   return out
 }
 
-// Reads an item's rarity tier (1..6, or 0 when unknown) out of gameConfig.items.
+/**
+ * Reads an item's rarity tier (1..6, or 0 when unknown) out of gameConfig.items.
+ */
 function itemRarityTier(items: unknown, code: string): number {
   if (!items || typeof items !== 'object') {
     return 0
@@ -128,9 +130,11 @@ function itemRarityTier(items: unknown, code: string): number {
   return rarityTier(item?.rarity)
 }
 
-// Reads an item's [min, max] roll range for a stat out of gameConfig.items. The
-// config types each item key specifically (no string index), so we narrow
-// through `unknown`; a missing or malformed entry yields null.
+/**
+ * Reads an item's [min, max] roll range for a stat out of gameConfig.items. The
+ * config types each item key specifically (no string index), so we narrow
+ * through `unknown`; a missing or malformed entry yields null.
+ */
 function itemStatRange(items: unknown, code: string, stat: string): [number, number] | null {
   if (!items || typeof items !== 'object') {
     return null
@@ -143,17 +147,21 @@ function itemStatRange(items: unknown, code: string, stat: string): [number, num
   return null
 }
 
-// The seven slots that carry a rarity tier (weapon, ammo, five armor pieces).
-// Fixed denominator so an empty slot scores 0 rather than shrinking the divisor.
+/**
+ * The seven slots that carry a rarity tier (weapon, ammo, five armor pieces).
+ * Fixed denominator so an empty slot scores 0 rather than shrinking the divisor.
+ */
 const SCORE_SLOTS = ['weapon', 'ammo', 'helmet', 'chest', 'gloves', 'pants', 'boots'] as const
 
 function clamp01(x: number): number {
   return Math.max(0, Math.min(1, x))
 }
 
-// A slot's contribution in [0, 1]: its tier (0-indexed) plus where the roll sits
-// within that tier, all over 6. Tier 1 at min-roll ≈ 0; tier 6 at max-roll = 1.
-// Empty slots contribute 0; ammo has no roll so it sits at its tier's center.
+/**
+ * A slot's contribution in [0, 1]: its tier (0-indexed) plus where the roll sits
+ * within that tier, all over 6. Tier 1 at min-roll ≈ 0; tier 6 at max-roll = 1.
+ * Empty slots contribute 0; ammo has no roll so it sits at its tier's center.
+ */
 function slotScore(
   slot: string,
   piece: Equipment[keyof Equipment],

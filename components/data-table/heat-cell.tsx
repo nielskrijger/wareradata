@@ -38,8 +38,10 @@ interface Props {
   children: ReactNode
 }
 
-// Steepness for the log compression: maps the normalized [0,1] position onto
-// a curve that lifts small values hard (0.1 → ~0.4) while keeping 1 → 1.
+/**
+ * Steepness for the log compression: maps the normalized [0,1] position onto
+ * a curve that lifts small values hard (0.1 → ~0.4) while keeping 1 → 1.
+ */
 const LOG_K = 9
 function logCurve(t: number): number {
   return Math.log1p(LOG_K * t) / Math.log1p(LOG_K)

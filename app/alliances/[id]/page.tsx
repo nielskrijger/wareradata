@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 
 import type { AllianceRow } from '@/lib/rows'
-
 import { notFound } from 'next/navigation'
+
 import { connection } from 'next/server'
+import { cache } from 'react'
 
 import { UsersTable } from '@/app/users/users-table'
 import { TierBadge } from '@/components/badges/tier-badge'
@@ -25,7 +26,11 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getAlliance(id: string) {
+/**
+ * Loads the alliance and everything its page renders. Wrapped in React `cache` so
+ * `generateMetadata` and the page share one load per request.
+ */
+const getAlliance = cache(async (id: string) => {
   const { alliances, users } = await getSnapshot()
   const alliance = alliances.find(a => a.id === id)
   if (!alliance) {
@@ -46,7 +51,7 @@ async function getAlliance(id: string) {
   )
 
   return { alliance, ranges, total, citizenPage }
-}
+})
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params

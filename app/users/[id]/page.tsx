@@ -6,7 +6,7 @@ import type { CasesByType } from '@/lib/warera/api'
 import { Clock } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
-import { Suspense } from 'react'
+import { cache, Suspense } from 'react'
 
 import { Avatar } from '@/components/avatar'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
@@ -45,7 +45,11 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getUser(id: string) {
+/**
+ * Loads the user and everything its page renders. Wrapped in React `cache` so
+ * `generateMetadata` and the page share one load per request.
+ */
+const getUser = cache(async (id: string) => {
   const { users, gearLookup } = await getSnapshot()
   const user = users.find(u => u.id === id)
   if (!user) {
@@ -56,7 +60,7 @@ async function getUser(id: string) {
   const ranges = computeRanges(users)
 
   return { user, ranges, total: users.length, gearLookup }
-}
+})
 
 /**
  * The per-type case breakdown for the detail card: read straight from the

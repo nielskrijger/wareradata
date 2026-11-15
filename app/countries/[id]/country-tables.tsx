@@ -48,13 +48,13 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
   // here) while already on the page. The default `citizens` tab is the landing
   // state and never scrolls, so a plain `/countries/[id]` visit (or navigating
   // back to one) stays at the top. Clicking a tab button in place sets
-  // `skipScroll` so the page doesn't yank when the user is already down here.
+  // `skipScrollRef` so the page doesn't yank when the user is already down here.
   const tablesRef = useRef<HTMLDivElement>(null)
-  const skipScroll = useRef(false)
+  const skipScrollRef = useRef(false)
 
   useEffect(() => {
-    if (skipScroll.current) {
-      skipScroll.current = false
+    if (skipScrollRef.current) {
+      skipScrollRef.current = false
       return
     }
     if (tab === 'citizens') {
@@ -64,7 +64,7 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
   }, [tab])
 
   function selectTab(next: Tab) {
-    skipScroll.current = true
+    skipScrollRef.current = true
     // Drop the active table's paging/sort/filter so it doesn't bleed into the
     // table we're switching to.
     setTableState({ q: null, sort: null, dir: null, page: null })

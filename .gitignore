@@ -49,3 +49,6 @@ next-env.d.ts
 
 # claude code settings (personal)
 /.claude/
+
+# codex settings (personal)
+/.codex/

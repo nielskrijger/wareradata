@@ -33,6 +33,10 @@ const WEAPON_CODES = ['knife', 'gun', 'rifle', 'sniper', 'tank', 'jet'] as const
 export interface GearLookup {
   tierByCode: Record<string, number>
   ammoBonusByCode: Record<string, number>
+  // Icon filename per item code (e.g. `helmet.webp`), from the config's
+  // `iconImg`. WarEra switched its item icons from .png to .webp, so the
+  // filename comes from the config instead of being hardcoded.
+  iconByCode: Record<string, string>
 }
 
 /**
@@ -42,9 +46,10 @@ export interface GearLookup {
  * the old hardcoded weapon/ammo tier maps and ammo-bonus table outright.
  */
 export function deriveGearLookup(config: GameConfig): GearLookup {
-  const items = (config.items ?? {}) as unknown as Record<string, { rarity?: string, flatStats?: { percentAttack?: number } } | undefined>
+  const items = (config.items ?? {}) as unknown as Record<string, { rarity?: string, flatStats?: { percentAttack?: number }, iconImg?: string } | undefined>
   const tierByCode: Record<string, number> = {}
   const ammoBonusByCode: Record<string, number> = {}
+  const iconByCode: Record<string, string> = {}
   for (const [code, item] of Object.entries(items)) {
     if (!item) {
       continue
@@ -57,8 +62,11 @@ export function deriveGearLookup(config: GameConfig): GearLookup {
     if (typeof bonus === 'number') {
       ammoBonusByCode[code] = bonus
     }
+    if (typeof item.iconImg === 'string' && item.iconImg) {
+      iconByCode[code] = item.iconImg
+    }
   }
-  return { tierByCode, ammoBonusByCode }
+  return { tierByCode, ammoBonusByCode, iconByCode }
 }
 
 /**

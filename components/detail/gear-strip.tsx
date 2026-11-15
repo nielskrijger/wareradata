@@ -43,14 +43,15 @@ function rarityRing(t: number, surface: Surface): string {
   return RARITY_RING[i]
 }
 
-// Base icon filename. Armor pieces of all 6 tiers share one icon per
-// usage category (helmet1..6 → helmet.png); weapons and ammo use the code
-// itself. Skin overrides are intentionally not applied here.
-function iconUrl(slot: Slot, code: string): string {
-  const filename = slot === 'helmet' || slot === 'chest' || slot === 'pants' || slot === 'gloves' || slot === 'boots'
-    ? slot
-    : code
-  return `https://app.warera.io/images/items/${filename}.png`
+// Icon URL for an equipped item. The filename comes from the live config's
+// `iconImg` (armor tiers share one icon per slot, e.g. helmet1..6 →
+// helmet.webp). Without a config entry we fall back to the slot (armor) or code
+// (weapons, ammo) with .webp, WarEra's current icon format. Skin overrides are
+// intentionally not applied here.
+function iconUrl(slot: Slot, code: string, lookup: GearLookup): string {
+  const isArmor = slot === 'helmet' || slot === 'chest' || slot === 'pants' || slot === 'gloves' || slot === 'boots'
+  const filename = lookup.iconByCode?.[code] ?? `${isArmor ? slot : code}.webp`
+  return `https://app.warera.io/images/items/${filename}`
 }
 
 // Pull the surfacing skill + value off a piece. Each piece really has one
@@ -147,7 +148,8 @@ interface Props {
  * gloves · pants · shoes. Empty slots render a dimmed silhouette so the
  * footprint stays stable regardless of what's equipped.
  *
- * Item icons come from `app.warera.io/images/items/<slot|code>.png`; skin
+ * Item icons come from `app.warera.io/images/items/<iconImg>` (the
+ * config's icon filename, .webp since WarEra's icon change); skin
  * overrides from `equippedSkinKeys` are not applied here.
  */
 export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }: Props) {
@@ -191,7 +193,7 @@ export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }
         return (
           <div key={slot} className={cn('flex flex-col items-center gap-0.5', tileW)}>
             <div className={cn('relative flex items-center justify-center overflow-hidden rounded-md', tileSize, tileBg, rarityRing(t, surface))}>
-              <Image src={iconUrl(slot, code)} alt={code} width={28} height={28} className={cn('object-contain', imgSize)} unoptimized />
+              <Image src={iconUrl(slot, code, gearLookup)} alt={code} width={28} height={28} className={cn('object-contain', imgSize)} unoptimized />
               <div className="absolute inset-x-0.5 bottom-0.5 h-0.5 overflow-hidden rounded-sm bg-black/40">
                 <div className="h-full rounded-sm" style={{ width: `${dur}%`, background: rgb }} />
               </div>

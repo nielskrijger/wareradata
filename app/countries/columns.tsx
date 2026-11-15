@@ -26,6 +26,7 @@ import {
   wealthColumns,
 } from '@/components/data-table/column-groups'
 import { InternalLink } from '@/components/links'
+import { formatGovType } from '@/lib/warera/gov-type'
 
 export type { CountryRow }
 
@@ -120,6 +121,18 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
         sortDescFirst: true,
         meta: { heat: 'median', align: 'right', width: 150 },
       },
+      {
+        accessorKey: 'govType',
+        header: 'Government',
+        cell: ({ row }) => formatGovType(row.original.govType),
+        meta: { width: 140 },
+      },
+      compactNumberColumn<CountryRow>('dailyIncome', 'Daily Income', {
+        heat: 'median',
+        width: 135,
+        tooltip: 'Money the country earns per day: development, income and manager tax, '
+          + 'strategic resources and its government type.',
+      }),
       percentColumn<CountryRow>('unrestPercent', 'Unrest', { heat: 'invert', decimals: 1, width: 105 }),
       percentColumn<CountryRow>('taxIncome', 'Income Tax', { heat: 'invert', center: 10, width: 135 }),
       percentColumn<CountryRow>('taxMarket', 'Market Tax', { heat: 'invert', sortInvert: true, width: 135 }),

@@ -11,6 +11,7 @@ export interface Lookups {
   userAvatarById: Map<string, string | null>
   userColorSchemeById: Map<string, string | null>
   partyByUser: Map<string, { id: string, name: string, avatarUrl: string | null }>
+  partyById: Map<string, { id: string, name: string, avatarUrl: string | null }>
   partyCountByCountry: Map<string, number>
 }
 
@@ -28,8 +29,10 @@ export function buildBaseLookups(
   parties: Party[],
 ): Lookups {
   const partyByUser = new Map<string, { id: string, name: string, avatarUrl: string | null }>()
+  const partyById = new Map<string, { id: string, name: string, avatarUrl: string | null }>()
   const partyCountByCountry = new Map<string, number>()
   for (const p of parties) {
+    partyById.set(p._id, { id: p._id, name: p.name, avatarUrl: p.avatarUrl ?? null })
     if (p.members) {
       for (const uid of p.members) {
         partyByUser.set(uid, { id: p._id, name: p.name, avatarUrl: p.avatarUrl ?? null })
@@ -49,6 +52,7 @@ export function buildBaseLookups(
     userAvatarById: new Map(),
     userColorSchemeById: new Map(),
     partyByUser,
+    partyById,
     partyCountByCountry,
   }
 }

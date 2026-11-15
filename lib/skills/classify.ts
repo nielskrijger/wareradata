@@ -2,7 +2,7 @@
  * War / Eco / Hybrid classification from a user's trained skills.
  *
  * Players spend skill points specializing toward combat ("War"), economy
- * ("Eco"), or a mix ("Hybrid"). Each of the 14 skills has a trained `level`
+ * ("Eco"), or a mix ("Hybrid"). Each skill has a trained `level`
  * (0-10); the cost to reach a level is identical across every skill, verified
  * against `gameConfig.getGameConfig` — so summing the per-level cost over a set
  * of skills gives comparable "points invested" in that discipline.
@@ -20,7 +20,7 @@ export const WAR_SKILLS = ['attack', 'armor', 'criticalChance', 'criticalDamages
 // Pure-economy skills count toward "Eco". `lootChance` is intentionally
 // excluded: it's battle-adjacent income (you only loot by fighting), so it
 // muddies the split rather than cleanly belonging to either side.
-export const ECO_SKILLS = ['management', 'companies', 'entrepreneurship', 'production'] as const
+export const ECO_SKILLS = ['management', 'companies', 'production'] as const
 
 // A player is decisively War/Eco once their points lean past this share of the
 // war+eco total; the band in between reads as Hybrid.

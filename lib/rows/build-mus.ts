@@ -69,7 +69,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
         memberWealthRank: null,
         name: m.name,
         regionName: region?.name ?? null,
-        reputation: r?.muReputation?.value ?? null,
+        reputation: r?.muReputation?.value ?? m.mercenaryReputation ?? null,
         reputationRank: null,
         terrain: r?.muTerrain?.value ?? null,
         terrainRank: null,

@@ -13,6 +13,9 @@ export function buildRegionRows(regions: Region[], lookups: Lookups): RegionRow[
         biome: r.biome ?? null,
         climate: r.climate ?? null,
         code: r.code,
+        companyCount: r.companyCount ?? null,
+        employeeCount: r.employeeCount ?? null,
+        dailyIncome: r.income?.total ?? null,
         coreCountryCode: core?.code ?? null,
         coreCountryId: r.initialCountry ?? null,
         coreCountryName: core?.name ?? null,
@@ -26,6 +29,7 @@ export function buildRegionRows(regions: Region[], lookups: Lookups): RegionRow[
         mainCity: r.mainCity ?? null,
         name: r.name,
         neighborCount: r.neighbors?.length ?? 0,
+        population: r.population ?? null,
         strategicResource: r.strategicResource ?? null,
       }
     })

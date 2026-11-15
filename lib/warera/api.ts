@@ -3,6 +3,7 @@ import type {
   BattleGetBattlesResponse,
   BattleListItem,
   CompanyGetByIdResponse,
+  CongressSeat,
   CountryListItem,
   Employee,
   EmployeeCompanyHourly,
@@ -16,6 +17,7 @@ import type {
   PartyGetManyPaginatedResponse,
   RankingValueTier,
   RegionsObjectItem,
+  StrategicResourceBonuses,
   UserGetUserLiteResponse,
   UserSkills,
   UserSkillsExpiration,
@@ -111,10 +113,38 @@ export type Equipment = InventoryFetchCurrentEquipmentResponse
 // Scraped once per cycle so derived constants (e.g. gear roll bounds, skill
 // point costs) can read from live data instead of being hardcoded.
 export type GameConfig = GameConfigGetGameConfigResponse
-// A country's elected officials. All fields are user ids: the president, vice
-// president, three ministers, and the congress roster. Dormant or unoccupied
-// countries may have empty-string offices and an empty congress.
-export type Government = GovernmentGetByCountryIdResponse
+// One appointed minister. The president names up to 20 ministers, each with a
+// title (a known code such as `minOfDefense`, or a custom string) and a set of
+// rights.
+export interface GovernmentMinister {
+  user: string
+  title: string
+  rights?: string[]
+  appointedAt?: string
+  badgeGrantedAt?: string
+}
+// A country's elected officials, all as user ids: the president, vice
+// president, the appointed ministers and the congress roster. Dormant or
+// unoccupied countries may have empty-string offices and an empty congress.
+//
+// The SDK types three per-title seat fields while the live API sends a
+// `ministers` array, so both shapes are optional here and the row builder
+// reads either. `congressSeats` is not part of the response: the scrape merges
+// in `government.getCongressSeats`, which gives each seat's party list.
+export type Government = Omit<
+  GovernmentGetByCountryIdResponse,
+  'minOfDefense' | 'minOfEconomy' | 'minOfForeignAffairs'
+> & {
+  ministers?: GovernmentMinister[]
+  minOfDefense?: string
+  minOfEconomy?: string
+  minOfForeignAffairs?: string
+  congressSeats?: CongressSeat[]
+}
+// Strategic resource bonuses a country's citizens get (shared across its
+// alliance): bonus points per skill code plus the region ids holding each
+// resource.
+export type StrategicBonuses = StrategicResourceBonuses
 
 export const RANKING_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'] as const
 export type RankingTier = (typeof RANKING_TIERS)[number]
@@ -176,13 +206,28 @@ export function getAllCountries(): Promise<Country[]> {
 }
 
 /**
- * Fetches one country's government (president, vice president, three ministers,
- * and the congress roster, all as user ids). There's no bulk endpoint, so the
- * scrape fans this out per country with bounded concurrency. Dormant countries
- * may have no government; the caller treats an error or empty result as "none".
+ * Fetches one country's government (president, vice president, ministers, and
+ * the congress roster, all as user ids) together with its congress seats, so
+ * each congress member carries the party list they were elected on. There's no
+ * bulk endpoint, so the scrape fans this out per country with bounded
+ * concurrency; the two calls go out in the same tick and share one batch.
+ * Dormant countries may have no government; the caller treats an error or
+ * empty result as "none". A failed seats call only loses the party mapping.
  */
-export function getGovernmentForCountry(countryId: string): Promise<Government> {
-  return scrapeClient.government.getByCountryId({ countryId })
+export async function getGovernmentForCountry(countryId: string): Promise<Government> {
+  const [gov, seats] = await Promise.all([
+    scrapeClient.government.getByCountryId({ countryId }) as Promise<Government>,
+    scrapeClient.government.getCongressSeats({ countryId }).catch(() => undefined),
+  ])
+  return seats ? { ...gov, congressSeats: seats } : gov
+}
+
+/**
+ * Fetches the strategic resource bonuses a country's citizens get: its
+ * alliance's when it's in one, otherwise its own. Null when it holds none.
+ */
+export function getStrategicBonusesForCountry(countryId: string): Promise<StrategicBonuses | null> {
+  return scrapeClient.country.getStrategicResourceBonuses({ countryId })
 }
 
 /**

@@ -220,6 +220,22 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         width: 120,
         tooltip: 'Players this user has referred.',
       }),
+      localeNumberColumn<UserRow>('prestige', 'Prestige', {
+        heat: 'ramp',
+        width: 110,
+        tooltip: 'Times this player has prestiged: reset from level 50 for a permanent bonus. '
+          + 'Their Level column shows the level since the last reset.',
+      }),
+      localeNumberColumn<UserRow>('milestoneTiers', 'Milestones', {
+        heat: 'ramp',
+        width: 125,
+        tooltip: 'Lifetime milestone tiers reached.',
+      }),
+      localeNumberColumn<UserRow>('skinsOwned', 'Skins', {
+        heat: 'ramp',
+        width: 100,
+        tooltip: 'Skins this player owns.',
+      }),
     ],
     factories: [
       localeNumberColumn<UserRow>('factoryCount', '# Factories', {

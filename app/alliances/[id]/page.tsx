@@ -13,6 +13,7 @@ import { UserNameCell } from '@/components/cells/user-name-cell'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
+import { StrategicBonusCard } from '@/components/detail/strategic-bonus-card'
 import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
 import { computeRanges, firstPage } from '@/lib/query'
@@ -26,7 +27,7 @@ interface PageProps {
 }
 
 async function getAlliance(id: string) {
-  const { alliances, users } = await getSnapshot()
+  const { alliances, users, strategicBonuses } = await getSnapshot()
   const alliance = alliances.find(a => a.id === id)
   if (!alliance) {
     return null
@@ -45,7 +46,9 @@ async function getAlliance(id: string) {
     'points',
   )
 
-  return { alliance, ranges, total, citizenPage }
+  const strategicBonus = strategicBonuses.byAlliance[id] ?? null
+
+  return { alliance, ranges, total, citizenPage, strategicBonus }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -88,7 +91,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
-  const { alliance: a, ranges, total, citizenPage } = result
+  const { alliance: a, ranges, total, citizenPage, strategicBonus } = result
   const rgb = schemeRgb(a.scheme)
 
   // The user's filter on the citizens table is applied within this scope, so a
@@ -193,6 +196,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
             },
           ]}
         />
+        <StrategicBonusCard bonus={strategicBonus} scope="alliance" />
       </StatCardGrid>
 
       <section className="space-y-3 pt-3">

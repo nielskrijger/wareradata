@@ -1,4 +1,4 @@
-import type { Government, SnapshotMeta } from './api'
+import type { Government, SnapshotMeta, StrategicBonuses } from './api'
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { writeEquipmentNdjson } from '@/lib/cache/equipment-store'
@@ -17,6 +17,7 @@ import {
   getEquipment,
   getGameConfig,
   getGovernmentForCountry,
+  getStrategicBonusesForCountry,
   getTournamentInfo,
   getUserIdsForCountry,
   getUsers,
@@ -97,6 +98,29 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     }
   }
   log.info({ governments: Object.keys(governments).length, countries: countries.length }, 'fetched governments')
+
+  // 2b. Strategic resource bonuses: one call per country. Members of an
+  // alliance get the alliance-wide bonus, so the alliance page reads it off any
+  // member. Countries holding no resource answer null and are left out.
+  const bonusList = await mapWithConcurrency(
+    countries.map(c => c._id),
+    COUNTRY_PAGINATION_CONCURRENCY,
+    async (countryId) => {
+      try {
+        return await getStrategicBonusesForCountry(countryId)
+      } catch {
+        return null
+      }
+    },
+  )
+  const strategicBonuses: Record<string, StrategicBonuses> = {}
+  for (let i = 0; i < countries.length; i++) {
+    const bonus = bonusList[i]
+    if (bonus) {
+      strategicBonuses[countries[i]._id] = bonus
+    }
+  }
+  log.info({ countries: Object.keys(strategicBonuses).length }, 'fetched strategic resource bonuses')
 
   // 3. User IDs: paginate per country with bounded concurrency.
   const userIdLists = await mapWithConcurrency(
@@ -193,6 +217,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   return {
     countries,
     governments,
+    strategicBonuses,
     mus,
     regions,
     parties,
@@ -214,6 +239,7 @@ function hasGovernment(g: Government): boolean {
   return Boolean(
     g.president
     || g.vicePresident
+    || g.ministers?.length
     || g.minOfDefense
     || g.minOfEconomy
     || g.minOfForeignAffairs

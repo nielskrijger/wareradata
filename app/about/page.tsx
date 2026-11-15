@@ -107,6 +107,12 @@ export default function AboutPage() {
           by WarEra Projects — a big thank you to them for making it easy to
           work with.
         </Paragraph>
+        <Paragraph>
+          The site only reads public data, with an API key and no player
+          session, which the WarEra developers have said is allowed under
+          section 9.6 of the game&apos;s Terms of Service. It never acts on
+          anyone&apos;s behalf in the game.
+        </Paragraph>
       </section>
 
       <section className="max-w-2xl space-y-2">

@@ -176,12 +176,12 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
     ],
     factories: [
       localeNumberColumn<UserRow>('factoryCount', '# Factories', { heat: 'ramp', width: 130, tooltip: 'Number of factories this player owns.' }),
-      localeNumberColumn<UserRow>('factoryWorkers', '# Workers', { heat: 'ramp', width: 115, tooltip: 'Hired workers across this player\'s factories.' }),
-      compactNumberColumn<UserRow>('factoryNetPerDay', 'Total / day', { heat: 'median', width: 120, tooltip: 'Daily factory profit: automated engines + hired workers, net of wages.' }),
+      localeNumberColumn<UserRow>('factoryWorkers', '# Employees', { heat: 'ramp', width: 135, tooltip: 'NPC employees across this player\'s factories.' }),
+      compactNumberColumn<UserRow>('factoryNetPerDay', 'Total / day', { heat: 'median', width: 120, tooltip: 'Daily factory profit: automated engines + NPC employees, net of employee and manager wages.' }),
       compactNumberColumn<UserRow>('factoryEngineNetPerDay', 'Auto / day', { heat: 'median', width: 120, tooltip: 'Daily profit from this player\'s automated engines.' }),
-      compactNumberColumn<UserRow>('factoryEmployeeNetPerDay', 'Workers / day', { heat: 'median', width: 140, tooltip: 'Daily profit from this player\'s hired workers, after their wages.' }),
+      compactNumberColumn<UserRow>('factoryEmployeeNetPerDay', 'Employees / day', { heat: 'median', width: 155, tooltip: 'Daily profit from this player\'s NPC employees, after their wages and the managers\' wages.' }),
       compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', { heat: 'median', width: 110, tooltip: 'Production points produced per day across this player\'s factories.' }),
-      percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', { heat: 'median', decimals: 0, width: 115, tooltip: 'How close net is to the game\'s top production. 100% = optimal.' }),
+      percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', { heat: 'median', decimals: 0, width: 115, tooltip: 'Net as a share of the Top potential (the same production on the most profitable item). 100% = already on the best item.' }),
     ],
     premium: [
       localeNumberColumn<UserRow>('premiumMonths', 'Premium Mo.', { heat: 'ramp', width: 145 }),

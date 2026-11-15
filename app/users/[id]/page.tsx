@@ -221,7 +221,7 @@ export default async function UserDetailPage({ params }: PageProps) {
             className="sm:col-span-2"
             totalNet={user.factoryNetPerDay ?? 0}
             autoNet={user.factoryEngineNetPerDay ?? 0}
-            workersNet={user.factoryEmployeeNetPerDay ?? 0}
+            employeesNet={user.factoryEmployeeNetPerDay ?? 0}
             count={user.factoryCount}
           />
         )}

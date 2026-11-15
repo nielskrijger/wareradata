@@ -1,24 +1,23 @@
 import type { FactoryLedgerRow } from '@/lib/factories/ledger'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { buildItemBonus, engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
+import { buildEngineModel } from '@/lib/factories/engine'
+import { engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
 import { buildFactoryLedgerRow } from '@/lib/factories/ledger'
 import { buildFrontier, computeFactoryProfit, portfolioTotals } from '@/lib/factories/profit'
-import { buildTheoreticalModel } from '@/lib/factories/theoretical'
 import { logger } from '@/lib/log'
-import { getItemBestRegions, getItemPrices, getUserCompanies, getUserWorkers } from '@/lib/warera/api'
+import { getItemPrices, getUserCompanies } from '@/lib/warera/api'
 
 import { FactoriesTable } from './factories-table'
 
 const log = logger.child({ component: 'factories' })
 
 /**
- * Fetches and computes a user's factory ledger rows: theoretical daily profit
- * (the engine at its level plus workers clicking to full energy each day), the
- * Move / Top relocation potentials, and a per-worker revenue/wage breakdown.
- * Fetches live on the urgent client (companies and their workers; prices and the
- * per-item best-region frontier are cached and shared across users). Net excludes
- * self-work — see {@link buildTheoreticalModel}.
+ * Fetches and computes a user's factory ledger rows: daily profit from the
+ * automated engine plus the NPC employees, the Top potential (the same output on
+ * the most profitable item), and a per-employee revenue/wage breakdown. Fetches
+ * live on the urgent client (companies and their rosters; prices are cached and
+ * shared across users). Net excludes self-work.
  *
  * Returns null when the user owns none, or when a live API call fails — the
  * section is best-effort enrichment, so a price/company outage just omits it
@@ -26,40 +25,23 @@ const log = logger.child({ component: 'factories' })
  */
 async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | null> {
   try {
-    const [factories, companyWorkers] = await Promise.all([getUserCompanies(userId), getUserWorkers(userId)])
+    const factories = await getUserCompanies(userId)
     if (!factories.length) {
       return null
     }
 
-    const { gameConfig, lookups, users } = await getSnapshot()
+    const { gameConfig, lookups } = await getSnapshot()
     const recipe = recipeFromGameConfig(gameConfig)
-    const model = buildTheoreticalModel(gameConfig)
-
-    const [prices, bestRegions] = await Promise.all([
-      getItemPrices(),
-      getItemBestRegions(Object.keys(recipe)),
-    ])
-
+    const model = buildEngineModel(gameConfig)
+    const prices = await getItemPrices()
+    const frontier = buildFrontier(prices, recipe)
     const regionName = (id: string) => lookups.regionById.get(id)?.name ?? '—'
-    const itemBonus = buildItemBonus(bestRegions, regionName)
-    const frontier = buildFrontier(prices, recipe, itemBonus)
-    const workersByCompany = new Map(companyWorkers.map(c => [c.companyId, c.workers]))
-    const userById = new Map(users.map(u => [u.id, u]))
-    const nameOf = (id: string) => userById.get(id)?.username ?? `${id.slice(0, 6)}…`
-    const skillOf = (id: string) => {
-      const u = userById.get(id)
-      return u && u.productionSkill !== null && u.energySkill !== null
-        ? { production: u.productionSkill, energy: u.energySkill }
-        : null
-    }
 
     return factories
       .map((f) => {
-        const workers = workersByCompany.get(f.company._id) ?? []
-        const profit = computeFactoryProfit(factoryInputFromData(f, workers, skillOf, regionName, model), prices, recipe, itemBonus, frontier)
-        const engineLevel = engineLevelOf(f)
+        const profit = computeFactoryProfit(factoryInputFromData(f, regionName, model), prices, recipe, frontier)
         const productionPoints = recipe[f.company.itemCode]?.productionPoints ?? 1
-        return buildFactoryLedgerRow(profit, workers, engineLevel, productionPoints, model, nameOf, skillOf)
+        return buildFactoryLedgerRow(profit, f.employees, engineLevelOf(f), productionPoints)
       })
       .sort((a, b) => b.netPerDay - a.netPerDay)
   } catch (error) {

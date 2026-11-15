@@ -1,89 +1,80 @@
 import type { FactoryProfit } from './profit'
-import type { TheoreticalModel, WorkerSkill } from './theoretical'
-import type { WorkerInfo } from '@/lib/warera/api'
-
-import { engineTheoreticalPoints, workerProductions } from './theoretical'
+import type { Employee } from '@/lib/warera/api'
 
 /**
- * One worker's theoretical net benefit to the factory per day: the value of the
- * output they'd produce clicking to full energy (net of the inputs it consumes),
- * minus the wage those works cost.
+ * One NPC employee's net benefit to the factory per day: the value of the output
+ * the API estimates they produce (net of the inputs it consumes), minus their
+ * wage.
  */
-export interface LedgerWorker {
+export interface LedgerEmployee {
   id: string
   name: string
-  // Current loyalty (0–10), shown in the ledger: it lifts this worker's output
-  // and so their net.
-  fidelity: number
+  // The employee's total production bonus (percent), already in their output.
+  bonusPct: number
   // The breakdown behind netPerDay: revenue − inputCost − wage = net.
   revenuePerDay: number
   inputCostPerDay: number
   wagePerDay: number
-  // The worker's contracted wage rate (gold per work), shown next to the wage.
-  wageRate: number
+  // The employee's wage rate (gold per hour), shown next to the wage.
+  wagePerHour: number
   netPerDay: number
 }
 
 /**
  * A {@link FactoryProfit} enriched for the user-page ledger: the automated
- * engine's net contribution and a per-worker net breakdown. Both the factory's
- * net and these lines are theoretical (engine at its level, workers at full daily
- * effort); self-work is excluded.
+ * engine's net contribution, a per-employee net breakdown and the manager's
+ * wage. Self-work is excluded.
  */
 export interface FactoryLedgerRow extends FactoryProfit {
   engineLevel: number
   engineNetPerDay: number
-  workers: LedgerWorker[]
+  employees: LedgerEmployee[]
 }
 
 /**
- * Splits a factory's theoretical production into its ledger lines: the automated
- * engine plus each hired worker. The same model that produced `profit` is used
- * to recover each source's production points, then the factory's per-point value
- * (revenue net of inputs, recovered from the computed net) is applied — so the
- * engine's net plus the per-worker nets always sum to the factory's Net. Wages
- * come from each worker's theoretical works/day. Self-work is excluded.
+ * Splits a factory's production into its ledger lines: the automated engine, each
+ * employee, and the manager's wage. The factory's per-point value (revenue net of
+ * inputs, recovered from the computed net) is applied to each source's points, so
+ * engine + employees − manager always sums to the factory's Net.
  */
 export function buildFactoryLedgerRow(
   profit: FactoryProfit,
-  workers: WorkerInfo[],
+  employees: Employee[],
   engineLevel: number,
   productionPoints: number,
-  model: TheoreticalModel,
-  nameOf: (userId: string) => string,
-  skillOf: (userId: string) => WorkerSkill | null,
 ): FactoryLedgerRow {
   const pp = productionPoints || 1
-  const effPts = profit.pointsPerDay
+  const pts = profit.pointsPerDay
 
-  // Gold earned per production point, net of input cost, recovered from the
-  // already computed net: net = (effPts / pp) × unitNet − wages.
-  const unitNet = effPts > 0 ? (profit.netPerDay + profit.grossWagePerDay) * pp / effPts : 0
-  const netOf = (pts: number) => (pts / pp) * unitNet
-  const grossOf = (pts: number) => (pts / pp) * profit.sellPrice
+  // Gold per production point, net of input cost, recovered from the computed
+  // net: net = (pts / pp) × unitNet − wages − manager.
+  const unitNet = pts > 0 ? (profit.netPerDay + profit.wagePerDay + profit.managerPerDay) * pp / pts : 0
+  const netOf = (p: number) => (p / pp) * unitNet
+  const grossOf = (p: number) => (p / pp) * profit.sellPrice
 
-  const enginePts = engineTheoreticalPoints(engineLevel, profit.bonusPct, model)
-
-  const ledgerWorkers: LedgerWorker[] = workerProductions(workers, skillOf, profit.bonusPct, model).map((line) => {
-    const revenuePerDay = grossOf(line.productionPerDay)
-    const inputCostPerDay = revenuePerDay - netOf(line.productionPerDay)
+  const ledgerEmployees: LedgerEmployee[] = employees.map((e) => {
+    const pointsPerDay = (e.estimate?.production ?? 0) * 24
+    const wagePerHour = e.estimate?.wage ?? e.wage ?? 0
+    const wagePerDay = wagePerHour * 24
+    const revenuePerDay = grossOf(pointsPerDay)
+    const inputCostPerDay = revenuePerDay - netOf(pointsPerDay)
 
     return {
-      id: line.userId,
-      name: nameOf(line.userId),
-      fidelity: line.fidelity,
+      id: e._id,
+      name: e.name,
+      bonusPct: e.productionBonus?.total ?? 0,
       revenuePerDay,
       inputCostPerDay,
-      wagePerDay: line.wagePerDay,
-      wageRate: line.wageRate,
-      netPerDay: revenuePerDay - inputCostPerDay - line.wagePerDay,
+      wagePerDay,
+      wagePerHour,
+      netPerDay: revenuePerDay - inputCostPerDay - wagePerDay,
     }
   })
 
   return {
     ...profit,
     engineLevel,
-    engineNetPerDay: netOf(enginePts),
-    workers: ledgerWorkers,
+    engineNetPerDay: netOf(profit.enginePointsPerDay),
+    employees: ledgerEmployees.sort((a, b) => b.netPerDay - a.netPerDay),
   }
 }

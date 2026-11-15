@@ -1,9 +1,9 @@
-import type { FactoryInput, ItemBonusInfo, RecipeLookup } from './profit'
-import type { TheoreticalModel, WorkerSkill } from './theoretical'
-import type { FactoryData, GameConfig, ItemBestRegion, WorkerInfo } from '@/lib/warera/api'
+import type { EngineModel } from './engine'
+import type { FactoryInput, RecipeLookup } from './profit'
+import type { FactoryData, GameConfig } from '@/lib/warera/api'
 
+import { enginePointsPerDay } from './engine'
 import { buildRecipeLookup } from './profit'
-import { engineTheoreticalPoints, sumWorkerProduction, workerProductions } from './theoretical'
 
 /**
  * Builds the recipe lookup from the game config. gameConfig.items is a fixed
@@ -15,59 +15,36 @@ export function recipeFromGameConfig(gameConfig: GameConfig): RecipeLookup {
 }
 
 /**
- * Resolves the scraped per-item best-region map into the profit model's
- * ItemBonusInfo, attaching region names from the caller's resolver.
- */
-export function buildItemBonus(
-  bestRegions: Record<string, ItemBestRegion>,
-  regionName: (id: string) => string,
-): Record<string, ItemBonusInfo> {
-  return Object.fromEntries(
-    Object.entries(bestRegions).map(([code, r]) => [code, {
-      bonusPct: r.bonusPct,
-      regionName: regionName(r.regionId),
-      strategicPct: r.strategicPct,
-      ethicSpecializationPct: r.ethicSpecializationPct,
-      depositPct: r.depositPct,
-      ethicDepositPct: r.ethicDepositPct,
-      depositEndAt: r.depositEndAt,
-    }]),
-  )
-}
-
-/**
- * A factory's automated-engine level, 0 when it has no engine.
+ * A factory's automated-engine level, 0 when it has no engine. Read from
+ * `activeUpgradeLevels`: the legacy `upgradesV2` block on older companies is stale.
  */
 export function engineLevelOf(f: FactoryData): number {
   return f.company.activeUpgradeLevels?.automatedEngine ?? 0
 }
 
 /**
- * Maps one fetched factory into the profit model's input, using theoretical
- * production: the automated engine's fixed daily output plus every hired worker
- * clicking to full energy each day. `skillOf` resolves a worker's skills (null ⇒
- * the level-0 defaults for someone outside our user set); `model` carries the
- * static engine/energy/loyalty constants. Self-work is excluded.
+ * Maps one fetched factory into the profit model's input: the engine's daily
+ * output from its level, plus the employees' production and the employee and
+ * manager wages from the hourly estimate (× 24). A missing estimate counts as no
+ * employees. Self-work is excluded.
  */
 export function factoryInputFromData(
   f: FactoryData,
-  workers: WorkerInfo[],
-  skillOf: (userId: string) => WorkerSkill | null,
   regionName: (id: string) => string,
-  model: TheoreticalModel,
+  model: EngineModel,
 ): FactoryInput {
-  const bonusPct = f.bonus?.total ?? 0
-  const enginePoints = engineTheoreticalPoints(engineLevelOf(f), bonusPct, model)
-  const { employeePoints, grossWagePerDay } = sumWorkerProduction(workerProductions(workers, skillOf, bonusPct, model))
+  const h = f.hourly
 
   return {
     id: f.company._id,
     name: f.company.name,
     itemCode: f.company.itemCode,
     regionName: regionName(f.company.region),
-    bonusPct,
-    workerCount: workers.length,
-    pointsPerDay: enginePoints + employeePoints,
-    grossWagePerDay,
+    employeeCount: f.employees.length,
+    employeeCap: h?.cap ?? 0,
+    enginePointsPerDay: enginePointsPerDay(engineLevelOf(f), model, h?.engineMultiplier ?? 1),
+    employeePointsPerDay: (h?.production ?? 0) * 24,
+    wagePerDay: (h?.wageCost ?? 0) * 24,
+    managerPerDay: (h?.managerCost ?? 0) * 24,
   }
 }

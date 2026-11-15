@@ -256,8 +256,6 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     factoryEngineNetPerDay: factory?.engineNetPerDay ?? null,
     factoryEmployeeNetPerDay: factory?.employeeNetPerDay ?? null,
     factoryWorkers: factory?.workerCount ?? null,
-    productionSkill: skills?.production?.value ?? null,
-    energySkill: skills?.energy?.value ?? null,
   } satisfies UserRow
 }
 

@@ -11,7 +11,7 @@ export function humanizeItem(code: string): string {
 
 /**
  * Signed gold for deltas: "+50.0 g", "−12.3 g", "0.0 g". One decimal by default —
- * per-worker/day figures are small (often near zero), so coarser rounding both
+ * per-employee/day figures are small (often near zero), so coarser rounding both
  * hides the value and stops the ledger's breakdown lines from summing to the net.
  */
 export function goldSigned(value: number, decimals = 1): string {

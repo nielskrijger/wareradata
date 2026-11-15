@@ -5,7 +5,6 @@ import type { ReadinessPill } from '@/lib/rows'
 import type { RankingTier } from '@/lib/warera/api'
 
 import { GearScorePill } from '@/components/badges/gear-score-pill'
-import { ScaleBadge } from '@/components/badges/scale-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CombatModeShareCell } from '@/components/cells/combat-mode-share-cell'
 import { CompactNumber } from '@/components/cells/compact-number'
@@ -259,25 +258,8 @@ export function countryColumn<
 }
 
 /**
- * A bounded value on the diverging {@link ScaleBadge} ramp (e.g. party ethics).
- */
-export function scaleBadgeColumn<T>(
-  key: Key<T>,
-  header: string,
-  opts: { width?: number } = {},
-): ColumnDef<T> {
-  return {
-    accessorKey: key,
-    header,
-    cell: ({ row }) => <ScaleBadge value={row.original[key] as number | null} />,
-    sortDescFirst: true,
-    meta: { align: 'right', width: opts.width ?? 110 },
-  }
-}
-
-/**
  * A null-safe percentage cell (`12%`, or `1.5%` with `decimals`), for policy
- * rates (taxes, unrest, production bonus) where the stored value is the percent.
+ * rates (taxes, unrest) where the stored value is the percent.
  */
 export function percentColumn<T>(
   key: Key<T>,

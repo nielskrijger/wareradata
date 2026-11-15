@@ -122,8 +122,8 @@ export interface UserRow {
   factoryPpPerDay: number | null
   factoryNetPerDay: number | null
   factoryTopPotential: number | null
-  // Per-user efficiency: net ÷ Top-potential (the most profitable item globally
-  // at its best region), capped 100 — how close to the game's best production.
+  // Per-user efficiency: net ÷ Top-potential (the same production on the most
+  // profitable item), capped 100 — how close to the best item choice.
   // Null when nothing's produced. The user-table Efficiency column.
   factoryEfficiencyPct: number | null
   // Net split by source and the employee headcount, for the Factories group.
@@ -131,11 +131,6 @@ export interface UserRow {
   factoryEngineNetPerDay: number | null
   factoryEmployeeNetPerDay: number | null
   factoryWorkers: number | null
-  // Trained skill values (not shown directly): production = per-work output,
-  // energy = max energy. Used to weight a worker's share of a factory's output
-  // in the user-page factory ledger. Null when skills aren't captured.
-  productionSkill: number | null
-  energySkill: number | null
 }
 
 /**
@@ -220,7 +215,7 @@ export interface GroupWealthParts {
 
 /**
  * Member-summed factory economics shared by the country / MU / alliance rows:
- * net gold/day (split into engine vs employees), hired-worker headcount,
+ * net gold/day (split into engine vs employees), NPC employee headcount,
  * production points/day, and efficiency (Σ net ÷ Σ Top-potential, capped at 100).
  * Each ranked value carries a snapshot rank. Sourced from the slow factory scrape,
  * so all fields read 0 / null until it (and a main scrape carrying market data)
@@ -361,12 +356,9 @@ export interface CountryRow extends GroupCaseStats, GroupWealthParts, GroupFacto
   name: string
   partyCount: number
   partyCountRank: number | null
-  productionBonus: number | null
-  productionBonusRank: number | null
-  specializedItem: string | null
   taxIncome: number | null
   taxMarket: number | null
-  taxSelfWork: number | null
+  taxManager: number | null
   unrestPercent: number | null
   warsCount: number
   warsCountRank: number | null
@@ -543,15 +535,11 @@ export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsS
   createdAt: string | null
   description: string | null
   id: string
-  imperialism: number | null
-  industrialism: number | null
-  isolationism: number | null
   memberCount: number
   memberCountRank: number | null
   // Sum of members' actual wealth in gold (real holdings, not the wealthPoints
   // points derivative). Surfaced as the "Total" wealth column.
   memberWealth: number
-  militarism: number | null
   name: string
 }
 

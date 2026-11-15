@@ -68,7 +68,9 @@ export const FACTORY_FIELD_ALIASES: FieldAliases = {
   factoryNet: 'factoryNetPerDay',
   auto: 'factoryEngineNetPerDay',
   workersNet: 'factoryEmployeeNetPerDay',
+  employeesNet: 'factoryEmployeeNetPerDay',
   workers: 'factoryWorkers',
+  employees: 'factoryWorkers',
   efficiency: 'factoryEfficiencyPct',
 }
 

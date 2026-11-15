@@ -2,18 +2,16 @@
  * Pure daily-profit model for a user's factories (companies).
  *
  * Inputs come from WarEra: `company.getById` (identity + item + region + engine
- * level), `company.getProductionBonus` (the factory's current item bonus),
- * `worker.getWorkers` (the hired roster), `itemTrading.getPrices` +
- * `gameConfig.items` (sell prices and recipes), and
- * `company.getRecommendedRegionIdsByItemCode` scraped per item (the global best
- * region + bonus for each item). Nothing here calls the API; the page fetches
- * and feeds plain data in.
+ * level), `employee.getCompanyEstimate` (the NPC employees' hourly production
+ * points and wages, plus the manager's wage), and `itemTrading.getPrices` +
+ * `gameConfig.items` (sell prices and recipes). Nothing here calls the API; the
+ * callers fetch and feed plain data in.
  *
- * Key unit fact: `pointsPerDay` is theoretical production POINTS per day (the
- * engine at its level plus workers at full daily effort — see theoretical.ts),
- * not item units and not scraped history. Units = points / productionPoints[item].
- * The production bonus is a multiplier on output, so base capacity =
- * points / (1 + bonus).
+ * Key unit fact: production is in POINTS per day (engine + employees), not item
+ * units. Units = points / productionPoints[item]. Employee points already include
+ * each employee's production bonus (management, manager, tool, specialization,
+ * happiness, …); the engine has no bonus. Game v0.27 removed regional production
+ * bonuses, so where a factory sits no longer changes its output.
  */
 
 /**
@@ -37,75 +35,32 @@ export type RecipeLookup = Record<string, Recipe>
 export type ItemPrices = Record<string, number>
 
 /**
- * Item code → its best region's total production bonus (percent) and that
- * region's name, scraped from `company.getRecommendedRegionIdsByItemCode`. This
- * is a global frontier (best region per item), not any one factory's region.
- */
-export interface ItemBonusInfo {
-  // Total best-region bonus (the parts below sum to this).
-  bonusPct: number
-  regionName: string
-  // Permanent parts: country strategic resources + ethic specialization.
-  strategicPct: number
-  ethicSpecializationPct: number
-  // Temporary parts: the region's deposit (expires at depositEndAt) + its ethic bonus.
-  depositPct: number
-  ethicDepositPct: number
-  depositEndAt?: string
-}
-
-/**
- * A production bonus split into the parts that stick around vs the parts that
- * expire, for explaining a relocation target. `permanentPct` is strategic +
- * specialization; `temporaryPct` is the region deposit, gone after `depositEndAt`.
- */
-export interface BonusBreakdown {
-  totalPct: number
-  permanentPct: number
-  temporaryPct: number
-  depositEndAt?: string
-}
-
-function bonusBreakdown(info: ItemBonusInfo | undefined): BonusBreakdown {
-  if (!info) {
-    return { totalPct: 0, permanentPct: 0, temporaryPct: 0 }
-  }
-
-  return {
-    totalPct: info.bonusPct,
-    permanentPct: info.strategicPct + info.ethicSpecializationPct,
-    temporaryPct: info.depositPct + info.ethicDepositPct,
-    depositEndAt: info.depositEndAt,
-  }
-}
-
-/**
- * The single most profitable item to produce anywhere right now: the item whose
- * best region maximises net gold per base production point.
+ * The single most profitable item to produce right now: the item that earns the
+ * most gold per production point, net of its inputs. With regional bonuses gone,
+ * this is the same everywhere.
  */
 export interface Frontier {
   itemCode: string
-  regionName: string
-  bonusPct: number
-  netPerBasePoint: number
+  netPerPoint: number
 }
 
 /**
- * The per-factory data the model needs. `pointsPerDay` is the theoretical total
- * (post-bonus production points: engine + workers at full daily effort);
- * `bonusPct` is the factory's current production bonus, used to recover the
- * bonus-free base capacity; `grossWagePerDay` is the gold the owner pays
- * employees (the owner bears the gross wage, the wage tax is the employee's).
+ * The per-factory data the model needs, all per day. `enginePointsPerDay` and
+ * `employeePointsPerDay` are production points from the engine and the NPC
+ * employees; `wagePerDay` is the employees' wages and `managerPerDay` the
+ * manager's, both paid by the owner.
  */
 export interface FactoryInput {
   id: string
   name: string
   itemCode: string
   regionName: string
-  bonusPct: number
-  workerCount: number
-  pointsPerDay: number
-  grossWagePerDay: number
+  employeeCount: number
+  employeeCap: number
+  enginePointsPerDay: number
+  employeePointsPerDay: number
+  wagePerDay: number
+  managerPerDay: number
 }
 
 /**
@@ -125,34 +80,28 @@ export interface FactoryProfit {
   name: string
   regionName: string
   itemCode: string
-  bonusPct: number
-  workerCount: number
-  // Production points/day (post-bonus, theoretical). Summed into the
-  // entity PP aggregates; units = pointsPerDay / productionPoints.
+  employeeCount: number
+  employeeCap: number
+  // Production points/day (engine + employees). Summed into the entity PP
+  // aggregates; units = pointsPerDay / productionPoints.
   pointsPerDay: number
+  enginePointsPerDay: number
+  employeePointsPerDay: number
   unitsPerDay: number
   sellPrice: number
   revenuePerDay: number
   inputs: InputCost[]
   inputCostPerDay: number
-  grossWagePerDay: number
+  wagePerDay: number
+  managerPerDay: number
   netPerDay: number
   isIdle: boolean
-  // Move potential: keep the same item, relocate to its best region. Net this
-  // factory's base capacity would earn there, the gain over now, and the bonus
-  // split (permanent vs temporary) at that region.
-  moveRegionName: string
-  movePotentialNetPerDay: number
-  moveOpportunityPerDay: number
-  moveBonus: BonusBreakdown
-  // Best potential: the globally most profitable item at its best region. Net
-  // this factory's base capacity would earn there, and the gain over now.
-  // Implies relocating and switching item. Always ≥ move potential.
+  // Top potential: the same production points spent on the most profitable item
+  // instead. Approximate, since employees' item specialization bonus would not
+  // carry over. Always ≥ net when a frontier is known.
   bestProductCode: string
-  bestRegionName: string
   bestPotentialNetPerDay: number
   bestOpportunityPerDay: number
-  topBonus: BonusBreakdown
 }
 
 /**
@@ -164,9 +113,7 @@ export interface PortfolioTotals {
   revenuePerDay: number
   costPerDay: number
   netPerDay: number
-  movePotentialNetPerDay: number
   bestPotentialNetPerDay: number
-  moveOpportunityPerDay: number
   bestOpportunityPerDay: number
 }
 
@@ -217,25 +164,22 @@ export function netPerUnit(code: string, prices: ItemPrices, recipe: RecipeLooku
 }
 
 /**
- * Builds the global production frontier: across every producible item, the one
- * whose best region maximises net gold per BASE production point. Output scales
- * with the bonus, so `(1 + bestBonus) × netPerUnit ÷ productionPoints` is what a
- * unit of bonus-free capacity earns making that item at its best location.
+ * Builds the production frontier: across every producible item, the one that
+ * earns the most gold per production point, net of input cost.
  */
-export function buildFrontier(prices: ItemPrices, recipe: RecipeLookup, itemBonus: Record<string, ItemBonusInfo>): Frontier | null {
+export function buildFrontier(prices: ItemPrices, recipe: RecipeLookup): Frontier | null {
   let best: Frontier | null = null
 
   for (const code of Object.keys(recipe)) {
     const unit = netPerUnit(code, prices, recipe)
-    const info = itemBonus[code]
     const productionPoints = recipe[code].productionPoints
-    if (unit == null || !info || productionPoints <= 0) {
+    if (unit == null || productionPoints <= 0) {
       continue
     }
 
-    const netPerBasePoint = (1 + info.bonusPct / 100) * unit / productionPoints
-    if (!best || netPerBasePoint > best.netPerBasePoint) {
-      best = { itemCode: code, regionName: info.regionName, bonusPct: info.bonusPct, netPerBasePoint }
+    const netPerPoint = unit / productionPoints
+    if (!best || netPerPoint > best.netPerPoint) {
+      best = { itemCode: code, netPerPoint }
     }
   }
 
@@ -243,22 +187,20 @@ export function buildFrontier(prices: ItemPrices, recipe: RecipeLookup, itemBonu
 }
 
 /**
- * Computes one factory's daily economics, plus two relocation potentials, all
- * applied to the factory's bonus-free base capacity:
- *  - move:  keep the same item, relocate to its best region (`itemBonus[item]`).
- *  - best:  switch to the globally most profitable item (`frontier`).
- * Compute `itemBonus` + `frontier` once and pass them in.
+ * Computes one factory's daily economics, plus the Top potential: the same
+ * production points spent on the frontier item. Compute `frontier` once and pass
+ * it in.
  */
 export function computeFactoryProfit(
   input: FactoryInput,
   prices: ItemPrices,
   recipe: RecipeLookup,
-  itemBonus: Record<string, ItemBonusInfo>,
   frontier: Frontier | null,
 ): FactoryProfit {
   const r = recipe[input.itemCode]
   const productionPoints = r?.productionPoints ?? 1
-  const unitsPerDay = input.pointsPerDay / productionPoints
+  const pointsPerDay = input.enginePointsPerDay + input.employeePointsPerDay
+  const unitsPerDay = pointsPerDay / productionPoints
   const sellPrice = prices[input.itemCode] ?? 0
 
   const revenuePerDay = unitsPerDay * sellPrice
@@ -271,50 +213,35 @@ export function computeFactoryProfit(
     inputCostPerDay += costPerDay
   }
 
-  const netPerDay = revenuePerDay - inputCostPerDay - input.grossWagePerDay
+  const staffPerDay = input.wagePerDay + input.managerPerDay
+  const netPerDay = revenuePerDay - inputCostPerDay - staffPerDay
 
-  // Bonus-free capacity: production points scale with (1 + bonus), so strip the
-  // current bonus to compare locations fairly.
-  const basePoints = input.pointsPerDay / (1 + input.bonusPct / 100)
-
-  // Move: same item at its best region (best-region bonus for this item).
-  const currentBest = itemBonus[input.itemCode]
-  const currentUnitNet = netPerUnit(input.itemCode, prices, recipe) ?? 0
-  const moveRate = (1 + (currentBest?.bonusPct ?? input.bonusPct) / 100) * currentUnitNet / productionPoints
-  const movePotentialNetPerDay = input.pointsPerDay <= 0 ? 0 : basePoints * moveRate - input.grossWagePerDay
-  const moveOpportunityPerDay = Math.max(0, movePotentialNetPerDay - netPerDay)
-
-  // Best: globally most profitable item at its best region.
-  const bestPotentialNetPerDay = input.pointsPerDay <= 0 || !frontier
-    ? (frontier ? 0 : netPerDay)
-    : basePoints * frontier.netPerBasePoint - input.grossWagePerDay
-  const bestOpportunityPerDay = Math.max(0, bestPotentialNetPerDay - netPerDay)
+  const bestPotentialNetPerDay = frontier && pointsPerDay > 0
+    ? Math.max(netPerDay, pointsPerDay * frontier.netPerPoint - staffPerDay)
+    : netPerDay
 
   return {
     id: input.id,
     name: input.name,
     regionName: input.regionName,
     itemCode: input.itemCode,
-    bonusPct: input.bonusPct,
-    workerCount: input.workerCount,
-    pointsPerDay: input.pointsPerDay,
+    employeeCount: input.employeeCount,
+    employeeCap: input.employeeCap,
+    pointsPerDay,
+    enginePointsPerDay: input.enginePointsPerDay,
+    employeePointsPerDay: input.employeePointsPerDay,
     unitsPerDay,
     sellPrice,
     revenuePerDay,
     inputs,
     inputCostPerDay,
-    grossWagePerDay: input.grossWagePerDay,
+    wagePerDay: input.wagePerDay,
+    managerPerDay: input.managerPerDay,
     netPerDay,
-    isIdle: input.pointsPerDay <= 0,
-    moveRegionName: currentBest?.regionName ?? input.regionName,
-    movePotentialNetPerDay,
-    moveOpportunityPerDay,
-    moveBonus: bonusBreakdown(currentBest),
+    isIdle: pointsPerDay <= 0,
     bestProductCode: frontier?.itemCode ?? input.itemCode,
-    bestRegionName: frontier?.regionName ?? input.regionName,
     bestPotentialNetPerDay,
-    bestOpportunityPerDay,
-    topBonus: bonusBreakdown(frontier ? itemBonus[frontier.itemCode] : undefined),
+    bestOpportunityPerDay: Math.max(0, bestPotentialNetPerDay - netPerDay),
   }
 }
 
@@ -325,10 +252,11 @@ export function computeFactoryProfit(
  */
 export interface UserFactoryAgg {
   factoryCount: number
+  // NPC employees across the user's factories.
   workerCount: number
   ppPerDay: number
   netPerDay: number
-  // Net split by source: engine vs employees (workforce, net of wages).
+  // Net split by source: engine vs employees (net of wages and manager).
   // engineNetPerDay + employeeNetPerDay = netPerDay.
   engineNetPerDay: number
   employeeNetPerDay: number
@@ -345,9 +273,7 @@ export function portfolioTotals(rows: FactoryProfit[]): PortfolioTotals {
     revenuePerDay: 0,
     costPerDay: 0,
     netPerDay: 0,
-    movePotentialNetPerDay: 0,
     bestPotentialNetPerDay: 0,
-    moveOpportunityPerDay: 0,
     bestOpportunityPerDay: 0,
   }
 
@@ -356,11 +282,9 @@ export function portfolioTotals(rows: FactoryProfit[]): PortfolioTotals {
       totals.activeCount += 1
     }
     totals.revenuePerDay += row.revenuePerDay
-    totals.costPerDay += row.inputCostPerDay + row.grossWagePerDay
+    totals.costPerDay += row.inputCostPerDay + row.wagePerDay + row.managerPerDay
     totals.netPerDay += row.netPerDay
-    totals.movePotentialNetPerDay += row.movePotentialNetPerDay
     totals.bestPotentialNetPerDay += row.bestPotentialNetPerDay
-    totals.moveOpportunityPerDay += row.moveOpportunityPerDay
     totals.bestOpportunityPerDay += row.bestOpportunityPerDay
   }
 

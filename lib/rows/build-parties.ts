@@ -15,7 +15,6 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
       const agg = membersByParty.get(p._id)
       const country = p.country ? lookups.countryById.get(p.country) : undefined
       const leader = leaderFields(p.leader ?? null, lookups)
-      const ethics = p.ethics
 
       return {
         avatarUrl: p.avatarUrl ?? null,
@@ -31,22 +30,17 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         ...aggPremium(agg),
         ...aggWealthParts(agg),
         id: p._id,
-        imperialism: ethics?.imperialism ?? null,
-        industrialism: ethics?.industrialism ?? null,
-        isolationism: ethics?.isolationism ?? null,
         ...leader,
         memberCount: p.members?.length ?? 0,
         memberCountRank: null,
         memberWealth: agg?.wealth ?? 0,
-        militarism: ethics?.militarism ?? null,
         name: p.name,
       } satisfies PartyRow
     })
     .sort((a, b) => b.totalPoints - a.totalPoints)
 
   // Rank parties against each other on the aggregate stats (standard
-  // competition rank over the snapshot). Ethics are a -2..+2 policy scale, not
-  // a leaderboard, so they get no rank.
+  // competition rank over the snapshot).
   rankAll(rows, [
     'caseLuck',
     ...POINTS_RANK_KEYS,

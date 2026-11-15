@@ -360,7 +360,7 @@ export function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, re
 
 /**
  * A group row's factory fields ({@link GroupFactoryStats}): member-summed net
- * gold/day (split into engine vs employees), hired-worker count, production
+ * gold/day (split into engine vs employees), NPC employee count, production
  * points/day, plus efficiency (Σ net ÷ Σ Top-potential, capped at 100, null when
  * nothing's produced). Ranks filled later by rankAll (value keys are
  * {@link FACTORY_RANK_KEYS}). Empty until the factory scrape has run.

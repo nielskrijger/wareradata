@@ -1,7 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import type { LucideIcon } from 'lucide-react'
 
-import { Building2, Coins, Compass, Factory, Landmark, LayoutGrid, PackageOpen, Sparkles, Swords, Trophy } from 'lucide-react'
+import { Building2, Coins, Factory, Landmark, LayoutGrid, PackageOpen, Sparkles, Swords, Trophy } from 'lucide-react'
 
 /**
  * Categories group the (long) column list in the Columns menu into collapsible
@@ -10,8 +10,8 @@ import { Building2, Coins, Compass, Factory, Landmark, LayoutGrid, PackageOpen, 
  * (see {@link buildColumns}), which stamps it onto `meta.category`; anything
  * unstamped (the identity column, a trailing link column, or a plain table that
  * does not use buildColumns) falls back to General, the universal overview bucket
- * (scores, size, dates, affiliations). Ethics / Government / MU-specific are
- * entity-specific (parties / countries / MUs).
+ * (scores, size, dates, affiliations). Government / MU-specific are
+ * entity-specific (countries / MUs).
  *
  * This array is the single source of truth for both the set of categories and
  * their order: {@link Category} is derived from it, and the Columns menu and
@@ -21,7 +21,6 @@ export const CATEGORIES = [
   'points',
   'general',
   'combat',
-  'ethics',
   'government',
   'muSpecific',
   'wealth',
@@ -37,7 +36,7 @@ export type Category = (typeof CATEGORIES)[number]
  *
  * Every category but General carries a `color`, so it shows its icon in the
  * table header as well as the Columns menu. The themed groups use saturated hues
- * (Points teal, Combat red, Ethics blue, Wealth gold, Premium purple); the
+ * (Points teal, Combat red, Wealth gold, Premium purple); the
  * entity-specific Government / MU-specific use a neutral slate (they never share
  * a table, so reusing slate is safe). General is the catch-all (level, members,
  * dates, affiliations) where a generic glyph per header is just noise, so it
@@ -47,7 +46,6 @@ export const CATEGORY_META: Record<Category, { label: string, Icon: LucideIcon, 
   points: { label: 'Points', Icon: Trophy, color: 'var(--heat-teal)' },
   general: { label: 'General', Icon: LayoutGrid },
   combat: { label: 'Combat', Icon: Swords, color: 'var(--heat-red)' },
-  ethics: { label: 'Ethics', Icon: Compass, color: 'var(--heat-blue)' },
   government: { label: 'Government', Icon: Landmark, color: 'var(--heat-slate)' },
   muSpecific: { label: 'MU-specific', Icon: Building2, color: 'var(--heat-slate)' },
   wealth: { label: 'Wealth', Icon: Coins, color: 'var(--heat-gold)' },

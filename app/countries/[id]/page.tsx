@@ -156,7 +156,6 @@ export default async function CountryDetailPage({ params }: PageProps) {
             { label: 'Citizen Wealth', value: c.citizenWealth, display: <CompactNumber value={c.citizenWealth} />, range: ranges.citizenWealth, heat: 'median', rank: c.citizenWealthRank },
             { label: 'Bounty', value: c.bounty, display: <CompactNumber value={c.bounty} />, range: ranges.bounty, heat: 'ramp', rank: c.bountyRank },
             { label: 'Development', value: c.development, range: ranges.development, heat: 'median', rank: c.developmentRank },
-            { label: 'Prod. bonus', value: c.productionBonus, display: c.productionBonus != null ? `${c.productionBonus}%` : undefined, range: ranges.productionBonus, heat: 'median', rank: c.productionBonusRank },
           ]}
         />
         <WealthCompositionCard
@@ -190,7 +189,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
           rows={[
             { label: 'Income tax', value: c.taxIncome, display: c.taxIncome != null ? `${c.taxIncome}%` : undefined, range: ranges.taxIncome, heat: 'invert', center: 10 },
             { label: 'Market tax', value: c.taxMarket, display: c.taxMarket != null ? `${c.taxMarket}%` : undefined, range: ranges.taxMarket, heat: 'invert' },
-            { label: 'Self-work tax', value: c.taxSelfWork, display: c.taxSelfWork != null ? `${c.taxSelfWork}%` : undefined, range: ranges.taxSelfWork, heat: 'invert', center: 5 },
+            { label: 'Manager tax', value: c.taxManager, display: c.taxManager != null ? `${c.taxManager}%` : undefined, range: ranges.taxManager, heat: 'invert' },
             { label: 'Unrest', value: c.unrestPercent, display: c.unrestPercent != null ? `${c.unrestPercent.toFixed(1)}%` : undefined, range: ranges.unrestPercent, heat: 'invert' },
           ]}
         />

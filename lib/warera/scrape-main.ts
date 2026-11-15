@@ -5,10 +5,9 @@ import { writeEquipmentNdjson } from '@/lib/cache/equipment-store'
 import { writeRawSnapshot } from '@/lib/cache/file-store'
 import { writeUsersNdjson } from '@/lib/cache/users-store'
 
-import { recipeFromGameConfig } from '@/lib/factories/inputs'
 import { logger } from '@/lib/log'
 
-import { getAllAlliances, getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers, scrapeItemBestRegions, scrapeItemPrices } from './api'
+import { getAllAlliances, getAllBattles, getAllCountries, getAllMUs, getAllParties, getAllRegions, getEquipment, getGameConfig, getGovernmentForCountry, getTournamentInfo, getUserIdsForCountry, getUsers, scrapeItemPrices } from './api'
 
 const log = logger.child({ component: 'scrape' })
 
@@ -149,16 +148,10 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   const gameConfig = await getGameConfig()
   log.info('fetched game config')
 
-  // 13. Market context for factory profit: current prices + the best-region
-  // bonus per producible item. ~2 requests (prices, plus the per-item region
-  // calls batched into one). Stored so the row builders value factories at build
-  // time with no network.
-  const recipeCodes = Object.keys(recipeFromGameConfig(gameConfig))
-  const [prices, itemBestRegions] = await Promise.all([
-    scrapeItemPrices(),
-    scrapeItemBestRegions(recipeCodes),
-  ])
-  log.info({ items: Object.keys(itemBestRegions).length }, 'fetched prices + best regions')
+  // 13. Market context for factory profit: current item prices, one request.
+  // Stored so the row builders value factories at build time with no network.
+  const prices = await scrapeItemPrices()
+  log.info({ items: Object.keys(prices).length }, 'fetched prices')
 
   const durationMs = Date.now() - start
   const meta: SnapshotMeta = {
@@ -175,7 +168,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     scrapeDurationMs: durationMs,
   }
 
-  return { countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, itemBestRegions, meta }
+  return { countries, governments, mus, regions, parties, alliances, battles, tournament: tournamentSnapshot, gameConfig, prices, meta }
 }
 
 /**

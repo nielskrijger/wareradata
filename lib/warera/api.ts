@@ -3,8 +3,9 @@ import type {
   BattleGetBattlesResponse,
   BattleListItem,
   CompanyGetByIdResponse,
-  CompanyProductionBonusResponse,
   CountryListItem,
+  Employee,
+  EmployeeCompanyHourly,
   GameConfigGetGameConfigResponse,
   GovernmentGetByCountryIdResponse,
   InventoryFetchCurrentEquipmentResponse,
@@ -14,9 +15,10 @@ import type {
   MuRankingsOptional,
   PartyGetManyPaginatedResponse,
   RankingValueTier,
-  RecommendedRegion,
   RegionsObjectItem,
   UserGetUserLiteResponse,
+  UserSkills,
+  UserSkillsExpiration,
 } from '@wareraprojects/api'
 
 import { createAPIClient } from '@wareraprojects/api'
@@ -77,11 +79,14 @@ export interface WealthBreakdown {
 }
 // Users are hydrated via getUserById, whose payload is a superset of the lite
 // endpoint's. We base this type on the generated lite-response type only because
-// it types the fields we read (rankings, skills, …) precisely, whereas the
-// getUserById response type is looser (Record-typed); both describe the same
-// runtime object. The extra getUserById fields we consume are surfaced below.
-// See hydrateUsers.
+// it types the fields we read (rankings, …) precisely, whereas the getUserById
+// response type is looser (Record-typed); both describe the same runtime object.
+// The extra getUserById fields we consume are surfaced below. See hydrateUsers.
 export type User = UserGetUserLiteResponse & {
+  // Dropped from the lite payload (now `user.getUserSkills`), but getUserById
+  // still carries the same object, and that is what hydrateUsers calls.
+  skills?: UserSkills
+  skillsExpiration?: UserSkillsExpiration
   infos?: { isBanned?: boolean, colorScheme?: string }
   dates?: { lastConnectionAt?: string }
   stats?: UserGetUserLiteResponse['stats'] & { case1?: CaseStat, case2?: CaseStat, wealth?: WealthBreakdown }
@@ -142,11 +147,12 @@ export interface SnapshotMeta {
 //  - factoryClient: the all-users factory scrape. Bulk work with no latency
 //    requirement; it just takes proportionally longer on a smaller share.
 //
-// The three sum to 200, the API's authenticated cap, so all three together stay
-// within budget. Tune them here; rebalancing is a code change, not config.
-const SCRAPE_RATE_LIMIT = 50
-const URGENT_RATE_LIMIT = 50
-export const FACTORY_RATE_LIMIT = 100
+// The three sum to 500, the API's authenticated cap (per minute, per key), so all
+// three together stay within budget. Tune them here; rebalancing is a code
+// change, not config.
+const SCRAPE_RATE_LIMIT = 150
+const URGENT_RATE_LIMIT = 100
+export const FACTORY_RATE_LIMIT = 250
 
 const scrapeClient = createAPIClient({
   apiKey: process.env.WARERA_API_KEY,
@@ -501,19 +507,30 @@ export async function getTournamentInfo(): Promise<TournamentInfo> {
 // A factory (company) as returned by company.getById.
 export type Factory = CompanyGetByIdResponse
 
-// What getUserCompanies returns per factory: identity + the current production
-// bonus (null if that call failed). Engine level lives on `company`
-// (activeUpgradeLevels); the hired roster is fetched separately via getUserWorkers.
+// A company's hourly economics, the `hourly` block of `employee.getCompanyRoster`:
+// the employees' summed production points and wages, the manager's wage, and the
+// employee slots. Engine output is NOT included; it comes
+// from the engine level (see lib/factories/engine). Needs an API key.
+export type CompanyHourly = EmployeeCompanyHourly
+// One NPC employee, as `employee.getCompanyRoster` returns it.
+export type { Employee }
+
+// What getUserCompanies returns per factory: the company (identity, item, region,
+// engine level in `activeUpgradeLevels`), its hourly employee/manager figures and
+// its NPC employee roster. `hourly` is null and `employees` empty when the roster
+// call failed (e.g. no API key).
 export interface FactoryData {
   company: Factory
-  bonus: CompanyProductionBonusResponse | null
+  hourly: CompanyHourly | null
+  employees: Employee[]
 }
 
 /**
  * Fetches a user's factories with everything the profit model needs, in two
  * HTTP round-trips: one to list the company ids, then one batched request that
- * hydrates each (getById + production bonus). Returns [] for a user with no
- * factories. `client` picks the rate-limit budget.
+ * hydrates each (getById + employee roster). Returns [] for a user with no
+ * factories. A roster that fails leaves that factory engine-only rather than
+ * failing the whole user. `client` picks the rate-limit budget.
  */
 async function fetchUserCompanies(client: Client, userId: string): Promise<FactoryData[]> {
   const list = await client.company.getCompanies({ userId, perPage: 100 })
@@ -523,14 +540,17 @@ async function fetchUserCompanies(client: Client, userId: string): Promise<Facto
   }
 
   // Both hydration calls are dispatched in one tick, so the tRPC client coalesces
-  // them into a single batched HTTP request (≤ 50 ops covers the 12-factory cap).
-  // The bonus tolerates a per-factory error.
-  const [companies, bonuses] = await Promise.all([
+  // them into a single batched HTTP request.
+  const [companies, rosters] = await Promise.all([
     Promise.all(ids.map(id => client.company.getById({ companyId: id }))),
-    Promise.all(ids.map(id => client.company.getProductionBonus({ companyId: id }).catch(() => null))),
+    Promise.all(ids.map(id => client.employee.getCompanyRoster({ companyId: id }).catch(() => null))),
   ])
 
-  return ids.map((_, i) => ({ company: companies[i], bonus: bonuses[i] }))
+  return ids.map((_, i) => ({
+    company: companies[i],
+    hourly: rosters[i]?.hourly ?? null,
+    employees: rosters[i]?.employees ?? [],
+  }))
 }
 
 /**
@@ -545,54 +565,6 @@ export function getUserCompanies(userId: string): Promise<FactoryData[]> {
  */
 export function getUserCompaniesSlow(userId: string): Promise<FactoryData[]> {
   return fetchUserCompanies(factoryClient, userId)
-}
-
-// One worker a user employs: their user id, per-work wage (gold), and current
-// fidelity (loyalty level 0–10, +1%/level production, capped at +10%). Fidelity
-// adds to the factory's production bonus.
-export interface WorkerInfo {
-  userId: string
-  wage: number
-  fidelity: number
-}
-
-// The workers a user employs, grouped by company.
-export interface CompanyWorkers {
-  companyId: string
-  workers: WorkerInfo[]
-}
-
-/**
- * Fetches every worker a user employs, grouped by company, via `worker.getWorkers`.
- * The roster is no longer inlined on `company.getById`, so this is the source for
- * who works where, their wage, and their loyalty. `client` picks the rate-limit
- * budget.
- */
-async function fetchUserWorkers(client: Client, userId: string): Promise<CompanyWorkers[]> {
-  const typed = client as unknown as {
-    worker: { getWorkers: (input: { userId: string }) => Promise<{
-      workersPerCompany?: Array<{ company: { _id: string }, workers?: Array<{ user?: string, wage?: number, fidelity?: number }> }>
-    }> }
-  }
-  const res = await typed.worker.getWorkers({ userId })
-  return (res.workersPerCompany ?? []).map(c => ({
-    companyId: c.company._id,
-    workers: (c.workers ?? []).map(w => ({ userId: w.user ?? '', wage: w.wage ?? 0, fidelity: w.fidelity ?? 0 })),
-  }))
-}
-
-/**
- * A user's hired workers on the urgent client, for the on-demand user page.
- */
-export function getUserWorkers(userId: string): Promise<CompanyWorkers[]> {
-  return fetchUserWorkers(urgentClient, userId)
-}
-
-/**
- * A user's hired workers on the slow factory client, for the all-users scrape.
- */
-export function getUserWorkersSlow(userId: string): Promise<CompanyWorkers[]> {
-  return fetchUserWorkers(factoryClient, userId)
 }
 
 // Current market price per item code. Aliased so the snapshot store and row
@@ -623,73 +595,4 @@ export async function getItemPrices(): Promise<MarketPrices> {
  */
 export function scrapeItemPrices(): Promise<MarketPrices> {
   return scrapeClient.itemTrading.getPrices({})
-}
-
-// The best region (and its bonus breakdown) for producing each item. Scraped
-// from getRecommendedRegionIdsByItemCode, which returns a ranked shortlist per
-// item. User-independent and slow-changing, so one fetch is cached for all
-// user pages.
-export interface ItemBestRegion {
-  regionId: string
-  bonusPct: number
-  strategicPct: number
-  ethicSpecializationPct: number
-  depositPct: number
-  ethicDepositPct: number
-  depositEndAt?: string
-}
-
-/**
- * Best-region bonus per item, fetched on `client` (no cache).
- */
-async function fetchItemBestRegions(client: Client, itemCodes: string[]): Promise<Record<string, ItemBestRegion>> {
-  const entries = await Promise.all(itemCodes.map(code =>
-    client.company.getRecommendedRegionIdsByItemCode({ itemCode: code, includeDeposit: true })
-      .then(regions => [code, regions] as const)
-      .catch(() => [code, [] as RecommendedRegion[]] as const),
-  ))
-
-  const out: Record<string, ItemBestRegion> = {}
-  for (const [code, regions] of entries) {
-    // Take the highest total bonus (the shortlist is ranked, but don't assume).
-    const best = regions.reduce<RecommendedRegion | null>((top, r) => (top && top.bonus >= r.bonus ? top : r), null)
-    if (best) {
-      out[code] = {
-        regionId: best.regionId,
-        bonusPct: best.bonus,
-        strategicPct: best.strategicBonus,
-        ethicSpecializationPct: best.ethicSpecializationBonus,
-        depositPct: best.depositBonus,
-        ethicDepositPct: best.ethicDepositBonus,
-        depositEndAt: best.depositEndAt,
-      }
-    }
-  }
-
-  return out
-}
-
-let bestRegionsCache: { at: number, data: Record<string, ItemBestRegion> } | null = null
-const BEST_REGIONS_TTL_MS = 10 * 60_000
-
-/**
- * Best-region bonus per item — the global "production frontier" the profit
- * model ranks against. All item calls fire in one tick (batched), and the
- * result is memoized for {@link BEST_REGIONS_TTL_MS}. Urgent client.
- */
-export async function getItemBestRegions(itemCodes: string[]): Promise<Record<string, ItemBestRegion>> {
-  if (bestRegionsCache && Date.now() - bestRegionsCache.at < BEST_REGIONS_TTL_MS) {
-    return bestRegionsCache.data
-  }
-
-  const data = await fetchItemBestRegions(urgentClient, itemCodes)
-  bestRegionsCache = { at: Date.now(), data }
-  return data
-}
-
-/**
- * Fresh best-region map on the scrape client, captured into the snapshot.
- */
-export function scrapeItemBestRegions(itemCodes: string[]): Promise<Record<string, ItemBestRegion>> {
-  return fetchItemBestRegions(scrapeClient, itemCodes)
 }

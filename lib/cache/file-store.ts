@@ -55,8 +55,14 @@ export interface RawSnapshot {
   meta: SnapshotMeta
 }
 
+/**
+ * The runtime data volume: `DATA_DIR` when set, else `.data` in the working dir.
+ * The ignore comment on the explicit `process.cwd()` base tells Turbopack's
+ * output file tracing this is a runtime path, so it doesn't trace the whole
+ * project into the build output.
+ */
 export function dataDir(): string {
-  return path.resolve(process.env.DATA_DIR ?? './.data')
+  return path.resolve(/* turbopackIgnore: true */ process.cwd(), process.env.DATA_DIR ?? '.data')
 }
 
 export function snapshotPath(): string {

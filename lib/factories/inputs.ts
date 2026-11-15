@@ -11,7 +11,9 @@ import { buildRecipeLookup } from './profit'
  * only reads productionPoints/productionNeeds.
  */
 export function recipeFromGameConfig(gameConfig: GameConfig): RecipeLookup {
-  return buildRecipeLookup(gameConfig.items as unknown as Record<string, {
+  // `items` is absent on the empty bootstrap config (cold volume, before the
+  // first scrape), which yields an empty lookup.
+  return buildRecipeLookup((gameConfig.items ?? {}) as unknown as Record<string, {
     productionPoints?: number
     productionNeeds?: Record<string, number>
   }>)

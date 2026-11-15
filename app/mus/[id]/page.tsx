@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
+import { cache } from 'react'
 
 import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
@@ -30,7 +31,11 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getMU(id: string) {
+/**
+ * Loads the MU and everything its page renders. Wrapped in React `cache` so
+ * `generateMetadata` and the page share one load per request.
+ */
+const getMU = cache(async (id: string) => {
   const { mus, users } = await getSnapshot()
   const mu = mus.find(m => m.id === id)
   if (!mu) {
@@ -48,7 +53,7 @@ async function getMU(id: string) {
   const memberPage = firstPage(members, 'points')
 
   return { mu, ranges, total, memberPage }
-}
+})
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params

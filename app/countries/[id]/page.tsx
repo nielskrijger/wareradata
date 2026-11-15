@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
+import { cache } from 'react'
 
 import { BattleCountBadge } from '@/components/badges/battle-count-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
@@ -30,7 +31,11 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getCountry(id: string) {
+/**
+ * Loads the country and everything its page renders. Wrapped in React `cache` so
+ * `generateMetadata` and the page share one load per request.
+ */
+const getCountry = cache(async (id: string) => {
   const [snapshot, liveActive, activeBattlesByCountry] = await Promise.all([
     getSnapshot(),
     getLiveActiveBattles(),
@@ -72,7 +77,7 @@ async function getCountry(id: string) {
     battlePage,
     activeBattlesList,
   }
-}
+})
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params

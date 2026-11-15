@@ -6,7 +6,7 @@ import type { CasesByType } from '@/lib/warera/api'
 import { Clock } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
-import { Suspense } from 'react'
+import { cache, Suspense } from 'react'
 
 import { Avatar } from '@/components/avatar'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
@@ -31,10 +31,9 @@ import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { loadUserEquipment } from '@/lib/cache/equipment-store'
 import { getSnapshot } from '@/lib/cache/memory'
+import { getUserEquipment } from '@/lib/cache/users'
 import { EMPTY } from '@/lib/format'
-import { computeRanges } from '@/lib/query'
 import { getUserCasesByType } from '@/lib/warera/api'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -45,18 +44,21 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getUser(id: string) {
-  const { users, gearLookup } = await getSnapshot()
+/**
+ * Loads the user and everything its page renders. Wrapped in React `cache` so
+ * `generateMetadata` and the page share one load per request.
+ */
+const getUser = cache(async (id: string) => {
+  const { users, userRanges, gearLookup } = await getSnapshot()
   const user = users.find(u => u.id === id)
   if (!user) {
     return null
   }
-  // Ranges over the full ranked set, same as the table, so each stat can show
-  // where this player sits.
-  const ranges = computeRanges(users)
 
-  return { user, ranges, total: users.length, gearLookup }
-}
+  // Ranges over the full ranked set (precomputed per snapshot), same as the
+  // table, so each stat can show where this player sits.
+  return { user, ranges: userRanges, total: users.length, gearLookup }
+})
 
 /**
  * The per-type case breakdown for the detail card: read straight from the
@@ -108,9 +110,8 @@ export default async function UserDetailPage({ params }: PageProps) {
   // section stays hidden rather than implying an empty loadout.
   const hasGearData = user.gearScore != null
 
-  // The full loadout lives in a separate equipment file (not the snapshot), so
-  // read just this user's line, and only when there's a gear section to fill.
-  const equipment = hasGearData ? (await loadUserEquipment(user.id)) ?? undefined : undefined
+  // Parse the full loadout only when there's a gear section to fill.
+  const equipment = hasGearData ? (await getUserEquipment(user.id)) ?? undefined : undefined
 
   return (
     <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">

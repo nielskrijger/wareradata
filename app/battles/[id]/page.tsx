@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 
 import type { BattleSide } from '@/lib/rows'
-
 import Link from 'next/link'
+
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
+import { cache } from 'react'
 
 import { Avatar } from '@/components/avatar'
 import { BattleTypeBadge } from '@/components/badges/battle-type-badge'
@@ -21,13 +22,17 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getBattle(id: string) {
+/**
+ * Loads the battle and everything its page renders. Wrapped in React `cache` so
+ * `generateMetadata` and the page share one load per request.
+ */
+const getBattle = cache(async (id: string) => {
   // Prefer the live active list (fresh score / round / top dealers). If the
   // battle isn't active (finished, or just ended between refreshes), fall back
   // to the latest snapshot.
   const [liveActive, { battles }] = await Promise.all([getLiveActiveBattles(), getSnapshot()])
   return liveActive.find(b => b.id === id) ?? battles.find(b => b.id === id) ?? null
-}
+})
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
+import { cache } from 'react'
 
 import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
@@ -23,7 +24,11 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-async function getParty(id: string) {
+/**
+ * Loads the party and everything its page renders. Wrapped in React `cache` so
+ * `generateMetadata` and the page share one load per request.
+ */
+const getParty = cache(async (id: string) => {
   const { parties, users } = await getSnapshot()
   const party = parties.find(p => p.id === id)
   if (!party) {
@@ -36,7 +41,7 @@ async function getParty(id: string) {
   const memberPage = firstPage(users.filter(u => u.partyId === id), 'points')
 
   return { party, ranges, memberPage }
-}
+})
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params

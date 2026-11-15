@@ -67,9 +67,24 @@ export function archiveDir(): string {
   return path.join(dataDir(), 'archive')
 }
 
-// Temp-file prefix for the atomic snapshot write. A write that crashes before
-// its rename can leave one behind; the next successful write sweeps stale ones.
-const SNAPSHOT_TMP_PREFIX = 'snapshot.json.tmp.'
+/**
+ * Matches every temp file our atomic writers create (`<file>.tmp.<pid>.<ms>`),
+ * capturing the writer's pid. Shared by the snapshot, NDJSON, and archive writers.
+ */
+const TEMP_FILE_RE = /\.tmp\.(\d+)\.\d+$/
+
+/**
+ * Whether a process with this pid is still running. `kill(pid, 0)` sends no
+ * signal, it only checks: ESRCH means gone, EPERM means alive but not ours.
+ */
+function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch (err) {
+    return (err as NodeJS.ErrnoException).code === 'EPERM'
+  }
+}
 
 /**
  * Reads and JSON-parses a file, or returns `fallback` when it doesn't exist
@@ -189,18 +204,30 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
 }
 
 /**
- * Removes leftover snapshot temp files (orphans from a write that crashed before
- * its rename). The current write's temp file is already renamed away by the time
- * this runs, and the single scrape worker serializes writes, so everything still
- * matching the prefix is stale. Best-effort: never throws.
+ * Removes orphaned temp files left in the data dir and the battle archive by a
+ * write that died before its rename (a SIGKILL, OOM, or deploy mid-write skips
+ * the writers' own cleanup). Only files whose writer process is gone are
+ * removed, so a write still in flight in this or another process (the factory
+ * scrape runs for a long time, and the CLI scripts can run beside the server)
+ * is never touched. Best-effort: never throws.
  */
-async function cleanupStaleTempFiles(dir: string): Promise<void> {
-  const entries = await readdir(dir)
-  await Promise.all(
-    entries
-      .filter(name => name.startsWith(SNAPSHOT_TMP_PREFIX))
-      .map(name => unlink(path.join(dir, name)).catch(() => undefined)),
-  )
+export async function sweepStaleTempFiles(): Promise<void> {
+  for (const dir of [dataDir(), archiveDir()]) {
+    let entries: string[]
+    try {
+      entries = await readdir(dir)
+    } catch {
+      continue
+    }
+    const stale = entries.filter((name) => {
+      const match = TEMP_FILE_RE.exec(name)
+      return match !== null && !isProcessAlive(Number(match[1]))
+    })
+    await Promise.all(stale.map(name => unlink(path.join(dir, name)).catch(() => undefined)))
+    if (stale.length) {
+      log.info({ dir, removed: stale.length }, 'swept stale temp files')
+    }
+  }
 }
 
 /**
@@ -216,7 +243,7 @@ export async function writeRawSnapshot(snapshot: RawSnapshot): Promise<void> {
   const dir = dataDir()
   await mkdir(dir, { recursive: true })
 
-  const tmp = path.join(dir, `${SNAPSHOT_TMP_PREFIX}${process.pid}.${Date.now()}`)
+  const tmp = `${snapshotPath()}.tmp.${process.pid}.${Date.now()}`
   try {
     await pipeline(serializeSnapshot(snapshot), createWriteStream(tmp))
     await rename(tmp, snapshotPath())
@@ -225,5 +252,5 @@ export async function writeRawSnapshot(snapshot: RawSnapshot): Promise<void> {
     throw err
   }
 
-  await cleanupStaleTempFiles(dir).catch(() => undefined)
+  await sweepStaleTempFiles()
 }

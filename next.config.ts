@@ -5,8 +5,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'media.warera.io' },
-      // Item / skin icons served by the SPA (e.g. /images/items/helmet.png).
-      { protocol: 'https', hostname: 'app.warera.io' },
     ],
   },
 }

@@ -83,6 +83,14 @@ export interface UserRow {
   readinessEndsAt: string | null
   referrals: number | null
   referralsRank: number | null
+  // Times the player has prestiged (reset from level 50). 0 for most.
+  prestige: number | null
+  // Lifetime milestone tiers reached and skins owned, from the rankings block
+  // (`userMilestoneTiers` / `userSkinsOwned`).
+  milestoneTiers: number | null
+  milestoneTiersRank: number | null
+  skinsOwned: number | null
+  skinsOwnedRank: number | null
   terrain: number | null
   terrainRank: number | null
   username: string
@@ -353,8 +361,15 @@ export interface CountryRow extends
   citizenWealth: number
   citizenWealthRank: number | null
   code: string
+  // Daily national income in money (development, taxes, strategic resources,
+  // government type), from the country's `income.total`.
+  dailyIncome: number | null
+  dailyIncomeRank: number | null
   development: number | null
   developmentRank: number | null
+  // Government type code: provisional, republic, homelandFront, federation,
+  // plutocracy or autocracy. Null when the country payload has none.
+  govType: string | null
   id: string
   money: number | null
   moneyRank: number | null
@@ -402,10 +417,27 @@ export interface GovernmentOfficial {
 export interface GovernmentRow {
   president: GovernmentOfficial | null
   vicePresident: GovernmentOfficial | null
-  minOfDefense: GovernmentOfficial | null
-  minOfEconomy: GovernmentOfficial | null
-  minOfForeignAffairs: GovernmentOfficial | null
+  // Appointed ministers in the order the API lists them, each with a display
+  // title (known codes like `minOfDefense` mapped to a short label, custom
+  // titles kept as written). Vacant or unknown users are skipped.
+  ministers: { title: string, official: GovernmentOfficial }[]
   congressMembers: GovernmentOfficial[]
+}
+
+/**
+ * Strategic resource bonuses a country's citizens get, shared by every member
+ * of an alliance. Built from `country.getStrategicResourceBonuses`
+ * and read only by the country and alliance detail pages.
+ */
+export interface StrategicBonusRow {
+  // The alliance sharing these bonuses, or null for a country on its own.
+  allianceId: string | null
+  countryCount: number
+  // Regions held per resource and the bonus level they reach (1, 4, 9 copies
+  // give levels 1 to 3), most regions first.
+  resources: { resource: string, regionCount: number, level: number }[]
+  // Bonus points per skill code (e.g. production +3), largest first.
+  skills: { skill: string, value: number }[]
 }
 
 /**
@@ -460,6 +492,11 @@ export interface RegionRow {
   biome: string | null
   climate: string | null
   code: string
+  // Companies and NPC employees located in the region.
+  companyCount: number | null
+  employeeCount: number | null
+  // Daily income the region yields its owner, from `income.total`.
+  dailyIncome: number | null
   // Current (occupying) owner.
   countryCode: string | null
   countryId: string | null
@@ -476,6 +513,8 @@ export interface RegionRow {
   mainCity: string | null
   name: string
   neighborCount: number
+  // Players living in the region.
+  population: number | null
   strategicResource: string | null
 }
 

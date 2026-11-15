@@ -7,7 +7,7 @@ import type { RegionRow } from '@/lib/rows'
 import { BoolCell } from '@/components/cells/bool-cell'
 import { CountryCell } from '@/components/cells/country-cell'
 import { TruncatedCell } from '@/components/cells/truncated-cell'
-import { countryColumn } from '@/components/data-table/column-factories'
+import { compactNumberColumn, countryColumn, localeNumberColumn } from '@/components/data-table/column-factories'
 import { InfoTooltip } from '@/components/info-tooltip'
 
 export type { RegionRow }
@@ -56,6 +56,15 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 150 },
   },
+  compactNumberColumn<RegionRow>('dailyIncome', 'Daily Income', {
+    heat: 'median',
+    width: 135,
+    tooltip: 'Money the region earns its owner per day: development, taxes on the companies here, '
+      + 'and its strategic resource.',
+  }),
+  localeNumberColumn<RegionRow>('population', 'Population', { heat: 'median', width: 120 }),
+  localeNumberColumn<RegionRow>('companyCount', 'Companies', { heat: 'median', width: 120 }),
+  localeNumberColumn<RegionRow>('employeeCount', 'Employees', { heat: 'median', width: 120 }),
   {
     accessorKey: 'strategicResource',
     header: 'Resource',

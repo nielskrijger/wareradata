@@ -34,7 +34,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { getSnapshot } from '@/lib/cache/memory'
 import { getUserEquipment } from '@/lib/cache/users'
 import { EMPTY } from '@/lib/format'
-import { computeRanges } from '@/lib/query'
 import { getUserCasesByType } from '@/lib/warera/api'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -50,16 +49,15 @@ interface PageProps {
  * `generateMetadata` and the page share one load per request.
  */
 const getUser = cache(async (id: string) => {
-  const { users, gearLookup } = await getSnapshot()
+  const { users, userRanges, gearLookup } = await getSnapshot()
   const user = users.find(u => u.id === id)
   if (!user) {
     return null
   }
-  // Ranges over the full ranked set, same as the table, so each stat can show
-  // where this player sits.
-  const ranges = computeRanges(users)
 
-  return { user, ranges, total: users.length, gearLookup }
+  // Ranges over the full ranked set (precomputed per snapshot), same as the
+  // table, so each stat can show where this player sits.
+  return { user, ranges: userRanges, total: users.length, gearLookup }
 })
 
 /**

@@ -56,7 +56,15 @@ function mergeRarities(a: CaseRarityCounts | null, b: CaseRarityCounts | null): 
  * (case1), Mythic the premium case (case2). Mirrors MultiStatCard's hero + rows
  * layout so it sits flush with the other detail cards.
  */
-export function CasesCard({ combinedOpened, standardOpened, mythicOpened, standardByRarity, mythicByRarity, rank, rankOf }: Props) {
+export function CasesCard({
+  combinedOpened,
+  standardOpened,
+  mythicOpened,
+  standardByRarity,
+  mythicByRarity,
+  rank,
+  rankOf,
+}: Props) {
   const [seg, setSeg] = useState<Segment>('all')
 
   const hasData = combinedOpened != null
@@ -115,7 +123,10 @@ export function CasesCard({ combinedOpened, standardOpened, mythicOpened, standa
             // Keep the full ladder visible but dim tiers with nothing pulled
             // yet, so the rarities the player has actually opened still stand out.
             return (
-              <div key={rarity} className={cn('flex items-baseline justify-between gap-2 text-sm', count === 0 && 'opacity-40')}>
+              <div
+                key={rarity}
+                className={cn('flex items-baseline justify-between gap-2 text-sm', count === 0 && 'opacity-40')}
+              >
                 <dt className="text-muted-foreground flex items-center gap-1.5 capitalize">
                   <span className="size-2 shrink-0 rounded-full" style={{ background: RARITY_COLOR[rarity] }} />
                   {rarity}

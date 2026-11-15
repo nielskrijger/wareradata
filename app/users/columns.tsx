@@ -38,9 +38,16 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
     cell: ({ row }) => (
       <div className="flex min-w-0 items-center gap-2">
         <UserHoverCard userId={row.original.id}>
-          <UserNameCell userId={row.original.id} name={row.original.username} avatarUrl={row.original.avatarUrl} colorScheme={row.original.colorScheme} />
+          <UserNameCell
+            userId={row.original.id}
+            name={row.original.username}
+            avatarUrl={row.original.avatarUrl}
+            colorScheme={row.original.colorScheme}
+          />
         </UserHoverCard>
-        {row.original.isBanned && <Badge className="shrink-0 bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
+        {row.original.isBanned && (
+          <Badge className="shrink-0 bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>
+        )}
         <WareraLinkIcon kind="user" id={row.original.id} />
       </div>
     ),
@@ -48,7 +55,10 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
   },
   {
     points: [
-      pointsBreakdownColumn<UserRow>('points', 'Points', { width: 105, tooltip: 'Ranking points: level + damage + wealth combined.' }),
+      pointsBreakdownColumn<UserRow>('points', 'Points', {
+        width: 105,
+        tooltip: 'Ranking points: level + damage + wealth combined.',
+      }),
       {
         accessorKey: 'pointsPerDay',
         header: 'Per day',
@@ -129,7 +139,9 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         // on top, "ready" in the middle, and the longest debuff at the bottom.
         accessorKey: 'readinessStatus',
         header: 'Buff',
-        cell: ({ row }) => <ReadinessBadge status={row.original.readinessStatus} endsAt={row.original.readinessEndsAt} />,
+        cell: ({ row }) => (
+          <ReadinessBadge status={row.original.readinessStatus} endsAt={row.original.readinessEndsAt} />
+        ),
         sortDescFirst: true,
         meta: { width: 100 },
       },
@@ -164,24 +176,88 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       localeNumberColumn<UserRow>('terrain', 'Terrain', { heat: 'median', width: 105 }),
     ],
     wealth: [
-      rankTooltipColumn<UserRow>('wealth', 'wealthRank', 'Total', { width: 100, tooltip: 'Total wealth: companies + items + cash + equipment + weapons.' }),
-      compactNumberColumn<UserRow>('companiesWealth', 'Companies', { heat: 'median', width: 135, tooltip: 'Value of companies owned.' }),
-      compactNumberColumn<UserRow>('stockpileWealth', 'Stockpile', { heat: 'median', width: 120, tooltip: 'Value of items + cash + equipment + weapons.' }),
-      compactNumberColumn<UserRow>('itemsWealth', 'Items', { heat: 'median', width: 100, tooltip: 'Value of items held.' }),
-      compactNumberColumn<UserRow>('cashWealth', 'Cash', { heat: 'median', width: 100, tooltip: 'Liquid cash on hand.' }),
-      compactNumberColumn<UserRow>('equipmentWealth', 'Equipment', { heat: 'median', width: 130, tooltip: 'Value of equipment owned.' }),
-      compactNumberColumn<UserRow>('weaponsWealth', 'Weapons', { heat: 'median', width: 125, tooltip: 'Value of weapons owned.' }),
-      compactNumberColumn<UserRow>('bounty', 'Bounty', { heat: 'median', width: 110, tooltip: 'Coins this player has put up as a battle bounty, paid to fighters per 1k damage dealt.' }),
-      localeNumberColumn<UserRow>('referrals', 'Referrals', { heat: 'ramp', width: 120, tooltip: 'Players this user has referred.' }),
+      rankTooltipColumn<UserRow>('wealth', 'wealthRank', 'Total', {
+        width: 100,
+        tooltip: 'Total wealth: companies + items + cash + equipment + weapons.',
+      }),
+      compactNumberColumn<UserRow>('companiesWealth', 'Companies', {
+        heat: 'median',
+        width: 135,
+        tooltip: 'Value of companies owned.',
+      }),
+      compactNumberColumn<UserRow>('stockpileWealth', 'Stockpile', {
+        heat: 'median',
+        width: 120,
+        tooltip: 'Value of items + cash + equipment + weapons.',
+      }),
+      compactNumberColumn<UserRow>('itemsWealth', 'Items', {
+        heat: 'median',
+        width: 100,
+        tooltip: 'Value of items held.',
+      }),
+      compactNumberColumn<UserRow>('cashWealth', 'Cash', {
+        heat: 'median',
+        width: 100,
+        tooltip: 'Liquid cash on hand.',
+      }),
+      compactNumberColumn<UserRow>('equipmentWealth', 'Equipment', {
+        heat: 'median',
+        width: 130,
+        tooltip: 'Value of equipment owned.',
+      }),
+      compactNumberColumn<UserRow>('weaponsWealth', 'Weapons', {
+        heat: 'median',
+        width: 125,
+        tooltip: 'Value of weapons owned.',
+      }),
+      compactNumberColumn<UserRow>('bounty', 'Bounty', {
+        heat: 'median',
+        width: 110,
+        tooltip: 'Coins this player has put up as a battle bounty, paid to fighters per 1k damage dealt.',
+      }),
+      localeNumberColumn<UserRow>('referrals', 'Referrals', {
+        heat: 'ramp',
+        width: 120,
+        tooltip: 'Players this user has referred.',
+      }),
     ],
     factories: [
-      localeNumberColumn<UserRow>('factoryCount', '# Factories', { heat: 'ramp', width: 130, tooltip: 'Number of factories this player owns.' }),
-      localeNumberColumn<UserRow>('factoryWorkers', '# Employees', { heat: 'ramp', width: 135, tooltip: 'NPC employees across this player\'s factories.' }),
-      compactNumberColumn<UserRow>('factoryNetPerDay', 'Total / day', { heat: 'median', width: 120, tooltip: 'Daily factory profit: automated engines + NPC employees, net of employee and manager wages.' }),
-      compactNumberColumn<UserRow>('factoryEngineNetPerDay', 'Auto / day', { heat: 'median', width: 120, tooltip: 'Daily profit from this player\'s automated engines.' }),
-      compactNumberColumn<UserRow>('factoryEmployeeNetPerDay', 'Employees / day', { heat: 'median', width: 155, tooltip: 'Daily profit from this player\'s NPC employees, after their wages and the managers\' wages.' }),
-      compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', { heat: 'median', width: 110, tooltip: 'Production points produced per day across this player\'s factories.' }),
-      percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', { heat: 'median', decimals: 0, width: 115, tooltip: 'Net as a share of the Top potential (the same production on the most profitable item). 100% = already on the best item.' }),
+      localeNumberColumn<UserRow>('factoryCount', '# Factories', {
+        heat: 'ramp',
+        width: 130,
+        tooltip: 'Number of factories this player owns.',
+      }),
+      localeNumberColumn<UserRow>('factoryWorkers', '# Employees', {
+        heat: 'ramp',
+        width: 135,
+        tooltip: 'NPC employees across this player\'s factories.',
+      }),
+      compactNumberColumn<UserRow>('factoryNetPerDay', 'Total / day', {
+        heat: 'median',
+        width: 120,
+        tooltip: 'Daily factory profit: automated engines + NPC employees, net of employee and manager wages.',
+      }),
+      compactNumberColumn<UserRow>('factoryEngineNetPerDay', 'Auto / day', {
+        heat: 'median',
+        width: 120,
+        tooltip: 'Daily profit from this player\'s automated engines.',
+      }),
+      compactNumberColumn<UserRow>('factoryEmployeeNetPerDay', 'Employees / day', {
+        heat: 'median',
+        width: 155,
+        tooltip: 'Daily profit from this player\'s NPC employees, after their wages and the managers\' wages.',
+      }),
+      compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', {
+        heat: 'median',
+        width: 110,
+        tooltip: 'Production points produced per day across this player\'s factories.',
+      }),
+      percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', {
+        heat: 'median',
+        decimals: 0,
+        width: 115,
+        tooltip: 'Net as a share of the Top potential (the same production on the most profitable item). 100% = already on the best item.',
+      }),
     ],
     premium: [
       localeNumberColumn<UserRow>('premiumMonths', 'Premium Mo.', { heat: 'ramp', width: 145 }),

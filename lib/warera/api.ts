@@ -298,7 +298,10 @@ export function extractCasesByType(stats: { case1?: CaseStat, case2?: CaseStat }
  * Merge the per-type rarity maps into the combined breakdown (case1 + case2),
  * with the summed total. Null when neither type has any categorized pulls.
  */
-export function mergeCasesBreakdown(standard: CaseRarityCounts | null, mythic: CaseRarityCounts | null): CasesBreakdown | null {
+export function mergeCasesBreakdown(
+  standard: CaseRarityCounts | null,
+  mythic: CaseRarityCounts | null,
+): CasesBreakdown | null {
   if (!standard && !mythic) {
     return null
   }
@@ -418,7 +421,11 @@ async function pageBattles(client: Client, isActive: boolean, max: number): Prom
   const out: Battle[] = []
   let cursor: string | undefined
   do {
-    const page: BattleGetBattlesResponse = await client.battle.getBattles({ isActive, limit: BATTLES_PAGE_SIZE, cursor })
+    const page: BattleGetBattlesResponse = await client.battle.getBattles({
+      isActive,
+      limit: BATTLES_PAGE_SIZE,
+      cursor,
+    })
     out.push(...(page.items as Battle[]))
     cursor = page.nextCursor
   } while (cursor && out.length < max)

@@ -1,4 +1,12 @@
-import type { GroupCaseStats, GroupFactoryStats, GroupPointsStats, GroupPremiumStats, GroupVitals, GroupWealthParts, UserRow } from '@/lib/rows'
+import type {
+  GroupCaseStats,
+  GroupFactoryStats,
+  GroupPointsStats,
+  GroupPremiumStats,
+  GroupVitals,
+  GroupWealthParts,
+  UserRow,
+} from '@/lib/rows'
 
 import { luckPercent } from '@/lib/cases'
 
@@ -287,7 +295,10 @@ export function aggWealthParts(agg: MemberAgg | undefined): GroupWealthParts {
     equipmentWealthRank: null,
     weaponsWealth: agg?.weaponsWealth ?? 0,
     weaponsWealthRank: null,
-    stockpileWealth: (agg?.itemsWealth ?? 0) + (agg?.cashWealth ?? 0) + (agg?.equipmentWealth ?? 0) + (agg?.weaponsWealth ?? 0),
+    stockpileWealth: (agg?.itemsWealth ?? 0)
+      + (agg?.cashWealth ?? 0)
+      + (agg?.equipmentWealth ?? 0)
+      + (agg?.weaponsWealth ?? 0),
     stockpileWealthRank: null,
   }
 }
@@ -296,7 +307,14 @@ export function aggWealthParts(agg: MemberAgg | undefined): GroupWealthParts {
  * The five wealth-component field keys, ranked by the builders (via rankAll)
  * and reused as the sort/filter passthrough in the API routes.
  */
-export const WEALTH_PART_KEYS = ['companiesWealth', 'itemsWealth', 'cashWealth', 'equipmentWealth', 'weaponsWealth', 'stockpileWealth'] as const
+export const WEALTH_PART_KEYS = [
+  'companiesWealth',
+  'itemsWealth',
+  'cashWealth',
+  'equipmentWealth',
+  'weaponsWealth',
+  'stockpileWealth',
+] as const
 
 /**
  * A group row's aggregate points fields ({@link GroupPointsStats}): the
@@ -390,7 +408,15 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
 /**
  * The {@link aggFactories} value keys rankAll should rank.
  */
-export const FACTORY_RANK_KEYS = ['factoryCount', 'factoryPpPerDay', 'factoryNetPerDay', 'factoryEngineNetPerDay', 'factoryEmployeeNetPerDay', 'factoryWorkers', 'factoryEfficiencyPct'] as const
+export const FACTORY_RANK_KEYS = [
+  'factoryCount',
+  'factoryPpPerDay',
+  'factoryNetPerDay',
+  'factoryEngineNetPerDay',
+  'factoryEmployeeNetPerDay',
+  'factoryWorkers',
+  'factoryEfficiencyPct',
+] as const
 
 /**
  * A group row's member-averaged combat/condition stats ({@link GroupVitals}):

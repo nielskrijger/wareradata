@@ -11,7 +11,10 @@ import { buildRecipeLookup } from './profit'
  * only reads productionPoints/productionNeeds.
  */
 export function recipeFromGameConfig(gameConfig: GameConfig): RecipeLookup {
-  return buildRecipeLookup(gameConfig.items as unknown as Record<string, { productionPoints?: number, productionNeeds?: Record<string, number> }>)
+  return buildRecipeLookup(gameConfig.items as unknown as Record<string, {
+    productionPoints?: number
+    productionNeeds?: Record<string, number>
+  }>)
 }
 
 /**

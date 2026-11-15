@@ -35,7 +35,9 @@ export function GearBand({ score, equipment, gearLookup }: Props) {
           className={cn('flex size-8 flex-col items-center justify-center rounded-md sm:size-9')}
           style={{ background: `${color}22`, boxShadow: `inset 0 0 0 1px ${color}55` }}
         >
-          <span className="text-xs font-semibold leading-none tabular-nums sm:text-sm" style={{ color }}>{score ?? 0}</span>
+          <span className="text-xs font-semibold leading-none tabular-nums sm:text-sm" style={{ color }}>
+            {score ?? 0}
+          </span>
           <span className="text-muted-foreground text-[7px] leading-none">/100</span>
         </div>
         <span className="h-3 text-[9px] font-medium leading-none" style={{ color }}>{rarityLabel(tier)}</span>

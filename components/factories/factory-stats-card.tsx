@@ -51,7 +51,13 @@ export function FactoryStatsCard({ className, totalNet, autoNet, employeesNet, c
  * `strong` enlarges the headline Total; `pad` insets the columns after the first
  * so they clear the vertical divider.
  */
-function Col({ label, value, sub, strong, pad }: { label: string, value: number, sub?: string, strong?: boolean, pad?: boolean }) {
+function Col({ label, value, sub, strong, pad }: {
+  label: string
+  value: number
+  sub?: string
+  strong?: boolean
+  pad?: boolean
+}) {
   return (
     <div className={cn('flex flex-col gap-0.5', pad && 'pl-3')}>
       <span className="text-muted-foreground text-xs">{label}</span>

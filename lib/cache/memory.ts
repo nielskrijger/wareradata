@@ -118,7 +118,15 @@ export async function buildSnapshot(
   // Per-user factory totals and equipment are likewise streamed from their own
   // files by the caller. Factory totals roll up through member-agg into the
   // entity Factories columns; equipment feeds gear scoring and isn't retained.
-  const userRows = await buildUserRows(streamUsersForBuild, lookups, nowMs, equipmentByUser, raw.gameConfig, gearLookup, factoryAggByUser)
+  const userRows = await buildUserRows(
+    streamUsersForBuild,
+    lookups,
+    nowMs,
+    equipmentByUser,
+    raw.gameConfig,
+    gearLookup,
+    factoryAggByUser,
+  )
   const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups, raw.alliances)
   const governmentRows = buildGovernmentRows(raw.governments, lookups)
   const muRows = buildMURows(raw.mus, userRows, lookups)
@@ -128,7 +136,21 @@ export async function buildSnapshot(
   const battleRows = buildBattleRows(raw.battles, raw.tournament, lookups)
   const userRanges = computeRanges(userRows)
 
-  return { users: userRows, userRanges, countries: countryRows, governments: governmentRows, mus: muRows, parties: partyRows, alliances: allianceRows, regions: regionRows, battles: battleRows, lookups, tournament: raw.tournament, gameConfig: raw.gameConfig, gearLookup }
+  return {
+    users: userRows,
+    userRanges,
+    countries: countryRows,
+    governments: governmentRows,
+    mus: muRows,
+    parties: partyRows,
+    alliances: allianceRows,
+    regions: regionRows,
+    battles: battleRows,
+    lookups,
+    tournament: raw.tournament,
+    gameConfig: raw.gameConfig,
+    gearLookup,
+  }
 }
 
 /**
@@ -165,14 +187,24 @@ function streamUsersWithOverlay(overlay: Map<string, User>): (onUser: (user: Use
  * snapshot with its separate NDJSON files, so the scrape, refresh, boot, and
  * lazy-load paths stay consistent.
  */
-export async function buildSnapshotFromRaw(raw: RawSnapshot, label: string, userOverlay: Map<string, User> = new Map()): Promise<Snapshot> {
+export async function buildSnapshotFromRaw(
+  raw: RawSnapshot,
+  label: string,
+  userOverlay: Map<string, User> = new Map(),
+): Promise<Snapshot> {
   const [factoryAggByUser, equipmentByUser] = await Promise.all([
     loadFactoryAggregates(raw),
     loadEquipmentByUser(),
   ])
 
   const start = Date.now()
-  const snapshot = await buildSnapshot(raw, start, streamUsersWithOverlay(userOverlay), factoryAggByUser, equipmentByUser)
+  const snapshot = await buildSnapshot(
+    raw,
+    start,
+    streamUsersWithOverlay(userOverlay),
+    factoryAggByUser,
+    equipmentByUser,
+  )
   log.info({ label, durationMs: Date.now() - start, users: snapshot.users.length }, 'built rows')
   return snapshot
 }

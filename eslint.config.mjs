@@ -31,6 +31,18 @@ export default antfu({
     'style/max-statements-per-line': 'off',
     // JSDoc blocks (`/** ... */`) must span multiple lines.
     'jsdoc/multiline-blocks': ['error', { noSingleLineBlocks: true }],
+    // Keep lines readable. Stylistic can't auto-wrap, so long lines are wrapped by
+    // hand. Exempt: URLs, regexes, and a line that is nothing but one string
+    // (`key: '…',`, `attr="…"`), since splitting prose or a class list only hurts.
+    'style/max-len': ['error', {
+      code: 120,
+      ignoreUrls: true,
+      ignoreRegExpLiterals: true,
+      ignorePattern: [
+        String.raw`^\s*(?:[\w$-]+\s*[:=]\s*)?`, // optional `key:` or `attr=`
+        String.raw`(?:'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|\x60(?:[^\x60\\]|\\.)*\x60),?$`, // one string
+      ].join(''),
+    }],
   },
 }, {
   // shadcn/ui components co-locate variant helpers (buttonVariants, badgeVariants)
@@ -38,5 +50,14 @@ export default antfu({
   files: ['components/ui/**/*.{ts,tsx}'],
   rules: {
     'react-refresh/only-export-components': 'off',
+    // Generated code with long Tailwind class strings; keep it diffable against
+    // upstream rather than rewrapping it.
+    'style/max-len': 'off',
+  },
+}, {
+  // Prose-heavy static HTML; wrapping paragraphs would only add noise.
+  files: ['public/**'],
+  rules: {
+    'style/max-len': 'off',
   },
 })

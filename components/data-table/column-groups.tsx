@@ -45,8 +45,16 @@ export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'):
 
   return [
     pointsBreakdownColumn<T>('totalPoints' as Key<T>, 'Total', { tooltip: `Combined points of all ${who}.` }),
-    localeNumberColumn<T>('avgPoints' as Key<T>, 'Average', { heat: 'median', width: 110, tooltip: `Average points per ${one}.` }),
-    localeNumberColumn<T>('avgPointsPerDay' as Key<T>, 'Avg / day', { heat: 'median', width: 125, tooltip: `Average points earned per day, per ${one}.` }),
+    localeNumberColumn<T>('avgPoints' as Key<T>, 'Average', {
+      heat: 'median',
+      width: 110,
+      tooltip: `Average points per ${one}.`,
+    }),
+    localeNumberColumn<T>('avgPointsPerDay' as Key<T>, 'Avg / day', {
+      heat: 'median',
+      width: 125,
+      tooltip: `Average points earned per day, per ${one}.`,
+    }),
   ]
 }
 
@@ -75,13 +83,41 @@ export function wealthColumns<T extends WealthComponentsRow>(
   who: 'members' | 'citizens',
 ): ColumnDef<T>[] {
   return [
-    compactNumberColumn<T>(totalKey, 'Total', { heat: 'median', width: 110, tooltip: `Combined wealth of all ${who} (companies + items + cash + equipment + weapons).` }),
-    compactNumberColumn<T>('companiesWealth' as Key<T>, 'Companies', { heat: 'median', width: 135, tooltip: `Combined company value across ${who}.` }),
-    compactNumberColumn<T>('stockpileWealth' as Key<T>, 'Stockpile', { heat: 'median', width: 120, tooltip: `Combined wealth of items + cash + equipment + weapons.` }),
-    compactNumberColumn<T>('itemsWealth' as Key<T>, 'Items', { heat: 'median', width: 100, tooltip: `Combined item value across ${who}.` }),
-    compactNumberColumn<T>('cashWealth' as Key<T>, 'Cash', { heat: 'median', width: 100, tooltip: `Combined cash across ${who}.` }),
-    compactNumberColumn<T>('equipmentWealth' as Key<T>, 'Equipment', { heat: 'median', width: 130, tooltip: `Combined equipment value across ${who}.` }),
-    compactNumberColumn<T>('weaponsWealth' as Key<T>, 'Weapons', { heat: 'median', width: 125, tooltip: `Combined weapon value across ${who}.` }),
+    compactNumberColumn<T>(totalKey, 'Total', {
+      heat: 'median',
+      width: 110,
+      tooltip: `Combined wealth of all ${who} (companies + items + cash + equipment + weapons).`,
+    }),
+    compactNumberColumn<T>('companiesWealth' as Key<T>, 'Companies', {
+      heat: 'median',
+      width: 135,
+      tooltip: `Combined company value across ${who}.`,
+    }),
+    compactNumberColumn<T>('stockpileWealth' as Key<T>, 'Stockpile', {
+      heat: 'median',
+      width: 120,
+      tooltip: `Combined wealth of items + cash + equipment + weapons.`,
+    }),
+    compactNumberColumn<T>('itemsWealth' as Key<T>, 'Items', {
+      heat: 'median',
+      width: 100,
+      tooltip: `Combined item value across ${who}.`,
+    }),
+    compactNumberColumn<T>('cashWealth' as Key<T>, 'Cash', {
+      heat: 'median',
+      width: 100,
+      tooltip: `Combined cash across ${who}.`,
+    }),
+    compactNumberColumn<T>('equipmentWealth' as Key<T>, 'Equipment', {
+      heat: 'median',
+      width: 130,
+      tooltip: `Combined equipment value across ${who}.`,
+    }),
+    compactNumberColumn<T>('weaponsWealth' as Key<T>, 'Weapons', {
+      heat: 'median',
+      width: 125,
+      tooltip: `Combined weapon value across ${who}.`,
+    }),
   ]
 }
 
@@ -109,13 +145,42 @@ interface FactoryStatsRow {
  */
 export function factoriesColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
   return [
-    localeNumberColumn<T>('factoryCount' as Key<T>, '# Factories', { heat: 'ramp', width: 130, tooltip: `Total factories owned across ${who}.` }),
-    localeNumberColumn<T>('factoryWorkers' as Key<T>, '# Employees', { heat: 'ramp', width: 135, tooltip: `Total NPC employees across ${who}.` }),
-    compactNumberColumn<T>('factoryNetPerDay' as Key<T>, 'Total / day', { heat: 'median', width: 120, tooltip: `Combined factory profit per day across ${who}: automated engines + NPC employees, net of employee and manager wages. Excludes self-work.` }),
-    compactNumberColumn<T>('factoryEngineNetPerDay' as Key<T>, 'Auto / day', { heat: 'median', width: 120, tooltip: `Profit per day from automated engines across ${who}.` }),
-    compactNumberColumn<T>('factoryEmployeeNetPerDay' as Key<T>, 'Employees / day', { heat: 'median', width: 155, tooltip: `Profit per day from NPC employees across ${who}, after their wages and the managers' wages.` }),
-    compactNumberColumn<T>('factoryPpPerDay' as Key<T>, 'PP / day', { heat: 'median', width: 110, tooltip: `Combined production points per day across ${who}.` }),
-    percentColumn<T>('factoryEfficiencyPct' as Key<T>, 'Efficiency', { heat: 'median', decimals: 0, width: 115, tooltip: `Net as a share of the Top potential (the same production on the most profitable item). 100% = already on the best item.` }),
+    localeNumberColumn<T>('factoryCount' as Key<T>, '# Factories', {
+      heat: 'ramp',
+      width: 130,
+      tooltip: `Total factories owned across ${who}.`,
+    }),
+    localeNumberColumn<T>('factoryWorkers' as Key<T>, '# Employees', {
+      heat: 'ramp',
+      width: 135,
+      tooltip: `Total NPC employees across ${who}.`,
+    }),
+    compactNumberColumn<T>('factoryNetPerDay' as Key<T>, 'Total / day', {
+      heat: 'median',
+      width: 120,
+      tooltip: `Combined factory profit per day across ${who}: automated engines + NPC employees, net of employee and manager wages. Excludes self-work.`,
+    }),
+    compactNumberColumn<T>('factoryEngineNetPerDay' as Key<T>, 'Auto / day', {
+      heat: 'median',
+      width: 120,
+      tooltip: `Profit per day from automated engines across ${who}.`,
+    }),
+    compactNumberColumn<T>('factoryEmployeeNetPerDay' as Key<T>, 'Employees / day', {
+      heat: 'median',
+      width: 155,
+      tooltip: `Profit per day from NPC employees across ${who}, after their wages and the managers' wages.`,
+    }),
+    compactNumberColumn<T>('factoryPpPerDay' as Key<T>, 'PP / day', {
+      heat: 'median',
+      width: 110,
+      tooltip: `Combined production points per day across ${who}.`,
+    }),
+    percentColumn<T>('factoryEfficiencyPct' as Key<T>, 'Efficiency', {
+      heat: 'median',
+      decimals: 0,
+      width: 115,
+      tooltip: `Net as a share of the Top potential (the same production on the most profitable item). 100% = already on the best item.`,
+    }),
   ]
 }
 
@@ -178,8 +243,18 @@ const CASE_RARITY_WIDTHS: Record<CaseRarity, number> = {
  */
 export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
   return [
-    localeNumberColumn<T>('standardCasesOpened' as Key<T>, 'Standard Cases', { heat: 'ramp', logScale: true, width: 155, tooltip: 'Standard cases opened.' }),
-    localeNumberColumn<T>('mythicCasesOpened' as Key<T>, 'Mythic Cases', { heat: 'ramp', logScale: true, width: 140, tooltip: 'Premium mythic cases opened.' }),
+    localeNumberColumn<T>('standardCasesOpened' as Key<T>, 'Standard Cases', {
+      heat: 'ramp',
+      logScale: true,
+      width: 155,
+      tooltip: 'Standard cases opened.',
+    }),
+    localeNumberColumn<T>('mythicCasesOpened' as Key<T>, 'Mythic Cases', {
+      heat: 'ramp',
+      logScale: true,
+      width: 140,
+      tooltip: 'Premium mythic cases opened.',
+    }),
     percentColumn<T>('caseLuck' as Key<T>, 'Luck', {
       heat: 'median',
       center: 100,
@@ -188,8 +263,13 @@ export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
       rankKey: 'caseLuckRank' as Key<T>,
       tooltip: `100% = exactly the published odds, higher = lucky. Premium cases count against premium odds. Hidden under ${MIN_LUCK_PULLS} pulls.`,
     }),
-    ...CASE_RARITIES.map(rarity =>
-      localeNumberColumn<T>(`cases${rarity[0].toUpperCase()}${rarity.slice(1)}` as Key<T>, `${rarity[0].toUpperCase()}${rarity.slice(1)}`, { heat: 'ramp', logScale: true, width: CASE_RARITY_WIDTHS[rarity] }),
-    ),
+    ...CASE_RARITIES.map((rarity) => {
+      const label = `${rarity[0].toUpperCase()}${rarity.slice(1)}`
+      return localeNumberColumn<T>(`cases${label}` as Key<T>, label, {
+        heat: 'ramp',
+        logScale: true,
+        width: CASE_RARITY_WIDTHS[rarity],
+      })
+    }),
   ]
 }

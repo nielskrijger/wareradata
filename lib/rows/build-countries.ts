@@ -3,7 +3,19 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Alliance, Country, MU } from '@/lib/warera/api'
 
 import { rankAll, toTier } from '@/lib/rows/lookups'
-import { aggCases, aggFactories, aggPoints, aggPremium, aggregateMembers, aggVitals, aggWealthParts, FACTORY_RANK_KEYS, POINTS_RANK_KEYS, PREMIUM_KEYS, WEALTH_PART_KEYS } from '@/lib/rows/member-agg'
+import {
+  aggCases,
+  aggFactories,
+  aggPoints,
+  aggPremium,
+  aggregateMembers,
+  aggVitals,
+  aggWealthParts,
+  FACTORY_RANK_KEYS,
+  POINTS_RANK_KEYS,
+  PREMIUM_KEYS,
+  WEALTH_PART_KEYS,
+} from '@/lib/rows/member-agg'
 
 export function buildCountryRows(
   countries: Country[],

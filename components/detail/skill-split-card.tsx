@@ -48,8 +48,18 @@ export function SkillSplitCard({ mode, warPoints, ecoPoints, warPointsRank, ecoP
                 ]}
               />
               <dl className="space-y-1">
-                <SplitRow label="War" points={warPoints} total={total} icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />} />
-                <SplitRow label="Eco" points={ecoPoints} total={total} icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />} />
+                <SplitRow
+                  label="War"
+                  points={warPoints}
+                  total={total}
+                  icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
+                />
+                <SplitRow
+                  label="Eco"
+                  points={ecoPoints}
+                  total={total}
+                  icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
+                />
               </dl>
               <Footer mode={mode} warPointsRank={warPointsRank} ecoPointsRank={ecoPointsRank} />
             </>
@@ -86,7 +96,11 @@ function SplitRow({ label, points, total, icon }: SplitRowProps) {
 
 // Closing line: the leading discipline's leaderboard position, so the card
 // answers "how invested is this player, really?". Hybrid/untrained omit it.
-function Footer({ mode, warPointsRank, ecoPointsRank }: { mode: CombatMode, warPointsRank: number | null, ecoPointsRank: number | null }) {
+function Footer({ mode, warPointsRank, ecoPointsRank }: {
+  mode: CombatMode
+  warPointsRank: number | null
+  ecoPointsRank: number | null
+}) {
   let line: string | null = null
   if (mode === 'war' && warPointsRank != null) {
     line = `#${warPointsRank.toLocaleString()} most-invested fighter`

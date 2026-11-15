@@ -42,7 +42,10 @@ export interface GearLookup {
  * the old hardcoded weapon/ammo tier maps and ammo-bonus table outright.
  */
 export function deriveGearLookup(config: GameConfig): GearLookup {
-  const items = (config.items ?? {}) as unknown as Record<string, { rarity?: string, flatStats?: { percentAttack?: number } } | undefined>
+  const items = (config.items ?? {}) as unknown as Record<string, {
+    rarity?: string
+    flatStats?: { percentAttack?: number }
+  } | undefined>
   const tierByCode: Record<string, number> = {}
   const ammoBonusByCode: Record<string, number> = {}
   for (const [code, item] of Object.entries(items)) {
@@ -151,7 +154,12 @@ function clamp01(x: number): number {
 // A slot's contribution in [0, 1]: its tier (0-indexed) plus where the roll sits
 // within that tier, all over 6. Tier 1 at min-roll ≈ 0; tier 6 at max-roll = 1.
 // Empty slots contribute 0; ammo has no roll so it sits at its tier's center.
-function slotScore(slot: string, piece: Equipment[keyof Equipment], specs: Record<string, SlotSpec>, lookup: GearLookup): number {
+function slotScore(
+  slot: string,
+  piece: Equipment[keyof Equipment],
+  specs: Record<string, SlotSpec>,
+  lookup: GearLookup,
+): number {
   if (!piece) {
     return 0
   }
@@ -179,7 +187,11 @@ function slotScore(slot: string, piece: Equipment[keyof Equipment], specs: Recor
  * `specs` come from {@link deriveSlotSpecs} and `lookup` from {@link deriveGearLookup}
  * (both off the live config).
  */
-export function computeGearScore(equipment: Equipment | undefined, specs: Record<string, SlotSpec>, lookup: GearLookup): number {
+export function computeGearScore(
+  equipment: Equipment | undefined,
+  specs: Record<string, SlotSpec>,
+  lookup: GearLookup,
+): number {
   if (!equipment) {
     return 0
   }

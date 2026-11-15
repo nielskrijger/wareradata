@@ -31,8 +31,8 @@ import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { loadUserEquipment } from '@/lib/cache/equipment-store'
 import { getSnapshot } from '@/lib/cache/memory'
+import { getUserEquipment } from '@/lib/cache/users'
 import { EMPTY } from '@/lib/format'
 import { computeRanges } from '@/lib/query'
 import { getUserCasesByType } from '@/lib/warera/api'
@@ -108,9 +108,8 @@ export default async function UserDetailPage({ params }: PageProps) {
   // section stays hidden rather than implying an empty loadout.
   const hasGearData = user.gearScore != null
 
-  // The full loadout lives in a separate equipment file (not the snapshot), so
-  // read just this user's line, and only when there's a gear section to fill.
-  const equipment = hasGearData ? (await loadUserEquipment(user.id)) ?? undefined : undefined
+  // Parse the full loadout only when there's a gear section to fill.
+  const equipment = hasGearData ? (await getUserEquipment(user.id)) ?? undefined : undefined
 
   return (
     <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">

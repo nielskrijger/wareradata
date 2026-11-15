@@ -71,6 +71,13 @@ export interface Snapshot {
   // ship to the browser (via the /api/users response), so client gear components
   // resolve tiers without the full config.
   gearLookup: GearLookup
+  /**
+   * Each user's currently-equipped gear as its JSON text, keyed by user id, for
+   * the user page and hover card. Kept as strings (parsed per lookup) because
+   * that is a fraction of the memory of ~17k parsed loadouts. A user with no
+   * entry had no gear captured; `'{}'` means captured with nothing equipped.
+   */
+  equipmentJsonByUser: Map<string, string>
 }
 
 // Next loads server modules in several separate module graphs within one
@@ -117,7 +124,8 @@ export async function buildSnapshot(
   // the 84 MB raw array never resides; only the derived UserRow[] is kept.
   // Per-user factory totals and equipment are likewise streamed from their own
   // files by the caller. Factory totals roll up through member-agg into the
-  // entity Factories columns; equipment feeds gear scoring and isn't retained.
+  // entity Factories columns; equipment feeds gear scoring and is kept only as
+  // compact JSON text for single-user lookups.
   const userRows = await buildUserRows(
     streamUsersForBuild,
     lookups,
@@ -150,6 +158,7 @@ export async function buildSnapshot(
     tournament: raw.tournament,
     gameConfig: raw.gameConfig,
     gearLookup,
+    equipmentJsonByUser: new Map(Object.entries(equipmentByUser).map(([id, gear]) => [id, JSON.stringify(gear)])),
   }
 }
 

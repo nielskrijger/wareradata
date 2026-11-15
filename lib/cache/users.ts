@@ -3,7 +3,6 @@ import type { Range } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
 import type { Equipment } from '@/lib/warera/api'
 
-import { loadUserEquipment } from './equipment-store'
 import { getSnapshot } from './memory'
 
 import 'server-only'
@@ -36,6 +35,15 @@ export async function getUserById(id: string): Promise<UserDetails | null> {
     return null
   }
 
-  const equipment = (await loadUserEquipment(id)) ?? {}
+  const equipment = (await getUserEquipment(id)) ?? {}
   return { user, ranges: userRanges, total: users.length, equipment, gearLookup }
+}
+
+/**
+ * One user's currently-equipped gear from the in-memory snapshot, or null when
+ * no gear was captured for them. Backs the user page and the hover-card API.
+ */
+export async function getUserEquipment(id: string): Promise<Equipment | null> {
+  const json = (await getSnapshot()).equipmentJsonByUser.get(id)
+  return json === undefined ? null : JSON.parse(json) as Equipment
 }

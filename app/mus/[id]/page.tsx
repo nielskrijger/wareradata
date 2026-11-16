@@ -87,7 +87,7 @@ export default async function MUDetailPage({ params }: PageProps) {
   const { mu, ranges, total, memberPage } = result
 
   return (
-    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
+    <main className="mx-auto max-w-[96rem] space-y-3 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={mu.name}
         titleSuffix={mu.damageTier ? <TierBadge tier={mu.damageTier} /> : undefined}

@@ -1,3 +1,5 @@
+import { EmptyDash } from '@/components/empty-dash'
+
 interface Props {
   value: number | null | undefined
 }
@@ -18,7 +20,7 @@ const compactNumber = new Intl.NumberFormat('en', {
  */
 export function CompactNumber({ value }: Props) {
   if (value === null || value === undefined) {
-    return <>—</>
+    return <EmptyDash />
   }
 
   const text = compactNumber.format(value)

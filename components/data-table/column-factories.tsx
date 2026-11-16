@@ -46,12 +46,7 @@ export function compactNumberColumn<T>(
   return {
     accessorKey: key,
     header,
-    // Null falls through to the table's muted EmptyDash.
-    cell: ({ row }) => {
-      const value = row.original[key] as number | null
-
-      return value === null ? null : <CompactNumber value={value} />
-    },
+    cell: ({ row }) => <CompactNumber value={row.original[key] as number | null} />,
     sortDescFirst: true,
     meta: { heat: opts.heat, align: 'right', width: opts.width ?? 110, tooltip: opts.tooltip },
   }
@@ -114,17 +109,11 @@ export function rankTooltipColumn<T>(
   return {
     accessorKey: rankKey,
     header,
-    cell: ({ row }) => {
-      const value = row.original[valueKey] as number | null
-
-      return value === null
-        ? null
-        : (
-            <ValueWithRankTooltip rank={row.original[rankKey] as number | null}>
-              <CompactNumber value={value} />
-            </ValueWithRankTooltip>
-          )
-    },
+    cell: ({ row }) => (
+      <ValueWithRankTooltip rank={row.original[rankKey] as number | null}>
+        <CompactNumber value={row.original[valueKey] as number | null} />
+      </ValueWithRankTooltip>
+    ),
     sortDescFirst: false,
     sortUndefined: 'last',
     meta: { heat: 'invert', sortInvert: true, align: 'right', width: opts.width ?? 130, tooltip: opts.tooltip },

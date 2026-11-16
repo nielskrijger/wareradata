@@ -30,11 +30,11 @@ export function goldSigned(value: number, decimals = 1): string {
  */
 export function netClass(value: number): string {
   if (value > 0) {
-    return 'text-heat-green-text dark:text-green-400'
+    return 'text-heat-green-text'
   }
 
   if (value < 0) {
-    return 'text-red-700 dark:text-red-400'
+    return 'text-heat-red'
   }
 
   return 'text-muted-foreground'
@@ -69,8 +69,5 @@ export function humanizeCode(code: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-/**
- * The engine's slate keeps it distinct from the employee greens without
- * reading as empty space.
- */
-export const ENGINE_FILL = 'oklch(0.55 0.06 250)'
+export const ENGINE_FILL = 'var(--engine)'
+export const STAFF_FILL = 'var(--heat-green)'

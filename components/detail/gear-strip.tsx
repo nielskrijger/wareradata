@@ -28,7 +28,7 @@ type Surface = 'dark' | 'card'
  */
 const RARITY_RING = [
   'ring-1 ring-neutral-50/15',
-  'ring-1 ring-emerald-400/40',
+  'ring-1 ring-heat-green/40',
   'ring-1 ring-blue-400/40',
   'ring-1 ring-violet-400/50',
   'ring-1 ring-amber-400/50',

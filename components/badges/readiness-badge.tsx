@@ -84,7 +84,7 @@ export function ReadinessBadge({ status, endsAt, withTooltip = true }: Props) {
 
   const isBuff = status === 'buff'
   const cls = isBuff
-    ? 'bg-green-500/15 text-green-800 gap-0.5 dark:text-green-300'
+    ? 'bg-heat-green/15 text-heat-green-text gap-0.5 dark:text-green-300'
     : 'bg-red-500/15 text-red-800 gap-0.5 dark:text-red-300'
 
   const Icon = isBuff ? ArrowUp : ArrowDown
@@ -104,7 +104,7 @@ export function ReadinessBadge({ status, endsAt, withTooltip = true }: Props) {
     <Tooltip>
       <TooltipTrigger render={<span className="inline-flex w-fit cursor-default">{badge}</span>} />
       <TooltipContent>
-        <div className="font-medium" style={{ color: isBuff ? 'var(--heat-green)' : 'var(--heat-red)' }}>
+        <div className="font-medium" style={{ color: isBuff ? 'var(--heat-green-text)' : 'var(--heat-red)' }}>
           {isBuff ? 'Attack buff' : 'Attack debuff'}
         </div>
         {endsAt && (

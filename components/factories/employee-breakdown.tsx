@@ -1,20 +1,11 @@
 import type { ReactNode } from 'react'
 import type { LedgerEmployee } from '@/lib/factories/ledger'
 
-import { TooltipRow } from '@/components/cells/tooltip-ledger'
+import { TooltipRow, TooltipSection } from '@/components/cells/tooltip-ledger'
 import { ItemIcon } from '@/components/item-icon'
 import { signed, STAT_NAMES } from '@/lib/factories/employee-stats'
 
 import { goldSigned, humanizeCode, netClass } from './format'
-
-function Section({ title, children }: { title: string, children: ReactNode }) {
-  return (
-    <div className="space-y-0.5">
-      <div className="text-[10px] tracking-wide text-neutral-500 uppercase">{title}</div>
-      {children}
-    </div>
-  )
-}
 
 /**
  * Everything the roster knows about one employee, for the name tooltip: where
@@ -33,7 +24,7 @@ export function EmployeeBreakdown({ e, factory }: { e: LedgerEmployee, factory?:
         </div>
       </div>
 
-      <Section title="Stats (base + trained + traits)">
+      <TooltipSection title="Stats (base + trained + traits)">
         {STAT_NAMES.map((s) => {
           const d = e.stats[s]
           const extras = d.contributions
@@ -47,15 +38,15 @@ export function EmployeeBreakdown({ e, factory }: { e: LedgerEmployee, factory?:
           )
         })}
         <TooltipRow label="Potential">{e.potential} / {e.potentialMax}</TooltipRow>
-      </Section>
+      </TooltipSection>
 
-      <Section title={`Production bonus +${e.bonusPct}%`}>
+      <TooltipSection title={`Production bonus +${e.bonusPct}%`}>
         {e.bonusSources.map(b => (
           <TooltipRow key={b.source} label={humanizeCode(b.source)}>+{b.percent}%</TooltipRow>
         ))}
-      </Section>
+      </TooltipSection>
 
-      <Section title={`Happiness ${e.happiness}`}>
+      <TooltipSection title={`Happiness ${e.happiness}`}>
         {e.happinessReasons.map((h, i) => (
           // Reasons can repeat (e.g. two care boosts), so the index keeps keys unique.
           // eslint-disable-next-line react/no-array-index-key
@@ -63,10 +54,10 @@ export function EmployeeBreakdown({ e, factory }: { e: LedgerEmployee, factory?:
             <span className={netClass(h.delta)}>{signed(h.delta)}</span>
           </TooltipRow>
         ))}
-      </Section>
+      </TooltipSection>
 
       {(e.specBest || e.tool) && (
-        <Section title="Specialization & tool">
+        <TooltipSection title="Specialization & tool">
           {e.specBest && (
             <TooltipRow label="Specialization">
               {e.specHere} here
@@ -84,10 +75,10 @@ export function EmployeeBreakdown({ e, factory }: { e: LedgerEmployee, factory?:
               {humanizeCode(e.tool.code)} +{e.tool.bonusPct}% · {Math.round(e.tool.durabilityPct)}%
             </TooltipRow>
           )}
-        </Section>
+        </TooltipSection>
       )}
 
-      <Section title="Per day">
+      <TooltipSection title="Per day">
         <TooltipRow label="Revenue">
           <span className="text-heat-green-text">{goldSigned(e.revenuePerDay)}</span>
         </TooltipRow>
@@ -104,7 +95,7 @@ export function EmployeeBreakdown({ e, factory }: { e: LedgerEmployee, factory?:
         <TooltipRow label="Net" className="mt-0.5 border-t border-white/20 pt-0.5 font-medium">
           <span className={netClass(e.netPerDay)}>{goldSigned(e.netPerDay)}</span>
         </TooltipRow>
-      </Section>
+      </TooltipSection>
     </div>
   )
 }

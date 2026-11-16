@@ -4,6 +4,7 @@ import { Factory } from 'lucide-react'
 import { cache } from 'react'
 
 import { Kpi } from '@/components/detail/kpi'
+import { ItemCatalog } from '@/components/item-catalog'
 import { getSnapshot } from '@/lib/cache/memory'
 import { buildEngineModel } from '@/lib/factories/engine'
 import { engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
@@ -84,5 +85,9 @@ export async function FactoriesSection({ userId }: { userId: string }) {
     return null
   }
 
-  return <FactoryOverview rows={rows} totals={portfolioTotals(rows)} />
+  return (
+    <ItemCatalog>
+      <FactoryOverview rows={rows} totals={portfolioTotals(rows)} />
+    </ItemCatalog>
+  )
 }

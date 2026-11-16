@@ -32,3 +32,15 @@ export function TooltipRow({ label, children, className }: RowProps) {
     </div>
   )
 }
+
+/**
+ * Small caps title over a group of rows.
+ */
+export function TooltipSection({ title, children }: { title: string, children: ReactNode }) {
+  return (
+    <div className="space-y-0.5">
+      <div className="text-[10px] tracking-wide text-neutral-500 uppercase">{title}</div>
+      {children}
+    </div>
+  )
+}

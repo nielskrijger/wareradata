@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 
 import { AdviseList } from '@/components/advise/advise-list'
+import { ItemCatalog } from '@/components/item-catalog'
 import { PageMain } from '@/components/layout/page-main'
 import { buildAdvice } from '@/lib/advisor/build'
 import { advisorInputFromData } from '@/lib/advisor/input'
@@ -35,10 +36,12 @@ export default async function AdvisePage({ params }: PageProps) {
 
   return (
     <PageMain className={cn('space-y-6', ADVISE_WIDTH)}>
-      <AdviseList
-        result={buildAdvice(advisorInputFromData(data, gameConfig, prices))}
-        user={{ id, name: data.user.username }}
-      />
+      <ItemCatalog>
+        <AdviseList
+          result={buildAdvice(advisorInputFromData(data, gameConfig, prices))}
+          user={{ id, name: data.user.username }}
+        />
+      </ItemCatalog>
     </PageMain>
   )
 }

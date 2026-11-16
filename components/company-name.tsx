@@ -14,31 +14,30 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 export function CompanyName({ company }: { company: CompanyRef }) {
   const workers = company.workers === 1 ? 'worker' : 'workers'
 
+  // The icon sits outside the trigger so its own item card doesn't open on top.
   return (
-    <Popover>
-      <PopoverTrigger
-        openOnHover
-        delay={0}
-        className="inline-flex max-w-full min-w-0 cursor-default items-center gap-1 align-bottom outline-none"
-      >
-        <span
-          className="max-w-56 truncate underline decoration-dotted decoration-1 underline-offset-4"
+    <span className="inline-flex max-w-full min-w-0 items-center gap-1 align-bottom">
+      <Popover>
+        <PopoverTrigger
+          openOnHover
+          delay={0}
+          className="max-w-56 min-w-0 cursor-default truncate underline decoration-dotted decoration-1 underline-offset-4 outline-none"
           style={{ color: 'var(--fire)' }}
         >
           {company.name}
-        </span>
-        <ItemIcon code={company.itemCode} small />
-      </PopoverTrigger>
-      <PopoverContent side="top" className="flex w-auto max-w-72 flex-col gap-1 text-xs">
-        <span className="flex items-center gap-2 font-semibold">
-          <ItemIcon code={company.itemCode} />
-          {company.name}
-        </span>
-        <span className="text-muted-foreground">
-          {`Makes ${humanizeItem(company.itemCode)} · ${company.workers} ${workers}`}
-        </span>
-      </PopoverContent>
-    </Popover>
+        </PopoverTrigger>
+        <PopoverContent side="top" className="flex w-auto max-w-72 flex-col gap-1 text-xs">
+          <span className="flex items-center gap-2 font-semibold">
+            <ItemIcon code={company.itemCode} />
+            {company.name}
+          </span>
+          <span className="text-muted-foreground">
+            {`Makes ${humanizeItem(company.itemCode)} · ${company.workers} ${workers}`}
+          </span>
+        </PopoverContent>
+      </Popover>
+      <ItemIcon code={company.itemCode} small />
+    </span>
   )
 }
 

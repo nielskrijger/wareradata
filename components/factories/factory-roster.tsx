@@ -4,23 +4,30 @@ import type { CSSProperties } from 'react'
 import type { FactoryLedgerRow, LedgerEmployee } from '@/lib/factories/ledger'
 import type { PortfolioTotals } from '@/lib/factories/profit'
 
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
 import { EmptyDash } from '@/components/empty-dash'
+import { StackedBar } from '@/components/stacked-bar'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 import { EmployeeBreakdown } from './employee-breakdown'
-import { goldSigned, humanizeCode, humanizeItem, netClass } from './format'
+import { ENGINE_FILL, goldSigned, humanizeCode, humanizeItem, netClass } from './format'
 import { TraitIcon } from './trait-icon'
 import { hasTraitIcon } from './trait-icons'
 
 interface Props {
   rows: FactoryLedgerRow[]
   totals: PortfolioTotals
+
+  /**
+   * Factory ids whose employees are shown while grouped; sorting shows all.
+   */
+  open: Set<string>
+  onToggle: (id: string) => void
 }
 
 interface RosterEmployee extends LedgerEmployee {
@@ -216,11 +223,11 @@ function nextSort(sort: Sort | null, key: SortKey): Sort | null {
 }
 
 /**
- * The user-page roster: every employee on one screen, grouped under a row per
- * factory with its net, engine and Top potential. Sorting any column flattens
- * the groups to rank employees across factories; clearing it regroups.
+ * The user-page roster: a row per factory with its net, split engine vs
+ * employees, that opens to its employees. Sorting any column flattens the
+ * groups to rank every employee across factories; clearing it regroups.
  */
-export function FactoryRoster({ rows, totals }: Props) {
+export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
   const [sort, setSort] = useState<Sort | null>(null)
 
   const employees = useMemo<RosterEmployee[]>(
@@ -323,6 +330,9 @@ export function FactoryRoster({ rows, totals }: Props) {
     )
   }
 
+  // Shared scale so the bars compare across factories.
+  const maxNet = Math.max(...rows.map(r => r.netPerDay), 0)
+
   function factoryRow(row: FactoryLedgerRow) {
     const details = [
       row.regionName,
@@ -331,31 +341,61 @@ export function FactoryRoster({ rows, totals }: Props) {
       row.managerPerDay >= 0.05 ? `manager ${goldSigned(-row.managerPerDay)}` : null,
     ].filter(Boolean).join(' · ')
 
+    const isOpen = open.has(row.id)
+    const engine = Math.max(0, Math.min(row.engineNetPerDay, row.netPerDay))
+
     return (
-      <TableRow className={cn('bg-muted/50 hover:bg-muted/50', row.isIdle && 'opacity-60')}>
+      <TableRow
+        className={cn('bg-muted/50 hover:bg-muted cursor-pointer', row.isIdle && 'opacity-60')}
+        onClick={() => onToggle(row.id)}
+      >
         <TableCell colSpan={LEAD_COLS}>
-          <span className="font-medium">{row.name}</span>
-          <span className="text-muted-foreground"> · {humanizeItem(row.itemCode)}</span>
-          <span className="text-muted-foreground ml-2 text-xs">{details}</span>
-          {row.engineNetPerDay >= 0.05 && (
-            <span className="text-muted-foreground ml-2 text-xs tabular-nums">
-              · engine {goldSigned(row.engineNetPerDay)}
+          <div className="flex min-w-0 items-center gap-2">
+            <button
+              type="button"
+              aria-expanded={isOpen}
+              aria-label={`${isOpen ? 'Hide' : 'Show'} employees of ${row.name}`}
+              className="text-muted-foreground hover:text-foreground -ml-1 shrink-0"
+            >
+              <ChevronRight className={cn('size-4 transition-transform', isOpen && 'rotate-90')} />
+            </button>
+            <span className="shrink-0">
+              <span className="font-medium">{row.name}</span>
+              <span className="text-muted-foreground"> · {humanizeItem(row.itemCode)}</span>
             </span>
-          )}
-          {row.bestOpportunityPerDay >= 1 && (
-            <Tooltip>
-              <TooltipTrigger render={<span className="ml-2 cursor-help" />}>
-                <Badge className="bg-green-500/15 text-green-800 dark:text-green-300">
-                  {humanizeItem(row.bestProductCode)} {goldSigned(row.bestOpportunityPerDay)}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-60">
-                Top potential: Net/day would be {goldSigned(row.bestPotentialNetPerDay)} making{' '}
-                {humanizeItem(row.bestProductCode)} instead. Approximate: employees' item specialization would
-                not carry over.
-              </TooltipContent>
-            </Tooltip>
-          )}
+            <span className="text-muted-foreground hidden truncate text-xs sm:inline">{details}</span>
+            {row.bestOpportunityPerDay >= 1 && (
+              <Tooltip>
+                <TooltipTrigger render={<span className="shrink-0 cursor-help" />}>
+                  <Badge className="bg-green-500/15 text-green-800 dark:text-green-300">
+                    {humanizeItem(row.bestProductCode)} {goldSigned(row.bestOpportunityPerDay)}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-60">
+                  Top potential: Net/day would be {goldSigned(row.bestPotentialNetPerDay)} making{' '}
+                  {humanizeItem(row.bestProductCode)} instead. Approximate: employees' item specialization would
+                  not carry over.
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {maxNet > 0 && row.netPerDay > 0 && (
+              <Tooltip>
+                <TooltipTrigger render={<span className="ml-auto hidden w-1/3 max-w-80 shrink-0 md:block" />}>
+                  <StackedBar
+                    className="bg-muted h-2.5"
+                    total={maxNet}
+                    segments={[
+                      { key: 'engine', value: engine, color: ENGINE_FILL },
+                      { key: 'employees', value: row.netPerDay - engine, color: 'var(--heat-green)' },
+                    ]}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  Engine {goldSigned(row.engineNetPerDay)} · employees {goldSigned(row.netPerDay - row.engineNetPerDay)}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </TableCell>
         <TableCell className={cn('text-right font-medium tabular-nums', netClass(row.netPerDay))}>
           {row.isIdle ? <span className="text-muted-foreground font-normal">idle</span> : goldSigned(row.netPerDay)}
@@ -376,7 +416,7 @@ export function FactoryRoster({ rows, totals }: Props) {
         {sorted ? sorted.map(e => employeeRow(e, true)) : rows.map(row => (
           <Fragment key={row.id}>
             {factoryRow(row)}
-            {row.employees.map(e => employeeRow({ ...e, factory: row }, false))}
+            {open.has(row.id) && row.employees.map(e => employeeRow({ ...e, factory: row }, false))}
           </Fragment>
         ))}
       </TableBody>

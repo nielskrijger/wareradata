@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils'
 
 import { EmployeeBreakdown } from './employee-breakdown'
-import { goldSigned, humanizeItem, itemColors } from './format'
+import { ENGINE_FILL, goldSigned, humanizeItem, itemColors } from './format'
 
 interface Point {
   e: LedgerEmployee
@@ -185,11 +185,6 @@ function netFill(net: number, best: number): string {
  * Production points per factory, stacked engine-first then each employee, with
  * Net/day at the end of the bar.
  */
-/**
- * The engine's slate keeps it distinct from the employee greens without
- * reading as empty space.
- */
-const ENGINE_FILL = 'oklch(0.55 0.06 250)'
 
 /**
  * One factory's bar spelled out: engine, each employee and the manager, summing

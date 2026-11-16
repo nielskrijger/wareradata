@@ -1,5 +1,5 @@
 /**
- * Shared formatting for the factory views (the stats card and the table).
+ * Shared formatting for the factory views (the income waterfall and the roster).
  */
 
 /**
@@ -68,3 +68,9 @@ export function humanizeCode(code: string): string {
 
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
+
+/**
+ * The engine's slate keeps it distinct from the employee greens without
+ * reading as empty space.
+ */
+export const ENGINE_FILL = 'oklch(0.55 0.06 250)'

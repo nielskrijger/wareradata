@@ -1,14 +1,12 @@
 import type { EmployeeLike } from './model'
 import type { ItemPrices, RecipeLookup } from '@/lib/factories/profit'
 
-export type TodoKind = 'money' | 'train' | 'tool' | 'manager' | 'employee' | 'item' | 'hire' | 'work'
-
 /**
  * One row of the to-do list.
  */
 export interface TodoItem {
   id: string
-  kind: TodoKind
+  kind: 'money' | 'train' | 'tool' | 'manager' | 'employee' | 'item' | 'hire' | 'work'
   title: string
   why: string
 
@@ -17,11 +15,6 @@ export interface TodoItem {
    */
   gainPerDay: number | null
   energy: number
-
-  /**
-   * Pinned above everything else.
-   */
-  urgent?: boolean
 }
 
 /**
@@ -61,10 +54,6 @@ export interface AdvisorInput {
   prices: ItemPrices
   recipe: RecipeLookup
 
-  /**
-   * The owner's Management bonus in percent.
-   */
-  ownerManagementPct: number
   energy: Bar
   cash: number | null
 
@@ -79,5 +68,4 @@ export interface AdvisorResult {
   items: TodoItem[]
   skipped: SkippedItem[]
   energy: Bar & { hoursToFull: number }
-  hourlyCost: number
 }

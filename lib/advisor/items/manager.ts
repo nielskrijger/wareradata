@@ -16,8 +16,7 @@ import { fmt, MIN_GAIN_PER_DAY } from '../shared'
 export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number): TodoItem[] {
   const working = c.employees.filter(e => !e.companyDisabled)
   const baseSum = working.reduce((s, e) => s + basePerHour(e), 0)
-  const ownerPct = working[0]?.productionBonus?.contributions?.find(x => x.source === 'management')?.percent
-    ?? input.ownerManagementPct
+  const ownerPct = working[0]?.productionBonus?.contributions?.find(x => x.source === 'management')?.percent ?? 0
 
   if (c.manager) {
     const m = c.manager

@@ -6,8 +6,6 @@ import { humanizeItem } from '@/components/factories/format'
 import { buildEngineModel, enginePointsPerDay } from '@/lib/factories/engine'
 import { engineLevelOf, recipeFromGameConfig } from '@/lib/factories/inputs'
 
-import { RULES } from './model'
-
 interface BarSkill {
   currentBarValue?: number
   total?: number
@@ -50,7 +48,6 @@ export function advisorInputFromData(
     ppValue: data.ppValue,
     prices,
     recipe: recipeFromGameConfig(gameConfig),
-    ownerManagementPct: (skills.management?.total ?? 0) * RULES.managementPctPerPoint,
     energy: bar(skills.energy),
     cash: wealth?.money ?? null,
     managerMarketWage: data.managerMarketWage,

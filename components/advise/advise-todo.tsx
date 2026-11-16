@@ -131,7 +131,7 @@ export function AdviseTodo({ result }: Props) {
 
 function Row({ item, done, onToggle }: { item: TodoItem, done: boolean, onToggle: () => void }) {
   return (
-    <li className={cn('border-b last:border-b-0', item.urgent && 'bg-destructive/10', done && 'bg-muted/40')}>
+    <li className={cn('border-b last:border-b-0', item.kind === 'money' && 'bg-destructive/10', done && 'bg-muted/40')}>
       <button
         type="button"
         onClick={onToggle}
@@ -148,7 +148,7 @@ function Row({ item, done, onToggle }: { item: TodoItem, done: boolean, onToggle
         </span>
         <span className="flex min-w-0 flex-col gap-1">
           <span className="flex flex-wrap items-center gap-2">
-            <Badge variant={item.urgent ? 'destructive' : 'secondary'}>{KIND_LABEL[item.kind]}</Badge>
+            <Badge variant={item.kind === 'money' ? 'destructive' : 'secondary'}>{KIND_LABEL[item.kind]}</Badge>
             <span className={cn('text-sm font-semibold', done && 'text-muted-foreground line-through')}>
               {item.title}
             </span>

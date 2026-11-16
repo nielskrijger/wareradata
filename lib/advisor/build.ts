@@ -92,6 +92,5 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
     items: money ? [money, ...ranked] : ranked,
     skipped,
     energy: { ...input.energy, hoursToFull: energyHours },
-    hourlyCost,
   }
 }

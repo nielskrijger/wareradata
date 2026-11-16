@@ -27,6 +27,5 @@ export function moneyItem(input: AdvisorInput, hourlyCost: number): TodoItem | n
     why: `Wages and managers cost ${fmt(hourlyCost)} an hour and you hold ${fmt(input.cash, 1)}. An hour that can't be paid in full stops that company for the hour.`,
     gainPerDay: null,
     energy: 0,
-    urgent: true,
   }
 }

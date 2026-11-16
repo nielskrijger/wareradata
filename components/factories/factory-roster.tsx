@@ -15,6 +15,8 @@ import { cn } from '@/lib/utils'
 
 import { EmployeeBreakdown } from './employee-breakdown'
 import { goldSigned, humanizeCode, humanizeItem, netClass } from './format'
+import { TraitIcon } from './trait-icon'
+import { hasTraitIcon } from './trait-icons'
 
 interface Props {
   rows: FactoryLedgerRow[]
@@ -118,14 +120,28 @@ function Pips({ value, max, scale }: { value: number, max: number, scale: number
   )
 }
 
+function traitLabel(code: string, arg?: string): string {
+  return arg ? `${humanizeCode(code)} (${humanizeCode(arg)})` : humanizeCode(code)
+}
+
 function TraitChips({ e }: { e: LedgerEmployee }) {
   if (!e.traits.length) {
     return <EmptyDash />
   }
 
   return (
-    <span className="flex flex-wrap gap-1">
-      {e.traits.map(t => (
+    <span className="flex flex-wrap items-center gap-1">
+      {e.traits.map(t => hasTraitIcon(t.code) ? (
+        <Tooltip key={t.code + (t.arg ?? '')}>
+          <TooltipTrigger render={<span className="inline-flex" />}>
+            <TraitIcon code={t.code} label={traitLabel(t.code, t.arg)} />
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="font-medium">{traitLabel(t.code, t.arg)}</div>
+            <div className="text-neutral-300">{t.effects.join(', ') || 'No visible effect'}</div>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
         <Badge
           key={t.code + (t.arg ?? '')}
           title={t.effects.join(', ') || 'No visible effect'}

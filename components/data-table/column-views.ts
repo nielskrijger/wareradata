@@ -16,12 +16,19 @@ export function columnId<TData extends RowData>(c: ColumnDef<TData>): string {
 }
 
 /**
- * Shown on every view: the identity column and the headline Points column.
+ * The identity column (MU / Country / User / …), pinned first on every view.
  */
-function pinnedIds<TData extends RowData>(columns: ColumnDef<TData>[]): Set<string> {
+function identityId<TData extends RowData>(columns: ColumnDef<TData>[]): string | undefined {
+  return columns[0] ? columnId(columns[0]) : undefined
+}
+
+/**
+ * The headline Points column, which Overview shows next to the General columns.
+ */
+function headlinePointsId<TData extends RowData>(columns: ColumnDef<TData>[]): string | undefined {
   const points = columns.find(c => columnCategory(c) === 'points')
 
-  return new Set([columns[0], points].filter(c => c != null).map(columnId))
+  return points ? columnId(points) : undefined
 }
 
 /**
@@ -29,10 +36,8 @@ function pinnedIds<TData extends RowData>(columns: ColumnDef<TData>[]): Set<stri
  * categories to split by, so it keeps a single all-columns view.
  */
 export function columnViews<TData extends RowData>(columns: ColumnDef<TData>[]): ColumnView[] {
-  const pinned = pinnedIds(columns)
   const categories = CATEGORIES.filter(category =>
-    category !== 'general'
-    && columns.some(c => columnCategory(c) === category && !pinned.has(columnId(c))),
+    category !== 'general' && columns.some(c => columnCategory(c) === category),
   )
 
   return categories.length < 2 ? [] : ['overview', ...categories, 'all']
@@ -40,8 +45,9 @@ export function columnViews<TData extends RowData>(columns: ColumnDef<TData>[]):
 
 /**
  * The columns a view shows, or null for All, which follows the user's Columns
- * menu choices. Overview leaves out hidden-by-default columns; a category view
- * shows all of its columns.
+ * menu choices. Every view keeps the identity column. Overview adds the
+ * headline Points column and the General columns that aren't hidden by
+ * default; a category view shows all of that category's columns.
  */
 export function viewVisibility<TData extends RowData>(
   columns: ColumnDef<TData>[],
@@ -51,13 +57,14 @@ export function viewVisibility<TData extends RowData>(
     return null
   }
 
-  const pinned = pinnedIds(columns)
+  const identity = identityId(columns)
+  const points = headlinePointsId(columns)
 
   return Object.fromEntries(columns.map((c) => {
     const id = columnId(c)
     const category = columnCategory(c)
-    const shown = pinned.has(id) || (view === 'overview'
-      ? category === 'general' && !c.meta?.hiddenByDefault
+    const shown = id === identity || (view === 'overview'
+      ? id === points || (category === 'general' && !c.meta?.hiddenByDefault)
       : category === view)
 
     return [id, shown]
@@ -65,8 +72,8 @@ export function viewVisibility<TData extends RowData>(
 }
 
 /**
- * Columns per category, for the tab counts. The pinned Points column counts
- * toward Points, so each count matches the category's columns on its tab.
+ * Columns per category, matching what each category tab shows besides the
+ * identity column (which is General, so never counted).
  */
 export function columnViewCount<TData extends RowData>(columns: ColumnDef<TData>[]): Partial<Record<Category, number>> {
   const counts: Partial<Record<Category, number>> = {}

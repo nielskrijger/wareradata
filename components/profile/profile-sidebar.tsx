@@ -132,13 +132,7 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
       )}
 
       <Section>
-        <SkillSplit
-          mode={user.combatMode}
-          warPoints={user.warPoints}
-          ecoPoints={user.ecoPoints}
-          warPointsRank={user.warPointsRank}
-          ecoPointsRank={user.ecoPointsRank}
-        />
+        <SkillSplit mode={user.combatMode} warPoints={user.warPoints} ecoPoints={user.ecoPoints} />
       </Section>
 
       <Section>

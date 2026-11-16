@@ -13,19 +13,13 @@ interface Props {
   mode: CombatMode
   warPoints: number
   ecoPoints: number
-
-  /**
-   * Leaderboard position within each discipline, for the leading-side footer.
-   */
-  warPointsRank: number | null
-  ecoPointsRank: number | null
 }
 
 /**
- * A player's war/eco split for the profile sidebar: badge, bar, points and
- * share per side, and the leading side's rank.
+ * A player's war/eco split for the profile sidebar: badge, bar, and points and
+ * share per side. The ranks live in the rank map.
  */
-export function SkillSplit({ mode, warPoints, ecoPoints, warPointsRank, ecoPointsRank }: Props) {
+export function SkillSplit({ mode, warPoints, ecoPoints }: Props) {
   const total = warPoints + ecoPoints
 
   return (
@@ -54,7 +48,6 @@ export function SkillSplit({ mode, warPoints, ecoPoints, warPointsRank, ecoPoint
               icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
             />
           </dl>
-          <Footer mode={mode} warPointsRank={warPointsRank} ecoPointsRank={ecoPointsRank} />
         </>
       )}
     </div>
@@ -87,27 +80,4 @@ function SplitRow({ label, points, total, icon }: SplitRowProps) {
       </dd>
     </div>
   )
-}
-
-/**
- * Closing line: the leading discipline's leaderboard position, so it
- * answers "how invested is this player, really?". Hybrid/untrained omit it.
- */
-function Footer({ mode, warPointsRank, ecoPointsRank }: {
-  mode: CombatMode
-  warPointsRank: number | null
-  ecoPointsRank: number | null
-}) {
-  let line: string | null = null
-  if (mode === 'war' && warPointsRank != null) {
-    line = `#${warPointsRank.toLocaleString()} most-invested fighter`
-  } else if (mode === 'eco' && ecoPointsRank != null) {
-    line = `#${ecoPointsRank.toLocaleString()} most-invested economist`
-  }
-
-  if (!line) {
-    return null
-  }
-
-  return <span className="text-muted-foreground/60 border-border mt-0.5 border-t pt-1.5 text-xs">{line}</span>
 }

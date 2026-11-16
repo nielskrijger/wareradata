@@ -11,12 +11,6 @@ interface Props {
   totals: PortfolioTotals
 }
 
-interface Step {
-  label: string
-  delta: number
-  color: string
-}
-
 /**
  * A user's factories as a daily waterfall, summing the same way as the roster
  * below it: engines + employee output − wages − managers = net. Then net as a
@@ -24,37 +18,16 @@ interface Step {
  */
 export function FactoryIncome({ rows, totals }: Props) {
   const employees = rows.flatMap(r => r.employees)
+  const engines = rows.reduce((s, r) => s + r.engineNetPerDay, 0)
+  const gross = engines + employees.reduce((s, e) => s + e.revenuePerDay - e.inputCostPerDay, 0)
+  const afterWages = gross - rows.reduce((s, r) => s + r.wagePerDay, 0)
   const managers = rows.reduce((s, r) => s + r.managerPerDay, 0)
-
-  const steps: Step[] = [
-    { label: 'Engines', delta: rows.reduce((s, r) => s + r.engineNetPerDay, 0), color: ENGINE_FILL },
-    ...employees.length > 0
-      ? [
-          {
-            label: 'Employee output',
-            delta: employees.reduce((s, e) => s + e.revenuePerDay - e.inputCostPerDay, 0),
-            color: 'var(--heat-green)',
-          },
-          { label: 'Wages', delta: -rows.reduce((s, r) => s + r.wagePerDay, 0), color: 'var(--heat-red)' },
-        ]
-      : [],
-    ...managers >= 0.05 ? [{ label: 'Managers', delta: -managers, color: 'var(--heat-red)' }] : [],
-  ]
-
-  // Running totals, so each bar starts where the previous one ended.
-  let running = 0
-  const bars = steps.map((s) => {
-    const from = running
-    running += s.delta
-
-    return { ...s, from, to: running }
-  })
-
   const net = totals.netPerDay
-  const lo = Math.min(0, net, ...bars.map(b => Math.min(b.from, b.to)))
-  const hi = Math.max(0, net, ...bars.map(b => Math.max(b.from, b.to)))
-  const span = hi - lo || 1
-  const x = (v: number) => ((v - lo) / span) * 100
+
+  // Each bar starts where the previous one ended, on one shared scale.
+  const lo = Math.min(0, engines, gross, afterWages, net)
+  const hi = Math.max(0, engines, gross, afterWages, net)
+  const x = (v: number) => ((v - lo) / (hi - lo || 1)) * 100
 
   const potential = totals.bestPotentialNetPerDay
   const pct = potential > 0 ? Math.max(0, Math.min(100, (net / potential) * 100)) : null
@@ -62,7 +35,16 @@ export function FactoryIncome({ rows, totals }: Props) {
   return (
     <div className="space-y-3">
       <dl className="grid grid-cols-[minmax(6rem,auto)_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-sm">
-        {bars.map(b => <Bar key={b.label} label={b.label} from={b.from} to={b.to} color={b.color} x={x} />)}
+        <Bar label="Engines" from={0} to={engines} color={ENGINE_FILL} x={x} />
+        {employees.length > 0 && (
+          <>
+            <Bar label="Employee output" from={engines} to={gross} color="var(--heat-green)" x={x} />
+            <Bar label="Wages" from={gross} to={afterWages} color="var(--heat-red)" x={x} />
+          </>
+        )}
+        {managers >= 0.05 && (
+          <Bar label="Managers" from={afterWages} to={afterWages - managers} color="var(--heat-red)" x={x} />
+        )}
         <Bar label="Net / day" from={0} to={net} color="var(--heat-green)" x={x} strong />
       </dl>
 

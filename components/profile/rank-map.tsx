@@ -49,8 +49,6 @@ const MARKS = [0, 25, 50, 75, 100]
  * the "top x%" beside each rank separates the very best.
  */
 export function RankMap({ title, groups, total }: Props) {
-  const pos = (rank: number) => 100 * (1 - (Math.min(rank, total) - 1) / Math.max(total - 1, 1))
-
   return (
     <section className="bg-card rounded-md border p-4 sm:p-5">
       <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -72,7 +70,7 @@ export function RankMap({ title, groups, total }: Props) {
       {groups.map(g => (
         <div key={g.title} className="mt-2 border-t pt-2">
           <h3 className="text-xs font-medium tracking-wide uppercase" style={{ color: g.color }}>{g.title}</h3>
-          {g.rows.map(row => <Row key={row.label} row={row} color={g.color} total={total} pos={pos} />)}
+          {g.rows.map(row => <Row key={row.label} row={row} color={g.color} total={total} />)}
         </div>
       ))}
     </section>
@@ -90,15 +88,11 @@ function markLabel(m: number): string {
 /**
  * On phones the track drops under the label so it keeps the full width.
  */
-function Row({ row, color, total, pos }: {
-  row: RankMapRow
-  color: string
-  total: number
-  pos: (rank: number) => number
-}) {
+function Row({ row, color, total }: { row: RankMapRow, color: string, total: number }) {
   const { label, value, display, rank } = row
   // Everyone at zero shares one rank, which would read as "top 12%" for nothing.
   const ranked = rank != null && value != null && value !== 0
+  const pos = ranked ? 100 * (1 - (rank - 1) / Math.max(total - 1, 1)) : 0
 
   return (
     <div className={cn('grid items-center gap-x-3 gap-y-0.5 py-1 text-sm sm:gap-x-4', ROW_COLUMNS)}>
@@ -106,18 +100,18 @@ function Row({ row, color, total, pos }: {
       <span className="text-right tabular-nums">{value == null ? '–' : (display ?? value.toLocaleString())}</span>
       <div className="relative order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         <div className="bg-muted absolute inset-x-0 top-1/2 h-px" />
-        {MARKS.slice(1, -1).map(m => (
-          <div key={m} className="bg-border absolute top-0.5 h-3 w-px" style={{ left: `${m}%` }} />
+        {MARKS.map(m => (
+          <div key={m} className="bg-border absolute top-0.5 h-3 w-px -translate-x-1/2" style={{ left: `${m}%` }} />
         ))}
         {ranked && (
           <>
             <div
               className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full opacity-40"
-              style={{ width: `${pos(rank)}%`, background: color }}
+              style={{ width: `${pos}%`, background: color }}
             />
             <div
               className="ring-card absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2"
-              style={{ left: `${pos(rank)}%`, background: color }}
+              style={{ left: `${pos}%`, background: color }}
             />
           </>
         )}

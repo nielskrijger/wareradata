@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 
 import { topPercent } from '@/lib/format'
-import { cn } from '@/lib/utils'
 
 interface Props {
   label: string
@@ -18,15 +17,14 @@ interface Props {
    */
   rank?: number | null
   total?: number
-  className?: string
 }
 
 /**
  * One headline number in the profile's KPI strip.
  */
-export function Kpi({ label, icon, value, sub, rank, total, className }: Props) {
+export function Kpi({ label, icon, value, sub, rank, total }: Props) {
   return (
-    <div className={cn('flex min-w-0 flex-col gap-0.5', className)}>
+    <div className="flex min-w-0 flex-col gap-0.5">
       <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs [&>svg]:size-3.5">
         {icon}
         {label}

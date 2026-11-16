@@ -9,14 +9,13 @@ import { UsersTable } from '@/app/users/users-table'
 import { Avatar } from '@/components/avatar'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
-import { UserNameCell } from '@/components/cells/user-name-cell'
+import { LeaderCell } from '@/components/cells/leader-cell'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { ExternalLink } from '@/components/links'
-import { UserHoverCard } from '@/components/user-hover-card'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
@@ -99,14 +98,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
           {p.leaderName && (
             <span className="inline-flex items-center gap-2">
               Leader
-              <UserHoverCard userId={p.leaderId}>
-                <UserNameCell
-                  userId={p.leaderId}
-                  name={p.leaderName}
-                  avatarUrl={p.leaderAvatarUrl}
-                  colorScheme={p.leaderColorScheme}
-                />
-              </UserHoverCard>
+              <LeaderCell leader={p} />
             </span>
           )}
         </FactRow>

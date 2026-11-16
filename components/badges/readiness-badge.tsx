@@ -3,10 +3,12 @@
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+import { GREEN_BADGE, RED_BADGE } from '@/components/badges/tone'
 import { EmptyDash } from '@/components/empty-dash'
 import { Countdown } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 interface Props {
   status: 'buff' | 'debuff' | 'neither' | null
@@ -83,14 +85,12 @@ export function ReadinessBadge({ status, endsAt, withTooltip = true }: Props) {
   }
 
   const isBuff = status === 'buff'
-  const cls = isBuff
-    ? 'bg-heat-green/15 text-heat-green-text gap-0.5 dark:text-green-300'
-    : 'bg-red-500/15 text-red-800 gap-0.5 dark:text-red-300'
+  const cls = isBuff ? GREEN_BADGE : RED_BADGE
 
   const Icon = isBuff ? ArrowUp : ArrowDown
 
   const badge = (
-    <Badge className={cls}>
+    <Badge className={cn(cls, 'gap-0.5')}>
       <Icon className="size-3" />
       {endsAt ? <Countdown iso={endsAt} className="tabular-nums" /> : (isBuff ? 'Buff' : 'Debuff')}
     </Badge>

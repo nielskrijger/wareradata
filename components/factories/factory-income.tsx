@@ -6,9 +6,7 @@ import type { PortfolioTotals } from '@/lib/factories/profit'
 import { StackedBar } from '@/components/stacked-bar'
 import { cn } from '@/lib/utils'
 
-import { ENGINE_FILL, goldSigned, netClass } from './format'
-
-const STAFF_FILL = 'var(--heat-green)'
+import { ENGINE_FILL, goldSigned, netClass, STAFF_FILL } from './format'
 
 interface Props {
   rows: FactoryLedgerRow[]

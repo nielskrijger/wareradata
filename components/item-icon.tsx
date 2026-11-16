@@ -12,26 +12,25 @@ import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { itemIconUrl } from '@/lib/warera/urls'
 
-/**
- * What a page knows about items, for the icon tooltips.
- */
-export interface ItemCatalog {
+interface Catalog {
   prices: ItemPrices
   recipe: RecipeLookup
 }
 
-const ItemCatalogContext = createContext<ItemCatalog | null>(null)
+const ItemCatalogContext = createContext<Catalog | null>(null)
 
-export function ItemCatalogProvider({ catalog, children }: { catalog: ItemCatalog, children: ReactNode }) {
+/**
+ * Prices and recipes for the item cards; use `<ItemCatalog>` from a server page.
+ */
+export function ItemCatalogProvider({ catalog, children }: { catalog: Catalog, children: ReactNode }) {
   return <ItemCatalogContext value={catalog}>{children}</ItemCatalogContext>
 }
 
-function ItemImage({ code, className, title }: { code: string, className: string, title?: string }) {
+function ItemImage({ code, className }: { code: string, className: string }) {
   return (
     <Image
       src={itemIconUrl(code)}
       alt={humanizeItem(code)}
-      title={title}
       width={40}
       height={40}
       className={cn('inline-block shrink-0 object-contain', className)}
@@ -41,11 +40,12 @@ function ItemImage({ code, className, title }: { code: string, className: string
 }
 
 /**
- * The game's item card: name, market value and recipe, each only when known.
+ * The game's item card: name, then market value and recipe when known.
  */
-function ItemTooltipContent({ code, catalog }: { code: string, catalog: ItemCatalog }) {
-  const price = catalog.prices[code]
-  const recipe = catalog.recipe[code]
+function ItemCard({ code }: { code: string }) {
+  const catalog = use(ItemCatalogContext)
+  const price = catalog?.prices[code]
+  const recipe = catalog?.recipe[code]
 
   return (
     <div className="w-56 space-y-2.5">
@@ -62,7 +62,7 @@ function ItemTooltipContent({ code, catalog }: { code: string, catalog: ItemCata
               <Fragment key={input}>
                 <span className="text-neutral-500">+</span>
                 {formatNumber(qty)}
-                <ItemImage code={input} title={humanizeCode(input)} className="size-4" />
+                <ItemImage code={input} className="size-4" />
               </Fragment>
             ))}
             <span className="text-neutral-500">=</span>
@@ -76,24 +76,16 @@ function ItemTooltipContent({ code, catalog }: { code: string, catalog: ItemCata
 }
 
 /**
- * An item's icon. Inside an {@link ItemCatalogProvider} it opens the item card
- * on hover; elsewhere it shows only the name.
+ * An item's icon, opening its card on hover.
  */
 export function ItemIcon({ code, small }: { code: string, small?: boolean }) {
-  const catalog = use(ItemCatalogContext)
-  const size = small ? 'size-4' : 'size-5'
-  const align = small && 'align-[-0.2em]'
-  if (!catalog) {
-    return <ItemImage code={code} title={humanizeItem(code)} className={cn(size, align)} />
-  }
-
   return (
     <Tooltip>
-      <TooltipTrigger render={<span className={cn('inline-flex cursor-default', align)} />}>
-        <ItemImage code={code} className={size} />
+      <TooltipTrigger render={<span className={cn('inline-flex cursor-default', small && 'align-[-0.2em]')} />}>
+        <ItemImage code={code} className={small ? 'size-4' : 'size-5'} />
       </TooltipTrigger>
       <TooltipContent side="top">
-        <ItemTooltipContent code={code} catalog={catalog} />
+        <ItemCard code={code} />
       </TooltipContent>
     </Tooltip>
   )

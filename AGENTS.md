@@ -19,3 +19,7 @@ A comment longer than three lines covers more than one point: split it into para
 ## Measure before optimizing
 
 Prefer simple code. Don't add complexity for performance (caching, memoization, batching, clever data structures) without first measuring that it makes a real difference.
+
+## Leave it cleaner than you found it
+
+In every change, clean up nearby: dead code, duplication, and pieces that should be a shared utility or component. Reuse what exists before writing something new. Prefer reuse and consistency over pixel-perfect or bespoke results.

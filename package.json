@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "22.x"
+    "node": "26.x"
   },
   "scripts": {
     "dev": "next dev -p 3100 | pino-pretty -c -t 'SYS:HH:MM:ss' -i pid,hostname",
@@ -41,7 +41,7 @@
     "@eslint-react/eslint-plugin": "^5.30.3",
     "@next/eslint-plugin-next": "^16.4.6",
     "@tailwindcss/postcss": "^4.3.5",
-    "@types/node": "^22",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^10.15.0",

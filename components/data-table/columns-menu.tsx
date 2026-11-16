@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 import { cn } from '@/lib/utils'
 
+import { CategoryIcon } from './category-icon'
 import { CATEGORIES, CATEGORY_META, columnCategory } from './column-categories'
 
 type TriState = 'all' | 'some' | 'none'
@@ -98,7 +99,6 @@ export function ColumnsMenu<TData extends RowData>({ table }: { table: Table<Dat
           }
 
           const meta = CATEGORY_META[category]
-          const Icon = meta.Icon
           const onCount = cols.filter(c => c.getIsVisible()).length
           const state: TriState = onCount === cols.length ? 'all' : onCount === 0 ? 'none' : 'some'
           const isOpen = open.has(category)
@@ -117,10 +117,7 @@ export function ColumnsMenu<TData extends RowData>({ table }: { table: Table<Dat
                   className="hover:bg-accent flex flex-1 items-center gap-1.5 rounded-md px-2 py-1.5"
                 >
                   <Chevron className="text-muted-foreground size-4 shrink-0" />
-                  <Icon
-                    className={cn('size-3.5 shrink-0', !meta.color && 'text-muted-foreground')}
-                    style={meta.color ? { color: meta.color } : undefined}
-                  />
+                  <CategoryIcon category={category} />
                   {meta.label}
                   <span className="text-muted-foreground ml-auto text-xs tabular-nums">
                     {onCount}

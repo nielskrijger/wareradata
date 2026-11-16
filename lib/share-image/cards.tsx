@@ -7,17 +7,11 @@ import { ImageResponse } from 'next/og'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { EMPTY } from '@/lib/format'
+import { EMPTY, formatCompact } from '@/lib/format'
 import { avatarSrc, flagSrc, loadFonts } from './assets'
 import { CardFrame, EmblemImage, EntityCard, MUTED, ORANGE } from './layout'
 
 import 'server-only'
-
-const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
-
-function formatCompact(n: number | null | undefined): string {
-  return n == null ? EMPTY : compact.format(n)
-}
 
 function avgLevel(n: number | null): string {
   return n == null ? EMPTY : n.toFixed(1)

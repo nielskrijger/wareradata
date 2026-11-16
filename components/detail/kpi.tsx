@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { PointsSplit } from '@/components/detail/points-split'
 import { topPercent } from '@/lib/format'
 
 interface Props {
@@ -20,7 +21,7 @@ interface Props {
 }
 
 /**
- * One headline number in the profile's KPI strip.
+ * One headline number in a detail page's KPI strip.
  */
 export function Kpi({ label, icon, value, sub, rank, total }: Props) {
   return (
@@ -41,5 +42,21 @@ export function Kpi({ label, icon, value, sub, rank, total }: Props) {
         </span>
       )}
     </div>
+  )
+}
+
+/**
+ * The row of headline numbers atop a detail page, with the points split
+ * across the bottom.
+ */
+export function KpiStrip({ points, children }: {
+  points: { total: number, level: number, damage: number, wealth: number }
+  children: ReactNode
+}) {
+  return (
+    <section className="bg-card grid grid-cols-2 gap-4 rounded-md border p-4 sm:p-5 xl:grid-cols-4">
+      {children}
+      <PointsSplit className="col-span-full" {...points} />
+    </section>
   )
 }

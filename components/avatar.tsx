@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 
 import Image from 'next/image'
 
+import { Flag } from '@/components/flag'
 import { cn } from '@/lib/utils'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 
@@ -21,6 +22,12 @@ interface Props {
    * not, so MU avatars render ringless.
    */
   colorScheme?: string | null
+
+  /**
+   * Country code; when set, a small flag overlaps the avatar's bottom-left
+   * corner, as on WarEra profiles.
+   */
+  countryCode?: string | null
   className?: string
   style?: CSSProperties
 }
@@ -29,7 +36,29 @@ interface Props {
  * Round avatar with an optional color-scheme ring, falling back to the name's
  * initial when there is no image.
  */
-export function Avatar({ src, name, size, colorScheme, className, style }: Props) {
+export function Avatar({ countryCode, ...props }: Props) {
+  if (!countryCode) {
+    return <AvatarImage {...props} />
+  }
+
+  // Half the avatar's width, at the flag's 4:3 ratio.
+  const flagWidth = Math.round(props.size / 2)
+
+  return (
+    <span className="relative inline-flex shrink-0">
+      <AvatarImage {...props} />
+      <Flag
+        code={countryCode}
+        className="rounded-[1px] shadow-[0_0_0_1px_var(--card)]"
+        // Inline because flag-icons' unlayered `.fi { position: relative }`
+        // beats Tailwind's layered utilities.
+        style={{ position: 'absolute', left: -4, bottom: -1, width: flagWidth, height: Math.round(flagWidth * 0.75) }}
+      />
+    </span>
+  )
+}
+
+function AvatarImage({ src, name, size, colorScheme, className, style }: Omit<Props, 'countryCode'>) {
   const base = cn('shrink-0 rounded-full object-cover', className)
   // Only schemes that resolve to a color get a ring; no scheme = no ring
   // (matches the game). box-shadow is outside layout, so omitting it shifts

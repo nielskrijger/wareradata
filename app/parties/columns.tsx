@@ -24,6 +24,7 @@ export const partyColumns: ColumnDef<PartyRow>[] = buildColumns<PartyRow>(
           partyName={row.original.name}
           partyId={row.original.id}
           avatarUrl={row.original.avatarUrl}
+          countryCode={row.original.countryCode}
           bold
         />
         <WareraLinkIcon kind="party" id={row.original.id} />
@@ -41,7 +42,8 @@ export const partyColumns: ColumnDef<PartyRow>[] = buildColumns<PartyRow>(
         sortDescFirst: true,
         meta: { heat: 'median', align: 'right', width: 105 },
       },
-      countryColumn<PartyRow>(),
+      // The flag on the avatar already shows the country.
+      countryColumn<PartyRow>({ hiddenByDefault: true }),
       localeNumberColumn<PartyRow>('memberCount', 'Members', { heat: 'ramp', width: 100 }),
       {
         accessorKey: 'leaderName',

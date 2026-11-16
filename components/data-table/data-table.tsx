@@ -120,7 +120,11 @@ function DataTableInner<TData extends RowData>({
     isAtInitialState,
   } = useTableUrlState({ initialSort, defaultPageSize })
 
-  const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId)
+  const hiddenByDefault = columns
+    .filter(c => c.meta?.hiddenByDefault)
+    .map(c => c.id ?? ('accessorKey' in c ? String(c.accessorKey) : ''))
+
+  const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId, hiddenByDefault)
   const [data, setData] = useState<PageResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
   const [loadFailed, setLoadFailed] = useState(false)

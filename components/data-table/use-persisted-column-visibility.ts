@@ -22,7 +22,7 @@ function subscribe(listener: () => void) {
 }
 
 /**
- * Storage can throw (private mode, blocked site data); fall back to all-visible.
+ * Storage can throw (private mode, blocked site data); fall back to the defaults.
  */
 function readRaw(key: string): string | null {
   try {
@@ -32,12 +32,12 @@ function readRaw(key: string): string | null {
   }
 }
 
-function writeRaw(key: string, hidden: string[]) {
+function writeRaw(key: string, overrides: ColumnVisibilityState) {
   try {
-    if (hidden.length === 0) {
+    if (Object.keys(overrides).length === 0) {
       window.localStorage.removeItem(key)
     } else {
-      window.localStorage.setItem(key, JSON.stringify(hidden))
+      window.localStorage.setItem(key, JSON.stringify(overrides))
     }
   } catch {
     return
@@ -46,47 +46,74 @@ function writeRaw(key: string, hidden: string[]) {
   listeners.forEach(listener => listener())
 }
 
-function parseHidden(raw: string | null): string[] {
+/**
+ * Stored choices: a `{ id: visible }` map, or an array of hidden ids as
+ * written by earlier versions of the site.
+ */
+function parseOverrides(raw: string | null): ColumnVisibilityState {
   if (!raw) {
-    return []
+    return {}
   }
 
   try {
     const value: unknown = JSON.parse(raw)
+    if (Array.isArray(value)) {
+      return Object.fromEntries(value.filter((id): id is string => typeof id === 'string').map(id => [id, false]))
+    }
 
-    return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : []
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value).filter(([, visible]) => typeof visible === 'boolean'))
+    }
   } catch {
-    return []
+    // Unreadable value: use the defaults.
   }
+
+  return {}
 }
 
 /**
  * Column visibility for a DataTable, remembered per table in localStorage.
  *
- * Only hidden column ids are stored, so columns added later start visible and
- * ids of removed or renamed columns match nothing. The setter takes the
- * table's current hideable ids to prune those stale ids on the next write.
+ * `hiddenByDefault` lists the columns that start hidden; everything else
+ * starts visible. Only choices that differ from those defaults are stored, so
+ * columns added later get their default, and the setter takes the table's
+ * current hideable ids to prune ids of removed or renamed columns.
  *
- * The server and first client render show every column; stored choices apply
+ * The server and first client render use the defaults; stored choices apply
  * right after hydration.
  */
 export function usePersistedColumnVisibility(
   tableId: string,
+  hiddenByDefault: readonly string[],
 ): [ColumnVisibilityState, (updater: Updater<ColumnVisibilityState>, knownIds: string[]) => void] {
   const key = KEY_PREFIX + tableId
   const raw = useSyncExternalStore(subscribe, () => readRaw(key), () => null)
 
+  // Joined so a fresh array with the same ids each render keeps the memo.
+  const defaultsKey = hiddenByDefault.join('\n')
+  const defaults = useMemo<ColumnVisibilityState>(
+    () => Object.fromEntries((defaultsKey ? defaultsKey.split('\n') : []).map(id => [id, false])),
+    [defaultsKey],
+  )
+
   const visibility = useMemo<ColumnVisibilityState>(
-    () => Object.fromEntries(parseHidden(raw).map(id => [id, false])),
-    [raw],
+    () => ({ ...defaults, ...parseOverrides(raw) }),
+    [defaults, raw],
   )
 
   const setVisibility = useCallback((updater: Updater<ColumnVisibilityState>, knownIds: string[]) => {
-    const current: ColumnVisibilityState = Object.fromEntries(parseHidden(readRaw(key)).map(id => [id, false]))
+    const current: ColumnVisibilityState = { ...defaults, ...parseOverrides(readRaw(key)) }
     const next = typeof updater === 'function' ? updater(current) : updater
-    const known = new Set(knownIds)
-    writeRaw(key, Object.keys(next).filter(id => next[id] === false && known.has(id)))
-  }, [key])
+    const overrides: ColumnVisibilityState = {}
+    for (const id of knownIds) {
+      const visible = next[id] ?? true
+      if (visible !== (defaults[id] ?? true)) {
+        overrides[id] = visible
+      }
+    }
+
+    writeRaw(key, overrides)
+  }, [key, defaults])
 
   return [visibility, setVisibility]
 }

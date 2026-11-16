@@ -41,10 +41,11 @@ export function Avatar({ countryCode, ...props }: Props) {
     return <AvatarImage {...props} />
   }
 
-  // Just over half the avatar's width, at the flag's 4:3 ratio.
-  const flagWidth = Math.round(props.size * 0.54)
+  // Under half the avatar's width, at the 4:3 ratio of flag-icons' sprites.
+  const flagWidth = Math.round(props.size * 0.46)
   const flagHeight = Math.round(flagWidth * 0.75)
-  const flagLeft = -Math.round(props.size / 5)
+  // A slight overhang, so the flag stays clear of a table's left border.
+  const flagLeft = -Math.round(props.size / 12)
 
   return (
     <span className="relative inline-flex shrink-0">

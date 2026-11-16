@@ -13,6 +13,7 @@ import { Clock, Coins, Drumstick, Heart, Swords, Trophy } from 'lucide-react'
 import { Avatar } from '@/components/avatar'
 import { GearScorePill } from '@/components/badges/gear-score-pill'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
+import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { GearStrip } from '@/components/detail/gear-strip'
 import { Flag } from '@/components/flag'
@@ -87,7 +88,8 @@ function Body({ data }: { data: FetchedData }) {
             </span>
           </div>
           {user.level != null && (
-            <span className="ml-auto text-[11px] tabular-nums text-neutral-50/70">
+            <span className="ml-auto inline-flex items-center gap-1 text-[11px] tabular-nums text-neutral-50/70">
+              <PrestigeSkull prestige={user.prestige} colorScheme={user.colorScheme} />
               Lv
               {' '}
               {user.level}

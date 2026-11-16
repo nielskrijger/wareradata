@@ -103,9 +103,17 @@ export interface UserRow {
   referralsRank: number | null
 
   /**
-   * Times the player has prestiged (reset from level 50). 0 for most.
+   * Times the player has prestiged (`leveling.prestigeLevel`). The API's
+   * `leveling.prestige` is unspent prestige points, kept as `prestigePoints`.
    */
   prestige: number | null
+  prestigePoints: number | null
+
+  /**
+   * Lifetime XP. The level ranking orders on this, so a prestiged player can
+   * outrank a higher level.
+   */
+  totalXp: number | null
 
   /**
    * Lifetime milestone tiers reached and skins owned, from the rankings block

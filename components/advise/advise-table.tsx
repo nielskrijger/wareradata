@@ -83,20 +83,6 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
         <span className={cn(small ? 'font-medium' : 'font-semibold')}>
           {row.titleParts ? <TitleParts parts={row.titleParts} /> : row.title}
         </span>
-        {row.parts.length > 0 && (
-          <span className="flex flex-wrap gap-1.5">
-            {row.parts.map(p => (
-              <span
-                key={p.short}
-                className="bg-muted/60 inline-flex min-w-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs"
-              >
-                {p.short}
-                {' '}
-                <Gain value={p.gainPerDay} />
-              </span>
-            ))}
-          </span>
-        )}
         <Reason row={row} />
       </span>
       <span className="col-start-2 flex items-center gap-1.5 text-xs md:col-start-auto">

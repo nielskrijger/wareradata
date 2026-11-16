@@ -128,10 +128,6 @@ export function toolItems(input: AdvisorInput, vppByItem: Map<string, number>): 
           { label: `${fromName}'s base`, value: `${fromWorth} g/h` },
         ],
         gainPerDay: HOURS_PER_DAY * best.gain,
-        group: {
-          key: 'tool-move',
-          short: `${fromName} ${to.pct > 0 ? '⇄' : '→'} ${toName}`,
-        },
       })
 
       const { pct, code } = from

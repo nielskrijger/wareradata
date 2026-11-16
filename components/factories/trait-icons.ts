@@ -1,4 +1,5 @@
 import {
+  mdiAccount,
   mdiAccountGroup,
   mdiAccountHeart,
   mdiAccountPlus,
@@ -34,6 +35,7 @@ import {
   mdiRecycle,
   mdiRepeat,
   mdiRobotHappy,
+  mdiShieldAccount,
   mdiShovel,
   mdiSprout,
   mdiSwordCross,
@@ -83,6 +85,7 @@ export const ICON_SHADOW = '#050607'
  */
 export const TRAITS: Record<string, { icon: string, group: TraitGroup }> = {
   anchor: { icon: mdiAnchor, group: 'blue' },
+  bandOfBrothers: { icon: mdiShieldAccount, group: 'gold' },
   bully: { icon: mdiBoxingGlove, group: 'red' },
   claustrophobe: { icon: mdiArrowCollapse, group: 'red' },
   comic: { icon: mdiDramaMasks, group: 'blue' },
@@ -101,6 +104,7 @@ export const TRAITS: Record<string, { icon: string, group: TraitGroup }> = {
   homesick: { icon: mdiHome, group: 'red' },
   jinx: { icon: mdiCat, group: 'red' },
   laborer: { icon: mdiShovel, group: 'gold' },
+  loner: { icon: mdiAccount, group: 'gold' },
   loyal: { icon: mdiHandshake, group: 'blue' },
   luckyCharm: { icon: mdiClover, group: 'green' },
   mentor: { icon: mdiAccountSupervisor, group: 'blue' },

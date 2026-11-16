@@ -1,4 +1,5 @@
 import type { AdviseRow } from './rows'
+import type { AdvisorResult } from '@/lib/advisor/types'
 import { ChevronRight } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -11,7 +12,21 @@ import { SwitchTitle } from './switch-title'
 /**
  * The big wins with a running share, then the small stuff folded away.
  */
-export function AdviseTable({ big, small, total }: { big: AdviseRow[], small: AdviseRow[], total: number }) {
+export function AdviseTable({ big, small, total, energy }: {
+  big: AdviseRow[]
+  small: AdviseRow[]
+  total: number
+  energy: AdvisorResult['energy']
+}) {
+  const needed = sum(big, 'energy')
+  const short = needed > energy.current
+  const have = `${energy.current.toFixed(0)} of ${energy.cap}`
+  const refill = energy.hoursToFull <= 0
+    ? 'full'
+    : Number.isFinite(energy.hoursToFull) ? `full in ${energy.hoursToFull.toFixed(1)} h` : 'not refilling'
+
+  const hint = short ? `The big wins need ${needed}, ${needed - energy.current} more than you have · ${refill}` : refill
+
   return (
     <div className="bg-card overflow-hidden rounded-xl border text-sm">
       <div className={cn(
@@ -22,8 +37,16 @@ export function AdviseTable({ big, small, total }: { big: AdviseRow[], small: Ad
         <span>#</span>
         <span>Action</span>
         <span>Kind</span>
-        <span className="text-right">Energy</span>
+        <span className="flex flex-col items-end leading-tight" title={hint}>
+          <span>Energy</span>
+          <span className="font-mono font-normal tabular-nums">{`${energy.current.toFixed(0)}/${energy.cap}`}</span>
+          {short && <span className="font-mono font-normal" style={{ color: 'var(--fire)' }}>{`need ${needed}`}</span>}
+        </span>
         <span className="text-right">Gain/day · running</span>
+      </div>
+      <div className="text-muted-foreground bg-muted/40 flex justify-between gap-3 px-4 py-2 text-xs md:hidden">
+        <span>{`Energy ${have} · ${refill}`}</span>
+        {short && <span style={{ color: 'var(--fire)' }}>{`need ${needed}`}</span>}
       </div>
       <ol>
         {big.map((row, i) => (

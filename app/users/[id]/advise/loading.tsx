@@ -18,10 +18,6 @@ export default function Loading() {
         <span className={cn(PULSE, 'h-5 w-64')} />
         <span className={cn(PULSE, 'h-8 w-full rounded-lg')} />
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <span className={cn(PULSE, 'h-[106px] rounded-xl')} />
-        <span className={cn(PULSE, 'h-[106px] rounded-xl')} />
-      </div>
       <div className="bg-card overflow-hidden rounded-xl border">
         {[60, 45, 55, 40, 50].map(w => (
           <div key={w} className="flex items-center gap-4 border-t px-4 py-4 first:border-t-0">

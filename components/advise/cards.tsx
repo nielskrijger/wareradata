@@ -1,7 +1,5 @@
-import type { AdvisorResult, TodoItem } from '@/lib/advisor/types'
+import type { TodoItem } from '@/lib/advisor/types'
 import { Check, TriangleAlert } from 'lucide-react'
-
-import { ProgressRing } from '@/components/progress-ring'
 
 import { GAIN, KIND } from './format'
 
@@ -22,30 +20,6 @@ export function AllSet() {
         Nothing pays off right now. Check back after your energy refills or prices move.
       </p>
     </section>
-  )
-}
-
-export function EnergyCard({ energy, needed }: { energy: AdvisorResult['energy'], needed: number }) {
-  const short = Math.max(0, needed - energy.current)
-  const refill = energy.hoursToFull <= 0
-    ? 'full'
-    : Number.isFinite(energy.hoursToFull) ? `full in ${energy.hoursToFull.toFixed(1)} h` : 'not refilling'
-
-  return (
-    <div className="bg-card flex items-center gap-4 rounded-xl border p-4">
-      <ProgressRing fraction={energy.cap > 0 ? energy.current / energy.cap : 0} color="var(--fire)">
-        {energy.current.toFixed(0)}
-      </ProgressRing>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <span className="text-muted-foreground text-xs">Energy</span>
-        <span className="text-lg font-semibold tabular-nums">{`${energy.current.toFixed(0)} of ${energy.cap}`}</span>
-        <span className="text-muted-foreground text-xs">
-          {short > 0
-            ? `The big wins need ${needed}, ${short} more than you have · ${refill}`
-            : `+${energy.regenPerHour}/h · ${refill}`}
-        </span>
-      </div>
-    </div>
   )
 }
 

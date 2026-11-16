@@ -200,6 +200,7 @@ export interface UserRow {
    * week. Null when the roster is unknown.
    */
   employeeAvgPpPerDay: number | null
+  employeeAvgNetPerDay: number | null
   employeeAvgHappiness: number | null
   employeeRetiringSoon: number | null
 }

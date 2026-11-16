@@ -283,6 +283,7 @@ export interface UserFactoryAgg {
    * employees.
    */
   employeeAvgPpPerDay: number | null
+  employeeAvgNetPerDay: number | null
   employeeAvgHappiness: number | null
   employeeRetiringSoon: number | null
 }

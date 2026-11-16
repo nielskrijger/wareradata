@@ -278,6 +278,11 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         width: 135,
         tooltip: 'Production points per employee per day.',
       }),
+      compactNumberColumn<UserRow>('employeeAvgNetPerDay', 'Avg net / day', {
+        heat: 'median',
+        width: 140,
+        tooltip: 'Daily profit per employee: their output value minus wages, with the managers\' wages shared out.',
+      }),
       compactNumberColumn<UserRow>('employeeAvgHappiness', 'Avg happiness', {
         heat: 'median',
         width: 150,

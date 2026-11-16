@@ -123,6 +123,7 @@ export async function loadFactoryAggregates(
       employeeNetPerDay: known(employeeNet),
       payrollPerDay: known(payroll),
       employeeAvgPpPerDay: rosterKnown && workers > 0 ? employeePtsSum / workers : null,
+      employeeAvgNetPerDay: rosterKnown && workers > 0 ? employeeNet / workers : null,
       employeeAvgHappiness: details && workers > 0 ? happinessSum / workers : null,
       employeeRetiringSoon: details ? retiring : null,
     })

@@ -16,7 +16,7 @@ interface Props {
  */
 export function IdentityCell({ kind, id, children }: Props) {
   return (
-    <div className="flex items-center gap-2 overflow-hidden">
+    <div className="flex items-center gap-2">
       {children}
       <WareraLinkIcon kind={kind} id={id} />
     </div>

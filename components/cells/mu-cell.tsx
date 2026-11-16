@@ -23,13 +23,18 @@ interface Props {
    * identifier (e.g. the first column on /mus).
    */
   bold?: boolean
+
+  /**
+   * Shown as a small flag on the avatar.
+   */
+  countryCode?: string | null
 }
 
 /**
  * Links to the MU page when there's an id, else to /users filtered to the MU
  * (quoted, since MU names contain spaces).
  */
-export function MUCell({ muName, muId, avatarUrl, bold }: Props) {
+export function MUCell({ muName, muId, avatarUrl, bold, countryCode }: Props) {
   if (!muName) {
     return <EmptyDash />
   }
@@ -48,7 +53,7 @@ export function MUCell({ muName, muId, avatarUrl, bold }: Props) {
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Avatar src={avatarUrl} name={muName} size={22} />
+      <Avatar src={avatarUrl} name={muName} size={22} countryCode={countryCode} />
       {link}
     </div>
   )

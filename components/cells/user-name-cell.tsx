@@ -9,20 +9,25 @@ interface Props {
   name: string | null | undefined
   avatarUrl: string | null | undefined
   colorScheme: string | null | undefined
+
+  /**
+   * Shown as a small flag on the avatar.
+   */
+  countryCode?: string | null
 }
 
 /**
  * A player's avatar and name, linked when there's an id. A null name returns
  * null so the row shows its empty dash.
  */
-export function UserNameCell({ userId, name, avatarUrl, colorScheme }: Props) {
+export function UserNameCell({ userId, name, avatarUrl, colorScheme, countryCode }: Props) {
   if (!name) {
     return null
   }
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Avatar src={avatarUrl} name={name} size={22} colorScheme={colorScheme} />
+      <Avatar src={avatarUrl} name={name} size={22} colorScheme={colorScheme} countryCode={countryCode} />
       {userId ? (
         <InternalLink href={`/users/${userId}`} bold className="truncate">
           {name}

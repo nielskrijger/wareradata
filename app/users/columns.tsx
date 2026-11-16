@@ -43,6 +43,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
             name={row.original.username}
             avatarUrl={row.original.avatarUrl}
             colorScheme={row.original.colorScheme}
+            countryCode={row.original.countryCode}
           />
         </UserHoverCard>
         {row.original.isBanned && (
@@ -87,7 +88,8 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       },
     ],
     general: [
-      countryColumn<UserRow>({ sortKey: 'countryCode' }),
+      // The flag on the avatar already shows the country.
+      countryColumn<UserRow>({ sortKey: 'countryCode', hiddenByDefault: true }),
       {
         accessorKey: 'levelRank',
         header: 'Level',

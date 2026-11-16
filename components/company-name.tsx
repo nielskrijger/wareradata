@@ -3,9 +3,9 @@
 import type { CompanyRef } from '@/lib/advisor/types'
 
 import { humanizeItem } from '@/components/factories/format'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { ItemIcon } from '@/components/item-icon'
 
-import { ItemIcon } from './item-icon'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 /**
  * A player-typed company name: coloured so even "6" reads as a name, cut short

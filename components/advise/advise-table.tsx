@@ -2,9 +2,9 @@ import type { AdviseRow } from './rows'
 import type { AdvisorResult } from '@/lib/advisor/types'
 import { ChevronRight } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
+import { CompanyName, TitleParts } from '@/components/company-name'
 
-import { CompanyName, TitleParts } from './company-name'
+import { cn } from '@/lib/utils'
 import { COLUMNS, GAIN, gain, KIND, pct, sum, things } from './format'
 import { Reason } from './reason'
 import { SMALL_GAIN_PER_DAY } from './rows'

@@ -4,11 +4,13 @@ import type { FactoryLedgerRow, LedgerEmployee } from '@/lib/factories/ledger'
 
 import { useLayoutEffect, useRef, useState } from 'react'
 
+import { ItemIcon } from '@/components/item-icon'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
 
+import { cn } from '@/lib/utils'
 import { EmployeeBreakdown } from './employee-breakdown'
-import { ENGINE_FILL, goldSigned, humanizeItem, itemColors } from './format'
+
+import { ENGINE_FILL, goldSigned, itemColors } from './format'
 
 interface Point {
   e: LedgerEmployee
@@ -79,7 +81,7 @@ function EmployeeDot({ p, x, y }: { p: Point, x: number, y: number }) {
         )}
       />
       <TooltipContent side="right" className="max-w-none">
-        <EmployeeBreakdown e={p.e} factoryName={`${p.factory.name} · ${humanizeItem(p.factory.itemCode)}`} />
+        <EmployeeBreakdown e={p.e} factory={<><ItemIcon code={p.factory.itemCode} small /> {p.factory.name}</>} />
       </TooltipContent>
     </Tooltip>
   )
@@ -194,7 +196,8 @@ function FactoryBreakdown({ row }: { row: FactoryLedgerRow }) {
   return (
     <div className="space-y-1">
       <div className="font-medium">
-        Factory {row.name} · {humanizeItem(row.itemCode)} · {Math.round(row.pointsPerDay)} pts/day
+        <ItemIcon code={row.itemCode} small />
+        {` ${row.name} · ${Math.round(row.pointsPerDay)} pts/day`}
       </div>
       <table className="tabular-nums">
         <tbody>
@@ -335,7 +338,7 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
             {[...colors].map(([it, color]) => (
               <span key={it} className="inline-flex items-center gap-1">
                 <i className="size-2 rounded-full" style={{ background: color }} />
-                {humanizeItem(it)}
+                <ItemIcon code={it} small />
               </span>
             ))}
             <span>dot size = room to train</span>

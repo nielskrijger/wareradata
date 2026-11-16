@@ -1,8 +1,8 @@
 import type { AdviseRow } from './rows'
 import { ArrowRight } from 'lucide-react'
 
-import { CompanyName } from './company-name'
-import { ItemIcon } from './item-icon'
+import { CompanyName } from '@/components/company-name'
+import { ItemIcon } from '@/components/item-icon'
 
 /**
  * "Switch 6 [lead] → [oil]": the icons name the items, so the company keeps its own name.

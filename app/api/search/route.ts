@@ -1,20 +1,13 @@
 import type { NextRequest } from 'next/server'
-import type { SearchResponse } from '@/lib/search/types'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { searchSnapshot } from '@/lib/search'
+import { search } from '@/lib/search'
 
 /**
- * Longer input is never a name and only costs scan time.
- */
-const MAX_QUERY_LENGTH = 64
-
-/**
- * Backs the nav search box: `?q=` → countries, MUs and users grouped by kind.
+ * Backs the nav search box. Long input is never a name, so it's cut short.
  */
 export async function GET(request: NextRequest) {
-  const query = (request.nextUrl.searchParams.get('q') ?? '').slice(0, MAX_QUERY_LENGTH)
-  const body: SearchResponse = { groups: searchSnapshot(await getSnapshot(), query) }
+  const query = (request.nextUrl.searchParams.get('q') ?? '').slice(0, 64)
 
-  return Response.json(body)
+  return Response.json(search(await getSnapshot(), query))
 }

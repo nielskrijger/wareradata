@@ -16,6 +16,7 @@ import { RankMap } from '@/components/detail/rank-map'
 import { rankRow } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { FactoriesSection, FactoryKpi } from '@/components/factories/factories-section'
+import { Panel } from '@/components/panel'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { ProfileSidebar } from '@/components/profile/profile-sidebar'
 import { WAR_COLOR } from '@/components/war-eco-colors'
@@ -23,8 +24,8 @@ import { getSnapshot } from '@/lib/cache/memory'
 import { getUserEquipment } from '@/lib/cache/users'
 import { EMPTY } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-import { getUserCasesByType } from '@/lib/warera/api'
 
+import { getUserCasesByType } from '@/lib/warera/api'
 import { requestUserRefresh } from './actions'
 
 interface PageProps {
@@ -156,9 +157,7 @@ export default async function UserDetailPage({ params }: PageProps) {
 
       <Suspense
         fallback={(
-          <div className="bg-card text-muted-foreground rounded-md border p-4 text-sm">
-            Loading factories…
-          </div>
+          <Panel className="text-muted-foreground text-sm">Loading factories…</Panel>
         )}
       >
         <FactoriesSection userId={user.id} />

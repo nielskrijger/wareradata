@@ -5,6 +5,7 @@ import type { PortfolioTotals } from '@/lib/factories/profit'
 
 import { useState } from 'react'
 
+import { Panel } from '@/components/panel'
 import { FactoryIncome } from './factory-income'
 import { FactoryRoster } from './factory-roster'
 import { FactoryValueMap } from './factory-value-map'
@@ -31,7 +32,7 @@ export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], to
 
   return (
     <>
-      <section className="bg-card overflow-hidden rounded-md border">
+      <Panel as="section" padding="none" className="overflow-hidden">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 pt-4 sm:px-5">
           <h2 className="font-medium">Factories</h2>
           <span className="text-muted-foreground text-xs tabular-nums">
@@ -55,7 +56,7 @@ export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], to
           </button>
         </div>
         <FactoryRoster rows={rows} totals={totals} open={open} onToggle={toggle} />
-      </section>
+      </Panel>
       {employeeCount > 0 && <FactoryValueMap rows={rows} />}
     </>
   )

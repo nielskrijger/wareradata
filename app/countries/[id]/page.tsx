@@ -18,6 +18,7 @@ import { StrategicBonusCard } from '@/components/detail/strategic-bonus-card'
 import { VitalsCard } from '@/components/detail/vitals-card'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { Flag } from '@/components/flag'
+import { PageMain } from '@/components/layout/page-main'
 import { ExternalLink, InternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
@@ -25,8 +26,8 @@ import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { formatGovType } from '@/lib/warera/gov-type'
-import { wareraUrl } from '@/lib/warera/urls'
 
+import { wareraUrl } from '@/lib/warera/urls'
 import { CountryTables } from './country-tables'
 
 interface PageProps {
@@ -119,7 +120,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
   } = result
 
   return (
-    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
+    <PageMain className="space-y-3">
       <DetailHeader
         title={c.name}
         titleSuffix={c.damageTier ? <TierBadge tier={c.damageTier} /> : undefined}
@@ -385,6 +386,6 @@ export default async function CountryDetailPage({ params }: PageProps) {
         parties={partyPage}
         battles={battlePage}
       />
-    </main>
+    </PageMain>
   )
 }

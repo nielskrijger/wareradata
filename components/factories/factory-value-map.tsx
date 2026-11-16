@@ -5,11 +5,12 @@ import type { FactoryLedgerRow, LedgerEmployee } from '@/lib/factories/ledger'
 import { useLayoutEffect, useRef, useState } from 'react'
 
 import { ItemIcon } from '@/components/item-icon'
+import { Panel } from '@/components/panel'
+
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-
 import { cn } from '@/lib/utils'
-import { EmployeeBreakdown } from './employee-breakdown'
 
+import { EmployeeBreakdown } from './employee-breakdown'
 import { ENGINE_FILL, goldSigned, itemColors } from './format'
 
 interface Point {
@@ -331,7 +332,7 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
-      <section className="bg-card min-w-0 space-y-2 rounded-md border p-3">
+      <Panel as="section" padding="sm" className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-sm font-medium">Who pays for themselves</h2>
           <span className="text-muted-foreground flex flex-wrap gap-x-3 text-xs">
@@ -345,14 +346,14 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
           </span>
         </div>
         {points.length ? <Scatter points={points} /> : <p className="text-muted-foreground text-sm">No employees.</p>}
-      </section>
-      <section className="bg-card min-w-0 space-y-2 rounded-md border p-3">
+      </Panel>
+      <Panel as="section" padding="sm" className="min-w-0 space-y-2">
         <h2 className="text-sm font-medium">Points per day by factory</h2>
         <OutputBars rows={rows} />
         <p className="text-muted-foreground text-xs">
           Slate is the automated engine. Each employee is greener the more they net per day, red when they lose money.
         </p>
-      </section>
+      </Panel>
     </div>
   )
 }

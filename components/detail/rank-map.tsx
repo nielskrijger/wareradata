@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { Panel } from '@/components/panel'
 import { topPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -55,7 +56,7 @@ const MARKS = [0, 25, 50, 75, 100]
  */
 export function RankMap({ title, groups, total, unit }: Props) {
   return (
-    <section className="bg-card rounded-md border p-4 sm:p-5">
+    <Panel as="section">
       <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="font-medium">{title}</h2>
         <span className="text-muted-foreground text-xs">
@@ -78,7 +79,7 @@ export function RankMap({ title, groups, total, unit }: Props) {
           {g.rows.map(row => <Row key={row.label} row={row} color={g.color} total={total} />)}
         </div>
       ))}
-    </section>
+    </Panel>
   )
 }
 

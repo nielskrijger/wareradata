@@ -1,7 +1,8 @@
 import type { AdviseRow } from './rows'
 
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Panel } from '@/components/panel'
 
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { GAIN, gain, KIND, pct, sum, things } from './format'
 import { SMALL_GAIN_PER_DAY } from './rows'
 
@@ -16,7 +17,7 @@ export function ShareBar({ big, small, total }: { big: AdviseRow[], small: Advis
     : ''
 
   return (
-    <section className="bg-card flex flex-col gap-3 rounded-xl border p-4 sm:p-5">
+    <Panel as="section" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-lg font-semibold">
           Where the
@@ -71,7 +72,7 @@ export function ShareBar({ big, small, total }: { big: AdviseRow[], small: Advis
           </li>
         )}
       </ul>
-    </section>
+    </Panel>
   )
 }
 

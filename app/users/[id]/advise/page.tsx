@@ -4,12 +4,13 @@ import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 
 import { AdviseList } from '@/components/advise/advise-list'
+import { PageMain } from '@/components/layout/page-main'
 import { buildAdvice } from '@/lib/advisor/build'
 import { advisorInputFromData } from '@/lib/advisor/input'
 import { getSnapshot } from '@/lib/cache/memory'
 import { cn } from '@/lib/utils'
-import { getAdviceData, getItemPrices } from '@/lib/warera/api'
 
+import { getAdviceData, getItemPrices } from '@/lib/warera/api'
 import { ADVISE_WIDTH } from './width'
 
 export const metadata: Metadata = {
@@ -33,11 +34,11 @@ export default async function AdvisePage({ params }: PageProps) {
   }
 
   return (
-    <main className={cn('space-y-6 px-6 py-8 sm:px-8', ADVISE_WIDTH)}>
+    <PageMain className={cn('space-y-6', ADVISE_WIDTH)}>
       <AdviseList
         result={buildAdvice(advisorInputFromData(data, gameConfig, prices))}
         user={{ id, name: data.user.username }}
       />
-    </main>
+    </PageMain>
   )
 }

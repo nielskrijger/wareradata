@@ -52,6 +52,7 @@ export function BattleTabs({ active, finished }: Props) {
 
       <TabsPanel value="active" className="pt-4">
         <BattlesTable
+          tableId="battles-active"
           initial={active}
           columns={activeBattleColumns}
           baseFilter="isActive:true"
@@ -60,6 +61,7 @@ export function BattleTabs({ active, finished }: Props) {
       </TabsPanel>
       <TabsPanel value="finished" className="pt-4">
         <BattlesTable
+          tableId="battles-finished"
           initial={finished}
           columns={finishedBattleColumns}
           baseFilter="isActive:false"

@@ -1,14 +1,18 @@
+import type { EmployeeStats } from './employee-stats'
 import type { FactoryProfit } from './profit'
 import type { Employee } from '@/lib/warera/api'
+
+import { employeeStats } from './employee-stats'
 
 /**
  * One NPC employee's net benefit to the factory per day: the value of the output
  * the API estimates they produce (net of the inputs it consumes), minus their
  * wage.
  */
-export interface LedgerEmployee {
+export interface LedgerEmployee extends EmployeeStats {
   id: string
   name: string
+  pointsPerDay: number
 
   /**
    * The employee's total production bonus (percent), already in their output.
@@ -51,6 +55,7 @@ export function buildFactoryLedgerRow(
   employees: Employee[],
   engineLevel: number,
   productionPoints: number,
+  nameById: Map<string, string> = new Map(),
 ): FactoryLedgerRow {
   const pp = productionPoints || 1
   const pts = profit.pointsPerDay
@@ -69,8 +74,10 @@ export function buildFactoryLedgerRow(
     const inputCostPerDay = revenuePerDay - netOf(pointsPerDay)
 
     return {
+      ...employeeStats(e, nameById),
       id: e._id,
       name: e.name,
+      pointsPerDay,
       bonusPct: e.productionBonus?.total ?? 0,
       revenuePerDay,
       inputCostPerDay,

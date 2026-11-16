@@ -16,6 +16,7 @@ interface Props {
 export function AlliancesTable({ initial }: Props) {
   return (
     <DataTable
+      tableId="alliances"
       columns={allianceColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}

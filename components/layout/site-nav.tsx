@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { Logo } from './logo'
+import { SiteSearch } from './site-search'
 import { ThemeToggle } from './theme-toggle'
 
 const links = [
@@ -64,7 +65,7 @@ export function SiteNav() {
                 <Link
                   href={link.href}
                   className={cn(
-                    'rounded-md px-3 py-1.5 transition-colors',
+                    'rounded-md px-2.5 py-1.5 transition-colors lg:px-3',
                     active
                       ? 'bg-fire/12 text-fire ring-fire/25 ring-1'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
@@ -78,6 +79,7 @@ export function SiteNav() {
         </ul>
 
         <div className="ml-auto flex items-center gap-1">
+          <SiteSearch />
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger

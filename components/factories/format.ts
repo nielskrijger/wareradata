@@ -39,3 +39,32 @@ export function netClass(value: number): string {
 
   return 'text-muted-foreground'
 }
+
+/**
+ * Hues for the value map, assigned in the order a user's items first appear.
+ */
+const ITEM_PALETTE = [
+  'var(--color-sky-500)',
+  'var(--color-orange-500)',
+  'var(--color-amber-400)',
+  'var(--color-stone-400)',
+  'var(--color-violet-500)',
+  'var(--color-emerald-500)',
+  'var(--color-pink-500)',
+  'var(--color-lime-500)',
+]
+
+export function itemColors(codes: string[]): Map<string, string> {
+  const unique = [...new Set(codes)]
+
+  return new Map(unique.map((code, i) => [code, ITEM_PALETTE[i % ITEM_PALETTE.length]]))
+}
+
+/**
+ * camelCase code → "Title case" label ("earlyBloomer" → "Early bloomer").
+ */
+export function humanizeCode(code: string): string {
+  const s = humanizeItem(code)
+
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}

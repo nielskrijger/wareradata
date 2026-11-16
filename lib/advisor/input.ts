@@ -3,8 +3,10 @@ import type { ItemPrices } from '@/lib/factories/profit'
 import type { AdviceData, GameConfig } from '@/lib/warera/api'
 
 import { humanizeCode } from '@/components/factories/format'
-import { buildEngineModel, enginePointsPerDay } from '@/lib/factories/engine'
-import { engineLevelOf, recipeFromGameConfig } from '@/lib/factories/inputs'
+import { buildEngineModel } from '@/lib/factories/engine'
+import { factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
+import { computeFactoryProfit } from '@/lib/factories/profit'
+import { HOURS_PER_DAY } from './model'
 
 interface BarSkill {
   currentBarValue?: number
@@ -27,10 +29,13 @@ export function advisorInputFromData(
   const model = buildEngineModel(gameConfig)
   const skills = data.user.skills
   const wealth = (data.user.stats as { wealth?: { money?: number } } | undefined)?.wealth
+  const recipe = recipeFromGameConfig(gameConfig)
 
   return {
     companies: data.factories.map((f, i) => {
       const m = data.managers[i]
+      const profit = computeFactoryProfit(factoryInputFromData(f, () => '', model), prices, recipe, null)
+      const output = profit.revenuePerDay - profit.inputCostPerDay
 
       return {
         id: f.company._id,
@@ -39,14 +44,18 @@ export function advisorInputFromData(
         ownName: f.company.name,
         itemCode: f.company.itemCode,
         employeeCap: f.hourly?.cap ?? 0,
-        enginePointsPerDay: enginePointsPerDay(engineLevelOf(f), model, f.hourly?.engineMultiplier ?? 1),
+        enginePointsPerDay: profit.enginePointsPerDay,
         employees: f.employees,
         manager: m ? { hourlyWage: m.hourlyWage, productionBonusPercent: m.productionBonusPercent } : null,
+        outputPerDay: output,
+        engineOutputPerDay: profit.pointsPerDay > 0 ? output * profit.enginePointsPerDay / profit.pointsPerDay : 0,
+        payrollPerDay: profit.wagePerDay + profit.managerPerDay,
+        toolboxesPerDay: (f.hourly?.toolboxes ?? 0) * HOURS_PER_DAY,
       }
     }),
     ppValue: data.ppValue,
     prices,
-    recipe: recipeFromGameConfig(gameConfig),
+    recipe,
     energy: bar(skills.energy),
     cash: wealth?.money ?? null,
     managerMarketWage: data.managerMarketWage,

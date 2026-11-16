@@ -56,10 +56,24 @@ const TOOL_GOODS: Record<string, string[]> = {
 }
 
 /**
+ * A tool's kind without its rarity: `pickaxe3` → `pickaxe`.
+ */
+export function toolKind(toolCode: string): string {
+  return toolCode.replace(/\d+$/, '')
+}
+
+/**
  * Whether a tool (`pickaxe3`) works on an item.
  */
 export function toolFits(toolCode: string, itemCode: string): boolean {
-  return TOOL_GOODS[toolCode.replace(/\d+$/, '')]?.includes(itemCode) ?? false
+  return TOOL_GOODS[toolKind(toolCode)]?.includes(itemCode) ?? false
+}
+
+/**
+ * The tool kind that works on an item, if any.
+ */
+export function toolKindFor(itemCode: string): string | null {
+  return Object.keys(TOOL_GOODS).find(kind => TOOL_GOODS[kind].includes(itemCode)) ?? null
 }
 
 /**

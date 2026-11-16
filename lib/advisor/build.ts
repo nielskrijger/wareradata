@@ -36,19 +36,16 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
 
   const skipped: SkippedItem[] = []
   const items: TodoItem[] = []
-  let hourlyCost = 0
   const nets: number[] = []
 
   for (const c of input.companies) {
     const vpp = vppByItem.get(c.itemCode) ?? input.ppValue
     for (const e of c.employees) {
       if (!e.companyDisabled) {
-        hourlyCost += e.estimate?.wage ?? e.wage ?? 0
         nets.push(employeeNetPerDay(e, vpp))
       }
     }
 
-    hourlyCost += c.manager?.hourlyWage ?? 0
     const sw = itemSwitchItem(input, c, vppByItem)
     if (sw) {
       items.push(sw.item)
@@ -58,7 +55,7 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
     const staffVpp = sw?.vpp ?? vpp
     items.push(...trainingItems(input, c, staffVpp, skipped))
     items.push(...fireItems(c, staffVpp))
-    items.push(...managerItems(input, c, staffVpp))
+    items.push(...managerItems(input, c, staffVpp, skipped))
   }
 
   items.push(...toolItems(input, vppByItem))
@@ -85,10 +82,23 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
     })
   }
 
-  const money = moneyItem(input, hourlyCost)
+  const total = (key: 'outputPerDay' | 'engineOutputPerDay' | 'payrollPerDay' | 'toolboxesPerDay') =>
+    input.companies.reduce((s, c) => s + c[key], 0)
+
+  const summary = {
+    outputPerDay: total('outputPerDay'),
+    engineOutputPerDay: total('engineOutputPerDay'),
+    payrollPerDay: total('payrollPerDay'),
+    netPerDay: total('outputPerDay') - total('payrollPerDay'),
+    stepsPerDay: items.reduce((s, i) => s + (i.gainPerDay ?? 0), 0),
+    toolboxesPerDay: total('toolboxesPerDay'),
+  }
+
+  const money = moneyItem(input, summary.payrollPerDay / HOURS_PER_DAY)
   const ranked = items.sort((a, b) => (b.gainPerDay ?? -1) - (a.gainPerDay ?? -1))
 
   return {
+    summary,
     items: money ? [money, ...ranked] : ranked,
     skipped,
     energy: { ...input.energy, hoursToFull: energyHours },

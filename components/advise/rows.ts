@@ -17,17 +17,19 @@ export interface AdviseRow {
   gainPerDay: number
   energy: number
   titleParts?: TodoItem['titleParts']
-  parts: { short: string, company?: CompanyRef, gainPerDay: number }[]
+  parts: { short: string, company?: CompanyRef, detail?: string, gainPerDay: number }[]
 }
 
 type GroupKey = NonNullable<TodoItem['group']>['key']
 
-const GROUP: Record<GroupKey, { title: (n: number) => string, why?: string }> = {
-  // Each manager reason reads the same, so the first one stands for all.
-  'manager-job': { title: n => `Post manager jobs at ${n} companies` },
+const GROUP: Record<GroupKey, { title: (n: number) => string, why: string }> = {
+  'manager-job': {
+    title: n => `Post manager jobs at ${n} companies`,
+    why: 'Each chip shows the most a Management point is worth there, per hour. Any offer below it earns more than it costs.',
+  },
   'tool-move': {
     title: n => `Make ${n} tool moves`,
-    why: 'A tool adds a percent of base output, so it earns most with your fastest workers.',
+    why: 'A tool adds a percent of base output, so it earns most where that output is worth the most gold.',
   },
 }
 
@@ -74,12 +76,11 @@ export function toRows(items: TodoItem[]): AdviseRow[] {
       id: `group-${key}-${sorted[0].id}`,
       kind: sorted[0].kind,
       title: GROUP[key as GroupKey].title(sorted.length),
-      why: GROUP[key as GroupKey].why ?? sorted[0].why,
-      // A group's own reason has no breakdown; otherwise the first stands for all.
-      facts: GROUP[key as GroupKey].why ? [] : sorted[0].facts ?? [],
+      why: GROUP[key as GroupKey].why,
+      facts: [],
       gainPerDay: sorted.reduce((s, i) => s + (i.gainPerDay ?? 0), 0),
       energy: sorted.reduce((s, i) => s + (i.energy ?? 0), 0),
-      parts: sorted.map(i => ({ short: i.group!.short, company: i.group!.company, gainPerDay: i.gainPerDay ?? 0 })),
+      parts: sorted.map(i => ({ ...i.group!, gainPerDay: i.gainPerDay ?? 0 })),
     })
   }
 

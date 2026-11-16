@@ -11,6 +11,7 @@ import { Gain } from './gain'
 import { RefreshButton } from './refresh-button'
 import { splitBySize } from './rows'
 import { ShareBar } from './share-bar'
+import { AdviseSummary } from './summary'
 
 interface Props {
   result: AdvisorResult
@@ -42,6 +43,8 @@ export function AdviseList({ result, user }: Props) {
         </div>
         <RefreshButton />
       </header>
+
+      <AdviseSummary summary={result.summary} />
 
       {total > 0
         ? <ShareBar big={big} small={small} total={total} />

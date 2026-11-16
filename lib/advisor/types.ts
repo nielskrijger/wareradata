@@ -61,7 +61,7 @@ export interface TodoItem {
    * Set on actions repeated per company or worker, so the page can fold them
    * into one row; `short` names this one inside that row.
    */
-  group?: { key: 'manager-job' | 'tool-move', short: string, company?: CompanyRef }
+  group?: { key: 'manager-job' | 'tool-move', short: string, company?: CompanyRef, detail?: string }
 
 }
 
@@ -95,6 +95,14 @@ export interface AdvisorCompany {
   enginePointsPerDay: number
   employees: EmployeeLike[]
   manager: { hourlyWage: number, productionBonusPercent: number } | null
+
+  /**
+   * Today's gold a day: output after inputs, the engine's part of it, and wages plus the manager.
+   */
+  outputPerDay: number
+  engineOutputPerDay: number
+  payrollPerDay: number
+  toolboxesPerDay: number
 }
 
 export interface AdvisorInput {
@@ -121,7 +129,20 @@ export interface AdvisorInput {
   changeItemConcrete: number
 }
 
+/**
+ * Where the owner stands today, and after every priced step.
+ */
+export interface AdvisorSummary {
+  outputPerDay: number
+  engineOutputPerDay: number
+  payrollPerDay: number
+  netPerDay: number
+  stepsPerDay: number
+  toolboxesPerDay: number
+}
+
 export interface AdvisorResult {
+  summary: AdvisorSummary
   items: TodoItem[]
   skipped: SkippedItem[]
   energy: Bar & { hoursToFull: number }

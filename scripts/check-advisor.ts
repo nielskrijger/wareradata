@@ -45,6 +45,11 @@ async function main() {
   }
 
   const result = buildAdvice(advisorInputFromData(data, gameConfig, prices))
+  const s = result.summary
+  const f = (v: number) => v.toFixed(2)
+  console.info(`profit ${f(s.netPerDay)}/day (output ${f(s.outputPerDay)} − payroll ${f(s.payrollPerDay)}),`
+    + ` steps +${f(s.stepsPerDay)}, toolboxes ${f(s.toolboxesPerDay)}/day`)
+
   for (const item of result.items) {
     const gain = (item.gainPerDay?.toFixed(2) ?? '-').padStart(7)
     console.info(`${gain}  ${String(item.energy ?? '-').padStart(3)}e  ${item.title}\n          ${item.why}`)

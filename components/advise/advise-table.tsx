@@ -91,6 +91,7 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
                 className="bg-muted/60 inline-flex min-w-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs"
               >
                 {p.company ? <CompanyName company={p.company} /> : p.short}
+                {p.detail && <span className="text-muted-foreground font-mono">{p.detail}</span>}
                 {' '}
                 <Gain value={p.gainPerDay} />
               </span>

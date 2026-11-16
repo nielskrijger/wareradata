@@ -1,4 +1,4 @@
-import type { AdvisorCompany, AdvisorInput, TodoItem } from '../types'
+import type { AdvisorCompany, AdvisorInput, SkippedItem, TodoItem } from '../types'
 
 import {
   basePerHour,
@@ -11,9 +11,9 @@ import { companyRef, fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
 
 /**
  * Fire a manager whose bonus is worth less than their wage, or post a job where a
- * market-rate manager pays.
+ * market-rate manager pays, with the most a Management point is worth.
  */
-export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number): TodoItem[] {
+export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number, skipped: SkippedItem[]): TodoItem[] {
   const working = c.employees.filter(e => !e.companyDisabled)
   const baseSum = working.reduce((s, e) => s + basePerHour(e), 0)
   const ownerPct = working[0]?.productionBonus?.contributions?.find(x => x.source === 'management')?.percent ?? 0
@@ -49,37 +49,36 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
     return []
   }
 
-  if (!working.length || input.managerMarketWage == null) {
+  const points = effectiveManagerPct(RULES.managerCapPct, ownerPct) / RULES.managementPctPerPoint
+  if (!working.length || !points || input.managerMarketWage == null) {
     return []
   }
 
-  const pct = effectiveManagerPct(RULES.managerCapPct, ownerPct)
-  const net = managerNetPerDay({
-    basePerHourSum: baseSum,
-    managerPct: pct,
-    ownerPct,
-    hourlyWage: input.managerMarketWage,
-    valuePerPoint: vpp,
-  })
-
+  // The market wage buys a manager at the cap, so it divides by the cap's points.
+  const marketRate = input.managerMarketWage / (RULES.managerCapPct / RULES.managementPctPerPoint)
+  const breakEven = baseSum * (RULES.managementPctPerPoint / 100) * vpp
+  const net = HOURS_PER_DAY * points * (breakEven - marketRate)
+  const [most, market] = [fmt(breakEven, 4), fmt(marketRate, 4)]
   if (net < MIN_GAIN_PER_DAY) {
+    skipped.push({
+      title: `Manager at ${c.name}`,
+      why: `A Management point adds ${most} gold an hour here, under the market's ${market}.`,
+    })
+
     return []
   }
-
-  const points = pct / RULES.managementPctPerPoint
-  const wage = fmt(input.managerMarketWage, 3)
 
   return [{
     id: `hire-manager-${c.id}`,
     kind: 'manager',
-    ...titleAt('Post a manager job at ', c),
-    why: `A manager with ${points} Management adds ${pct}% output, for the market wage of ${wage} gold an hour.`,
+    ...titleAt('Post a manager job at ', c, `, paying at most ${most} per point`),
+    why: `Each Management point adds ${most} gold of output an hour, against ${market} on the market. Up to ${points} points count here.`,
     facts: [
-      { label: 'Management', value: `${points}`, brief: `${points} Management` },
-      { label: 'Output', value: `+${pct}%`, brief: `+${pct}% output` },
-      { label: 'Market wage', value: `${wage} g/h`, brief: `${wage} g/h` },
+      { label: 'Pay at most', value: `${most} g per point/h`, brief: `at most ${most} per point/h` },
+      { label: 'Market', value: `${market} g per point/h` },
+      { label: 'Points that count', value: `${points}`, brief: `${points} points` },
     ],
     gainPerDay: net,
-    group: { key: 'manager-job', short: c.name, company: companyRef(c) },
+    group: { key: 'manager-job', short: c.name, company: companyRef(c), detail: `≤ ${most}/pt` },
   }]
 }

@@ -32,7 +32,7 @@ export function LevelTooltipContent({ level, levelRank, prestige, prestigePoints
       <div className="space-y-1">
         {!!prestige && (
           <TooltipRow label="Prestige">
-            <PrestigeSkull prestige={prestige} className="bg-white/10 text-neutral-300 ring-white/20" />
+            <PrestigeSkull prestige={prestige} />
           </TooltipRow>
         )}
         {!!prestigePoints && <TooltipRow label="Unspent points">{prestigePoints}</TooltipRow>}

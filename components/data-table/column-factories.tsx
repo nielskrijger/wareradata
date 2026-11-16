@@ -93,7 +93,7 @@ export function rankTooltipColumn<T extends RowData>(
   valueKey: Key<T>,
   rankKey: Key<T>,
   header: string,
-  opts: { width?: number, tooltip?: string, label?: string } = {},
+  opts: { width?: number, tooltip?: string, rankLabel?: string } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: rankKey,
@@ -104,7 +104,7 @@ export function rankTooltipColumn<T extends RowData>(
       return (
         <ValueWithRankTooltip
           rank={row.original[rankKey] as number | null}
-          label={opts.label ?? header}
+          label={opts.rankLabel ?? header}
           value={value?.toLocaleString()}
         >
           <CompactNumber value={value} />

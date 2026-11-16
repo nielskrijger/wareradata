@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
  * Bold heading with its figure on the right, ruled off from the rows below;
  * the layout the Points tooltip uses.
  */
-export function TooltipHeading({ label, children }: { label: ReactNode, children?: ReactNode }) {
+export function TooltipHeading({ label, children }: { label: ReactNode, children: ReactNode }) {
   return (
     <div className="mb-1.5 flex items-baseline justify-between gap-6 border-b border-white/10 pb-1.5 font-medium">
       <span>{label}</span>

@@ -77,7 +77,7 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
       readinessColumn<MURow>(),
       combatModeColumn<MURow>(),
       tierColumn<MURow>('damageTier'),
-      rankTooltipColumn<MURow>('damage', 'damageRank', 'Total', { width: 90, label: 'Total damage' }),
+      rankTooltipColumn<MURow>('damage', 'damageRank', 'Total', { width: 90, rankLabel: 'Total damage' }),
       compactNumberColumn<MURow>('weeklyDamage', 'Weekly', { heat: 'median', width: 110 }),
       localeNumberColumn<MURow>('terrain', 'Terrain', { heat: 'median', width: 105 }),
     ],

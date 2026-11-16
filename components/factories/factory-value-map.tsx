@@ -135,17 +135,17 @@ function Scatter({ points }: { points: Point[] }) {
 
         <polygon
           points={`${x(0)},${y(0)} ${x(xMax)},${y(0)} ${x(xMax)},${y(edge)} ${x(edge)},${y(edge)}`}
-          className="fill-red-500/10"
+          className="fill-heat-red/10"
         />
         <line
           x1={x(0)}
           y1={y(0)}
           x2={x(edge)}
           y2={y(edge)}
-          className="stroke-red-600 dark:stroke-red-400"
+          className="stroke-heat-red"
           strokeDasharray="4 3"
         />
-        <text x={x(edge) - 4} y={y(edge) - 6} textAnchor="end" className="fill-red-700 text-[10px] dark:fill-red-400">
+        <text x={x(edge) - 4} y={y(edge) - 6} textAnchor="end" className="fill-heat-red text-[10px]">
           break-even
         </text>
 
@@ -176,12 +176,12 @@ function Scatter({ points }: { points: Point[] }) {
  */
 function netFill(net: number, best: number): string {
   if (net < 0) {
-    return 'oklch(0.63 0.22 27)'
+    return 'var(--heat-red)'
   }
 
   const t = best > 0 ? Math.min(1, net / best) : 0
 
-  return `oklch(${0.45 + t * 0.35} ${0.08 + t * 0.12} 150)`
+  return `color-mix(in oklch, var(--heat-green) ${Math.round(40 + t * 60)}%, var(--muted))`
 }
 
 /**
@@ -287,7 +287,7 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
                 y={top + 12}
                 className={cn(
                   'text-[11px] tabular-nums',
-                  row.netPerDay >= 0 ? 'fill-heat-green-text dark:fill-green-400' : 'fill-red-700 dark:fill-red-400',
+                  row.netPerDay >= 0 ? 'fill-heat-green-text' : 'fill-heat-red',
                 )}
               >
                 {goldSigned(row.netPerDay)}

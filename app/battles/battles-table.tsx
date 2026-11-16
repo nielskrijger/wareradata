@@ -12,6 +12,10 @@ import { DataTable } from '@/components/data-table/data-table'
 import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 interface Props {
+  /**
+   * See DataTable's `tableId`; active and finished battles have different columns.
+   */
+  tableId: 'battles-active' | 'battles-finished'
   initial: PageResult<BattleRow>
   columns: ColumnDef<BattleRow>[]
 
@@ -22,7 +26,7 @@ interface Props {
   initialSort: { id: string, desc: boolean }
 }
 
-export function BattlesTable({ initial, columns, baseFilter, initialSort }: Props) {
+export function BattlesTable({ tableId, initial, columns, baseFilter, initialSort }: Props) {
   const fetchPage = useCallback(
     (req: PageRequest) => fetchPaginated<BattleRow>('/api/battles', req, baseFilter),
     [baseFilter],
@@ -30,6 +34,7 @@ export function BattlesTable({ initial, columns, baseFilter, initialSort }: Prop
 
   return (
     <DataTable
+      tableId={tableId}
       columns={columns}
       initialData={initial}
       initialSort={initialSort}

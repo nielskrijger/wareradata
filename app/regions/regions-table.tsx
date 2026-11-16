@@ -16,6 +16,7 @@ interface Props {
 export function RegionsTable({ initial }: Props) {
   return (
     <DataTable
+      tableId="regions"
       columns={regionColumns}
       initialData={initial}
       initialSort={{ id: 'development', desc: true }}

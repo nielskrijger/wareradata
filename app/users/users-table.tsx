@@ -29,6 +29,7 @@ export function UsersTable({ initial, baseFilter }: Props) {
 
   return (
     <DataTable
+      tableId="users"
       columns={userColumns}
       initialData={initial}
       initialSort={{ id: 'points', desc: true }}

@@ -38,9 +38,7 @@ export function MUCell({ muName, muId, avatarUrl, bold }: Props) {
     return <EmptyDash />
   }
 
-  const href = muId
-    ? `/mus/${muId}`
-    : `/users?q=${encodeURIComponent(`mu:"${muName}"`)}`
+  const href = muId ? `/mus/${muId}` : `/users?q=${encodeURIComponent(`mu:"${muName}"`)}`
 
   const link = (
     <InternalLink href={href} bold={bold} title={muName} className="truncate">

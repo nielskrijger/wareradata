@@ -176,9 +176,7 @@ export function EntityCard({ kicker, title, subtitle, emblem, stats }: ShareCard
           >
             {title}
           </div>
-          {subtitle
-            ? <div style={SUBTITLE_STYLE}>{subtitle}</div>
-            : null}
+          {subtitle ? <div style={SUBTITLE_STYLE}>{subtitle}</div> : null}
         </div>
       </div>
 

@@ -114,13 +114,11 @@ export function employeeStats(e: Employee, nameById: Map<string, string>): Emplo
 
   const specs = Object.entries(e.specializations ?? {}).sort((a, b) => b[1] - a[1])
   const item = e.estimate?.itemCode ?? ''
-  const tool = e.toolItem && e.toolStatus
-    ? {
-        code: e.toolItem.code,
-        bonusPct: e.toolStatus.bonusPercent,
-        durabilityPct: e.toolItem.maxState ? (e.toolItem.state / e.toolItem.maxState) * 100 : 0,
-      }
-    : null
+  const tool = e.toolItem && e.toolStatus ? {
+    code: e.toolItem.code,
+    bonusPct: e.toolStatus.bonusPercent,
+    durabilityPct: e.toolItem.maxState ? (e.toolItem.state / e.toolItem.maxState) * 100 : 0,
+  } : null
 
   return {
     age: e.age,

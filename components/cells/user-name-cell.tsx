@@ -25,15 +25,13 @@ export function UserNameCell({ userId, name, avatarUrl, colorScheme }: Props) {
   return (
     <div className="flex min-w-0 items-center gap-2">
       <Avatar src={avatarUrl} name={name} size={22} colorScheme={colorScheme} />
-      {userId
-        ? (
-            <InternalLink href={`/users/${userId}`} bold className="truncate">
-              {name}
-            </InternalLink>
-          )
-        : (
-            <span className="truncate font-medium">{name}</span>
-          )}
+      {userId ? (
+        <InternalLink href={`/users/${userId}`} bold className="truncate">
+          {name}
+        </InternalLink>
+      ) : (
+        <span className="truncate font-medium">{name}</span>
+      )}
     </div>
   )
 }

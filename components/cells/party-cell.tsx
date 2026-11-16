@@ -37,9 +37,7 @@ export function PartyCell({ partyName, partyId, avatarUrl, bold }: Props) {
     return <EmptyDash />
   }
 
-  const href = partyId
-    ? `/parties/${partyId}`
-    : `/users?q=${encodeURIComponent(`party:"${partyName}"`)}`
+  const href = partyId ? `/parties/${partyId}` : `/users?q=${encodeURIComponent(`party:"${partyName}"`)}`
 
   const link = (
     <InternalLink href={href} bold={bold} title={partyName} className="truncate">

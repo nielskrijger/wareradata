@@ -170,14 +170,12 @@ function ColumnHeader({ col, sort, onSort }: { col: Column, sort: Sort | null, o
       className={cn(col.right && 'text-right', col.className)}
       aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
     >
-      {col.tip
-        ? (
-            <Tooltip>
-              <TooltipTrigger render={<span />}>{label}</TooltipTrigger>
-              <TooltipContent side="top" className="max-w-60">{col.tip}</TooltipContent>
-            </Tooltip>
-          )
-        : label}
+      {col.tip ? (
+        <Tooltip>
+          <TooltipTrigger render={<span />}>{label}</TooltipTrigger>
+          <TooltipContent side="top" className="max-w-60">{col.tip}</TooltipContent>
+        </Tooltip>
+      ) : label}
     </TableHead>
   )
 }
@@ -286,19 +284,17 @@ export function FactoryRoster({ rows, totals }: Props) {
         <TableCell className="text-right tabular-nums">+{e.bonusPct}%</TableCell>
         <TableCell className="hidden md:table-cell"><TraitChips e={e} /></TableCell>
         <TableCell className="hidden text-xs lg:table-cell">
-          {e.tool
-            ? (
-                <span className="whitespace-nowrap">
-                  {humanizeCode(e.tool.code.replace(/\d+$/, ''))}{' '}
-                  <span className="text-muted-foreground">
-                    +{e.tool.bonusPct}% ·{' '}
-                    <span className={cn(e.tool.durabilityPct < 60 && 'text-amber-700 dark:text-amber-400')}>
-                      {Math.round(e.tool.durabilityPct)}%
-                    </span>
-                  </span>
+          {e.tool ? (
+            <span className="whitespace-nowrap">
+              {humanizeCode(e.tool.code.replace(/\d+$/, ''))}{' '}
+              <span className="text-muted-foreground">
+                +{e.tool.bonusPct}% ·{' '}
+                <span className={cn(e.tool.durabilityPct < 60 && 'text-amber-700 dark:text-amber-400')}>
+                  {Math.round(e.tool.durabilityPct)}%
                 </span>
-              )
-            : <EmptyDash />}
+              </span>
+            </span>
+          ) : <EmptyDash />}
         </TableCell>
         <TableCell className="text-muted-foreground text-right tabular-nums">
           {goldSigned(e.wagePerDay).replace(/^\+/, '')}
@@ -360,14 +356,12 @@ export function FactoryRoster({ rows, totals }: Props) {
       </TableHeader>
 
       <TableBody>
-        {sorted
-          ? sorted.map(e => employeeRow(e, true))
-          : rows.map(row => (
-              <Fragment key={row.id}>
-                {factoryRow(row)}
-                {row.employees.map(e => employeeRow({ ...e, factory: row }, false))}
-              </Fragment>
-            ))}
+        {sorted ? sorted.map(e => employeeRow(e, true)) : rows.map(row => (
+          <Fragment key={row.id}>
+            {factoryRow(row)}
+            {row.employees.map(e => employeeRow({ ...e, factory: row }, false))}
+          </Fragment>
+        ))}
       </TableBody>
 
       <TableFooter>

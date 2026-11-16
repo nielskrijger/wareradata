@@ -93,13 +93,11 @@ export function MembersTable({ alliance: a }: Props) {
                   </HeatCell>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {m.activePopulation === null
-                    ? <EmptyDash />
-                    : (
-                        <HeatCell value={m.activePopulation} range={ranges.activePopulation} mode="ramp">
-                          {m.activePopulation.toLocaleString()}
-                        </HeatCell>
-                      )}
+                  {m.activePopulation === null ? <EmptyDash /> : (
+                    <HeatCell value={m.activePopulation} range={ranges.activePopulation} mode="ramp">
+                      {m.activePopulation.toLocaleString()}
+                    </HeatCell>
+                  )}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   <HeatCell value={m.weeklyDamage} range={ranges.weeklyDamage} mode="median">
@@ -112,13 +110,11 @@ export function MembersTable({ alliance: a }: Props) {
                   </HeatCell>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {m.avgLevel === null
-                    ? <EmptyDash />
-                    : (
-                        <HeatCell value={m.avgLevel} range={ranges.avgLevel} mode="median">
-                          {m.avgLevel}
-                        </HeatCell>
-                      )}
+                  {m.avgLevel === null ? <EmptyDash /> : (
+                    <HeatCell value={m.avgLevel} range={ranges.avgLevel} mode="median">
+                      {m.avgLevel}
+                    </HeatCell>
+                  )}
                 </TableCell>
                 <TableCell><TierBadge tier={m.damageTier} /></TableCell>
               </TableRow>

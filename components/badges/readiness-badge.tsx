@@ -97,9 +97,7 @@ export function ReadinessBadge({ status, endsAt, withTooltip = true }: Props) {
   const badge = (
     <Badge className={cls}>
       <Icon className="size-3" />
-      {endsAt
-        ? <Countdown iso={endsAt} className="tabular-nums" />
-        : (isBuff ? 'Buff' : 'Debuff')}
+      {endsAt ? <Countdown iso={endsAt} className="tabular-nums" /> : (isBuff ? 'Buff' : 'Debuff')}
     </Badge>
   )
 

@@ -41,34 +41,32 @@ export function SkillSplitCard({ mode, warPoints, ecoPoints, warPointsRank, ecoP
         <span className="text-xs font-medium">War / Eco skills</span>
         <CombatModeBadge mode={mode} />
       </div>
-      {total === 0
-        ? <span className="text-muted-foreground text-sm">No skills trained</span>
-        : (
-            <>
-              <StackedBar
-                className="h-2 bg-muted"
-                segments={[
-                  { key: 'war', value: warPoints, color: WAR_COLOR },
-                  { key: 'eco', value: ecoPoints, color: ECO_COLOR },
-                ]}
-              />
-              <dl className="space-y-1">
-                <SplitRow
-                  label="War"
-                  points={warPoints}
-                  total={total}
-                  icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
-                />
-                <SplitRow
-                  label="Eco"
-                  points={ecoPoints}
-                  total={total}
-                  icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
-                />
-              </dl>
-              <Footer mode={mode} warPointsRank={warPointsRank} ecoPointsRank={ecoPointsRank} />
-            </>
-          )}
+      {total === 0 ? <span className="text-muted-foreground text-sm">No skills trained</span> : (
+        <>
+          <StackedBar
+            className="h-2 bg-muted"
+            segments={[
+              { key: 'war', value: warPoints, color: WAR_COLOR },
+              { key: 'eco', value: ecoPoints, color: ECO_COLOR },
+            ]}
+          />
+          <dl className="space-y-1">
+            <SplitRow
+              label="War"
+              points={warPoints}
+              total={total}
+              icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
+            />
+            <SplitRow
+              label="Eco"
+              points={ecoPoints}
+              total={total}
+              icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
+            />
+          </dl>
+          <Footer mode={mode} warPointsRank={warPointsRank} ecoPointsRank={ecoPointsRank} />
+        </>
+      )}
     </div>
   )
 }

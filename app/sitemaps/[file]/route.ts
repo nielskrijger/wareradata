@@ -10,10 +10,10 @@ interface RouteContext {
 export async function GET(_: Request, { params }: RouteContext) {
   await connection()
   const { file } = await params
-  const build = sitemapFiles(await getSnapshot()).get(file)
-  if (!build) {
+  const paths = sitemapFiles(await getSnapshot()).get(file)
+  if (!paths) {
     return new Response('Not found', { status: 404 })
   }
 
-  return xmlResponse(urlSetXml(build()))
+  return xmlResponse(urlSetXml(paths))
 }

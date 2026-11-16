@@ -4,6 +4,21 @@ import path from 'node:path'
 
 import 'server-only'
 
+export async function loadFonts() {
+  const file = (name: string) => readFile(path.join(process.cwd(), 'lib/share-image/fonts', name))
+  const [bebas, geist, geistMedium] = await Promise.all([
+    file('BebasNeue-Regular.ttf'),
+    file('Geist-400.ttf'),
+    file('Geist-500.ttf'),
+  ])
+
+  return [
+    { name: 'Bebas', data: bebas, weight: 400 as const },
+    { name: 'Geist', data: geist, weight: 400 as const },
+    { name: 'Geist', data: geistMedium, weight: 500 as const },
+  ]
+}
+
 /**
  * A flag from the `flag-icons` package as a data URI, or null for an unknown code.
  */
@@ -26,7 +41,7 @@ export async function flagSrc(code: string | null): Promise<string | null> {
  * Fetches an avatar as a data URI, so a slow or missing image falls back to
  * the initial instead of failing the whole render.
  *
- * Only PNG and JPEG: Satori can't decode WebP.
+ * Only PNG and JPEG: `next/og` can't decode WebP.
  */
 export async function avatarSrc(url: string | null): Promise<string | null> {
   if (!url) {

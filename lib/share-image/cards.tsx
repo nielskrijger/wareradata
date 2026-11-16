@@ -1,13 +1,14 @@
 import type { ReactElement } from 'react'
 
 import type { Emblem, Stat } from './layout'
+
 import type { BattleSide } from '@/lib/rows'
+import { ImageResponse } from 'next/og'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { avatarSrc, flagSrc } from './assets'
-import { CardFrame, EmblemImage, EntityCard } from './layout'
-import { MUTED, ORANGE } from './theme'
+import { avatarSrc, flagSrc, loadFonts } from './assets'
+import { CardFrame, EmblemImage, EntityCard, MUTED, ORANGE } from './layout'
 
 import 'server-only'
 
@@ -250,6 +251,22 @@ const SHARE_CARDS: Record<string, (id: string) => Promise<ReactElement | null>> 
   battles: battleCard,
 }
 
-export async function shareCard(kind: string, id: string): Promise<ReactElement | null> {
-  return Object.hasOwn(SHARE_CARDS, kind) ? SHARE_CARDS[kind](id) : null
+/**
+ * The share image for a detail page, or null for an unknown kind or id.
+ */
+export async function renderShareImage(kind: string, id: string): Promise<ImageResponse | null> {
+  const card = Object.hasOwn(SHARE_CARDS, kind) ? await SHARE_CARDS[kind](id) : null
+  if (!card) {
+    return null
+  }
+
+  return new ImageResponse(card, {
+    width: 1200,
+    height: 630,
+    fonts: await loadFonts(),
+    headers: {
+      // Platforms cache previews for days anyway; this just spares re-renders.
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+    },
+  })
 }

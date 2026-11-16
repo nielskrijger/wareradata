@@ -84,7 +84,7 @@ export default antfu({
     }],
   },
 }, {
-  // Server-only share-image templates: Satori renders plain `<img>` and never
+  // Server-only share-image templates: `next/og` renders plain `<img>` and never
   // reaches the client, so fast refresh doesn't apply.
   files: ['lib/share-image/**/*.tsx'],
   rules: {

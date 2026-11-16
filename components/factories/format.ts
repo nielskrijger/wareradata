@@ -39,3 +39,12 @@ export function netClass(value: number): string {
 
   return 'text-muted-foreground'
 }
+
+/**
+ * camelCase code → "Title case" label ("earlyBloomer" → "Early bloomer").
+ */
+export function humanizeCode(code: string): string {
+  const s = humanizeItem(code)
+
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}

@@ -36,7 +36,7 @@ export function writeUsersNdjson(users: User[]): Promise<void> {
 }
 
 /**
- * The stored profiles of the given users.
+ * Lets a scrape keep a user's previous profile when their fetch fails.
  */
 export async function loadUsersByIds(ids: ReadonlySet<string>): Promise<Map<string, User>> {
   const out = new Map<string, User>()

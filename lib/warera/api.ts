@@ -185,7 +185,7 @@ const URGENT_RATE_LIMIT = 100
 export const FACTORY_RATE_LIMIT = 250
 
 /**
- * Retried requests per client, and how many of those were 429s.
+ * Counted per client so the loops can log how often they're throttled.
  */
 type ClientName = 'scrape' | 'urgent' | 'factory'
 interface RetryStats { retries: number, rateLimited: number }
@@ -204,7 +204,7 @@ export function takeRetryStats(name: ClientName): RetryStats {
   return stats
 }
 
-// Requests slower than this are aborted and retried.
+// So a hung request can't stall a scrape phase.
 const REQUEST_TIMEOUT_MS = 60_000
 
 function createClient(name: ClientName, rateLimit: number) {
@@ -267,7 +267,7 @@ export function getGameConfig(): Promise<GameConfig> {
   return scrapeClient.gameConfig.getGameConfig()
 }
 
-// The endpoint's maximum page size; its default is 10.
+// The endpoint's maximum; its default of 10 takes ten times the requests.
 const USERS_BY_COUNTRY_PAGE_SIZE = 100
 
 export async function getUserIdsForCountry(countryId: string): Promise<string[]> {
@@ -282,7 +282,7 @@ export async function getUserIdsForCountry(countryId: string): Promise<string[]>
 }
 
 /**
- * Fetches each user's full profile, in input order; null for a failed fetch.
+ * Null for a failed fetch, so one bad batch doesn't fail thousands of good ones.
  * getUserById's response type is looser than User, but every field we read is
  * present at runtime, so we narrow it here.
  */
@@ -421,8 +421,7 @@ function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<(Equipm
 }
 
 /**
- * Fetches each user's currently-equipped gear, in input order; null for a
- * failed fetch.
+ * Null for a failed fetch, so one bad batch doesn't fail thousands of good ones.
  *
  * Equipment is the most volatile field on a user (durability ticks down per
  * hit, items get swapped between battles), so the per-cycle freshness is only

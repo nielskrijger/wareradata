@@ -51,6 +51,22 @@ export async function loadEquipmentByUser(): Promise<Record<string, Equipment>> 
 }
 
 /**
+ * Lets a scrape keep a user's previous gear when their fetch fails.
+ */
+export async function loadEquipmentByIds(ids: ReadonlySet<string>): Promise<Map<string, Equipment>> {
+  const out = new Map<string, Equipment>()
+  if (ids.size) {
+    await streamEquipmentUsers(({ userId, equipment }) => {
+      if (ids.has(userId)) {
+        out.set(userId, equipment)
+      }
+    })
+  }
+
+  return out
+}
+
+/**
  * Atomically (re)writes the equipment file from the freshly scraped lists
  * (parallel arrays: `equipmentList[i]` is `userIds[i]`'s gear). A line is written
  * for every user (including `{}`), preserving the captured-but-empty vs

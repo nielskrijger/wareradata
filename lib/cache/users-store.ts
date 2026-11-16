@@ -36,6 +36,22 @@ export function writeUsersNdjson(users: User[]): Promise<void> {
 }
 
 /**
+ * Lets a scrape keep a user's previous profile when their fetch fails.
+ */
+export async function loadUsersByIds(ids: ReadonlySet<string>): Promise<Map<string, User>> {
+  const out = new Map<string, User>()
+  if (ids.size) {
+    await streamUsers((u) => {
+      if (ids.has(u._id)) {
+        out.set(u._id, u)
+      }
+    })
+  }
+
+  return out
+}
+
+/**
  * Streams the user file once and returns the ids of users who own company wealth:
  * the only users the factory scrape enumerates, skipping the ~98% with none.
  * Streams rather than loading the array so the slow pass and its CLI don't pull

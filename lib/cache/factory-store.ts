@@ -9,8 +9,8 @@ import { streamNdjson } from './ndjson'
  * employees (from the roster's hourly estimate), with the employee and manager
  * wages. The readers compute net, the engine/employee split and the Top potential
  * at build time from these plus the snapshot's market data. Self-work is not
- * modelled. Every number is optional so lines written before the employee rework
- * still parse (as engine-only).
+ * modelled. Every number is optional; a line without the employee fields parses
+ * as engine-only.
  */
 export interface FactoryRawRow {
   itemCode: string

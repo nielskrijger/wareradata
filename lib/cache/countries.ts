@@ -9,9 +9,12 @@ import 'server-only'
 
 export interface CountryDetails {
   country: CountryRow
-  // Per-field [min, max, median] over the full country set, mirroring the shape
-  // the data table's HeatCell uses so the hover-card can heat-tint values
-  // against the same baseline.
+
+  /**
+   * Per-field [min, max, median] over the full country set, mirroring the shape
+   * the data table's HeatCell uses so the hover-card can heat-tint values
+   * against the same baseline.
+   */
   ranges: Record<string, Range>
   total: number
 }

@@ -8,8 +8,10 @@ interface Props {
   style?: CSSProperties
 }
 
-// WarEra uses a few non-ISO country codes that don't match a `flag-icons`
-// sprite. Map them to the ISO 3166-1 alpha-2 code the library expects.
+/**
+ * WarEra uses a few non-ISO country codes that don't match a `flag-icons`
+ * sprite. Map them to the ISO 3166-1 alpha-2 code the library expects.
+ */
 const CODE_ALIASES: Record<string, string> = {
   uk: 'gb', // United Kingdom — flag-icons uses `gb`.
 }

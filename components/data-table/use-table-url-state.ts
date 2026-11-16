@@ -18,6 +18,7 @@ interface State {
    * Debounced filter value — drives the fetch.
    */
   q: string
+
   /**
    * Snappy input value — drives the controlled `<Input value=...>`.
    */
@@ -27,6 +28,7 @@ interface State {
   setSorting: (updater: SortingState | ((prev: SortingState) => SortingState)) => void
   pageIndex: number
   setPageIndex: (updater: number | ((prev: number) => number)) => void
+
   /**
    * True when state matches the page's defaults (no params in URL).
    */

@@ -8,14 +8,18 @@ import { UserHoverCard } from '@/components/user-hover-card'
 import { cn } from '@/lib/utils'
 
 interface Props {
-  // Resolved government for the country, or null when none was captured (a
-  // dormant or unoccupied country). The section renders nothing in that case.
+  /**
+   * Resolved government for the country, or null when none was captured (a
+   * dormant or unoccupied country). The section renders nothing in that case.
+   */
   government: GovernmentRow | null
 }
 
-// Parties have no colour in the WarEra API, so we assign one per party
-// deterministically: the largest bloc gets the first (most separable) hue, on
-// down. Medium-saturation values chosen to read on both light and dark cards.
+/**
+ * Parties have no colour in the WarEra API, so we assign one per party
+ * deterministically: the largest bloc gets the first (most separable) hue, on
+ * down. Medium-saturation values chosen to read on both light and dark cards.
+ */
 const PARTY_PALETTE = [
   '37, 99, 235', // blue
   '220, 38, 38', // red
@@ -29,10 +33,14 @@ const PARTY_PALETTE = [
   '233, 100, 30', // orange
 ]
 
-// Neutral grey for officials with no party (independents).
+/**
+ * Neutral grey for officials with no party (independents).
+ */
 const INDEPENDENT_RGB = '130, 130, 140'
 
-// Sentinel bench id for the no-party group, which has no party page to link to.
+/**
+ * Sentinel bench id for the no-party group, which has no party page to link to.
+ */
 const INDEPENDENT_KEY = '__independent'
 
 interface Bench {
@@ -68,7 +76,9 @@ function colorFor(partyId: string | null, colors: Map<string, string>): string {
   return colors.get(partyId) ?? INDEPENDENT_RGB
 }
 
-// First occurrence wins, so a member can't take two seats (and two React keys).
+/**
+ * First occurrence wins, so a member can't take two seats (and two React keys).
+ */
 function dedupeById(officials: GovernmentOfficial[]): GovernmentOfficial[] {
   const seen = new Set<string>()
   const out: GovernmentOfficial[] = []

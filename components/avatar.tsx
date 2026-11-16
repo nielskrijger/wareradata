@@ -7,12 +7,14 @@ import { schemeRgb } from '@/lib/warera/color-schemes'
 
 interface Props {
   src: string | null | undefined
+
   /**
    * Display name of the pictured entity (user or MU), for the alt text and the
    * fallback initial.
    */
   name: string
   size: number
+
   /**
    * A WarEra color scheme; when set, draws a thin ring in that color around the
    * avatar. No scheme means no ring (matches the game). Users have one; MUs do

@@ -11,11 +11,13 @@ interface Props {
    * The entity id handed to {@link action}.
    */
   id: string
+
   /**
    * Server action that re-fetches this entity on demand and revalidates its
    * page. Awaited so the button can show a pending state until fresh data lands.
    */
   action: (id: string) => Promise<void>
+
   /**
    * When the entity was last fetched; the "Updated …" label hides if null.
    */

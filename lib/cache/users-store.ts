@@ -6,8 +6,8 @@ import { dataDir } from './file-store'
 import { streamNdjson, writeNdjson } from './ndjson'
 
 /**
- * The user file: newline-delimited JSON, one full {@link User} per line. Split
- * out of `snapshot.json` because the raw user array is by far the largest
+ * The user file: newline-delimited JSON, one full {@link User} per line. Kept
+ * apart from `snapshot.json` because the raw user array is by far the largest
  * collection (~84 MB / ~17k users). The snapshot build streams it into the
  * derived `UserRow[]` (and the user lookup maps) rather than holding the raw
  * array, so the big array never resides in memory alongside the built rows.

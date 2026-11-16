@@ -12,7 +12,7 @@ interface Props {
 
 /**
  * The small external-link icon at the right edge of a table's primary name cell
- * that opens the entity on WarEra.io (replacing the standalone "Link" column).
+ * that opens the entity on WarEra.io.
  * The name itself keeps its in-app navigation; only this icon goes external.
  * `ml-auto` pins it to the right of the (cell-width) name flex row.
  */

@@ -4,17 +4,20 @@ import { InternalLink } from '@/components/links'
 
 interface Props {
   muName: string | null
+
   /**
    * MU id; when set the name links to the MU detail page. Without it the name
-   * falls back to a `/users?q=mu:"<name>"` filter link (used where we only
-   * know the name, e.g. a member's MU before ids were plumbed through).
+   * falls back to a `/users?q=mu:"<name>"` filter link (used where only
+   * the name is known).
    */
   muId?: string | null
+
   /**
    * MU avatar; when set, shown as a small round image in front of the name.
    * MUs have no color scheme, so the avatar never gets a ring.
    */
   avatarUrl?: string | null
+
   /**
    * Render the name in medium weight. Use when MU is the row's primary
    * identifier (e.g. the first column on /mus).

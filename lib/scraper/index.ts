@@ -14,19 +14,24 @@ import { scrapeMain } from '@/lib/warera/scrape-main'
 
 import 'server-only'
 
-// The most recent raw snapshot (small now that users/equipment live in their own
-// files), the user-refresh overlay, and in-flight on-demand refresh promises
-// keyed by `<kind>:<id>` (mu / user). Kept on globalThis for the same reason as
-// the built snapshot (see memory.ts): Next loads server modules in several graphs
-// within one process, so a module-level `let` would give the scrape loop and a
-// Server Action separate copies, and an on-demand patch in one wouldn't build on
-// the other's base. The global store makes them process-wide.
+/**
+ * The most recent raw snapshot (small, since users and equipment live in their
+ * own files), the user-refresh overlay, and in-flight on-demand refresh promises
+ * keyed by `<kind>:<id>` (mu / user). Kept on globalThis for the same reason as
+ * the built snapshot (see memory.ts): Next loads server modules in several graphs
+ * within one process, so a module-level `let` would give the scrape loop and a
+ * Server Action separate copies, and an on-demand patch in one wouldn't build on
+ * the other's base. The global store makes them process-wide.
+ */
 interface ScraperStore {
   currentRaw: RawSnapshot | null
-  // Fresh user profiles from on-demand refreshes, keyed by user id. The build
-  // merges these over users.ndjson (last-wins) so a refreshed user's rows are
-  // current without rewriting the 84 MB file; each main cycle rewrites the file
-  // whole and clears this.
+
+  /**
+   * Fresh user profiles from on-demand refreshes, keyed by user id. The build
+   * merges these over users.ndjson (last-wins) so a refreshed user's rows are
+   * current without rewriting the 84 MB file; each main cycle rewrites the file
+   * whole and clears this.
+   */
   userOverlay: Map<string, User>
   inFlightRefreshes: Map<string, Promise<void>>
 }

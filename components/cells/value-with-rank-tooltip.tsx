@@ -11,8 +11,8 @@ interface Props {
 
 /**
  * Wraps a value-cell render (e.g. CompactNumber for wealth) and surfaces its
- * companion rank as a hover tooltip. Used in place of paired Wealth/Wealth-Rank
- * columns so the table can drop the rank column without losing the rank info.
+ * companion rank as a hover tooltip, so a table shows the rank without a
+ * separate rank column.
  *
  * Rank is always the snapshot-global rank, not relative to the current filter.
  * If `rank` is null the children render bare with no tooltip trigger.

@@ -35,21 +35,25 @@ interface Props {
    */
   emblem: ReactNode
   title: string
+
   /**
    * Optional node rendered inline to the right of the title, vertically centered
    * against it (e.g. a user's level-tier badge). Omitted, the title sits alone.
    */
   titleSuffix?: ReactNode
+
   /**
    * Banner background. Defaults to the neutral muted gradient (MUs, countries);
    * the user page passes its color-scheme gradient via `style`.
    */
   bannerStyle?: CSSProperties
+
   /**
    * Fact rows under the title (country, level, links, etc.). Each is laid out
    * by the caller; the header just stacks them.
    */
   children: ReactNode
+
   /**
    * Optional full-width band below the fact rows, separated by a border that
    * spans the whole card edge to edge (the user page's equipped-gear strip).
@@ -57,6 +61,7 @@ interface Props {
    * top divider reaches both side borders; it supplies its own padding.
    */
   footer?: ReactNode
+
   /**
    * Optional control floated at the top-right of the header, detached from the
    * fact rows and the normal flow (e.g. an MU's "last refreshed / refresh"

@@ -2,7 +2,9 @@ import type { StrategicBonusRow } from '@/lib/rows'
 
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 
-// Display names for the skill codes the bonuses use.
+/**
+ * Display names for the skill codes the bonuses use.
+ */
 const SKILL_LABELS: Record<string, string> = {
   production: 'Production',
   management: 'Management',
@@ -26,7 +28,10 @@ function label(code: string, labels: Record<string, string>): string {
 
 interface Props {
   bonus: StrategicBonusRow | null
-  // Wording for the caption: whose regions these are.
+
+  /**
+   * Wording for the caption: whose regions these are.
+   */
   scope: 'country' | 'alliance'
 }
 

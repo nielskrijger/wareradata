@@ -2,9 +2,11 @@ import type { GovernmentOfficial, GovernmentRow } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { Government, GovernmentMinister } from '@/lib/warera/api'
 
-// Short labels for the minister title codes the game uses. A president can
-// also give a minister a custom title; anything not listed here is shown as
-// written (camelCase codes are split into words).
+/**
+ * Short labels for the minister title codes the game uses. A president can
+ * also give a minister a custom title; anything not listed here is shown as
+ * written (camelCase codes are split into words).
+ */
 const MINISTER_TITLES: Record<string, string> = {
   minOfDefense: 'Defense',
   minOfEconomy: 'Economy',

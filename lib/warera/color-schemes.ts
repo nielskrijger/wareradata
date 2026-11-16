@@ -31,7 +31,9 @@ const SCHEME_RGB: Record<string, string> = {
   gray: '105, 131, 150',
 }
 
-// Used when a user hasn't picked a scheme or it's unknown — the neutral gray.
+/**
+ * Used when a user hasn't picked a scheme or it's unknown — the neutral gray.
+ */
 const FALLBACK_RGB = SCHEME_RGB.gray
 
 /**

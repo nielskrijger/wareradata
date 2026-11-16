@@ -9,10 +9,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface Props {
   count: number
-  // Country id; when given the pill links to that country's active-battles tab.
+
+  /**
+   * Country id; when given the pill links to that country's active-battles tab.
+   */
   countryId?: string
-  // The matchups behind `count`, rendered in the hover tooltip. Omit to show a
-  // pill with no hover detail.
+
+  /**
+   * The matchups behind `count`, rendered in the hover tooltip. Omit to show a
+   * pill with no hover detail.
+   */
   battles?: ActiveBattleSummary[]
 }
 

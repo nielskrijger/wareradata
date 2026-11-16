@@ -1,12 +1,24 @@
-/**
+/*
  * Per-user points formula. Adds three natural-unit values together so the
  * score reads as "raw potential": level worth a flat amount, damage scaled
- * down per 1k, wealth per 10 gold. Banned users are scored normally — they
+ * down per 2k, wealth per gold. Banned users are scored normally — they
  * already get a separate visual badge.
  */
-const LEVEL_POINTS = 1_000 // points per level (lvl 50 = 50,000 pts)
-const DAMAGE_DIVISOR = 2_000 // 1 pt per 2k damage (200M dmg = 100,000 pts)
-const WEALTH_DIVISOR = 1 // 1 pt per gold (100K wealth = 100,000 pts)
+
+/**
+ * Points per level (level 50 = 50,000 points).
+ */
+const LEVEL_POINTS = 1_000
+
+/**
+ * Damage per point (200M damage = 100,000 points).
+ */
+const DAMAGE_DIVISOR = 2_000
+
+/**
+ * Gold of wealth per point (100K wealth = 100,000 points).
+ */
+const WEALTH_DIVISOR = 1
 
 interface PointsInput {
   level: number | null

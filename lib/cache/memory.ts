@@ -55,18 +55,27 @@ const log = logger.child({ component: 'snapshot' })
 
 export interface Snapshot {
   users: UserRow[]
-  // [min, max, median] per numeric UserRow field across the full user set.
-  // Precomputed in buildSnapshot() so detail pages and the user-hover-card
-  // tooltip can heat-tint stats against the leaderboard without re-walking
-  // 16k rows per request.
+
+  /**
+   * [min, max, median] per numeric UserRow field across the full user set.
+   * Precomputed in buildSnapshot() so detail pages and the user-hover-card
+   * tooltip can heat-tint stats against the leaderboard without re-walking
+   * 16k rows per request.
+   */
   userRanges: Record<string, Range>
   countries: CountryRow[]
-  // Resolved government per country id (president, ministers, congress), built
-  // from RawSnapshot.governments + the user lookups. Read only by the country
-  // detail page; absent for countries with no government.
+
+  /**
+   * Resolved government per country id (president, ministers, congress), built
+   * from RawSnapshot.governments + the user lookups. Read only by the country
+   * detail page; absent for countries with no government.
+   */
   governments: Record<string, GovernmentRow>
-  // Strategic resource bonuses by country id and by alliance id (all members
-  // of an alliance share one). Empty when the snapshot has none.
+
+  /**
+   * Strategic resource bonuses by country id and by alliance id (all members
+   * of an alliance share one). Empty when the snapshot has none.
+   */
   strategicBonuses: {
     byCountry: Record<string, StrategicBonusRow>
     byAlliance: Record<string, StrategicBonusRow>
@@ -76,18 +85,28 @@ export interface Snapshot {
   alliances: AllianceRow[]
   regions: RegionRow[]
   battles: BattleRow[]
-  // Kept so live, on-demand fetches (active battles) can enrich raw API data
-  // against the same warm lookups the rows were built from.
+
+  /**
+   * Kept so live, on-demand fetches (active battles) can enrich raw API data
+   * against the same warm lookups the rows were built from.
+   */
   lookups: Lookups
   tournament: TournamentSnapshot
-  // Game's static config (item stats, skill cost curves, …), captured every
-  // scrape. Pass-through from RawSnapshot; the gear roll bounds and skill cost
-  // curve are derived from it.
+
+  /**
+   * Game's static config (item stats, skill cost curves, …), captured every
+   * scrape. Pass-through from RawSnapshot; the gear roll bounds and skill cost
+   * curve are derived from it.
+   */
   gameConfig: GameConfig
-  // Tiny code→tier + ammo-bonus lookup derived from gameConfig. Small enough to
-  // ship to the browser (via the /api/users response), so client gear components
-  // resolve tiers without the full config.
+
+  /**
+   * Tiny code→tier + ammo-bonus lookup derived from gameConfig. Small enough to
+   * ship to the browser (via the /api/users response), so client gear components
+   * resolve tiers without the full config.
+   */
   gearLookup: GearLookup
+
   /**
    * Each user's currently-equipped gear as its JSON text, keyed by user id, for
    * the user page and hover card. Kept as strings (parsed per lookup) because
@@ -97,18 +116,25 @@ export interface Snapshot {
   equipmentJsonByUser: Map<string, string>
 }
 
-// Next loads server modules in several separate module graphs within one
-// process (page RSC, route handlers, etc.), so a plain module-level `let` is
-// NOT a process singleton: each graph gets its own copy, and a swap in one
-// isn't seen by the others. Backing the state on `globalThis` gives every graph
-// the same store, so the scraper's swaps and on-demand refreshes are visible to
-// every page and route.
+/**
+ * Next loads server modules in several separate module graphs within one
+ * process (page RSC, route handlers, etc.), so a plain module-level `let` is
+ * NOT a process singleton: each graph gets its own copy, and a swap in one
+ * isn't seen by the others. Backing the state on `globalThis` gives every graph
+ * the same store, so the scraper's swaps and on-demand refreshes are visible to
+ * every page and route.
+ */
 interface SnapshotStore {
-  // The built snapshot the scraper keeps swapped in.
+  /**
+   * The built snapshot the scraper keeps swapped in.
+   */
   current: Snapshot | null
-  // Guards against many concurrent first-requests each building from disk
-  // (reading the snapshot + streaming users.ndjson): the first read kicks off one
-  // load, the rest await the same promise.
+
+  /**
+   * Guards against many concurrent first-requests each building from disk
+   * (reading the snapshot + streaming users.ndjson): the first read kicks off one
+   * load, the rest await the same promise.
+   */
   loading: Promise<Snapshot> | null
 }
 

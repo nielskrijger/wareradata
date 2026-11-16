@@ -6,9 +6,12 @@ import { cn } from '@/lib/utils'
 interface Props {
   label: string
   hint: string
-  // Override the trigger styling. Defaults to a brighten-on-hover (the app's
-  // standard tooltip-trigger affordance); cells may add e.g.
-  // `text-muted-foreground cursor-default`.
+
+  /**
+   * Override the trigger styling. Defaults to a brighten-on-hover (the app's
+   * standard tooltip-trigger affordance); cells may add e.g.
+   * `text-muted-foreground cursor-default`.
+   */
   className?: string
 }
 

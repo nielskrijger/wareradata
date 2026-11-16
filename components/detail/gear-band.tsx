@@ -9,8 +9,11 @@ import { cn } from '@/lib/utils'
 interface Props {
   score: number | null | undefined
   equipment: Equipment | undefined
-  // Code→tier lookup from the live config (Snapshot.gearLookup), threaded to the
-  // tier readout and the strip so both resolve rarities from scraped data.
+
+  /**
+   * Code→tier lookup from the live config (Snapshot.gearLookup), threaded to the
+   * tier readout and the strip so both resolve rarities from scraped data.
+   */
   gearLookup: GearLookup
 }
 

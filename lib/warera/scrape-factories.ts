@@ -10,11 +10,15 @@ import { FACTORY_RATE_LIMIT, getUserCompaniesSlow } from './api'
 
 const log = logger.child({ component: 'factory-scrape' })
 
-// Owners fetched at once, so their calls share batched requests.
+/**
+ * Owners fetched at once, so their calls share batched requests.
+ */
 const CHUNK_SIZE = 50
 
-// How often to emit a progress line (every N users scanned). A full pass is
-// thousands of users over hours, so log frequently enough to see it advancing.
+/**
+ * How often to emit a progress line (every N users scanned). A full pass is
+ * thousands of users over hours, so log frequently enough to see it advancing.
+ */
 const PROGRESS_EVERY = 250
 
 /**

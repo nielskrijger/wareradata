@@ -29,8 +29,10 @@ import { readinessScore } from '@/lib/rows'
 
 type HeatMode = 'ramp' | 'median' | 'invert' | 'invertMedian'
 
-// Top-level string keys of a row — what `accessorKey` and our `row.original[key]`
-// reads accept.
+/**
+ * Top-level string keys of a row — what `accessorKey` and our `row.original[key]`
+ * reads accept.
+ */
 type Key<T> = Extract<keyof T, string>
 
 /**
@@ -96,7 +98,7 @@ export function localeNumberColumn<T>(
 
 /**
  * A `<CompactNumber>` value whose companion rank shows on hover, sorted by the
- * rank field (ascending = best). Replaces the paired value/rank columns.
+ * rank field (ascending = best), so no separate rank column is needed.
  */
 export function rankTooltipColumn<T>(
   valueKey: Key<T>,

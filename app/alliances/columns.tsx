@@ -24,6 +24,7 @@ import {
 } from '@/components/data-table/column-factories'
 import {
   casesColumns,
+  employeesColumns,
   factoriesColumns,
   pointsColumns,
   premiumColumns,
@@ -177,6 +178,7 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
     ],
     wealth: wealthColumns<AllianceRow>('citizenWealth', 'citizens'),
     factories: factoriesColumns<AllianceRow>('citizens'),
+    employees: employeesColumns<AllianceRow>('citizens'),
     premium: premiumColumns<AllianceRow>(),
     cases: casesColumns<AllianceRow>(),
   },

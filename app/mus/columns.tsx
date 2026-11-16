@@ -20,6 +20,7 @@ import {
 } from '@/components/data-table/column-factories'
 import {
   casesColumns,
+  employeesColumns,
   factoriesColumns,
   pointsColumns,
   premiumColumns,
@@ -113,6 +114,7 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
       }),
     ],
     factories: factoriesColumns<MURow>('members'),
+    employees: employeesColumns<MURow>('members'),
     premium: premiumColumns<MURow>(),
     cases: casesColumns<MURow>(),
   },

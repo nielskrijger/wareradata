@@ -1,7 +1,18 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import type { LucideIcon } from 'lucide-react'
 
-import { Building2, Coins, Factory, Landmark, LayoutGrid, PackageOpen, Sparkles, Swords, Trophy } from 'lucide-react'
+import {
+  Building2,
+  Coins,
+  Factory,
+  HardHat,
+  Landmark,
+  LayoutGrid,
+  PackageOpen,
+  Sparkles,
+  Swords,
+  Trophy,
+} from 'lucide-react'
 
 /**
  * Categories group the (long) column list in the Columns menu into collapsible
@@ -25,6 +36,7 @@ export const CATEGORIES = [
   'muSpecific',
   'wealth',
   'factories',
+  'employees',
   'premium',
   'cases',
 ] as const
@@ -36,7 +48,8 @@ export type Category = (typeof CATEGORIES)[number]
  *
  * Every category but General carries a `color`, so it shows its icon in the
  * table header as well as the Columns menu. The themed groups use saturated hues
- * (Points teal, Combat red, Wealth gold, Premium purple); the
+ * (Points teal, Combat red, Wealth gold, Factories orange, Employees blue,
+ * Premium purple); the
  * entity-specific Government / MU-specific use a neutral slate (they never share
  * a table, so reusing slate is safe). General is the catch-all (level, members,
  * dates, affiliations) where a generic glyph per header is just noise, so it
@@ -50,6 +63,7 @@ export const CATEGORY_META: Record<Category, { label: string, Icon: LucideIcon, 
   muSpecific: { label: 'MU-specific', Icon: Building2, color: 'var(--heat-slate)' },
   wealth: { label: 'Wealth', Icon: Coins, color: 'var(--heat-gold)' },
   factories: { label: 'Factories', Icon: Factory, color: 'var(--heat-orange)' },
+  employees: { label: 'Employees', Icon: HardHat, color: 'var(--heat-blue)' },
   premium: { label: 'Premium', Icon: Sparkles, color: 'var(--heat-purple)' },
   cases: { label: 'Cases', Icon: PackageOpen, color: 'var(--heat-cyan)' },
 }

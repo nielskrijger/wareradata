@@ -47,6 +47,18 @@ export interface MemberAgg {
   factoryEmployeeNetPerDay: number
   factoryWorkers: number
   factoryTopPotential: number
+  factoryPayrollPerDay: number
+
+  /**
+   * Weighted sums for the per-employee averages: each member's average times
+   * their headcount, over the employees it covers.
+   */
+  employeePpSum: number
+  employeeNetSum: number
+  employeeKnownCount: number
+  employeeHappinessSum: number
+  employeeHappinessCount: number
+  employeeRetiringSoon: number
 
   /**
    * Sum and count of members' warShare (war / war+eco). Counts only members
@@ -135,6 +147,13 @@ function emptyAgg(): MemberAgg {
     factoryEmployeeNetPerDay: 0,
     factoryWorkers: 0,
     factoryTopPotential: 0,
+    factoryPayrollPerDay: 0,
+    employeePpSum: 0,
+    employeeNetSum: 0,
+    employeeKnownCount: 0,
+    employeeHappinessSum: 0,
+    employeeHappinessCount: 0,
+    employeeRetiringSoon: 0,
     warShareSum: 0,
     warShareCount: 0,
     wealthPoints: 0,
@@ -215,6 +234,20 @@ export function aggregateMembers(
     entry.factoryEmployeeNetPerDay += u.factoryEmployeeNetPerDay ?? 0
     entry.factoryWorkers += u.factoryWorkers ?? 0
     entry.factoryTopPotential += u.factoryTopPotential ?? 0
+    entry.factoryPayrollPerDay += u.factoryPayrollPerDay ?? 0
+    entry.employeeRetiringSoon += u.employeeRetiringSoon ?? 0
+    const workers = u.factoryWorkers ?? 0
+    if (u.employeeAvgPpPerDay !== null && u.employeeAvgNetPerDay !== null) {
+      entry.employeePpSum += u.employeeAvgPpPerDay * workers
+      entry.employeeNetSum += u.employeeAvgNetPerDay * workers
+      entry.employeeKnownCount += workers
+    }
+
+    if (u.employeeAvgHappiness !== null) {
+      entry.employeeHappinessSum += u.employeeAvgHappiness * workers
+      entry.employeeHappinessCount += workers
+    }
+
     if (u.level !== null) {
       entry.levelSum += u.level
       entry.levelCount += 1
@@ -412,7 +445,7 @@ export function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, re
 
 /**
  * A group row's factory fields ({@link GroupFactoryStats}): member-summed net
- * gold/day (split into engine vs employees), NPC employee count, production
+ * gold/day (split into engine vs employees), payroll, NPC employee stats, production
  * points/day, plus efficiency (Σ net ÷ Σ Top-potential, capped at 100, null when
  * nothing's produced). Ranks filled later by rankAll (value keys are
  * {@link FACTORY_RANK_KEYS}). Empty until the factory scrape has run.
@@ -437,6 +470,16 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
     factoryWorkersRank: null,
     factoryEfficiencyPct: top > 0 ? Math.min(100, (netPerDay / top) * 100) : null,
     factoryEfficiencyRank: null,
+    factoryPayrollPerDay: agg?.factoryPayrollPerDay ?? 0,
+    factoryPayrollPerDayRank: null,
+    employeeAvgPpPerDay: aggMeanRaw(agg?.employeePpSum ?? 0, agg?.employeeKnownCount ?? 0),
+    employeeAvgPpPerDayRank: null,
+    employeeAvgNetPerDay: aggMeanRaw(agg?.employeeNetSum ?? 0, agg?.employeeKnownCount ?? 0),
+    employeeAvgNetPerDayRank: null,
+    employeeAvgHappiness: aggMeanRaw(agg?.employeeHappinessSum ?? 0, agg?.employeeHappinessCount ?? 0),
+    employeeAvgHappinessRank: null,
+    employeeRetiringSoon: agg?.employeeRetiringSoon ?? 0,
+    employeeRetiringSoonRank: null,
   }
 }
 
@@ -451,6 +494,11 @@ export const FACTORY_RANK_KEYS = [
   'factoryEmployeeNetPerDay',
   'factoryWorkers',
   'factoryEfficiencyPct',
+  'factoryPayrollPerDay',
+  'employeeAvgPpPerDay',
+  'employeeAvgNetPerDay',
+  'employeeAvgHappiness',
+  'employeeRetiringSoon',
 ] as const
 
 /**

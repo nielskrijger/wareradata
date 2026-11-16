@@ -7,6 +7,11 @@ import { recipeFromGameConfig } from './inputs'
 import { buildFrontier, computeFactoryProfit, netPerUnit } from './profit'
 
 /**
+ * Employees this close to retirement count as retiring soon.
+ */
+const RETIRING_SOON_DAYS = 7
+
+/**
  * Streams the factory NDJSON file and computes each user's factory totals from
  * the raw rows plus the snapshot's market data (prices + recipes). Only the small
  * per-user aggregate map is retained — raw rows are parsed and discarded one line
@@ -36,15 +41,21 @@ export async function loadFactoryAggregates(
 
   const out = new Map<string, UserFactoryAgg>()
   await streamFactoryUsers(({ userId, rows }) => {
-    const agg: UserFactoryAgg = {
-      factoryCount: 0,
-      workerCount: 0,
-      ppPerDay: 0,
-      netPerDay: 0,
-      engineNetPerDay: 0,
-      employeeNetPerDay: 0,
-      topPotentialNetPerDay: 0,
-    }
+    let factoryCount = 0
+    let ppPerDay = 0
+    let netPerDay = 0
+    let engineNetPerDay = 0
+    let topPotentialNetPerDay = 0
+
+    let rosterKnown = true
+    let workers = 0
+    let employeeNet = 0
+    let payroll = 0
+    let employeePtsSum = 0
+
+    let detailsKnown = true
+    let happinessSum = 0
+    let retiring = 0
 
     for (const r of rows) {
       // A line without `wagePerDay` carries no NPC employee data (its
@@ -74,20 +85,48 @@ export async function loadFactoryAggregates(
         frontier,
       )
 
-      agg.factoryCount += 1
-      agg.workerCount += r.employeeCount ?? 0
-      agg.ppPerDay += profit.pointsPerDay
-      agg.netPerDay += profit.netPerDay
-      agg.topPotentialNetPerDay += profit.bestPotentialNetPerDay
+      factoryCount += 1
+      ppPerDay += profit.pointsPerDay
+      netPerDay += profit.netPerDay
+      topPotentialNetPerDay += profit.bestPotentialNetPerDay
 
       // Engine net (no wage) + employee net (output value − wages − manager);
       // together they equal profit.netPerDay.
       const vpp = valuePerPp(r.itemCode)
-      agg.engineNetPerDay += enginePts * vpp
-      agg.employeeNetPerDay += employeePts * vpp - wagePerDay - managerPerDay
+      engineNetPerDay += enginePts * vpp
+      employeeNet += employeePts * vpp - wagePerDay - managerPerDay
+
+      rosterKnown &&= !isLegacy && !r.rosterMissing
+      workers += r.employeeCount ?? 0
+      payroll += wagePerDay + managerPerDay
+      employeePtsSum += employeePts
+
+      detailsKnown &&= r.employees !== undefined
+      for (const e of r.employees ?? []) {
+        happinessSum += e.happiness
+        if (e.retireInDays <= RETIRING_SOON_DAYS) {
+          retiring++
+        }
+      }
     }
 
-    out.set(userId, agg)
+    const known = (v: number) => (rosterKnown ? v : null)
+    const details = rosterKnown && detailsKnown
+
+    out.set(userId, {
+      factoryCount,
+      ppPerDay,
+      netPerDay,
+      engineNetPerDay,
+      topPotentialNetPerDay,
+      workerCount: known(workers),
+      employeeNetPerDay: known(employeeNet),
+      payrollPerDay: known(payroll),
+      employeeAvgPpPerDay: rosterKnown && workers > 0 ? employeePtsSum / workers : null,
+      employeeAvgNetPerDay: rosterKnown && workers > 0 ? employeeNet / workers : null,
+      employeeAvgHappiness: details && workers > 0 ? happinessSum / workers : null,
+      employeeRetiringSoon: details ? retiring : null,
+    })
   })
 
   return out

@@ -260,10 +260,6 @@ export function computeFactoryProfit(
 export interface UserFactoryAgg {
   factoryCount: number
 
-  /**
-   * NPC employees across the user's factories.
-   */
-  workerCount: number
   ppPerDay: number
   netPerDay: number
 
@@ -272,8 +268,24 @@ export interface UserFactoryAgg {
    * engineNetPerDay + employeeNetPerDay = netPerDay.
    */
   engineNetPerDay: number
-  employeeNetPerDay: number
   topPotentialNetPerDay: number
+
+  /**
+   * Null when any factory's roster is unknown, so a missing roster never reads
+   * as an empty one.
+   */
+  workerCount: number | null
+  employeeNetPerDay: number | null
+  payrollPerDay: number | null
+
+  /**
+   * From the stored roster. The averages are also null when there are no
+   * employees.
+   */
+  employeeAvgPpPerDay: number | null
+  employeeAvgNetPerDay: number | null
+  employeeAvgHappiness: number | null
+  employeeRetiringSoon: number | null
 }
 
 /**

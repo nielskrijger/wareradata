@@ -235,11 +235,6 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         width: 130,
         tooltip: 'Number of factories this player owns.',
       }),
-      localeNumberColumn<UserRow>('factoryWorkers', '# Employees', {
-        heat: 'ramp',
-        width: 135,
-        tooltip: 'NPC employees across this player\'s factories.',
-      }),
       compactNumberColumn<UserRow>('factoryNetPerDay', 'Total / day', {
         heat: 'median',
         width: 120,
@@ -255,6 +250,11 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         width: 155,
         tooltip: 'Daily profit from this player\'s NPC employees, after their wages and the managers\' wages.',
       }),
+      compactNumberColumn<UserRow>('factoryPayrollPerDay', 'Payroll / day', {
+        heat: 'median',
+        width: 140,
+        tooltip: 'Daily wages of this player\'s NPC employees and managers.',
+      }),
       compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', {
         heat: 'median',
         width: 110,
@@ -265,6 +265,33 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         decimals: 0,
         width: 115,
         tooltip: 'Net as a share of the Top potential (the same production on the most profitable item). 100% = already on the best item.',
+      }),
+    ],
+    employees: [
+      localeNumberColumn<UserRow>('factoryWorkers', '# Employees', {
+        heat: 'ramp',
+        width: 135,
+        tooltip: 'NPC employees across this player\'s factories.',
+      }),
+      compactNumberColumn<UserRow>('employeeAvgPpPerDay', 'Avg PP / day', {
+        heat: 'median',
+        width: 135,
+        tooltip: 'Production points per employee per day.',
+      }),
+      compactNumberColumn<UserRow>('employeeAvgNetPerDay', 'Avg net / day', {
+        heat: 'median',
+        width: 140,
+        tooltip: 'Daily profit per employee: their output value minus wages, with the managers\' wages shared out.',
+      }),
+      compactNumberColumn<UserRow>('employeeAvgHappiness', 'Avg happiness', {
+        heat: 'median',
+        width: 150,
+        tooltip: 'Average employee happiness. Below 50 hurts production.',
+      }),
+      localeNumberColumn<UserRow>('employeeRetiringSoon', 'Retiring ≤7d', {
+        heat: 'ramp',
+        width: 135,
+        tooltip: 'Employees retiring within a week.',
       }),
     ],
     premium: [

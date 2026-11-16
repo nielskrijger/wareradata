@@ -263,6 +263,11 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     factoryEngineNetPerDay: factory?.engineNetPerDay ?? null,
     factoryEmployeeNetPerDay: factory?.employeeNetPerDay ?? null,
     factoryWorkers: factory?.workerCount ?? null,
+    factoryPayrollPerDay: factory?.payrollPerDay ?? null,
+    employeeAvgPpPerDay: factory?.employeeAvgPpPerDay ?? null,
+    employeeAvgNetPerDay: factory?.employeeAvgNetPerDay ?? null,
+    employeeAvgHappiness: factory?.employeeAvgHappiness ?? null,
+    employeeRetiringSoon: factory?.employeeRetiringSoon ?? null,
   } satisfies UserRow
 }
 

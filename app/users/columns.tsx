@@ -59,6 +59,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       pointsBreakdownColumn<UserRow>('points', 'Points', {
         width: 105,
         tooltip: 'Ranking points: level + damage + wealth combined.',
+        stats: row => [{ label: 'Avg / day', value: row.pointsPerDay }],
       }),
       {
         accessorKey: 'pointsPerDay',
@@ -84,7 +85,13 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
           return null
         },
         sortDescFirst: true,
-        meta: { heat: 'median', align: 'right', width: 110, tooltip: 'Average points earned per day since joining.' },
+        meta: {
+          heat: 'median',
+          align: 'right',
+          width: 110,
+          tooltip: 'Average points earned per day since joining.',
+          hiddenByDefault: true,
+        },
       },
     ],
     general: [

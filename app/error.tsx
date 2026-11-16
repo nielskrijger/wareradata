@@ -13,8 +13,7 @@ interface Props {
 }
 
 /**
- * Fallback for an unexpected error while rendering a page. Keeps the site nav
- * and footer (it renders inside the root layout) and offers a retry.
+ * Renders inside the root layout, so the nav and footer stay usable.
  */
 export default function ErrorPage({ error, unstable_retry }: Props) {
   useEffect(() => {

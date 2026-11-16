@@ -5,8 +5,7 @@
 export const EMPTY = '—'
 
 /**
- * True when the ISO timestamp lies more than `ms` in the past. False for a
- * missing or unparseable timestamp.
+ * Reads the clock here so components calling it stay pure for the linter.
  */
 export function isOlderThan(iso: string | null, ms: number): boolean {
   if (!iso) {

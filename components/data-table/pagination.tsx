@@ -19,9 +19,7 @@ interface Props {
 }
 
 /**
- * Row count, page-size picker, first/previous/next/last buttons, and a page
- * number field for jumping straight to a page. Page numbers are 1-based in the
- * UI and 0-based in the callbacks.
+ * Page numbers are 1-based in the UI and 0-based in the callbacks.
  */
 export function Pagination({
   pageIndex,
@@ -95,8 +93,7 @@ export function Pagination({
         <label className="flex items-center gap-1.5 px-1">
           <span>Page</span>
           <input
-            // Remount on page change so the field shows the current page after
-            // the buttons move it, while staying free to type into meanwhile.
+            // Remount so the buttons can reset it while it stays uncontrolled for typing.
             key={pageIndex}
             type="number"
             inputMode="numeric"

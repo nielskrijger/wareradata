@@ -116,8 +116,7 @@ export interface Snapshot {
   equipmentJsonByUser: Map<string, string>
 
   /**
-   * When the main scrape that produced this snapshot finished (ISO), or null
-   * before the first cycle. Shown to users as the data's age.
+   * Null before the first main cycle.
    */
   scrapedAt: string | null
 }

@@ -6,23 +6,20 @@ export const SITE_DESCRIPTION = 'Sortable, filterable datatables of War Era game
 
 interface PageMeta {
   /**
-   * Page title without the site suffix; the root layout's title template adds it.
+   * Without the site suffix; the root layout's title template adds it.
    */
   title: string
   description: string
 
   /**
-   * The page's own path (e.g. `/users/abc`), used as its canonical URL and
-   * og:url. Resolved against the root layout's `metadataBase`.
+   * Becomes the canonical URL and og:url, resolved against `metadataBase`.
    */
   path: string
 }
 
 /**
- * Metadata for one page: title, description, canonical URL, and matching Open
- * Graph and Twitter tags. Next replaces a parent's `openGraph` and `twitter`
- * objects wholesale rather than merging them, so every page builds the full set
- * here to keep link previews specific to the page.
+ * Builds the full `openGraph` and `twitter` objects because Next replaces a
+ * parent's wholesale instead of merging them.
  */
 export function pageMetadata({ title, description, path }: PageMeta): Metadata {
   const fullTitle = `${title} — ${SITE_NAME}`

@@ -137,8 +137,7 @@ interface DataTableProps<TData, TValue> {
   initialSort: { id: string, desc: boolean }
 
   /**
-   * Rows per page until the visitor picks another size. Must match the size of
-   * `initialData` and be one of PAGE_SIZES.
+   * Must match the size of `initialData` and be one of PAGE_SIZES.
    */
   pageSize?: number
   fetchPage: (req: PageRequest) => Promise<PageResult<TData>>
@@ -192,7 +191,7 @@ function DataTableInner<TData, TValue>({
   const [isPending, startTransition] = useTransition()
   const [loadFailed, setLoadFailed] = useState(false)
 
-  // Bumped by the Retry button to re-run the fetch effect with unchanged params.
+  // Lets Retry re-run the fetch effect with unchanged params.
   const [retryCount, setRetryCount] = useState(0)
 
   // Adopt a fresh `initialData` prop (e.g. after revalidatePath) only while the
@@ -228,9 +227,7 @@ function DataTableInner<TData, TValue>({
       filter: q,
     }
 
-    // Responses can arrive out of order (typing fast, clicking through pages);
-    // only the latest request's response may land, so an older one never
-    // overwrites a newer result.
+    // Responses can arrive out of order; a stale one must not overwrite a newer result.
     let superseded = false
     startTransition(async () => {
       try {

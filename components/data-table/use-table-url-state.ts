@@ -10,7 +10,7 @@ const FILTER_DEBOUNCE_MS = 250
 const urlOpts = { shallow: true, scroll: false, history: 'replace' as const }
 
 /**
- * The page sizes a visitor can pick. The default page size must be one of them.
+ * A table's default page size must be one of these.
  */
 export const PAGE_SIZES = [25, 50, 100] as const
 
@@ -79,8 +79,7 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     parseAsInteger.withDefault(defaultPageSize).withOptions(urlOpts),
   )
 
-  // Hand-edited URLs can carry any number; fall back to the default for sizes
-  // the picker doesn't offer.
+  // Hand-edited URLs can carry any size.
   const pageSize = (PAGE_SIZES as readonly number[]).includes(sizeParam) ? sizeParam : defaultPageSize
   const setPageSize = useCallback(
     (size: number) => {

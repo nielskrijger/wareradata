@@ -10,16 +10,12 @@ interface Props {
   entity: string
 
   /**
-   * The list page where the record can be searched for, e.g. `/users`.
+   * Where the record can be searched for instead, e.g. `/users`.
    */
   listHref: string
   listLabel: string
 }
 
-/**
- * The screen for a detail page whose id isn't in the current data, linking to
- * the list where the record can be searched for.
- */
 export function NotFoundPage({ entity, listHref, listLabel }: Props) {
   return (
     <PageShell title={`No such ${entity}`}>

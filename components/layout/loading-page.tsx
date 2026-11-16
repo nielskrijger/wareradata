@@ -4,8 +4,8 @@ import { PageShell } from './page-shell'
 
 interface Props {
   /**
-   * The page's heading, matching the real page so the layout doesn't jump when
-   * it swaps in. Detail pages leave it out: the record's name isn't known yet.
+   * Matches the real page's heading so nothing jumps when it swaps in. Detail
+   * pages leave it out because the record's name isn't known yet.
    */
   title?: string
 }

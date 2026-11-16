@@ -63,8 +63,7 @@ export default antfu({
       allowEnumStart: true,
       allowModuleStart: true,
     }],
-    // Blank lines split a function into its steps: after a block (if, for, …),
-    // after a statement that spans several lines, and before the final return.
+    // Blank lines separate a function's steps.
     'style/padding-line-between-statements': [
       'error',
       { blankLine: 'always', prev: 'block-like', next: '*' },

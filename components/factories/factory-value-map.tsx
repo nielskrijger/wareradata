@@ -185,6 +185,54 @@ function netFill(net: number, best: number): string {
  * Production points per factory, stacked engine-first then each employee, with
  * Net/day at the end of the bar.
  */
+/**
+ * The engine's slate keeps it distinct from the employee greens without
+ * reading as empty space.
+ */
+const ENGINE_FILL = 'oklch(0.55 0.06 250)'
+
+/**
+ * One factory's bar spelled out: engine, each employee and the manager, summing
+ * to Net/day.
+ */
+function FactoryBreakdown({ row }: { row: FactoryLedgerRow }) {
+  return (
+    <div className="space-y-1">
+      <div className="font-medium">
+        Factory {row.name} · {humanizeItem(row.itemCode)} · {Math.round(row.pointsPerDay)} pts/day
+      </div>
+      <table className="tabular-nums">
+        <tbody>
+          <tr>
+            <td className="pr-3">Engine Lvl {row.engineLevel}</td>
+            <td className="pr-3 text-right">{Math.round(row.enginePointsPerDay)}</td>
+            <td className="text-right">{goldSigned(row.engineNetPerDay)}</td>
+          </tr>
+          {row.employees.map(e => (
+            <tr key={e.id}>
+              <td className="pr-3">{e.name}</td>
+              <td className="pr-3 text-right">{Math.round(e.pointsPerDay)}</td>
+              <td className="text-right">{goldSigned(e.netPerDay)}</td>
+            </tr>
+          ))}
+          {row.managerPerDay >= 0.05 && (
+            <tr>
+              <td className="pr-3">Manager</td>
+              <td />
+              <td className="text-right">{goldSigned(-row.managerPerDay)}</td>
+            </tr>
+          )}
+          <tr className="border-t font-medium">
+            <td className="pt-0.5 pr-3">Net / day</td>
+            <td />
+            <td className="pt-0.5 text-right">{goldSigned(row.netPerDay)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
   const best = Math.max(0, ...rows.flatMap(r => r.employees.map(e => e.netPerDay)))
   const [ref, BW] = useWidth<HTMLDivElement>(380)
@@ -206,53 +254,33 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
       >
         {rows.map((row, i) => {
           const top = i * rowH + 3
-          const parts = [
-            { id: 'engine', pts: row.enginePointsPerDay, e: null as LedgerEmployee | null },
-            ...row.employees.map(e => ({ id: e.id, pts: e.pointsPerDay, e })),
-          ]
-
-          let acc = 0
+          let acc = row.enginePointsPerDay
 
           return (
             <g key={row.id}>
               <text x={left - 6} y={top + 12} textAnchor="end" className={AXIS_TEXT}>{row.name}</text>
-              {parts.map((part) => {
+              <rect
+                x={left}
+                y={top}
+                width={Math.max(0, scale(row.enginePointsPerDay) - 1.5)}
+                height={rowH - 7}
+                rx={2}
+                fill={ENGINE_FILL}
+              />
+              {row.employees.map((e) => {
                 const x0 = left + scale(acc)
-                acc += part.pts
-                const width = Math.max(0, scale(part.pts) - 1.5)
-                if (!part.e) {
-                  return (
-                    <rect
-                      key={part.id}
-                      x={x0}
-                      y={top}
-                      width={width}
-                      height={rowH - 7}
-                      rx={2}
-                      className="fill-muted-foreground/40"
-                    />
-                  )
-                }
+                acc += e.pointsPerDay
 
                 return (
-                  <Tooltip key={part.id}>
-                    <TooltipTrigger
-                      render={(
-                        <rect
-                          x={x0}
-                          y={top}
-                          width={width}
-                          height={rowH - 7}
-                          rx={2}
-                          fill={netFill(part.e.netPerDay, best)}
-                          className="cursor-help"
-                        />
-                      )}
-                    />
-                    <TooltipContent side="top">
-                      {part.e.name}: {Math.round(part.pts)} pts/day · {goldSigned(part.e.netPerDay)}
-                    </TooltipContent>
-                  </Tooltip>
+                  <rect
+                    key={e.id}
+                    x={x0}
+                    y={top}
+                    width={Math.max(0, scale(e.pointsPerDay) - 1.5)}
+                    height={rowH - 7}
+                    rx={2}
+                    fill={netFill(e.netPerDay, best)}
+                  />
                 )
               })}
               <text
@@ -265,6 +293,23 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
               >
                 {goldSigned(row.netPerDay)}
               </text>
+              {/* One hover target per row, so the tooltip explains the whole bar. */}
+              <Tooltip>
+                <TooltipTrigger
+                  render={(
+                    <rect
+                      x={0}
+                      y={i * rowH}
+                      width={BW}
+                      height={rowH}
+                      className="hover:fill-foreground/5 cursor-help fill-transparent"
+                    />
+                  )}
+                />
+                <TooltipContent side="top" className="max-w-none">
+                  <FactoryBreakdown row={row} />
+                </TooltipContent>
+              </Tooltip>
             </g>
           )
         })}
@@ -307,7 +352,7 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
         <h2 className="text-sm font-medium">Points per day by factory</h2>
         <OutputBars rows={rows} />
         <p className="text-muted-foreground text-xs">
-          Grey is the automated engine. Each employee is greener the more they net per day, red when they lose money.
+          Slate is the automated engine. Each employee is greener the more they net per day, red when they lose money.
         </p>
       </section>
     </div>

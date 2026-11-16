@@ -130,10 +130,7 @@ export function buildAllianceRows(
     })
     .sort((x, y) => y.totalPoints - x.totalPoints)
 
-  // The API's own rankings cover current/initial development, damage, and
-  // population; the citizen wealth sums and the core/average development
-  // fields carry no upstream rank, so rank those across the snapshot like the
-  // other group builders do.
+  // The API ranks development, damage and population; rank the rest here.
   rankAll(rows, [
     'caseLuck',
     ...POINTS_RANK_KEYS,

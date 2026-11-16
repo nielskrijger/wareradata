@@ -12,10 +12,8 @@ interface Props {
 }
 
 /**
- * A user's avatar + name, shared by any table cell that points at a player
- * (the /users name column, the /parties leader column). The name links to the
- * detail page when an id is present; otherwise it renders as plain text. A
- * null name yields null so DataTableRow shows the muted empty dash.
+ * A player's avatar and name, linked when there's an id. A null name returns
+ * null so the row shows its empty dash.
  */
 export function UserNameCell({ userId, name, avatarUrl, colorScheme }: Props) {
   if (!name) {

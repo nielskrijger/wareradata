@@ -1,15 +1,12 @@
 'use client'
 
-import type { PageRequest, PageResult } from '@/components/data-table/data-table'
+import type { PageResult } from '@/components/data-table/data-table'
 
 import type { ColumnDef } from '@/components/data-table/features'
 import type { BattleRow } from '@/lib/rows'
 
-import { useCallback } from 'react'
-
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
-import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 interface Props {
   /**
@@ -27,18 +24,14 @@ interface Props {
 }
 
 export function BattlesTable({ tableId, initial, columns, baseFilter, initialSort }: Props) {
-  const fetchPage = useCallback(
-    (req: PageRequest) => fetchPaginated<BattleRow>('/api/battles', req, baseFilter),
-    [baseFilter],
-  )
-
   return (
     <DataTable
       tableId={tableId}
       columns={columns}
       initialData={initial}
       initialSort={initialSort}
-      fetchPage={fetchPage}
+      endpoint="/api/battles"
+      baseFilter={baseFilter}
       searchPlaceholder="Filter by country or region…"
       searchHint={(
         <AdvancedSearchHint

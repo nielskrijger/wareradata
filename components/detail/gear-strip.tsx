@@ -16,21 +16,14 @@ const SLOT_ORDER = ['weapon', 'ammo', 'helmet', 'chest', 'gloves', 'pants', 'boo
 type Slot = (typeof SLOT_ORDER)[number]
 
 /**
- * Two surfaces this strip renders on:
- *  - 'dark': the user hover-card, whose TooltipContent is fixed dark in both
- *    themes, so white-alpha chrome reads correctly.
- *  - 'card': a theme-variable detail-page card (bg-card), where white-alpha
- *    tiles and the neutral tier-1 ring would vanish in light mode, so we swap
- *    to theme tokens (bg-muted / ring-border) that adapt.
+ * 'dark' is the hover card, dark in both themes; 'card' is a theme-aware
+ * detail card, where white-alpha tiles would vanish in light mode.
  */
 type Surface = 'dark' | 'card'
 
 /**
- * Tailwind ring classes mirror the RARITY_HEX palette. Kept as classes (not
- * inline style) so Tailwind's compiler can scope them properly; the matching
- * hex is imported from lib/gear/rarity for the inline-style consumers
- * (durability fill, bonus text, score pill). Only the tier-1 (neutral) ring is
- * surface-dependent; the colored rings read on both light and dark cards.
+ * Ring classes matching RARITY_HEX. Classes rather than inline styles so
+ * Tailwind generates them.
  */
 const RARITY_RING = [
   'ring-1 ring-neutral-50/15',
@@ -184,10 +177,8 @@ export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }
   const tileBg = surface === 'card' ? 'bg-muted' : 'bg-white/5'
   const emptyBg = surface === 'card' ? 'bg-muted/50' : 'bg-white/[0.03]'
   const emptyIcon = surface === 'card' ? 'text-muted-foreground/40' : 'text-foreground/20'
-  // On the detail-page card the strip carries an extra leading score tile, so 8
-  // tiles must fit a phone's width: shrink to 32px tiles with tighter gaps on
-  // mobile, back to 36px from `sm` up. The fixed-width dark tooltip is never
-  // width-constrained, so it stays at 36px in both breakpoints.
+  // The card adds a score tile, so eight tiles must fit a phone: smaller tiles
+  // and gaps below sm. The tooltip has a fixed width, so it never shrinks.
   const rowGap = surface === 'card' ? 'gap-1 sm:gap-1.5' : 'gap-1.5'
   const tileW = surface === 'card' ? 'w-8 sm:w-9' : 'w-9'
   const tileSize = surface === 'card' ? 'size-8 sm:size-9' : 'size-9'

@@ -24,12 +24,9 @@ interface Props {
 }
 
 /**
- * The alliance's member roster as a mini countries table: each country's
- * development contribution (with its share of the alliance total) plus the
- * country stats the in-game view doesn't show, heat-tinted within the
- * alliance. Members come pre-sorted by core development from the row builder.
- * Static (10 rows at most), so a plain table rather than the DataTable
- * machinery.
+ * The alliance's member countries with the stats the in-game view lacks.
+ *
+ * At most ten rows, so a plain table instead of DataTable.
  */
 export function MembersTable({ alliance: a }: Props) {
   // Heat ranges within this alliance's members, so the tints compare the bloc's

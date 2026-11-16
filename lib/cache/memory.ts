@@ -43,24 +43,16 @@ import 'server-only'
 const log = logger.child({ component: 'snapshot' })
 
 /**
- * In-process snapshot of built rows, scoped to a single Node process. The
- * scrape worker owns refresh: it builds a new snapshot after each cycle (and
- * after each piecemeal patch) and swaps it in via {@link swapSnapshot}. Reads
- * are served from {@link getSnapshot} with no I/O.
- *
- * There is no TTL or stale-while-revalidate: the worker is the only writer and
- * refreshes continuously, so the in-memory copy is always the freshest the
- * scraper has produced.
+ * The built rows, served from memory. The scraper is the only writer and swaps
+ * in a new snapshot after every cycle or refresh, so there is no TTL.
  */
 
 export interface Snapshot {
   users: UserRow[]
 
   /**
-   * [min, max, median] per numeric UserRow field across the full user set.
-   * Precomputed in buildSnapshot() so detail pages and the user-hover-card
-   * tooltip can heat-tint stats against the leaderboard without re-walking
-   * 16k rows per request.
+   * [min, max, median] per numeric UserRow field, precomputed so detail pages
+   * and hover cards don't re-walk every user per request.
    */
   userRanges: Record<string, Range>
   countries: CountryRow[]
@@ -108,10 +100,8 @@ export interface Snapshot {
   gearLookup: GearLookup
 
   /**
-   * Each user's currently-equipped gear as its JSON text, keyed by user id, for
-   * the user page and hover card. Kept as strings (parsed per lookup) because
-   * that is a fraction of the memory of ~17k parsed loadouts. A user with no
-   * entry had no gear captured; `'{}'` means captured with nothing equipped.
+   * Each user's gear as JSON text, a fraction of the memory of ~17k parsed
+   * loadouts. No entry means not captured; `'{}'` means nothing equipped.
    */
   equipmentJsonByUser: Map<string, string>
 
@@ -122,12 +112,8 @@ export interface Snapshot {
 }
 
 /**
- * Next loads server modules in several separate module graphs within one
- * process (page RSC, route handlers, etc.), so a plain module-level `let` is
- * NOT a process singleton: each graph gets its own copy, and a swap in one
- * isn't seen by the others. Backing the state on `globalThis` gives every graph
- * the same store, so the scraper's swaps and on-demand refreshes are visible to
- * every page and route.
+ * Lives on `globalThis` because Next loads server modules in several module
+ * graphs per process, and a module-level `let` would give each its own copy.
  */
 interface SnapshotStore {
   /**
@@ -169,12 +155,7 @@ export async function buildSnapshot(
   const lookups = buildBaseLookups(raw.countries, raw.mus, raw.regions, raw.parties)
   const gearLookup = deriveGearLookup(raw.gameConfig)
 
-  // Users are streamed from users.ndjson (one line at a time) into their rows, so
-  // the 84 MB raw array never resides; only the derived UserRow[] is kept.
-  // Per-user factory totals and equipment are likewise streamed from their own
-  // files by the caller. Factory totals roll up through member-agg into the
-  // entity Factories columns; equipment feeds gear scoring and is kept only as
-  // compact JSON text for single-user lookups.
+  // Users stream in line by line so the 84 MB raw array never sits in memory.
   const userRows = await buildUserRows(
     streamUsersForBuild,
     lookups,
@@ -216,10 +197,8 @@ export async function buildSnapshot(
 }
 
 /**
- * Wraps the raw users.ndjson stream with the on-demand refresh overlay: a
- * refreshed user's line is replaced by the overlay version (last-wins), and
- * overlay users not yet in the file (added between main cycles) are emitted
- * after. The overlay is small (only users refreshed since the last main cycle).
+ * Streams users.ndjson with refreshed users swapped in, then any refreshed
+ * users the file doesn't have yet.
  */
 function streamUsersWithOverlay(overlay: Map<string, User>): (onUser: (user: User) => void) => Promise<void> {
   return async (onUser) => {
@@ -243,11 +222,8 @@ function streamUsersWithOverlay(overlay: Map<string, User>): (onUser: (user: Use
 }
 
 /**
- * Loads the streamed factory and equipment files in parallel and builds the
- * snapshot, streaming users.ndjson (with the refresh `userOverlay` merged on
- * top) into the rows, and logs the build duration. The one place that joins a raw
- * snapshot with its separate NDJSON files, so the scrape, refresh, boot, and
- * lazy-load paths stay consistent.
+ * The one place a raw snapshot joins its NDJSON files, so every build path
+ * (scrape, refresh, boot, lazy load) stays consistent.
  */
 export async function buildSnapshotFromRaw(
   raw: RawSnapshot,
@@ -304,14 +280,9 @@ export async function initSnapshot(): Promise<void> {
 }
 
 /**
- * The read API for every page and route. Serves the in-memory snapshot, lazily
- * loading it from the file on first use if the scraper hasn't populated it in
- * this module instance yet. A missing file yields the empty snapshot (pages
- * render a "no data" state).
+ * The read API for every page and route, loading from disk on first use.
  *
- * All pages that read this go through `await connection()` first, so prerender
- * (where the snapshot is empty) is never reached — this is only called for
- * request-time renders.
+ * Pages call `await connection()` first, so this never runs during prerender.
  */
 export function getSnapshot(): Promise<Snapshot> {
   const s = store()

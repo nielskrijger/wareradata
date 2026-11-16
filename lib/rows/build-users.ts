@@ -144,10 +144,8 @@ function buildUserRow(u: User, ctx: UserRowContext) {
   const ecoPoints = skillPoints(skills, ECO_SKILLS, skillCost)
   const combatMode = classifyCombatMode(warPoints, ecoPoints)
 
-  // War's share of war+eco investment (0 = pure eco, 1 = pure war). This is
-  // the distribution the Mode column sorts on — the raw point totals scale
-  // with level, so only the ratio is meaningful. Null when nothing's trained
-  // in either, so those rows sort last rather than tying with pure-eco.
+  // Null when nothing is trained, so those rows sort last instead of tying with
+  // pure eco.
   const warShare = warPoints + ecoPoints > 0 ? warPoints / (warPoints + ecoPoints) : null
 
   // Case pulls: the per-type split (for the detail toggle), its merge into the
@@ -273,10 +271,8 @@ function buildUserRow(u: User, ctx: UserRowContext) {
 }
 
 /**
- * Current fill of a regenerating bar (health, hunger) as a 0-100 percent of its
- * max. `total` is the bar's capacity, `currentBarValue` how full it is now.
- * Returns null when the bar or its capacity is missing, and clamps to [0, 100]
- * since `currentBarValue` can briefly read slightly over `total`.
+ * A bar's fill as 0-100, clamped because the current value can briefly read
+ * above the total.
  */
 function barPercent(bar: { currentBarValue?: number, total?: number } | undefined): number | null {
   if (!bar || !bar.total || bar.currentBarValue == null) {
@@ -316,11 +312,8 @@ function toReadinessStatus(
 const MIN_AGE_DAYS = 7
 
 /**
- * Fractional days between the user's account creation and `nowMs`. Returns
- * null for accounts younger than MIN_AGE_DAYS (rate not meaningful yet),
- * missing dates, or sentinel dates like `0000-01-01` that some legacy
- * accounts come back as. The /users page distinguishes the "too young"
- * case from genuinely missing dates by inspecting `createdAt` directly.
+ * Days since joining; null under MIN_AGE_DAYS, when the date is missing, or for
+ * the `0000-01-01` sentinel some accounts return.
  */
 function daysSinceJoin(createdAt: string | null | undefined, nowMs: number): number | null {
   if (!createdAt) {

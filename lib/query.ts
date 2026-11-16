@@ -20,10 +20,10 @@ export interface QueryParams {
   baseFilter?: string
 }
 
-export const DEFAULT_PAGE_SIZE = 25
+const DEFAULT_PAGE_SIZE = 25
 const MAX_PAGE_SIZE = 200
 
-export function parseQuery(searchParams: URLSearchParams): QueryParams {
+function parseQuery(searchParams: URLSearchParams): QueryParams {
   const page = Math.max(0, Number(searchParams.get('page') ?? 0) | 0)
   const pageSize = Math.min(
     MAX_PAGE_SIZE,
@@ -33,9 +33,7 @@ export function parseQuery(searchParams: URLSearchParams): QueryParams {
   const sort = searchParams.get('sort')
   const dir = searchParams.get('dir') === 'desc' ? 'desc' : 'asc'
 
-  // Note: not lowercasing — applyQuery's substring path lowercases its own
-  // haystack, and applyStructuredQuery hands the raw text to liqe (which
-  // is case-insensitive on values by default).
+  // Not lowercased: liqe matches values case-insensitively.
   const filter = (searchParams.get('filter') ?? '').trim()
   const baseFilter = (searchParams.get('baseFilter') ?? '').trim()
 
@@ -61,10 +59,8 @@ export interface PagedResult<T> {
 }
 
 /**
- * Computes [min, max, median] for every numeric field across `rows`, ignoring
- * null/undefined/non-finite values. The set of fields is discovered from the
- * rows themselves (any key that is numeric on at least one row), so callers
- * don't have to enumerate columns — the client picks whichever it heat-tints.
+ * [min, max, median] for every numeric field, so the client can tint any
+ * column without the server listing them.
  */
 export function computeRanges<T extends object>(rows: T[]): Record<string, Range> {
   if (!rows.length) {
@@ -96,10 +92,7 @@ export function computeRanges<T extends object>(rows: T[]): Record<string, Range
 }
 
 /**
- * Shared tail of {@link applyQuery} / {@link applyStructuredQuery}: heat ranges
- * over the already-filtered rows, then sort by the requested column (nulls
- * always last, regardless of direction), then paginate. The two public entry
- * points differ only in how they produce `filtered` (substring vs liqe).
+ * Ranges over the filtered rows, then sort (nulls last either way) and page.
  */
 function sortAndPaginate<T extends object>(
   filtered: T[],
@@ -116,12 +109,8 @@ function sortAndPaginate<T extends object>(
       const av = sortValue(a, sortField)
       const bv = sortValue(b, sortField)
       // Nulls always sort last regardless of direction.
-      if (av === null || av === undefined) {
-        return 1
-      }
-
-      if (bv === null || bv === undefined) {
-        return -1
+      if (av == null || bv == null) {
+        return (av == null ? 1 : 0) - (bv == null ? 1 : 0)
       }
 
       if (av < bv) {
@@ -146,42 +135,17 @@ function sortAndPaginate<T extends object>(
 }
 
 /**
- * Filter → sort → paginate. `getFilterHaystack` returns the lowercased text the
- * filter substring is matched against (concat of fields that should be searchable).
- * `sortValue` returns the comparable value for a given column id, or undefined if
- * the column isn't sortable / unknown.
- */
-export function applyQuery<T extends object>(
-  rows: T[],
-  query: QueryParams,
-  getFilterHaystack: (row: T) => string,
-  sortValue: (row: T, sort: string) => number | string | null,
-): PagedResult<T> {
-  let filtered = rows
-  if (query.filter) {
-    const needle = query.filter.toLowerCase()
-    filtered = rows.filter(r => getFilterHaystack(r).includes(needle))
-  }
-
-  return sortAndPaginate(filtered, query, sortValue)
-}
-
-/**
- * The server-rendered first page for a list or detail view: the top
- * {@link DEFAULT_PAGE_SIZE} rows sorted by `sortField` descending, with heat
- * ranges over the full set. There's no user filter to apply at this stage (the
- * client takes over paging, sorting, and filtering once hydrated), so the
- * haystack is empty and `sortField` doubles as the row accessor.
+ * The server-rendered first page; the client takes over paging, sorting and
+ * filtering once hydrated.
  */
 export function firstPage<T extends object>(
   rows: T[],
   sortField: Extract<keyof T, string>,
 ): PagedResult<T> {
-  return applyQuery(
+  return sortAndPaginate(
     rows,
     { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: sortField, dir: 'desc', filter: '' },
-    () => '',
-    row => (row as Record<string, unknown>)[sortField] as number | string | null,
+    makeSortValue(),
   )
 }
 
@@ -218,20 +182,16 @@ function rewriteAliases(node: unknown, aliases: FieldAliases): void {
 }
 
 /**
- * Lets users write `field=value` as a synonym for liqe's `field:value`. Only an
- * `=` directly after a bare field token (at the start of the string, or after
- * whitespace or `(`) is rewritten, so liqe's `>=` / `<=` operators and any `=`
- * sitting inside a quoted value are left untouched.
+ * Accepts `field=value` for liqe's `field:value`. Only an `=` right after a bare
+ * field token is rewritten, so `>=`, `<=` and quoted values are untouched.
  */
 function normalizeEquals(filter: string): string {
   return filter.replace(/(^|[\s(])([\w.]+)=/g, '$1$2:')
 }
 
 /**
- * Filters `rows` by a single liqe expression. An empty expression is a no-op;
- * an *unparseable* one is also a no-op (the rows pass through unchanged) so a
- * typo narrows nothing rather than throwing — and, applied after the base
- * scope, can never widen back past it.
+ * An unparseable expression passes the rows through, so a typo narrows
+ * nothing instead of throwing.
  */
 function runLiqeFilter<T extends object>(rows: T[], expr: string, aliases: FieldAliases): T[] {
   if (!expr) {
@@ -249,106 +209,54 @@ function runLiqeFilter<T extends object>(rows: T[], expr: string, aliases: Field
 }
 
 /**
- * Variant of {@link applyQuery} that runs the filter through liqe, supporting
- * structured queries like `country:net -mu:"Bla bla" rank:[1 TO 100]` as well as
- * plain free-text (liqe falls back to a whole-row substring search). `aliases`
- * maps friendly field names to row keys (e.g. `country` → `countryCode`);
- * underlying names work too.
+ * Filters with liqe (`country:nl -mu:"Bla" rank:[1 TO 100]`, or plain text),
+ * then sorts and pages. `aliases` maps friendly field names to row keys.
  */
-export function applyStructuredQuery<T extends object>(
+function applyStructuredQuery<T extends object>(
   rows: T[],
   query: QueryParams,
   sortValue: (row: T, sort: string) => number | string | null,
   aliases: FieldAliases = {},
 ): PagedResult<T> {
-  // The detail-page scope (`baseFilter`, e.g. `muId:<id>`) and the user's typed
-  // `filter` are applied in sequence: the trusted base first, then the user's
-  // filter over the already-scoped subset. That equals `base AND (user)` but
-  // with two safety properties — an unparseable user filter is dropped without
-  // widening past the base scope, and the user's own OR/NOT can only ever match
-  // within the scoped rows, never pull in others.
+  // Base scope first, then the user's filter over the scoped rows: the same as
+  // `base AND (user)`, but a broken or OR-ed user filter can never reach rows
+  // outside the scope.
   const scoped = runLiqeFilter(rows, query.baseFilter ?? '', aliases)
   const filtered = runLiqeFilter(scoped, normalizeEquals(query.filter), aliases)
 
   return sortAndPaginate(filtered, query, sortValue)
 }
 
-/**
- * Declarative spec for {@link makeSortValue}. Each field lists the sort ids that
- * share one handling rule, so a route states *what kind* each column is instead
- * of writing one switch arm per column.
- */
-export interface SortSpec<T> {
-  /**
-   * Returned as-is: numbers, country codes, ISO date strings, enum strings.
-   */
-  passthrough?: (keyof T)[]
-
-  /**
-   * Lowercased for case-insensitive ordering (display names).
-   */
-  text?: (keyof T)[]
-
-  /**
-   * Booleans mapped to 1 / 0 so `true` sorts after `false`.
-   */
-  boolean?: (keyof T)[]
-
-  /**
-   * Bespoke comparators keyed by sort id (tier lookups, derived scores).
-   */
-  custom?: Record<string, (row: T) => number | string | null>
-
-  /**
-   * Used when the sort id matches nothing above (the table's natural order).
-   */
-  default: keyof T | ((row: T) => number | string | null)
-}
+type SortValue = number | string | null
 
 /**
- * Turns a {@link SortSpec} into the `(row, sort) => comparable` function that
- * {@link applyStructuredQuery} expects. Columns needing special handling
- * (tier progression, readiness score) go in `custom`.
+ * Sorts any column by its own row value; `custom` covers columns whose value
+ * doesn't order naturally (tiers, readiness). Strings compare lowercased so
+ * names sort case-insensitively.
  */
 export function makeSortValue<T>(
-  spec: SortSpec<T>,
-): (row: T, sort: string) => number | string | null {
-  const passthrough = new Set<keyof T>(spec.passthrough)
-  const text = new Set<keyof T>(spec.text)
-  const boolean = new Set<keyof T>(spec.boolean)
-
+  custom: Record<string, (row: T) => SortValue> = {},
+): (row: T, sort: string) => SortValue {
   return (row, sort) => {
-    if (spec.custom && sort in spec.custom) {
-      return spec.custom[sort](row)
+    if (Object.hasOwn(custom, sort)) {
+      return custom[sort](row)
     }
 
-    const key = sort as keyof T
     const value = (row as Record<string, unknown>)[sort]
-    if (text.has(key)) {
-      return typeof value === 'string' ? value.toLowerCase() : null
+    if (typeof value === 'number') {
+      return value
     }
 
-    if (boolean.has(key)) {
+    if (typeof value === 'boolean') {
       return value ? 1 : 0
     }
 
-    if (passthrough.has(key)) {
-      return value as number | string | null
-    }
-
-    if (typeof spec.default === 'function') {
-      return spec.default(row)
-    }
-
-    return (row as Record<string, unknown>)[spec.default as string] as number | string | null
+    return typeof value === 'string' ? value.toLowerCase() : null
   }
 }
 
 /**
- * Builds the GET handler shared by every `/api/<entity>` table route: parse the
- * query, load the rows (`loadRows` is route-specific — usually a snapshot slice,
- * sometimes enriched/merged), then filter / sort / paginate via
- * {@link applyStructuredQuery}.
+ * The GET handler shared by every `/api/<entity>` table route.
  */
 export function createTableRoute<T extends object>(
   loadRows: () => Promise<T[]>,

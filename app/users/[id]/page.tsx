@@ -65,10 +65,8 @@ const getUser = cache(async (id: string) => {
 })
 
 /**
- * The per-type case breakdown for the detail card: read straight from the
- * snapshot row when the scrape has reached this user, else a one-off live fetch
- * (skipped when the user has opened no cases). Always returns the full shape so
- * the card can read each field directly.
+ * The per-type case breakdown, from the snapshot row when the scrape has
+ * reached this user, else one live fetch (skipped when they opened none).
  */
 async function resolveCasesByType(user: UserRow): Promise<CasesByType> {
   if (user.standardCasesByRarity || user.mythicCasesByRarity) {
@@ -122,10 +120,8 @@ export default async function UserDetailPage({ params }: PageProps) {
   const cases = await resolveCasesByType(user)
 
   const rgb = schemeRgb(user.colorScheme)
-  // Show the gear section whenever we captured this user's equipment, even if
-  // they're wearing nothing (score 0) — the empty placeholder slots make "not
-  // equipped" legible. A null score means we never scraped their gear, so the
-  // section stays hidden rather than implying an empty loadout.
+  // A score of 0 still shows the section so empty slots read as "nothing
+  // equipped"; null means the gear was never captured.
   const hasGearData = user.gearScore != null
 
   // Parse the full loadout only when there's a gear section to fill.

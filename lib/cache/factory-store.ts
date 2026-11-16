@@ -4,13 +4,10 @@ import { dataDir } from './file-store'
 import { streamNdjson } from './ndjson'
 
 /**
- * One factory's facts, captured by the all-users factory scrape. Production is
- * stored per source as points/day: the engine (from its level) and the NPC
- * employees (from the roster's hourly estimate), with the employee and manager
- * wages. The readers compute net, the engine/employee split and the Top potential
- * at build time from these plus the snapshot's market data. Self-work is not
- * modelled. Every number is optional; a line without the employee fields parses
- * as engine-only.
+ * One factory's production per source and its wages, as captured. Net and
+ * potential are computed at build time from these plus market prices.
+ *
+ * A line without the employee fields parses as engine-only.
  */
 export interface FactoryRawRow {
   itemCode: string
@@ -60,10 +57,8 @@ export interface FactoryUserLine {
 }
 
 /**
- * The factory scrape's output: newline-delimited JSON, one {@link FactoryUserLine}
- * per line. NDJSON so the scrape can append per user (no in-memory accumulator)
- * and the snapshot build can stream it line by line (only the small per-user
- * aggregate is retained, never all raw rows at once).
+ * One {@link FactoryUserLine} per line, so the scrape can append per user and
+ * the build can stream it without holding every row.
  */
 export function factoriesNdjsonPath(): string {
   return path.join(dataDir(), 'factories.ndjson')

@@ -38,13 +38,10 @@ import { schemeRgb } from '@/lib/warera/color-schemes'
 export type { AllianceRow }
 
 /**
- * The identity cell: the alliance logo (or monogram) beside the linked name,
- * washed in the alliance's color scheme. The tint and 3px scheme edge are an
- * absolute full-bleed layer (the cell itself is `relative` via
- * meta.cellClassName), so they track the row height when another cell wraps
- * taller; the tint's alpha layers over the sticky column's opaque background.
- * The member flags live in their own Members column, so this stays one line
- * and fits the narrow sticky column on mobile.
+ * The logo and name, washed in the alliance's color scheme.
+ *
+ * The tint is an absolute full-bleed layer (the cell is `relative` via
+ * meta.cellClassName), so it tracks the row height when another cell wraps.
  */
 function identityCell(a: AllianceRow) {
   const rgb = schemeRgb(a.scheme)

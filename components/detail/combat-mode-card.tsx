@@ -1,5 +1,6 @@
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
 import { StackedBar } from '@/components/stacked-bar'
+import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 import { classifyWarShare } from '@/lib/skills/classify'
 
 interface Props {
@@ -36,8 +37,8 @@ export function CombatModeCard({ avgWarShare, rank, total }: Props) {
           <StackedBar
             className="h-2 bg-muted"
             segments={[
-              { key: 'war', value: warPct, color: 'var(--heat-red)' },
-              { key: 'eco', value: 100 - warPct, color: 'var(--heat-green)' },
+              { key: 'war', value: warPct, color: WAR_COLOR },
+              { key: 'eco', value: 100 - warPct, color: ECO_COLOR },
             ]}
           />
           <div className="text-muted-foreground flex justify-between text-xs tabular-nums">

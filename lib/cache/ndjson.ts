@@ -38,14 +38,9 @@ export async function streamNdjson<T>(filePath: string, onRecord: (record: T) =>
 }
 
 /**
- * Atomically writes a file by streaming into a temp file beside `filePath`, then
- * renaming over the final path — so a crashed/partial write leaves the previous
- * file intact. Hands `produce` a backpressure-aware `write(chunk)`; on any error
- * the temp file is destroyed and removed. Creates the parent directory if needed.
- *
- * Used by {@link writeNdjson} for the simple iterable case, and directly by a
- * concurrent producer (the factory scrape) that can't expose a plain iterable
- * but wants the same atomic-rename guarantee.
+ * Streams into a temp file and renames it over `filePath`, so a crashed write
+ * leaves the previous file intact. `produce` gets a backpressure-aware `write`,
+ * for producers that can't expose a plain iterable (the factory scrape).
  */
 export async function writeFileAtomic(
   filePath: string,
@@ -77,13 +72,7 @@ export async function writeFileAtomic(
 }
 
 /**
- * Atomically (re)writes a newline-delimited JSON file from `records`: streams one
- * JSON line per record (with backpressure) via {@link writeFileAtomic}, so the
- * whole blob is never held in a buffer and a crashed write leaves the previous
- * file intact.
- *
- * `records` is an iterable (accepts a generator), so the caller can yield records
- * lazily without first materializing a wrapper array.
+ * Writes one JSON line per record, atomically.
  */
 export function writeNdjson<T>(filePath: string, records: Iterable<T>): Promise<void> {
   return writeFileAtomic(filePath, async (write) => {

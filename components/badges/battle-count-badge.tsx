@@ -31,16 +31,11 @@ function battleLabel(b: ActiveBattleSummary): string {
 }
 
 /**
- * Small pill shown after an entity name when it's in active battles (e.g.
- * "⚔ 2" after a country). Rendered by entity cells like CountryCell when a
- * positive count is passed; nothing renders for zero so peaceful entities stay
- * clean. Styled like the "banned" pill: tinted, shrink-0 so it never squashes.
+ * The "⚔ 2" pill after an entity in active battles; nothing for zero.
  *
- * When a countryId is given the pill links to that country's active-battles
- * tab; when a `battles` list is given, hovering opens a tooltip of the
- * matchups. The list is embedded by the server (it already has the live data
- * for the count), so there's no client fetch. Without either it's a plain,
- * non-interactive pill with a native title.
+ * With a countryId it links to that country's battles tab; with a `battles`
+ * list it shows the matchups on hover, embedded by the server so the client
+ * doesn't fetch.
  */
 export function BattleCountBadge({ count, countryId, battles }: Props) {
   if (count <= 0) {

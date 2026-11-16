@@ -32,10 +32,8 @@ function battleDay(b: Battle): string {
 }
 
 /**
- * Strips the heavy per-hit `lastHits` arrays from a finished battle before it's
- * archived. For a finished fight those are just the final round's last ~10 hits
- * (a live-combat detail), ~12 KB of the ~13 KB record, and carry no historical
- * value. We keep winner, damages, rounds, region, money pool, and timestamps.
+ * Drops `lastHits` before archiving: for a finished battle it's only the last
+ * round's final hits, yet ~12 of the record's ~13 KB.
  */
 function trimForArchive(b: Battle): Battle {
   if (!b.currentRound) {
@@ -60,18 +58,11 @@ export interface ArchiveResult {
 }
 
 /**
- * Captures finished battles into the per-day history archive on disk.
+ * Appends newly finished battles to per-day files under `archive/`.
  *
- * Append-only and idempotent: a `seen.json` set of `_id`s means re-runs (and
- * the overlapping rolling window the API returns each cycle) never double-store.
- * New battles are trimmed (see {@link trimForArchive}), grouped by the UTC day
- * they ended, and merged into `archive/battles-YYYY-MM-DD.json`. Each touched
- * day is recorded in `archive/index.json` so a future history view can list
- * what's available.
- *
- * The WarEra API only serves a rolling ~2-week window of finished battles, so
- * this is the only way to build a complete history: capture each cycle before
- * battles age out.
+ * The API serves only a rolling ~2-week window of finished battles, so this
+ * is the only way to keep a full history. `seen.json` makes it idempotent
+ * across the overlapping windows.
  */
 export async function recordBattleHistory(battles: Battle[]): Promise<ArchiveResult> {
   const finished = battles.filter(b => !b.isActive)

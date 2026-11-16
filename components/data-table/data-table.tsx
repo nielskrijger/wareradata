@@ -25,6 +25,7 @@ import { ColumnsMenu } from './columns-menu'
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
 import { dataTableFeatures } from './features'
+import { fetchPaginated } from './fetch-paginated'
 import { Pagination } from './pagination'
 import { usePersistedColumnVisibility } from './use-persisted-column-visibility'
 import { useTableUrlState } from './use-table-url-state'
@@ -62,7 +63,16 @@ interface DataTableProps<TData extends RowData> {
    * Must match the size of `initialData` and be one of PAGE_SIZES.
    */
   pageSize?: number
-  fetchPage: (req: PageRequest) => Promise<PageResult<TData>>
+
+  /**
+   * The `/api/*` route serving this table's pages.
+   */
+  endpoint: string
+
+  /**
+   * A locked-in scope (e.g. `muId:<id>`) the user's filter can narrow but not widen.
+   */
+  baseFilter?: string
   searchPlaceholder?: string
 
   /**
@@ -92,7 +102,8 @@ function DataTableInner<TData extends RowData>({
   initialData,
   initialSort,
   pageSize: defaultPageSize = 25,
-  fetchPage,
+  endpoint,
+  baseFilter,
   searchPlaceholder = 'Filter…',
   searchHint,
 }: DataTableProps<TData>) {
@@ -117,10 +128,8 @@ function DataTableInner<TData extends RowData>({
   // Lets Retry re-run the fetch effect with unchanged params.
   const [retryCount, setRetryCount] = useState(0)
 
-  // Adopt a fresh `initialData` prop (e.g. after revalidatePath) only while the
-  // user hasn't sorted/filtered/paged. This is React's "adjusting state when a
-  // prop changes" pattern:
-  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  // Adopt a fresh `initialData` (after revalidatePath) only while the user
+  // hasn't sorted, filtered or paged; React's adjust-state-on-prop-change pattern.
   const [prevInitialData, setPrevInitialData] = useState(initialData)
   if (initialData !== prevInitialData) {
     setPrevInitialData(initialData)
@@ -154,7 +163,7 @@ function DataTableInner<TData extends RowData>({
     let superseded = false
     startTransition(async () => {
       try {
-        const result = await fetchPage(req)
+        const result = await fetchPaginated<TData>(endpoint, req, baseFilter)
         if (!superseded) {
           setData(result)
           setLoadFailed(false)
@@ -169,7 +178,7 @@ function DataTableInner<TData extends RowData>({
     return () => {
       superseded = true
     }
-  }, [pageIndex, pageSize, sorting, q, fetchPage, isAtInitialState, retryCount])
+  }, [pageIndex, pageSize, sorting, q, endpoint, baseFilter, isAtInitialState, retryCount])
 
   const pageCount = Math.max(1, Math.ceil(data.total / pageSize))
 
@@ -233,10 +242,8 @@ function DataTableInner<TData extends RowData>({
       )}
 
       <div className={cn(
-        // Full-bleed on mobile: a -mx-6 cancels the px-6 page padding so the
-        // (horizontally scrolling) table uses the whole screen width. Side
-        // borders + rounding are dropped while it touches the edges, and
-        // everything is restored from sm up where the page has room.
+        // Full-bleed on mobile so the scrolling table gets the whole width; the
+        // side borders and rounding come back from sm up.
         'border-input bg-card overflow-hidden border dark:bg-input/50',
         '-mx-6 rounded-none border-x-0 sm:mx-0 sm:rounded-md sm:border-x',
         isPending && 'opacity-60',

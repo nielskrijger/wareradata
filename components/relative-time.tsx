@@ -19,10 +19,9 @@ interface Props {
 }
 
 /**
- * Re-reads the clock on an interval so a time label advances on its own. The
- * value depends on the current time, so SSR and the first client render can
- * disagree across a minute boundary; the callers pass suppressHydrationWarning,
- * the canonical fix for these unavoidable server/client time differences.
+ * Re-reads the clock on an interval so the label advances. Server and client
+ * can disagree across a minute boundary, so callers suppress the hydration
+ * warning.
  */
 function useClockTick() {
   const [, tick] = useReducer((n: number) => n + 1, 0)

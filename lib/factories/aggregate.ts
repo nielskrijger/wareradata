@@ -12,11 +12,8 @@ import { buildFrontier, computeFactoryProfit, netPerUnit } from './profit'
 const RETIRING_SOON_DAYS = 7
 
 /**
- * Streams the factory NDJSON file and computes each user's factory totals from
- * the raw rows plus the snapshot's market data (prices + recipes). Only the small
- * per-user aggregate map is retained — raw rows are parsed and discarded one line
- * at a time, so a full factory dataset never materializes in memory. Returns an
- * empty map when the file doesn't exist.
+ * Each user's factory totals, streamed line by line so the raw rows never sit
+ * in memory together. Empty when there's no file.
  */
 export async function loadFactoryAggregates(
   raw: Pick<RawSnapshot, 'prices' | 'gameConfig'>,
@@ -25,19 +22,9 @@ export async function loadFactoryAggregates(
   const recipe = recipeFromGameConfig(raw.gameConfig)
   const frontier = buildFrontier(prices, recipe)
 
-  // Net gold per production point (revenue net of inputs ÷ point cost), memoized
-  // per item — many factories share an item, so this runs once per item instead
-  // of re-walking the recipe for every factory row.
-  const valuePerPpByItem = new Map<string, number>()
-  const valuePerPp = (itemCode: string): number => {
-    let v = valuePerPpByItem.get(itemCode)
-    if (v === undefined) {
-      v = (netPerUnit(itemCode, prices, recipe) ?? 0) / (recipe[itemCode]?.productionPoints ?? 1)
-      valuePerPpByItem.set(itemCode, v)
-    }
-
-    return v
-  }
+  // Net gold per production point: revenue net of inputs ÷ point cost.
+  const valuePerPp = (itemCode: string): number =>
+    (netPerUnit(itemCode, prices, recipe) ?? 0) / (recipe[itemCode]?.productionPoints ?? 1)
 
   const out = new Map<string, UserFactoryAgg>()
   await streamFactoryUsers(({ userId, rows }) => {

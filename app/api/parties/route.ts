@@ -5,11 +5,8 @@ import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
 import {
   CASE_FIELD_ALIASES,
-  CASE_SORT_KEYS,
   PREMIUM_FIELD_ALIASES,
-  PREMIUM_KEYS,
   WEALTH_FIELD_ALIASES,
-  WEALTH_PART_KEYS,
 } from '@/lib/rows/field-bundles'
 
 /**
@@ -30,28 +27,8 @@ const partyFieldAliases: FieldAliases = {
   ppd: 'avgPointsPerDay',
 }
 
-const partySortValue = makeSortValue<PartyRow>({
-  passthrough: [
-    ...CASE_SORT_KEYS,
-    ...WEALTH_PART_KEYS,
-    ...PREMIUM_KEYS,
-    'totalPoints',
-    'avgPoints',
-    'avgPointsPerDay',
-    'avgLevel',
-    'memberCount',
-    'memberWealth',
-    'createdAt',
-  ],
-  text: ['name', 'countryName', 'leaderName'],
-  default: 'totalPoints',
-})
+const partySortValue = makeSortValue<PartyRow>()
 
-/**
- * Driven by the client DataTable on /parties. Reads from the in-process snapshot
- * cache (warm worker = sub-ms) and applies pagination, sorting, and filtering
- * in memory. Returns `{rows, total}`.
- */
 export const GET = createTableRoute<PartyRow>(
   async () => (await getSnapshot()).parties,
   partySortValue,

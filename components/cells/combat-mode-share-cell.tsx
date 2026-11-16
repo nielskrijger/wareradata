@@ -5,6 +5,7 @@ import { Coins, Swords } from 'lucide-react'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 
 interface Props {
   /**
@@ -20,21 +21,10 @@ interface Props {
 }
 
 /**
- * Shared heat tokens so war/eco read as one consistent red/green across the
- * table cells and the detail-page card (which also uses --heat-red/green).
- */
-const WAR_COLOR = 'var(--heat-red)'
-const ECO_COLOR = 'var(--heat-green)'
-
-/**
- * A MU / country's collective War / Eco lean as a two-tone bar (red war / green
- * eco), sized by the mean of members' war shares. A bar rather than a single
- * badge: the aggregate mean rarely crosses the War threshold, so almost every
- * group would read "Eco" as a chip — the bar shows the actual split at a glance.
- * Hover reveals the exact percentages. Mirrors {@link ReadinessPillBar}.
+ * A group's mean war/eco lean as a two-tone bar.
  *
- * The per-user cell keeps the badge — individual players genuinely span the
- * War/Eco/Hybrid range, so the label is informative there.
+ * A badge would read "Eco" for almost every group, since the mean rarely
+ * crosses the War threshold; the bar shows the actual split.
  */
 export function CombatModeShareCell({ avgWarShare, width = 84 }: Props) {
   if (avgWarShare === null) {

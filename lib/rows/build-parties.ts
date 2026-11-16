@@ -5,6 +5,7 @@ import type { Party } from '@/lib/warera/api'
 import { leaderFields, rankAll } from '@/lib/rows/lookups'
 import {
   aggCases,
+  aggMean,
   aggPoints,
   aggPremium,
   aggregateMembers,
@@ -27,7 +28,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
 
       return {
         avatarUrl: p.avatarUrl ?? null,
-        avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
+        avgLevel: aggMean(agg?.levelSum ?? 0, agg?.levelCount ?? 0),
         avgLevelRank: null,
         countryCode: country?.code ?? null,
         countryId: p.country ?? null,

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { EMPTY } from '@/lib/format'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
@@ -24,7 +25,7 @@ export function FillBar({ pct, icon }: Props) {
       <div className="flex items-center gap-2">
         {icon}
         <div className="h-1.5 flex-1 rounded-full bg-white/10" />
-        <span className="w-9 text-right text-[11px] text-neutral-50/40">—</span>
+        <span className="w-9 text-right text-[11px] text-neutral-50/40">{EMPTY}</span>
       </div>
     )
   }

@@ -45,10 +45,8 @@ export interface FactoryLedgerRow extends FactoryProfit {
 }
 
 /**
- * Splits a factory's production into its ledger lines: the automated engine, each
- * employee, and the manager's wage. The factory's per-point value (revenue net of
- * inputs, recovered from the computed net) is applied to each source's points, so
- * engine + employees − manager always sums to the factory's Net.
+ * A factory's ledger lines (engine, each employee, manager). Each source's
+ * points are valued at the factory's per-point net, so the lines sum to Net.
  */
 export function buildFactoryLedgerRow(
   profit: FactoryProfit,

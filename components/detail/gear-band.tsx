@@ -18,11 +18,8 @@ interface Props {
 }
 
 /**
- * The equipped-gear band shown at the foot of the user detail header (passed to
- * {@link DetailHeader}'s `footer` slot, so its top divider spans the card edge
- * to edge). The gear score leads as a rarity-tinted tile sharing the
- * {@link GearStrip} tile footprint, so it reads as the head of the strip,
- * followed by the seven equipped slots.
+ * The gear score tile followed by the seven equipped slots, for the user
+ * header's footer slot.
  */
 export function GearBand({ score, equipment, gearLookup }: Props) {
   // Prefer the real item tiers so the score tile matches the gear strip's

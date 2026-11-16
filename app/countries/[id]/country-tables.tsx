@@ -25,13 +25,11 @@ interface Props {
 }
 
 /**
- * The country page's three scoped tables, shown one at a time behind tabs.
+ * The country page's scoped tables, one at a time behind tabs.
  *
- * Each DataTable reads the same `q`/`sort`/`dir`/`page` URL keys, so mounting
- * more than one at once makes them fight over the same paging state. Tabs side-
- * step that: only the active table is mounted (base-ui unmounts hidden panels).
- * Switching tabs clears those table keys so a leftover `?page=2` from one table
- * doesn't carry into another with a different row count.
+ * Every DataTable reads the same `q`/`sort`/`dir`/`page` URL keys, so only the
+ * active one is mounted, and a tab switch clears the keys so `?page=2` from one
+ * table doesn't carry into another.
  */
 export function CountryTables({ code, citizens, mus, parties, battles }: Props) {
   const [tab, setTab] = useQueryState(
@@ -44,12 +42,9 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
     { shallow: true, history: 'replace' },
   )
 
-  // Scroll the tables into view only when a *non-default* tab is reached via the
-  // URL — a deep-linked `?tab=battles`, or the header's ⚔ pill (which links
-  // here) while already on the page. The default `citizens` tab is the landing
-  // state and never scrolls, so a plain `/countries/[id]` visit (or navigating
-  // back to one) stays at the top. Clicking a tab button in place sets
-  // `skipScrollRef` so the page doesn't yank when the user is already down here.
+  // Scroll to the tables only when a non-default tab arrives via the URL (a deep
+  // link or the header's ⚔ pill); a click on a tab here sets skipScrollRef so
+  // the page doesn't jump.
   const tablesRef = useRef<HTMLDivElement>(null)
   const skipScrollRef = useRef(false)
 

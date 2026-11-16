@@ -39,21 +39,11 @@ function trimEmployee(e: Employee): FactoryRawEmployee {
 }
 
 /**
- * The all-users factory pass on the slow factory client: for each company-owning
- * user, enumerate their factories with their NPC employee rosters, and record
- * each factory's daily production per source (the engine at its level, the
- * employees from the roster's hourly estimate), its wages and a trimmed copy of
- * the roster. `model` carries the
- * engine output per level. Net and the Top potential are NOT computed here — the
- * readers derive those at build time from these points plus the snapshot's
- * market data.
+ * Records each owner's factories with production per source, wages and a
+ * trimmed roster; net is derived at build time from market data.
  *
- * Streams NDJSON (one user per line) to a temp file, then renames over
- * `factories.ndjson` once the pass completes — so it holds no accumulator in
- * memory, and a crashed/partial pass leaves the previous file intact. Shared by
- * the manual `npm run scrape-factories` script. Takes the pre-filtered list of
- * company-owning user ids (see `loadFactoryScrapeInputs`). Returns the count of
- * users found to own factories.
+ * Streams to a temp file and renames when the pass completes, so nothing
+ * accumulates in memory and a crashed pass keeps the previous file.
  */
 export async function scrapeFactories(
   userIds: string[],

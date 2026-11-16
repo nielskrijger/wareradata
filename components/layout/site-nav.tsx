@@ -31,10 +31,8 @@ function isActive(pathname: string, href: string) {
 }
 
 /**
- * Silhouette of the nav at the same height as the live version, for use as
- * the Suspense fallback at the layout level — SiteNav reads usePathname() and
- * is dynamic per request, so under cacheComponents it can't render in the
- * static shell.
+ * The nav's silhouette for the layout's Suspense fallback: SiteNav reads the
+ * pathname, so it can't render in the static shell.
  */
 export function SiteNavFallback() {
   return <div className="bg-background sticky top-0 z-30 h-[57px] border-b" />

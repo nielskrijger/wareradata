@@ -47,13 +47,8 @@ interface FetchedData {
 const intFull = new Intl.NumberFormat('en', { maximumFractionDigits: 0 })
 
 /**
- * Wraps a username-shaped trigger with a hover tooltip showing the user's
- * leaderboard stats (vitals, readiness, points/damage/wealth) heat-tinted
- * against the dataset ranges. Data is fetched from `/api/users/[id]` on first
- * open and cached in-process for the rest of the session.
- *
- * When `userId` is null/undefined the children render bare — there's no entity
- * to look up, so no tooltip is shown.
+ * A tooltip of the user's stats, heat-tinted against all users. Fetched on
+ * first open; with no `userId` the children render bare.
  */
 export function UserHoverCard({ userId, children }: Props) {
   const { status, data, onOpenChange } = useEntityHover<FetchedData>(userId ? `/api/users/${userId}` : null)
@@ -160,7 +155,7 @@ function StatRow({ icon, label, value, range }: {
     <div className="flex justify-between">
       <span className="inline-flex items-center gap-1.5">{icon}{label}</span>
       <span className="tabular-nums">
-        {value == null ? <span className="text-neutral-50/40">—</span> : (
+        {value == null ? <span className="text-neutral-50/40">{EMPTY}</span> : (
           <HeatCell value={value} range={range} mode="median">
             {intFull.format(value)}
           </HeatCell>

@@ -23,11 +23,7 @@ function labelOf<TData extends RowData>(column: Column<DataTableFeatures, TData>
 }
 
 /**
- * The table's "Columns" control: a popover whose hideable columns are grouped
- * into collapsible categories. Each group has a colored icon, a visible/total
- * count, a chevron to expand, and a 3-state checkbox that toggles the whole
- * group. Plain "Show all / Hide all" sit on top. The grouping keeps a long
- * column list manageable.
+ * The Columns popover, with the hideable columns grouped by category.
  */
 export function ColumnsMenu<TData extends RowData>({ table }: { table: Table<DataTableFeatures, TData> }) {
   const [open, setOpen] = useState<Set<Category>>(() => new Set())

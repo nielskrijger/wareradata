@@ -6,6 +6,7 @@ import { rankAll, toTier } from '@/lib/rows/lookups'
 import {
   aggCases,
   aggFactories,
+  aggMean,
   aggPoints,
   aggPremium,
   aggregateMembers,
@@ -53,7 +54,7 @@ export function buildCountryRows(
         alliesCount: c.allies?.length ?? 0,
         alliesCountRank: null,
         ...aggVitals(agg),
-        avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
+        avgLevel: aggMean(agg?.levelSum ?? 0, agg?.levelCount ?? 0),
         avgLevelRank: null,
         bounty: r?.countryBounty?.value ?? null,
         bountyRank: null,
@@ -97,11 +98,8 @@ export function buildCountryRows(
     })
     .sort((a, b) => b.totalPoints - a.totalPoints)
 
-  // Rank countries against each other on every numeric stat (standard
-  // competition rank over the snapshot). Recomputing damage/wealth too so each
-  // "#X of N" on the detail page shares one denominator. Taxes and unrest are
-  // policy settings (lower isn't "better" in a leaderboard sense), so they get
-  // no rank.
+  // Damage and wealth are re-ranked here so every "#X of N" on the detail page
+  // shares one N. Taxes and unrest are policy, not a leaderboard, so no rank.
   rankAll(rows, [
     'caseLuck',
     ...POINTS_RANK_KEYS,

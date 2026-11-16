@@ -39,12 +39,10 @@ function formatEndsAt(iso: string): string {
 }
 
 /**
- * Once the countdown runs out the buff/debuff has worn off, so the pill should
- * read "Ready" instead of a stale "0m". The snapshot's status flag lags the
- * clock, so we detect expiry on the client. `now` stays null on the server and
- * the first client render (so both agree the effect is still active, no
- * hydration mismatch); a deferred update then reads the real clock and a 30s
- * interval keeps it live, matching the countdown's own cadence.
+ * Whether the effect has worn off, since the snapshot's status lags the clock.
+ *
+ * `now` stays null on the server and the first client render so hydration
+ * matches; a 30s interval then keeps it live, like the countdown.
  */
 function useExpired(iso: string | null | undefined): boolean {
   const [now, setNow] = useState<number | null>(null)
@@ -64,11 +62,8 @@ function useExpired(iso: string | null | undefined): boolean {
 }
 
 /**
- * Readiness pill from a user's attack buffs/debuffs: green "Buff" (net attack
- * bonus) and red "Debuff" (net penalty), each counting down the time remaining,
- * or a neutral-grey "Ready" when neither is active (baseline, free to take a buff).
- * Buff/debuff carry a hover tooltip with the exact end time; renders the
- * empty-dash placeholder when unknown.
+ * Buff (green) or Debuff (red) with a countdown, or a grey Ready when neither
+ * is active.
  */
 export function ReadinessBadge({ status, endsAt, withTooltip = true }: Props) {
   const expired = useExpired(endsAt)

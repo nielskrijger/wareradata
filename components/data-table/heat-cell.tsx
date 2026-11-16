@@ -9,14 +9,11 @@ interface Props {
   range: Range | undefined
 
   /**
-   * 'ramp'         green-only, full gradient from min (neutral) to max (full green).
-   * 'median'       diverging green→neutral→red centered on the median: above
-   *                the typical value greens, below reds. Higher is "good".
-   * 'invert'       diverging, lower is "good" (green), higher reds. Centers on
-   *                the dataset midpoint. For ranks (uniform) and tax rates.
-   * 'invertMedian' like 'invert' but centered on the median — for skewed
-   *                lower-is-better columns (e.g. wars) where the midpoint
-   *                would leave almost everything green.
+   * 'ramp': green-only, min neutral to max green.
+   * 'median': above the median greens, below reds (higher is better).
+   * 'invert': lower is better, centered on the midpoint (ranks, tax rates).
+   * 'invertMedian': lower is better, centered on the median, for skewed
+   * columns like wars where the midpoint would leave almost everything green.
    */
   mode?: Mode
 
@@ -28,11 +25,8 @@ interface Props {
   center?: number
 
   /**
-   * Compress the color scale logarithmically so heavily skewed columns (e.g.
-   * casesOpened, 1 → 170k) spread their tint across typical values instead of
-   * leaving everything near neutral until the lone outlier. Applies to all
-   * modes; most useful on diverging columns where even the sqrt ramp curve
-   * isn't enough.
+   * Log-compress the scale so a heavily skewed column (casesOpened, 1 to 170k)
+   * tints its typical values instead of only the outlier.
    */
   logScale?: boolean
   children: ReactNode
@@ -50,18 +44,8 @@ function logCurve(t: number): number {
 /**
  * Tints a numeric cell's text to surface standout values.
  *
- * 'ramp' columns are green-only and tint the full range — min reads neutral,
- * max reads full green, with a linear gradient between.
- *
- * The diverging modes tint by distance from a neutral center, one way above
- * and the other below. 'median' greens the high side (higher is good,
- * e.g. avg points); 'invert' / 'invertMedian' green the low side (lower is
- * good, e.g. ranks, tax rates, wars). The *Median variants center on the
- * median; plain 'invert' centers on the dataset midpoint. A `center` overrides
- * the anchor in every diverging mode.
- *
- * `range` is the [min, max, median] over the full filtered dataset, supplied
- * by the API so the highlight is stable across pages.
+ * `range` covers the whole filtered set, not the page, so the tint stays
+ * stable while paging.
  */
 export function HeatCell({ value, range, mode = 'ramp', center, logScale = false, children }: Props) {
   if (value == null || range == null) {

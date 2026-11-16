@@ -19,13 +19,10 @@ interface Props {
 }
 
 /**
- * The /battles page's two scoped tables behind Active / Finished tabs.
+ * Active and finished battles behind tabs.
  *
- * Same rationale as the country page: both tables read the same
- * `q`/`sort`/`dir`/`page` URL keys, so only the active one is mounted (base-ui
- * unmounts hidden panels), and switching tabs clears those keys so a leftover
- * `?page=2` doesn't bleed across. The two tables also use different columns
- * (live round damage vs. winner/ended), so they can't share a single table.
+ * Both tables read the same URL keys, so only the active one is mounted and a
+ * tab switch clears the keys (see CountryTables).
  */
 export function BattleTabs({ active, finished }: Props) {
   const [tab, setTab] = useQueryState(

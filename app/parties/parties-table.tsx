@@ -1,13 +1,10 @@
 'use client'
 
-import type { PageRequest, PageResult } from '@/components/data-table/data-table'
+import type { PageResult } from '@/components/data-table/data-table'
 import type { PartyRow } from '@/lib/rows'
-
-import { useCallback } from 'react'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
-import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 import { partyColumns } from './columns'
 
@@ -22,18 +19,14 @@ interface Props {
 }
 
 export function PartiesTable({ initial, baseFilter }: Props) {
-  const fetchPage = useCallback(
-    (req: PageRequest) => fetchPaginated<PartyRow>('/api/parties', req, baseFilter),
-    [baseFilter],
-  )
-
   return (
     <DataTable
       tableId="parties"
       columns={partyColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}
-      fetchPage={fetchPage}
+      endpoint="/api/parties"
+      baseFilter={baseFilter}
       searchPlaceholder="Filter by party, country, or leader…"
       searchHint={(
         <AdvancedSearchHint

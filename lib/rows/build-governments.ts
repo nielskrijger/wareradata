@@ -50,11 +50,9 @@ function ministersOf(gov: Government): GovernmentMinister[] {
 }
 
 /**
- * Resolves a single office-holder user id to a renderable official, or null
- * when the seat is vacant (empty id) or the user isn't in the snapshot. Skipping
- * unknown ids keeps the country page from linking to a /users page that 404s.
- * `partyId` overrides the membership lookup, for congress seats that record
- * the party list the member was elected on.
+ * Null for a vacant seat or a user not in the snapshot, so the page never
+ * links to a 404. `partyId` overrides membership, for congress seats elected
+ * on a party list.
  */
 function resolveOfficial(userId: string | undefined, lookups: Lookups, partyId?: string): GovernmentOfficial | null {
   if (!userId) {
@@ -80,10 +78,8 @@ function resolveOfficial(userId: string | undefined, lookups: Lookups, partyId?:
 }
 
 /**
- * Resolves each country's raw government (a bag of user ids) into a
- * {@link GovernmentRow} of avatar + linked-name officials. Keyed by country id,
- * mirroring the input map. Built once per snapshot and read only by the country
- * detail page, so it never ships in a table payload.
+ * Resolves each country's officials to renderable rows. Read only by the
+ * country page, so it never ships in a table payload.
  */
 export function buildGovernmentRows(
   governments: Record<string, Government>,

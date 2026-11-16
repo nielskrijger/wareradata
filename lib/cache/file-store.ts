@@ -29,18 +29,14 @@ const log = logger.child({ component: 'file-store' })
  */
 export interface RawSnapshot {
   /**
-   * The raw user array lives in a separate users.ndjson file, and currently-
-   * equipped gear in equipment.ndjson — neither is held here, so the persisted
-   * snapshot is small (~5 MB) and the build streams those files into the rows
-   * (see lib/cache/users-store and lib/cache/equipment-store).
+   * Users and equipment live in their own NDJSON files, which keeps this file
+   * small (~5 MB).
    */
   countries: Country[]
 
   /**
-   * Each occupied country's elected officials (president, ministers, congress),
-   * keyed by country id, all as user ids. Captured once per scrape via the
-   * per-country government endpoint. Dormant countries with no government are
-   * simply absent from the map.
+   * Elected officials as user ids, by country id; countries with no
+   * government are absent.
    */
   governments: Record<string, Government>
 
@@ -69,25 +65,22 @@ export interface RawSnapshot {
   gameConfig: GameConfig
 
   /**
-   * Market context for the factory profit model, captured each cycle (one extra
-   * request): current item prices. Kept here so the row builders can value
-   * factories at build time without any network. Empty on a legacy/cold snapshot.
+   * Item prices, so the build can value factories without the network. Empty
+   * on a cold volume.
    */
   prices: MarketPrices
   meta: SnapshotMeta
 }
 
 /**
- * The runtime data volume: `DATA_DIR` when set, else `.data` in the working dir.
- * The ignore comment on the explicit `process.cwd()` base tells Turbopack's
- * output file tracing this is a runtime path, so it doesn't trace the whole
- * project into the build output.
+ * `DATA_DIR`, else `.data`. The turbopackIgnore marks this as a runtime path so
+ * the build doesn't trace the whole project.
  */
 export function dataDir(): string {
   return path.resolve(/* turbopackIgnore: true */ process.cwd(), process.env.DATA_DIR ?? '.data')
 }
 
-export function snapshotPath(): string {
+function snapshotPath(): string {
   return path.join(dataDir(), 'snapshot.json')
 }
 
@@ -166,10 +159,8 @@ export function emptyRawSnapshot(): RawSnapshot {
 }
 
 /**
- * Reads the persisted snapshot, or null when the file doesn't exist yet (a cold
- * volume). Callers substitute {@link emptyRawSnapshot} so pages render the empty
- * state. Any other error rethrows: a corrupt or unreadable file should surface,
- * not silently degrade to empty.
+ * Null on a cold volume; any other error rethrows, since a corrupt file should
+ * surface rather than silently become empty.
  */
 export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   const path = snapshotPath()
@@ -189,23 +180,6 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
 
   const readMs = Date.now() - start
   const parsed = JSON.parse(raw) as RawSnapshot
-  // Backfill fields added to RawSnapshot after the persisted file was written,
-  // so a deploy that adds a new key doesn't crash on the first boot reading a
-  // legacy on-disk snapshot. The next scrape cycle will populate them properly.
-  parsed.governments ??= {}
-  parsed.alliances ??= []
-  parsed.prices ??= {} as RawSnapshot['prices']
-
-  // An older snapshot file can still embed `users` and `equipment`, which live in
-  // users.ndjson and equipment.ndjson. Drop those keys so such a file doesn't pin
-  // ~100 MB of unused data until the next scrape rewrites the snapshot.
-  // serializeSnapshot never emits them, so this only matters for a file no cycle
-  // has rewritten yet.
-  delete (parsed as { users?: unknown }).users
-  delete (parsed as { equipment?: unknown }).equipment
-  // `itemBestRegions` is unused (regions don't affect production); drop it from
-  // an older snapshot file.
-  delete (parsed as { itemBestRegions?: unknown }).itemBestRegions
 
   log.info({
     path,
@@ -218,34 +192,26 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
 }
 
 /**
- * Streams the snapshot as JSON one field at a time. The two big collections
- * (users, equipment) live in their own NDJSON files, so what remains here is
- * small (~5 MB) — but the streamed write keeps the atomic temp-file + rename
- * guarantee and avoids holding a second copy in a write buffer. Key order is
- * irrelevant to a parser.
+ * Streams the snapshot one field at a time so the write never holds a second
+ * serialized copy in memory.
  */
 function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
-  yield `{"countries":${JSON.stringify(snapshot.countries)}`
-  yield `,"governments":${JSON.stringify(snapshot.governments)}`
-  yield `,"mus":${JSON.stringify(snapshot.mus)}`
-  yield `,"regions":${JSON.stringify(snapshot.regions)}`
-  yield `,"parties":${JSON.stringify(snapshot.parties)}`
-  yield `,"alliances":${JSON.stringify(snapshot.alliances)}`
-  yield `,"battles":${JSON.stringify(snapshot.battles)}`
-  yield `,"tournament":${JSON.stringify(snapshot.tournament)}`
-  yield `,"gameConfig":${JSON.stringify(snapshot.gameConfig)}`
-  yield `,"prices":${JSON.stringify(snapshot.prices)}`
-  yield `,"meta":${JSON.stringify(snapshot.meta)}`
-  yield '}'
+  let sep = '{'
+  for (const [key, value] of Object.entries(snapshot)) {
+    if (value !== undefined) {
+      yield `${sep}${JSON.stringify(key)}:${JSON.stringify(value)}`
+      sep = ','
+    }
+  }
+
+  yield sep === '{' ? '{}' : '}'
 }
 
 /**
- * Removes orphaned temp files left in the data dir and the battle archive by a
- * write that died before its rename (a SIGKILL, OOM, or deploy mid-write skips
- * the writers' own cleanup). Only files whose writer process is gone are
- * removed, so a write still in flight in this or another process (the factory
- * scrape runs for a long time, and the CLI scripts can run beside the server)
- * is never touched. Best-effort: never throws.
+ * Removes temp files left by writes that died before their rename.
+ *
+ * Only files whose writer process is gone, so a long write in flight (the
+ * factory scrape, a CLI beside the server) is never touched. Never throws.
  */
 export async function sweepStaleTempFiles(): Promise<void> {
   for (const dir of [dataDir(), archiveDir()]) {
@@ -270,13 +236,8 @@ export async function sweepStaleTempFiles(): Promise<void> {
 }
 
 /**
- * Persists the snapshot atomically: stream it to a unique temp file in the same
- * directory, then rename over the live file. A same-filesystem rename is atomic
- * on POSIX, so a concurrent reader sees either the old or the fully-written new
- * file, never a half-written one. Streaming keeps peak memory flat instead of
- * holding the whole serialized blob plus its write buffer. On failure the
- * partial temp file is removed; on success any stale temp files from earlier
- * crashed writes are swept.
+ * Writes to a temp file and renames over the live one, so readers never see a
+ * half-written file.
  */
 export async function writeRawSnapshot(snapshot: RawSnapshot): Promise<void> {
   const dir = dataDir()

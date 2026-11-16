@@ -15,7 +15,7 @@ export const RARITY_HEX = [
   '#f87171', // 6 mythic
 ] as const
 
-export const RARITY_LABELS = [
+const RARITY_LABELS = [
   'Common',
   'Uncommon',
   'Rare',

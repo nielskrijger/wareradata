@@ -3,30 +3,19 @@ import type { Equipment, GameConfig } from '@/lib/warera/api'
 import { rarityTier } from '@/lib/gear/rarity'
 
 /**
- * Gear quality scoring. The score answers "how strong is this loadout" on a
- * 0-100 scale that reads as a rarity tier: the item's rarity tier sets the band
- * (common … mythic), and the actual stat roll within that tier nudges the score
- * up or down inside the band. So a max-rolled Epic outscores a min-rolled Epic,
- * but both stay in the Epic band — and the band always matches the rarity rings
- * on the gear tiles. A full-Epic loadout scores in the 45-64 range, squarely
- * "Epic".
+ * Gear score, 0-100: the rarity tier sets the band and the stat roll moves
+ * the score within it, so the band always matches the tile's rarity ring.
  */
 
 /**
- * The item codes that fill the weapon slot, weakest to strongest. This is the
- * one structural fact the config doesn't hand us (which items are weapons); each
- * weapon's tier and roll bounds still come from the live config (its rarity and
- * dynamicStats). Armor pieces follow the `{slot}{tier}` naming, so they need no
- * such list.
+ * The config doesn't say which items are weapons, so they're listed here,
+ * weakest first. Armor follows `{slot}{tier}` naming and needs no list.
  */
 const WEAPON_CODES = ['knife', 'gun', 'rifle', 'sniper', 'tank', 'jet'] as const
 
 /**
- * A tiny lookup derived from the live config: each gear/ammo item code's rarity
- * tier (1..6), plus each ammo type's flat percent-attack bonus. Small enough
- * (a few hundred bytes) to ship to the browser, so client components (the gear
- * strip, the hover-card) can resolve tiers and ammo bonuses without the full
- * config or a hardcoded map.
+ * Each item's rarity tier and each ammo's attack bonus. A few hundred bytes,
+ * so it ships to the browser instead of the whole config.
  */
 export interface GearLookup {
   tierByCode: Record<string, number>
@@ -34,10 +23,7 @@ export interface GearLookup {
 }
 
 /**
- * Builds the {@link GearLookup} from the live gameConfig: every item's tier from
- * its `rarity`, and every item's flat percentAttack (ammo's under-tile bonus)
- * from its `flatStats`. The scrape always captures the config, so nothing here
- * is hardcoded.
+ * Builds the {@link GearLookup} from the live config.
  */
 export function deriveGearLookup(config: GameConfig): GearLookup {
   const items = (config.items ?? {}) as unknown as Record<string, {
@@ -91,11 +77,7 @@ const SLOT_STATS: Record<string, string> = {
 }
 
 /**
- * Builds the per-tier roll bounds from the live gameConfig's item catalog. Weapon
- * tiers come from each weapon's `rarity` (over the {@link WEAPON_CODES} list);
- * armor tiers from the `{slot}{tier}` codes (helmet4, chest2, …). The scrape
- * always captures the config, so this is the single source of the roll ranges —
- * they self-correct whenever the devs rebalance item stats.
+ * Per-tier roll bounds from the live config, so they follow every rebalance.
  */
 export function deriveSlotSpecs(config: GameConfig): Record<string, SlotSpec> {
   const items = config.items
@@ -240,15 +222,8 @@ export function gearScoreTier(score: number | null | undefined): number {
 }
 
 /**
- * Rarity tier (1 common … 6 mythic) of a player's loadout, as the rounded mean
- * of its equipped pieces' actual item tiers (weapon + the five armor slots;
- * ammo excluded). Empty slots count as 0, so a half-equipped loadout reads
- * lower. Returns null when nothing tier-bearing is equipped.
- *
- * Reads each piece's tier from the live config via the {@link GearLookup} — the
- * most literal "what grade is this gear". {@link gearScoreTier} on the score
- * lands on the same band, so either can drive the pill color; this one is exact
- * when the equipment is in hand.
+ * The loadout's tier: the rounded mean of the weapon and five armor tiers, an
+ * empty slot counting 0. Null when nothing tier-bearing is equipped.
  */
 export function computeGearTier(equipment: Equipment | undefined, lookup: GearLookup): number | null {
   if (!equipment) {

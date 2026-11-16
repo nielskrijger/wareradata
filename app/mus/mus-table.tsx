@@ -1,13 +1,10 @@
 'use client'
 
-import type { PageRequest, PageResult } from '@/components/data-table/data-table'
+import type { PageResult } from '@/components/data-table/data-table'
 import type { MURow } from '@/lib/rows'
-
-import { useCallback } from 'react'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
-import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 import { muColumns } from './columns'
 
@@ -22,18 +19,14 @@ interface Props {
 }
 
 export function MUsTable({ initial, baseFilter }: Props) {
-  const fetchPage = useCallback(
-    (req: PageRequest) => fetchPaginated<MURow>('/api/mus', req, baseFilter),
-    [baseFilter],
-  )
-
   return (
     <DataTable
       tableId="mus"
       columns={muColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}
-      fetchPage={fetchPage}
+      endpoint="/api/mus"
+      baseFilter={baseFilter}
       searchPlaceholder="Filter by MU name or country…"
       searchHint={(
         <AdvancedSearchHint

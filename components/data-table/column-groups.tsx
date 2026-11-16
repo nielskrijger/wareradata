@@ -8,12 +8,8 @@ import { CASE_RARITIES } from '@/lib/warera/api'
 import { compactNumberColumn, localeNumberColumn, percentColumn, pointsBreakdownColumn } from './column-factories'
 
 /**
- * Whole-category column groups: each returns the `ColumnDef<T>[]` for one
- * {@link buildColumns} group (points / wealth / cases), assembled from the
- * single-column factories in `column-factories.tsx`. The aggregate group
- * tables (MUs / countries / parties / alliances) share the same shapes, so a
- * group lives here once instead of being re-spelled per table; the /users
- * table keeps its own per-player variants where the wording differs.
+ * Whole-category column groups shared by the group tables (MUs, countries,
+ * parties, alliances). /users keeps its own, since its values are one player's.
  */
 
 /**
@@ -37,10 +33,8 @@ interface PointsRow {
 }
 
 /**
- * The aggregate points trio: the member-summed Total (with the
- * level/damage/wealth breakdown on hover) plus the two per-member averages.
- * `who` names the collective in the tooltips. The /users table keeps its own
- * pair: its values are one player's points, not a sum.
+ * Member-summed total points plus the two per-member averages; `who` names the
+ * collective in the tooltips.
  */
 export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
   const one = who.slice(0, -1)
@@ -74,11 +68,7 @@ interface WealthComponentsRow {
 }
 
 /**
- * The six aggregate wealth columns: the member-summed Total plus its five
- * components. Only the Total's row key (memberWealth vs citizenWealth) and the
- * collective noun in the tooltips differ per table. The /users table keeps its
- * own set: its values are one player's holdings, not a sum, so the tooltips
- * read differently.
+ * Member-summed wealth and its five parts; `who` names the collective.
  */
 export function wealthColumns<T extends WealthComponentsRow>(
   totalKey: Key<T>,
@@ -143,12 +133,8 @@ interface FactoryStatsRow {
 }
 
 /**
- * The Factories column group: total factories across members, combined profit
- * per day split into Auto (passive engines) and Employees (net of employee and
- * manager wages), payroll, production points/day, and
- * efficiency (realized net vs the best-item Top potential). Net excludes self-work. `who`
- * names the collective in the tooltips. Shared by the country / MU / alliance
- * tables; empty until the slow factory scrape has run.
+ * Members' factories: count, profit split into Auto and Employees, payroll,
+ * production and efficiency. Empty until the factory scrape has run.
  */
 export function factoriesColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
   return [
@@ -237,10 +223,7 @@ interface PremiumRow {
 }
 
 /**
- * The premium-spend group: gems bought, premium months, and premium gifts, each
- * a member-summed total. Identical across the country / MU / party tables
- * (alliances carry no premium aggregate). The /users table keeps its own
- * per-player premium columns.
+ * Member-summed premium spend. Alliances have no premium aggregate.
  */
 export function premiumColumns<T extends PremiumRow>(): ColumnDef<T>[] {
   return [
@@ -280,10 +263,8 @@ const CASE_RARITY_WIDTHS: Record<CaseRarity, number> = {
 }
 
 /**
- * The Cases column group: opens per case type, pull luck vs the official drop
- * rates, then a count per rarity (weakest to strongest, the {@link
- * CASE_RARITIES} order). Counts are log-scaled — opens span 1 to hundreds of
- * thousands.
+ * Opens per case type, luck, then a count per rarity. Log-scaled, since opens
+ * span 1 to hundreds of thousands.
  */
 export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
   return [

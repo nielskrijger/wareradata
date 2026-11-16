@@ -44,17 +44,11 @@ interface State {
 }
 
 /**
- * Two-way sync between the DataTable's filter/sort/page state and the URL
- * query string (`?q=...&sort=...&dir=...&page=...&size=...`). Values that match the
- * page's defaults are stripped from the URL so it stays clean until the user
- * changes something.
+ * Syncs the table's filter, sort and page with the URL, leaving defaults out
+ * so the URL stays clean.
  *
- * `page` is 1-based in the URL but 0-based everywhere in React (matches
- * TanStack Table). Filter input is debounced before being written to the URL
- * so typing stays snappy and history doesn't fill with intermediate values.
- *
- * Updates use shallow routing so the server route doesn't re-execute on every
- * keystroke / sort click.
+ * The filter is debounced so history doesn't fill with every keystroke, and
+ * updates are shallow so the server doesn't re-render on each change.
  */
 export function useTableUrlState({ initialSort, defaultPageSize }: Args): State {
   const [q, setQ] = useQueryState('q', parseAsString.withDefault('').withOptions(urlOpts))
@@ -99,10 +93,8 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
 
   const [filterInput, setFilterInput] = useState(q)
 
-  // Track the last `q` value the user typed (after debounce flush) so we can
-  // distinguish typing from external URL changes (back/forward, in-app links
-  // like /users?q=country:nl). External changes overwrite the input;
-  // typing flows the other way, debounced into the URL.
+  // The last `q` the user typed, to tell typing from an outside URL change
+  // (back/forward, a link like /users?q=country:nl) that must overwrite the input.
   const lastTypedQRef = useRef(q)
   if (q !== lastTypedQRef.current && q !== filterInput) {
     lastTypedQRef.current = q

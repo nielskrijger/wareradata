@@ -133,15 +133,11 @@ function congressBenches(congress: GovernmentOfficial[], colors: Map<string, str
 }
 
 /**
- * The country detail page's elected-officials block, drawn like a legislature
- * floor: the executive as a labelled front bench, then congress split into
- * party benches (party emblem + seat count, members as party-coloured faces).
+ * The elected officials drawn like a legislature floor: the executive as a
+ * labelled front bench, then congress as party benches of faces.
  *
- * Faces are quiet by design: hover one for the shared user card (avatar, vitals,
- * stats) or click to open the player's page. Names only show inline for the
- * executive, where they matter most. Renders nothing when the country has no
- * government, or every seat is vacant. Responsive: benches stack their header
- * above the faces on phones and sit side by side from `sm` up.
+ * Only the executive shows names; the faces stay quiet and reveal the user
+ * card on hover. Renders nothing when every seat is vacant.
  */
 export function GovernmentSection({ government }: Props) {
   if (!government) {

@@ -16,11 +16,9 @@ export interface Lookups {
 }
 
 /**
- * Builds the lookups derivable from the small (non-streamed) entities. The three
- * per-user maps (`userNameById` / `userAvatarById` / `userColorSchemeById`) start
- * empty and are filled by {@link buildUserRows} as it streams users.ndjson, so
- * the raw user array never has to be held just to build them. The MU / party /
- * alliance builders that read those maps run after the user pass.
+ * Lookups from the small entities. The per-user maps start empty and
+ * buildUserRows fills them while streaming users, so the raw array is never
+ * held; the group builders run after.
  */
 export function buildBaseLookups(
   countries: Country[],
@@ -65,12 +63,8 @@ export function toTier(value: unknown): RankingTier | null {
 }
 
 /**
- * Spreads one API ranking entry into the `{ key, keyRank }` pair every row
- * builder repeats for upstream-ranked stats:
- * `rankPair('damage', r?.allianceDamages)` → `{ damage: <value | null>,
- * damageRank: <rank | null> }`. Use it only when both sides come straight from
- * the API entry; stats with a value fallback or a tier (e.g. development) or
- * whose rank is recomputed via {@link rankAll} keep their explicit assignment.
+ * `rankPair('damage', entry)` → `{ damage, damageRank }`, for stats whose value
+ * and rank both come straight from the API.
  */
 export function rankPair<K extends string>(
   key: K,
@@ -97,15 +91,10 @@ export function leaderFields(leaderId: string | null, lookups: Lookups): LeaderF
 }
 
 /**
- * Assigns a standard-competition rank (1 = highest value) into `rankKey`,
- * derived from `valueKey`. Rows tied on a value share a rank; the next distinct
- * value skips ahead by the size of the tie. Rows with a null value keep a null
- * rank — they're unranked for that stat, not last.
- *
- * Mutates the rows in place. Shared by the user and MU builders to rank rows
- * against their own kind (users vs users, MUs vs MUs), not as a sum of members.
+ * Standard competition rank (1 = highest; ties share a rank). Null values stay
+ * unranked rather than last. Mutates the rows.
  */
-export function assignRank<T extends Record<string, unknown>>(
+function assignRank<T extends Record<string, unknown>>(
   rows: T[],
   valueKey: keyof T,
   rankKey: keyof T,
@@ -127,10 +116,8 @@ export function assignRank<T extends Record<string, unknown>>(
 }
 
 /**
- * Convenience over {@link assignRank}: rank every listed value key into its
- * conventional `${key}Rank` sibling in one call. Pass `overrides` for the rare
- * value key whose rank field breaks the convention (e.g. users'
- * `militaryRank` → `militaryRankPos`). Mutates rows in place.
+ * {@link assignRank} into each key's `${key}Rank`; `overrides` names a rank
+ * field that breaks the convention.
  */
 export function rankAll<T extends Record<string, unknown>>(
   rows: T[],

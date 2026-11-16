@@ -43,10 +43,8 @@ interface Props {
 }
 
 /**
- * A single card holding several related stats that don't each warrant their own
- * StatCard (premium spend, policy rates, demographic counts, the damage family).
- * Each row keeps a StatCard's heat tint and rank, so the card stays dense
- * without losing the at-a-glance color or leaderboard context.
+ * Several related stats in one card, each keeping a StatCard's heat tint and
+ * rank.
  */
 export function MultiStatCard({ label, rows, hero, total }: Props) {
   return (

@@ -5,10 +5,7 @@ interface RouteContext {
 }
 
 /**
- * Single-country lookup, returns the projected CountryRow plus the leaderboard
- * ranges needed to heat-tint the hover-card tooltip (the data backbone of
- * `<CountryHoverCard>`). Reads from the warm in-memory snapshot via the
- * `lib/cache/countries` accessor.
+ * Backs the country hover card: the row plus the ranges that heat-tint it.
  */
 export async function GET(_: Request, { params }: RouteContext) {
   const { id } = await params

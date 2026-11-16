@@ -14,6 +14,7 @@ import { Flag } from '@/components/flag'
 import { FillBar } from '@/components/hover-card/fill-bar'
 import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
 import { useEntityHover } from '@/components/hover-card/use-entity-hover'
+import { EMPTY } from '@/lib/format'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
@@ -59,14 +60,8 @@ function pctInRange(value: number, range: Range | undefined): number {
 }
 
 /**
- * Wraps a country-name-shaped trigger with a hover tooltip showing the
- * country's leaderboard stats as a tile dashboard (population, weekly damage,
- * wealth, gear, MUs, war mode) over health/hunger bars, each heat-tinted
- * against the dataset ranges. Data is fetched from `/api/countries/[id]` on
- * first open and cached in-process for the rest of the session.
- *
- * When `countryId` is null/undefined the children render bare — there's no
- * entity to look up, so no tooltip is shown.
+ * A tooltip of the country's stats, heat-tinted against all countries. Fetched
+ * on first open; with no `countryId` the children render bare.
  */
 export function CountryHoverCard({ countryId, children, triggerClassName = 'block min-w-0' }: Props) {
   const {
@@ -184,7 +179,7 @@ function Tile({ icon, label, value, rank, range, display }: TileProps) {
         {label}
       </div>
       <div className="mt-0.5 whitespace-nowrap text-sm font-semibold tabular-nums" style={{ color }}>
-        {value == null ? <span className="text-neutral-50/40">—</span> : (display ?? intFull.format(value))}
+        {value == null ? <span className="text-neutral-50/40">{EMPTY}</span> : (display ?? intFull.format(value))}
         {value != null && rank != null && (
           <span className="ml-1 text-[10px] font-normal text-neutral-50/40">{`#${rank}`}</span>
         )}

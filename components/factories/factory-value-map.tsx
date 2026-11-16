@@ -86,9 +86,8 @@ function EmployeeDot({ p, x, y }: { p: Point, x: number, y: number }) {
 }
 
 /**
- * Each employee as a dot by wage (x) and the value of their output (y). The
- * shaded wedge under the diagonal is where an employee costs more than they
- * make. The best and worst earners are labelled so the extremes read without
+ * Employees by wage (x) and output value (y); the shaded wedge is where they
+ * cost more than they make. The extremes are labelled so they read without
  * hovering.
  */
 function Scatter({ points }: { points: Point[] }) {

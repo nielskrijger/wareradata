@@ -6,13 +6,7 @@ import { Coins, Swords } from 'lucide-react'
 
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
 import { StackedBar } from '@/components/stacked-bar'
-
-/**
- * Shared heat tokens so War/Eco read as the same red/green as the table's
- * CombatModeCell and the country/MU aggregate card.
- */
-const WAR_COLOR = 'var(--heat-red)'
-const ECO_COLOR = 'var(--heat-green)'
+import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 
 interface Props {
   mode: CombatMode
@@ -27,10 +21,8 @@ interface Props {
 }
 
 /**
- * A player's War / Eco skill split as a detail-page card: the mode badge, a
- * two-tone bar weighted by points invested, the raw points + share per side,
- * and the leading discipline's leaderboard rank. The always-visible counterpart
- * to the table's CombatModeCell tooltip; matches the StatCard frame.
+ * A player's war/eco split as a card: badge, bar, points and share per side,
+ * and the leading side's rank.
  */
 export function SkillSplitCard({ mode, warPoints, ecoPoints, warPointsRank, ecoPointsRank }: Props) {
   const total = warPoints + ecoPoints

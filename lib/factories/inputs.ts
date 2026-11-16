@@ -28,10 +28,8 @@ export function engineLevelOf(f: FactoryData): number {
 }
 
 /**
- * Maps one fetched factory into the profit model's input: the engine's daily
- * output from its level, plus the employees' production and the employee and
- * manager wages from the hourly estimate (× 24). A missing estimate counts as no
- * employees. Self-work is excluded.
+ * One factory as model input: engine output from its level, employee output
+ * and wages from the hourly estimate × 24. No estimate means no employees.
  */
 export function factoryInputFromData(
   f: FactoryData,

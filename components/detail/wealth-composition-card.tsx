@@ -32,12 +32,8 @@ interface Props {
 }
 
 /**
- * The detail-page "Wealth composition" card: an entity's wealth split into its
- * five parts (companies / items / cash / equipment / weapons), each a row whose
- * value is heat-tinted by the dataset range and trailed by its leaderboard rank,
- * the same treatment the Economy card's rows use. The header shows the summed
- * total (and, for groups, a per-capita average). For an MU or country the parts
- * are the sum across members/citizens; for a user, their own holdings.
+ * Wealth split into its five parts, each heat-tinted with its rank. For a group
+ * the parts are summed over members.
  */
 export function WealthCompositionCard({ parts, perCapita, className }: Props) {
   const total = parts.reduce((sum, p) => sum + (p.value ?? 0), 0)

@@ -18,15 +18,8 @@ import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip
 import { readinessScore } from '@/lib/rows'
 
 /**
- * Generic column factories for the patterns repeated verbatim across the entity
- * tables (countries / MUs / parties / battles / regions). Each returns a
- * `ColumnDef<T>` keyed off a row field, so a table lists `compactNumberColumn(...)`
- * instead of re-spelling the same cell + meta. Columns that genuinely diverge
- * (bespoke cells, raw-int / fixed-decimal formatting, per-row links) stay inline
- * in each table.
- *
- * Convention: the mandatory bits (the row key, the header) are positional; only
- * the optional knobs (heat mode, width, heat center) go in the trailing `opts`.
+ * Column factories for patterns repeated across the entity tables. Required
+ * bits (key, header) are positional; optional knobs go in `opts`.
  */
 
 type HeatMode = 'ramp' | 'median' | 'invert' | 'invertMedian'
@@ -176,12 +169,8 @@ export function readinessColumn<T extends { readinessPill: ReadinessPill }>(
 }
 
 /**
- * An entity's collective War / Eco lean as a two-tone bar, for the MU and
- * country tables (both carry `avgWarShare`). Sorts on the average war share —
- * the distribution, not point totals, which scale with level — highest war%
- * first; entities with no trained members sort last. The per-user table uses
- * {@link CombatModeCell} instead (richer per-player tooltip with raw points
- * and discipline rank).
+ * A group's war/eco lean. Sorts on the mean war share, since point totals scale
+ * with level.
  */
 export function combatModeColumn<T extends { avgWarShare: number | null }>(
   opts: { width?: number } = {},

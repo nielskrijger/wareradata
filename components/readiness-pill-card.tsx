@@ -30,10 +30,8 @@ function CardRow({ icon, label, n, total, color }: {
 }
 
 /**
- * Detail-page card form of the readiness mix: an icon-led breakdown (buff up /
- * ready dash / debuff down) with a per-state bar and member count. Spans two
- * StatCard columns from `sm` up (full width in the single mobile column).
- * Renders nothing when no member has a known status.
+ * The readiness mix as a detail card. Renders nothing when no member has a
+ * known status.
  */
 export function ReadinessPillCard({ mix }: { mix: ReadinessPill }) {
   const total = mix.buff + mix.ready + mix.debuff

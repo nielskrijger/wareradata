@@ -5,11 +5,23 @@
 export const EMPTY = '—'
 
 /**
+ * True when the ISO timestamp lies more than `ms` in the past. False for a
+ * missing or unparseable timestamp.
+ */
+export function isOlderThan(iso: string | null, ms: number): boolean {
+  if (!iso) {
+    return false
+  }
+  const then = Date.parse(iso)
+  return !Number.isNaN(then) && Date.now() - then > ms
+}
+
+const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'narrow' })
+
+/**
  * Formats an ISO timestamp as a short relative time ("3h ago", "2d ago",
  * "1mo ago", "2y ago") via Intl.RelativeTimeFormat in narrow style.
  */
-const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'narrow' })
-
 export function formatRelativeTime(iso: string | null): string {
   if (!iso) {
     return EMPTY

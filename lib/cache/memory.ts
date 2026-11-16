@@ -114,6 +114,12 @@ export interface Snapshot {
    * entry had no gear captured; `'{}'` means captured with nothing equipped.
    */
   equipmentJsonByUser: Map<string, string>
+
+  /**
+   * When the main scrape that produced this snapshot finished (ISO), or null
+   * before the first cycle. Shown to users as the data's age.
+   */
+  scrapedAt: string | null
 }
 
 /**
@@ -204,6 +210,7 @@ export async function buildSnapshot(
     gameConfig: raw.gameConfig,
     gearLookup,
     equipmentJsonByUser: new Map(Object.entries(equipmentByUser).map(([id, gear]) => [id, JSON.stringify(gear)])),
+    scrapedAt: raw.meta.scrapedAt ?? null,
   }
 }
 

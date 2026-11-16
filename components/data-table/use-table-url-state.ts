@@ -9,8 +9,14 @@ const FILTER_DEBOUNCE_MS = 250
 
 const urlOpts = { shallow: true, scroll: false, history: 'replace' as const }
 
+/**
+ * The page sizes a visitor can pick. The default page size must be one of them.
+ */
+export const PAGE_SIZES = [25, 50, 100] as const
+
 interface Args {
   initialSort: { id: string, desc: boolean }
+  defaultPageSize: number
 }
 
 interface State {
@@ -28,6 +34,8 @@ interface State {
   setSorting: (updater: SortingState | ((prev: SortingState) => SortingState)) => void
   pageIndex: number
   setPageIndex: (updater: number | ((prev: number) => number)) => void
+  pageSize: number
+  setPageSize: (size: number) => void
 
   /**
    * True when state matches the page's defaults (no params in URL).
@@ -37,7 +45,7 @@ interface State {
 
 /**
  * Two-way sync between the DataTable's filter/sort/page state and the URL
- * query string (`?q=...&sort=...&dir=...&page=...`). Values that match the
+ * query string (`?q=...&sort=...&dir=...&page=...&size=...`). Values that match the
  * page's defaults are stripped from the URL so it stays clean until the user
  * changes something.
  *
@@ -48,7 +56,7 @@ interface State {
  * Updates use shallow routing so the server route doesn't re-execute on every
  * keystroke / sort click.
  */
-export function useTableUrlState({ initialSort }: Args): State {
+export function useTableUrlState({ initialSort, defaultPageSize }: Args): State {
   const [q, setQ] = useQueryState('q', parseAsString.withDefault('').withOptions(urlOpts))
   const [sortParam, setSortParam] = useQueryState(
     'sort',
@@ -62,6 +70,20 @@ export function useTableUrlState({ initialSort }: Args): State {
   const [pageParam, setPageParam] = useQueryState(
     'page',
     parseAsInteger.withDefault(1).withOptions(urlOpts),
+  )
+
+  const [sizeParam, setSizeParam] = useQueryState(
+    'size',
+    parseAsInteger.withDefault(defaultPageSize).withOptions(urlOpts),
+  )
+  // Hand-edited URLs can carry any number; fall back to the default for sizes
+  // the picker doesn't offer.
+  const pageSize = (PAGE_SIZES as readonly number[]).includes(sizeParam) ? sizeParam : defaultPageSize
+  const setPageSize = useCallback(
+    (size: number) => {
+      setSizeParam(size === defaultPageSize ? null : size)
+    },
+    [defaultPageSize, setSizeParam],
   )
 
   const pageIndex = Math.max(0, pageParam - 1)
@@ -111,9 +133,9 @@ export function useTableUrlState({ initialSort }: Args): State {
     [sorting, setSortParam, setDirParam, initialSort, initialDir],
   )
 
-  // Any change to sort or filter snaps back to page 1 — keeps URLs sensible
-  // (a page index into a now-different filtered set is rarely useful).
-  const resetKey = `${sortParam}:${dirParam}|${q}`
+  // Any change to sort, filter or page size snaps back to page 1 — keeps URLs
+  // sensible (a page index into a now-different set is rarely useful).
+  const resetKey = `${sortParam}:${dirParam}|${q}|${pageSize}`
   const lastResetKeyRef = useRef(resetKey)
   if (lastResetKeyRef.current !== resetKey) {
     lastResetKeyRef.current = resetKey
@@ -123,7 +145,11 @@ export function useTableUrlState({ initialSort }: Args): State {
   }
 
   const isAtInitialState
-    = pageIndex === 0 && q === '' && sortParam === initialSort.id && dirParam === initialDir
+    = pageIndex === 0
+      && q === ''
+      && sortParam === initialSort.id
+      && dirParam === initialDir
+      && pageSize === defaultPageSize
 
   return {
     q,
@@ -133,6 +159,8 @@ export function useTableUrlState({ initialSort }: Args): State {
     setSorting,
     pageIndex,
     setPageIndex,
+    pageSize,
+    setPageSize,
     isAtInitialState,
   }
 }

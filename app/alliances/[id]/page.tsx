@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 
 import type { AllianceRow } from '@/lib/rows'
+
 import { notFound } from 'next/navigation'
-
 import { connection } from 'next/server'
-import { cache } from 'react'
 
+import { cache } from 'react'
 import { UsersTable } from '@/app/users/users-table'
+
 import { TierBadge } from '@/components/badges/tier-badge'
 import { AllianceAvatar } from '@/components/cells/alliance-avatar'
 import { CompactNumber } from '@/components/cells/compact-number'
@@ -17,6 +18,7 @@ import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { StrategicBonusCard } from '@/components/detail/strategic-bonus-card'
 import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
+import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -62,10 +64,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'Alliance not found' }
   }
-  return {
+  return pageMetadata({
     title: result.alliance.name,
-    description: `WarEra.io alliance stats for ${result.alliance.name}.`,
-  }
+    description: `WarEra.io alliance stats for ${result.alliance.name}: member countries, strength and wealth.`,
+    path: `/alliances/${id}`,
+  })
 }
 
 interface EmblemProps {

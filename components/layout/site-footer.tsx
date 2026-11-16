@@ -1,6 +1,10 @@
+import { Suspense } from 'react'
+
 import { MUCell } from '@/components/cells/mu-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { ExternalLink } from '@/components/links'
+
+import { DataFreshness } from './data-freshness'
 
 const HUZAREN_ID = '6980b01819decffdc7848ef9'
 const HUZAREN_AVATAR = 'https://media.warera.io/avatars/mu/mu-6980b01819decffdc7848ef9-1770821860524-yd1m6m7w.png'
@@ -18,7 +22,9 @@ export function SiteFooter() {
         <UserNameCell userId={FLAKY_ID} name="Flaky" avatarUrl={FLAKY_AVATAR} colorScheme="red" />
       </div>
       <div className="text-muted-foreground flex flex-wrap items-center justify-center gap-x-1.5 text-[11px]">
-        <span>Updated hourly (if the 🐹 is alive)</span>
+        <Suspense fallback={<span>Updated hourly</span>}>
+          <DataFreshness />
+        </Suspense>
         <span aria-hidden>·</span>
         <span className="inline-flex items-center gap-x-1">
           Keep the hamster fed, subscribe on

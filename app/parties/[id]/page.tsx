@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
+
 import { connection } from 'next/server'
 import { cache } from 'react'
-
 import { UsersTable } from '@/app/users/users-table'
+
 import { Avatar } from '@/components/avatar'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
@@ -17,6 +18,7 @@ import { WealthCompositionCard } from '@/components/detail/wealth-composition-ca
 import { ExternalLink } from '@/components/links'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { getSnapshot } from '@/lib/cache/memory'
+import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -49,10 +51,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'Party not found' }
   }
-  return {
+  return pageMetadata({
     title: result.party.name,
     description: `WarEra.io political-party stats for ${result.party.name}.`,
-  }
+    path: `/parties/${id}`,
+  })
 }
 
 export default async function PartyDetailPage({ params }: PageProps) {

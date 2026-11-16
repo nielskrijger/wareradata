@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
+
 import { connection } from 'next/server'
 import { cache } from 'react'
-
 import { UsersTable } from '@/app/users/users-table'
+
 import { Avatar } from '@/components/avatar'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
@@ -22,6 +23,7 @@ import { ExternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { getSnapshot } from '@/lib/cache/memory'
+import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -61,10 +63,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'MU not found' }
   }
-  return {
-    title: result.mu.name,
-    description: `WarEra.io military-unit stats for ${result.mu.name}.`,
-  }
+  const { mu } = result
+  const from = mu.countryName ? ` from ${mu.countryName}` : ''
+  return pageMetadata({
+    title: mu.name,
+    description: `WarEra.io military unit${from} with ${mu.memberCount} members: points, damage, gear and member stats.`,
+    path: `/mus/${id}`,
+  })
 }
 
 export default async function MUDetailPage({ params }: PageProps) {

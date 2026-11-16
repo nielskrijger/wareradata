@@ -238,7 +238,7 @@ export function gearColumn<T extends RowData>(
 export function countryColumn<
   T extends { countryCode: string | null, countryName: string | null, countryId: string | null },
 >(
-  opts: { sortKey?: Key<T>, width?: number } = {},
+  opts: { sortKey?: Key<T>, width?: number, hiddenByDefault?: boolean } = {},
 ): ColumnDef<T> {
   const accessorKey: Key<T> = opts.sortKey ?? ('countryName' as Key<T>)
 
@@ -254,7 +254,7 @@ export function countryColumn<
     ),
     // Tight enough that most names fit; long ones (e.g. "Bosnia and
     // Herzegovina") truncate to an ellipsis with the full name on hover.
-    meta: { width: opts.width ?? 150 },
+    meta: { width: opts.width ?? 150, hiddenByDefault: opts.hiddenByDefault },
   }
 }
 

@@ -23,6 +23,11 @@ interface Props {
    * identifier (e.g. the first column on /parties).
    */
   bold?: boolean
+
+  /**
+   * Shown as a small flag on the avatar.
+   */
+  countryCode?: string | null
 }
 
 /**
@@ -32,7 +37,7 @@ interface Props {
  * links to /users prefiltered to everyone in that party (`?q=party:"<name>"` —
  * quoted because party names often contain spaces).
  */
-export function PartyCell({ partyName, partyId, avatarUrl, bold }: Props) {
+export function PartyCell({ partyName, partyId, avatarUrl, bold, countryCode }: Props) {
   if (!partyName) {
     return <EmptyDash />
   }
@@ -51,7 +56,7 @@ export function PartyCell({ partyName, partyId, avatarUrl, bold }: Props) {
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Avatar src={avatarUrl} name={partyName} size={22} />
+      <Avatar src={avatarUrl} name={partyName} size={22} countryCode={countryCode} />
       {link}
     </div>
   )

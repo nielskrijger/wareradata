@@ -43,6 +43,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
             name={row.original.username}
             avatarUrl={row.original.avatarUrl}
             colorScheme={row.original.colorScheme}
+            countryCode={row.original.countryCode}
           />
         </UserHoverCard>
         {row.original.isBanned && (
@@ -87,14 +88,15 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       },
     ],
     general: [
-      countryColumn<UserRow>({ sortKey: 'countryCode' }),
+      // The flag on the avatar already shows the country.
+      countryColumn<UserRow>({ sortKey: 'countryCode', hiddenByDefault: true }),
       {
         accessorKey: 'levelRank',
         header: 'Level',
         cell: ({ row }) => <LevelCell {...row.original} />,
         sortDescFirst: false,
         sortUndefined: 'last',
-        meta: { heat: 'invert', sortInvert: true, align: 'right', width: 105 },
+        meta: { heat: 'invert', sortInvert: true, width: 105, cellClassName: 'tabular-nums' },
       },
       {
         accessorKey: 'muName',

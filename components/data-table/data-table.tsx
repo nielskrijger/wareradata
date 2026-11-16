@@ -7,11 +7,11 @@ import type { ColumnDef } from './features'
 
 import type { Range } from '@/lib/query'
 import { useTable } from '@tanstack/react-table'
-import { RotateCw, X } from 'lucide-react'
+import { RotateCw } from 'lucide-react'
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import {
   Table,
   TableBody,
@@ -81,6 +81,12 @@ interface DataTableProps<TData extends RowData> {
    * query syntax.
    */
   searchHint?: ReactNode
+
+  /**
+   * Column ids left out entirely, for columns the page already implies (e.g.
+   * MU on an MU's members). Gone from the Columns menu too.
+   */
+  omitColumns?: string[]
 }
 
 /**
@@ -98,7 +104,7 @@ export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
 
 function DataTableInner<TData extends RowData>({
   tableId,
-  columns,
+  columns: allColumns,
   initialData,
   initialSort,
   pageSize: defaultPageSize = 25,
@@ -106,7 +112,12 @@ function DataTableInner<TData extends RowData>({
   baseFilter,
   searchPlaceholder = 'Filter…',
   searchHint,
+  omitColumns,
 }: DataTableProps<TData>) {
+  const columns = omitColumns
+    ? allColumns.filter(c => !omitColumns.includes(columnId(c)))
+    : allColumns
+
   const {
     q,
     filterInput,
@@ -120,7 +131,12 @@ function DataTableInner<TData extends RowData>({
     isAtInitialState,
   } = useTableUrlState({ initialSort, defaultPageSize })
 
-  const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId)
+  // From all columns, so stored choices for omitted ones match the full table's.
+  const hiddenByDefault = allColumns
+    .filter(c => c.meta?.hiddenByDefault)
+    .map(columnId)
+
+  const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId, hiddenByDefault)
   const [data, setData] = useState<PageResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
   const [loadFailed, setLoadFailed] = useState(false)
@@ -190,7 +206,8 @@ function DataTableInner<TData extends RowData>({
     onSortingChange: setSorting,
     onColumnVisibilityChange: updater => setColumnVisibility(
       updater,
-      table.getAllLeafColumns().filter(c => c.getCanHide()).map(c => c.id),
+      // Omitted ids count as known so this page keeps their stored choices.
+      [...table.getAllLeafColumns().filter(c => c.getCanHide()).map(c => c.id), ...(omitColumns ?? [])],
     ),
     manualSorting: true,
     meta: { ranges: data.ranges },
@@ -201,24 +218,14 @@ function DataTableInner<TData extends RowData>({
   return (
     <div className="space-y-3" data-pending={isPending ? 'true' : 'false'}>
       <div className="flex items-center gap-2">
-        <div className="relative w-full max-w-xl">
-          <Input
-            value={filterInput}
-            onChange={e => setFilterInput(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="bg-card pr-8"
-          />
-          {filterInput && (
-            <button
-              type="button"
-              onClick={() => setFilterInput('')}
-              aria-label="Clear filter"
-              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <SearchInput
+          value={filterInput}
+          onChange={e => setFilterInput(e.target.value)}
+          onClear={() => setFilterInput('')}
+          placeholder={searchPlaceholder}
+          aria-label="Filter table"
+          className="w-full max-w-xl"
+        />
         {searchHint}
         <ColumnsMenu table={table} />
       </div>
@@ -283,4 +290,8 @@ function DataTableInner<TData extends RowData>({
       />
     </div>
   )
+}
+
+function columnId<TData extends RowData>(c: ColumnDef<TData>): string {
+  return c.id ?? ('accessorKey' in c ? String(c.accessorKey) : '')
 }

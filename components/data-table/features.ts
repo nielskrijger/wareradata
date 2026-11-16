@@ -60,6 +60,11 @@ export interface DataColumnMeta {
    * makes the row taller.
    */
   cellClassName?: string
+
+  /**
+   * Start the column hidden until the user turns it on in the Columns menu.
+   */
+  hiddenByDefault?: boolean
 }
 
 export interface DataTableMeta {

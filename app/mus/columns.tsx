@@ -39,6 +39,7 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
           muName={row.original.name}
           muId={row.original.id}
           avatarUrl={row.original.avatarUrl}
+          countryCode={row.original.countryCode}
           bold
         />
         <WareraLinkIcon kind="mu" id={row.original.id} />
@@ -56,7 +57,8 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
         sortDescFirst: true,
         meta: { heat: 'median', align: 'right', width: 105 },
       },
-      countryColumn<MURow>(),
+      // The flag on the avatar already shows the country.
+      countryColumn<MURow>({ hiddenByDefault: true }),
       {
         accessorKey: 'regionName',
         header: 'Region',

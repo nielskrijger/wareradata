@@ -16,9 +16,14 @@ interface Props {
    * `countryCode:<code>` on the country page). Combined with the user's search.
    */
   baseFilter?: string
+
+  /**
+   * Column ids the page's context makes redundant; see DataTable.
+   */
+  omitColumns?: string[]
 }
 
-export function MUsTable({ initial, baseFilter }: Props) {
+export function MUsTable({ initial, baseFilter, omitColumns }: Props) {
   return (
     <DataTable
       tableId="mus"
@@ -27,6 +32,7 @@ export function MUsTable({ initial, baseFilter }: Props) {
       initialSort={{ id: 'totalPoints', desc: true }}
       endpoint="/api/mus"
       baseFilter={baseFilter}
+      omitColumns={omitColumns}
       searchPlaceholder="Filter by MU name or country…"
       searchHint={(
         <AdvancedSearchHint

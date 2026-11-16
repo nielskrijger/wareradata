@@ -55,7 +55,9 @@ export function itemSwitchItem(
     }
   }
 
-  if (!best || best.gain * ITEM_PAYBACK_DAYS <= input.changeItemCost) {
+  // Without a concrete price the cost is unknown, so no switch is suggested.
+  const cost = input.changeItemConcrete * (input.prices.concrete ?? Number.POSITIVE_INFINITY)
+  if (!best || best.gain * ITEM_PAYBACK_DAYS <= cost) {
     return null
   }
 
@@ -66,7 +68,7 @@ export function itemSwitchItem(
     id: `item-${c.id}`,
     kind: 'item',
     title: `Switch ${c.name} from ${humanizeItem(c.itemCode)} to ${humanizeItem(best.code)}`,
-    why: `${humanizeItem(best.code)} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemCost} gold.${hasTools ? ' Check the tools fit the new item.' : ''}`,
+    why: `${humanizeItem(best.code)} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemConcrete} concrete (${fmt(cost)} gold).${hasTools ? ' Check the tools fit the new item.' : ''}`,
     gainPerDay: best.gain,
     energy: 0,
   }

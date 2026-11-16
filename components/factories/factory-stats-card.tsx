@@ -1,79 +1,91 @@
+import type { ReactNode } from 'react'
+import type { FactoryLedgerRow } from '@/lib/factories/ledger'
+import type { PortfolioTotals } from '@/lib/factories/profit'
+
 import { cn } from '@/lib/utils'
 
-import { goldSigned, humanizeItem, netClass } from './format'
+import { goldSigned, netClass } from './format'
 
 interface Props {
   className?: string
+  rows: FactoryLedgerRow[]
+  totals: PortfolioTotals
+}
 
-  /**
-   * Net/day; auto + employees sum to total.
-   */
-  totalNet: number
-  autoNet: number
-  employeesNet: number
-  count: number
-
-  /**
-   * Active-factory count, when known (the live view has it; the snapshot doesn't).
-   */
-  activeCount?: number
-
-  /**
-   * The most profitable item right now, when known.
-   */
-  bestItem?: string
+function Line({ label, value, strong }: { label: ReactNode, value: number, strong?: boolean }) {
+  return (
+    <div
+      className={cn('flex items-baseline justify-between gap-2 text-sm', strong && 'mt-0.5 border-t pt-1 font-medium')}
+    >
+      <dt className={cn(!strong && 'text-muted-foreground')}>{label}</dt>
+      <dd className={cn('tabular-nums', netClass(value))}>{goldSigned(value)}</dd>
+    </div>
+  )
 }
 
 /**
- * A glance-level summary of a user's factory portfolio: the combined net/day and
- * its split into automated engines vs NPC employees, as three equal columns
- * (Total emphasized). Fed from the snapshot's per-user aggregates so it renders
- * instantly alongside the other detail cards; the per-factory detail lives in the
- * table further down. `activeCount` / `bestItem` are shown only when supplied.
+ * A user's factories as a short daily P&L, summing the same way as the roster
+ * below it: engines + employee output − wages − managers = net. Underneath, net
+ * as a share of Top potential. Self-work is excluded.
  */
-export function FactoryStatsCard({ className, totalNet, autoNet, employeesNet, count, activeCount, bestItem }: Props) {
-  const countLabel = activeCount != null
-    ? `${activeCount}/${count} active`
-    : `${count.toLocaleString()} ${count === 1 ? 'factory' : 'factories'}`
+export function FactoryStatsCard({ className, rows, totals }: Props) {
+  const employees = rows.flatMap(r => r.employees)
+  const engines = rows.reduce((s, r) => s + r.engineNetPerDay, 0)
+  const output = employees.reduce((s, e) => s + e.revenuePerDay - e.inputCostPerDay, 0)
+  const wages = rows.reduce((s, r) => s + r.wagePerDay, 0)
+  const managers = rows.reduce((s, r) => s + r.managerPerDay, 0)
+  const potential = totals.bestPotentialNetPerDay
+  const pct = potential > 0 ? Math.max(0, Math.min(100, (totals.netPerDay / potential) * 100)) : null
+
+  const counts = [
+    totals.activeCount < totals.count
+      ? `${totals.activeCount}/${totals.count} active`
+      : `${totals.count} ${totals.count === 1 ? 'factory' : 'factories'}`,
+    `${employees.length} ${employees.length === 1 ? 'employee' : 'employees'}`,
+  ].join(' · ')
 
   return (
     <div className={cn('bg-card flex flex-col gap-3 rounded-md border p-3', className)}>
-      <span className="text-sm font-medium">Factories</span>
-
-      <div className="divide-border grid grid-cols-3 divide-x">
-        <Col label="Total / day" value={totalNet} sub={countLabel} strong />
-        <Col label="Auto / day" value={autoNet} pad />
-        <Col label="Employees / day" value={employeesNet} pad />
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm font-medium">Factories</span>
+        <span className="text-muted-foreground text-xs tabular-nums">{counts}</span>
       </div>
 
-      {bestItem && (
-        <span className="text-muted-foreground text-xs">
-          Best item now <span className="text-foreground font-medium">{humanizeItem(bestItem)}</span>
-        </span>
+      <dl className="space-y-0.5">
+        <Line label="Engines" value={engines} />
+        {employees.length > 0 && (
+          <>
+            <Line label="Employee output" value={output} />
+            <Line label="Wages" value={-wages} />
+          </>
+        )}
+        {managers >= 0.05 && <Line label="Managers" value={-managers} />}
+        <Line label="Net / day" value={totals.netPerDay} strong />
+      </dl>
+
+      {pct != null && (
+        <div className="space-y-1">
+          <div className="text-muted-foreground flex justify-between gap-2 text-xs tabular-nums">
+            <span>vs Top potential {goldSigned(potential)}</span>
+            <span>{Math.round(pct)}%</span>
+          </div>
+          <div className="bg-muted h-1.5 overflow-hidden rounded-full">
+            <div className="h-full rounded-full bg-green-600 dark:bg-green-400" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
       )}
     </div>
   )
 }
 
 /**
- * One net/day column: label, the value (colored by sign), and an optional sub.
- * `strong` enlarges the headline Total; `pad` insets the columns after the first
- * so they clear the vertical divider.
+ * Holds the card's place in the stat grid while the live roster loads.
  */
-function Col({ label, value, sub, strong, pad }: {
-  label: string
-  value: number
-  sub?: string
-  strong?: boolean
-  pad?: boolean
-}) {
+export function FactoryStatsCardSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn('flex flex-col gap-0.5', pad && 'pl-3')}>
-      <span className="text-muted-foreground text-xs">{label}</span>
-      <span className={cn('tabular-nums', strong ? 'text-xl font-semibold' : 'text-base font-medium', netClass(value))}>
-        {goldSigned(value)}
-      </span>
-      {sub && <span className="text-muted-foreground text-[11px] tabular-nums">{sub}</span>}
+    <div className={cn('bg-card flex flex-col gap-3 rounded-md border p-3', className)}>
+      <span className="text-sm font-medium">Factories</span>
+      <span className="text-muted-foreground text-sm">Loading…</span>
     </div>
   )
 }

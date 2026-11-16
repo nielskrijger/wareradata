@@ -230,7 +230,7 @@ function OutputBars({ rows, colors }: { rows: FactoryLedgerRow[], colors: Map<st
 }
 
 /**
- * The value-map tab: who pays for themselves (scatter) next to where each
+ * The value map: who pays for themselves (scatter) next to where each
  * factory's output comes from (stacked bars).
  */
 export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
@@ -243,10 +243,10 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
   })))
 
   return (
-    <div className="grid gap-4 p-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+    <div className="grid gap-4 p-3 pt-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
       <div className="min-w-0 space-y-2">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <span className="text-sm font-medium">Who pays for themselves</span>
+          <span className="text-muted-foreground text-xs">Who pays for themselves</span>
           <span className="text-muted-foreground flex flex-wrap gap-x-3 text-xs">
             {[...colors].map(([it, color]) => (
               <span key={it} className="inline-flex items-center gap-1">
@@ -262,7 +262,7 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
           : <p className="text-muted-foreground text-sm">No employees.</p>}
       </div>
       <div className="min-w-0 space-y-2">
-        <span className="text-sm font-medium">Points per day by factory</span>
+        <span className="text-muted-foreground text-xs">Points per day by factory</span>
         <OutputBars rows={rows} colors={colors} />
         <p className="text-muted-foreground text-xs">
           Grey is the automated engine; each coloured segment is an employee.

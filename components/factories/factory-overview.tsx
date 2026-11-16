@@ -3,30 +3,27 @@
 import type { FactoryLedgerRow } from '@/lib/factories/ledger'
 import type { PortfolioTotals } from '@/lib/factories/profit'
 
-import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
-
 import { FactoryRoster } from './factory-roster'
 import { FactoryValueMap } from './factory-value-map'
 
 /**
- * The user-page factories section: the roster table by default, with the value
- * map as a second view of the same rows.
+ * The user-page factories section: the roster card, then the value map card
+ * when there are employees to plot.
  */
 export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], totals: PortfolioTotals }) {
+  const hasEmployees = rows.some(row => row.employees.length > 0)
+
   return (
-    <section className="bg-card overflow-hidden rounded-md border">
-      <Tabs defaultValue="roster">
-        <TabsList className="px-2">
-          <TabsTab value="roster">Roster</TabsTab>
-          <TabsTab value="value">Value map</TabsTab>
-        </TabsList>
-        <TabsPanel value="roster">
-          <FactoryRoster rows={rows} totals={totals} />
-        </TabsPanel>
-        <TabsPanel value="value">
+    <>
+      <section className="bg-card overflow-hidden rounded-md border">
+        <FactoryRoster rows={rows} totals={totals} />
+      </section>
+      {hasEmployees && (
+        <section className="bg-card rounded-md border">
+          <h2 className="px-3 pt-3 text-sm font-medium">Value map</h2>
           <FactoryValueMap rows={rows} />
-        </TabsPanel>
-      </Tabs>
-    </section>
+        </section>
+      )}
+    </>
   )
 }

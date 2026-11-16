@@ -27,8 +27,8 @@ import { SkillSplitCard } from '@/components/detail/skill-split-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { VitalsCard } from '@/components/detail/vitals-card'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
-import { FactoriesSection } from '@/components/factories/factories-section'
-import { FactoryStatsCard } from '@/components/factories/factory-stats-card'
+import { FactoriesSection, FactorySummaryCard } from '@/components/factories/factories-section'
+import { FactoryStatsCardSkeleton } from '@/components/factories/factory-stats-card'
 import { ExternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -297,13 +297,10 @@ export default async function UserDetailPage({ params }: PageProps) {
           ]}
         />
         {user.factoryCount != null && (
-          <FactoryStatsCard
-            className="sm:col-span-2"
-            totalNet={user.factoryNetPerDay ?? 0}
-            autoNet={user.factoryEngineNetPerDay ?? 0}
-            employeesNet={user.factoryEmployeeNetPerDay ?? 0}
-            count={user.factoryCount}
-          />
+          // Live, like the roster below it: the scraped aggregates can lag behind the roster.
+          <Suspense fallback={<FactoryStatsCardSkeleton className="sm:col-span-2" />}>
+            <FactorySummaryCard userId={user.id} className="sm:col-span-2" />
+          </Suspense>
         )}
         <CasesCard
           combinedOpened={user.casesOpened}

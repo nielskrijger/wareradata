@@ -4,20 +4,22 @@ import type { LucideIcon } from 'lucide-react'
 import type { AdvisorResult, TodoItem } from '@/lib/advisor/types'
 import {
   ArrowLeftRight,
-  Check,
   GraduationCap,
   Hammer,
+  RefreshCw,
   TriangleAlert,
   UserCog,
   UserMinus,
   UserPlus,
   Wrench,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useTransition } from 'react'
 
 import { goldSigned } from '@/components/factories/format'
 import { ProgressRing } from '@/components/progress-ring'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -50,37 +52,20 @@ function hours(value: number): string {
 }
 
 /**
- * The ranked to-do list. Each row's green bar is its gain next to the best one,
- * and ticking rows fills the energy and gain rings.
- *
- * Ticks live only in this tab: the list is rebuilt from the API on each load.
+ * The ranked advice. Each row's green bar is its gain next to the best one.
  */
-export function AdviseTodo({ result }: Props) {
-  const [done, setDone] = useState<Set<string>>(() => new Set())
-  const toggle = (id: string) => setDone((prev) => {
-    const next = new Set(prev)
-    if (!next.delete(id)) {
-      next.add(id)
-    }
-
-    return next
-  })
-
+export function AdviseList({ result }: Props) {
   const { energy } = result
   const money = result.items.find(i => i.kind === 'money')
   const items = result.items.filter(i => i.kind !== 'money')
   const total = items.reduce((s, i) => s + (i.gainPerDay ?? 0), 0)
   const best = Math.max(0, ...items.map(i => i.gainPerDay ?? 0))
-  const ticked = items.filter(i => done.has(i.id))
-  const spent = ticked.reduce((s, i) => s + (i.energy ?? 0), 0)
-  const banked = ticked.reduce((s, i) => s + (i.gainPerDay ?? 0), 0)
-  const planned = items.reduce((s, i) => s + (i.energy ?? 0), 0) - spent
-  const left = Math.max(0, energy.current - spent)
-  const short = Math.max(0, planned - left)
+  const needed = items.reduce((s, i) => s + (i.energy ?? 0), 0)
+  const short = Math.max(0, needed - energy.current)
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
+      <header className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div
           className="flex flex-col justify-center gap-2 rounded-xl border p-5"
           style={{
@@ -88,33 +73,27 @@ export function AdviseTodo({ result }: Props) {
             borderColor: tint('var(--fire)', 40),
           }}
         >
-          <h1 className="font-brand text-5xl leading-none tracking-wide">Today&apos;s to-do</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="font-brand text-5xl leading-none tracking-wide">What to do next</h1>
+            <RefreshButton />
+          </div>
           <p className="text-muted-foreground text-sm">
             Do all of it and you earn
             {' '}
             <strong className="font-mono" style={{ color: GAIN }}>{perDay(total)}</strong>
             {' '}
-            more, priced at today&apos;s market.
+            more, priced at today&apos;s market. Refresh after you act to see what&apos;s next.
           </p>
         </div>
         <RingCard
-          label="Energy left"
-          value={`${left.toFixed(0)} of ${energy.cap}`}
+          label="Energy"
+          value={`${energy.current.toFixed(0)} of ${energy.cap}`}
           sub={short > 0
-            ? `${short} short for the whole list`
+            ? `The list needs ${needed}, ${short} more than you have`
             : `+${energy.regenPerHour}/h · full in ${hours(energy.hoursToFull)}`}
-          center={left.toFixed(0)}
-          fraction={energy.cap > 0 ? left / energy.cap : 0}
+          center={energy.current.toFixed(0)}
+          fraction={energy.cap > 0 ? energy.current / energy.cap : 0}
           color="var(--fire)"
-        />
-        <RingCard
-          label="Gain locked in"
-          value={perDay(banked)}
-          valueColor={GAIN}
-          sub={`${ticked.length} of ${items.length} done`}
-          center={`${total > 0 ? Math.round((banked / total) * 100) : 0}%`}
-          fraction={total > 0 ? banked / total : 0}
-          color={GAIN}
         />
       </header>
 
@@ -134,8 +113,6 @@ export function AdviseTodo({ result }: Props) {
                   item={item}
                   rank={i + 1}
                   share={best > 0 ? (item.gainPerDay ?? 0) / best : 0}
-                  done={done.has(item.id)}
-                  onToggle={() => toggle(item.id)}
                 />
               ))}
             </ol>
@@ -159,18 +136,12 @@ export function AdviseTodo({ result }: Props) {
   )
 }
 
-function Row({ item, rank, share, done, onToggle }: {
-  item: TodoItem
-  rank: number
-  share: number
-  done: boolean
-  onToggle: () => void
-}) {
+function Row({ item, rank, share }: { item: TodoItem, rank: number, share: number }) {
   const kind = KIND[item.kind]
   const Icon = kind.icon
 
   return (
-    <li className={cn('bg-card relative overflow-hidden rounded-xl border', done && 'opacity-60')}>
+    <li className="bg-card relative overflow-hidden rounded-xl border">
       <div
         aria-hidden
         className="absolute inset-y-0 left-0"
@@ -179,33 +150,21 @@ function Row({ item, rank, share, done, onToggle }: {
           background: `linear-gradient(90deg, ${tint(GAIN, 20)}, ${tint(GAIN, 4)})`,
         }}
       />
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-pressed={done}
-        className="relative grid w-full grid-cols-[32px_20px_minmax(0,1fr)] items-center gap-3 px-4 py-3 text-left
-          sm:grid-cols-[40px_20px_minmax(0,1fr)_auto]"
+      <div className="relative grid grid-cols-[32px_minmax(0,1fr)] items-center gap-3 px-4 py-3
+        sm:grid-cols-[40px_minmax(0,1fr)_auto]"
       >
         <span className="font-brand text-center text-3xl leading-none" style={{ color: 'var(--fire)' }}>{rank}</span>
-        <span
-          className={cn(
-            'flex size-5 items-center justify-center rounded border-2',
-            done ? 'border-green-700 bg-green-700 text-white' : 'border-border',
-          )}
-        >
-          {done && <Check aria-hidden className="size-3.5" strokeWidth={3} />}
-        </span>
         <span className="flex min-w-0 flex-col gap-1">
           <span className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" style={{ color: kind.color, borderColor: kind.color }}>
               <Icon aria-hidden />
               {kind.label}
             </Badge>
-            <span className={cn('text-sm font-semibold', done && 'line-through')}>{item.title}</span>
+            <span className="text-sm font-semibold">{item.title}</span>
           </span>
           <span className="text-muted-foreground text-xs">{item.why}</span>
         </span>
-        <span className="col-start-3 flex items-baseline gap-3 sm:col-start-auto sm:flex-col sm:items-end sm:gap-0.5">
+        <span className="col-start-2 flex items-baseline gap-3 sm:col-start-auto sm:flex-col sm:items-end sm:gap-0.5">
           <span className="font-mono text-base tabular-nums sm:text-lg" style={{ color: GAIN }}>
             {item.gainPerDay != null ? perDay(item.gainPerDay) : 'unpriced'}
           </span>
@@ -216,8 +175,28 @@ function Row({ item, rank, share, done, onToggle }: {
             {(item.energy ?? 0) > 0 ? `${item.energy} energy` : 'no energy'}
           </span>
         </span>
-      </button>
+      </div>
     </li>
+  )
+}
+
+/**
+ * Re-renders the page on the server, so advice reflects what the player just did.
+ */
+function RefreshButton() {
+  const router = useRouter()
+  const [pending, startTransition] = useTransition()
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={pending}
+      onClick={() => startTransition(() => router.refresh())}
+    >
+      <RefreshCw aria-hidden className={cn(pending && 'animate-spin')} />
+      {pending ? 'Refreshing' : 'Refresh'}
+    </Button>
   )
 }
 

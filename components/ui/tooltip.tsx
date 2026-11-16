@@ -37,8 +37,9 @@ function TooltipContent({
       >
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
+          // `dark` so content inside picks the dark palette that suits this surface.
           className={cn(
-            'border border-white/25 bg-gradient-to-b from-neutral-800 to-neutral-900 text-neutral-50 z-50 rounded-md px-3 py-2 text-xs shadow-md',
+            'dark border border-white/25 bg-gradient-to-b from-neutral-800 to-neutral-900 text-neutral-50 z-50 rounded-md px-3 py-2 text-xs shadow-md',
             className,
           )}
           {...props}

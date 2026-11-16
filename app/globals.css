@@ -56,18 +56,15 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --heat-green: oklch(0.72 0.19 145);
-  --heat-red: oklch(0.63 0.24 27);
-  /* Categorical accent hues (level purple, wealth gold, defender/rare blue)
-     sharing the heat family's theme-aware treatment: tuned for light surfaces
-     here, brightened in .dark for dark cards and the fixed-dark tooltips (where
-     the cell breakdown used to hardcode brighter values). --heat-slate is the
-     readiness "Ready" neutral: the gear common-tier grey (#a3a3a3 from the
-     rarity palette), reused so "neutral" reads consistently. Kept the same in
-     light and dark by design — a plain mid grey sits fine on both surfaces. */
-  --heat-purple: oklch(0.62 0.2 295);
+  /* Heat and categorical accent hues (level purple, wealth gold, defender/rare
+     blue). Green, red, purple, blue and slate are dark enough for text on white
+     (WCAG AA); gold, teal, cyan and orange stay lighter by choice. Brightened in
+     .dark, which the always-dark tooltips also use. */
+  --heat-green: oklch(0.53 0.15 145);
+  --heat-red: oklch(0.56 0.2 27);
+  --heat-purple: oklch(0.55 0.18 295);
   --heat-gold: oklch(0.74 0.15 80);
-  --heat-blue: oklch(0.62 0.15 240);
+  --heat-blue: oklch(0.54 0.14 240);
   --heat-teal: oklch(0.68 0.13 195);
   /* Cases cyan: between teal (195) and blue (240) but lighter than both, for
      the Cases category icon. */
@@ -75,7 +72,17 @@
   /* Industry orange (hue 48, between red and gold): a furnace/hard-hat warm for
      the Industry category icon, distinct from wealth gold and combat red. */
   --heat-orange: oklch(0.66 0.18 48);
-  --heat-slate: #a3a3a3;
+  /* Readiness "Ready" neutral, matching the common gear tier. */
+  --heat-slate: #737373;
+  /* How much heatTextColor darkens the green end of the vitals ramp. */
+  --heat-text-dim: 0.13;
+  /* Gear rarity, common → mythic. Legendary keeps the lighter wealth gold. */
+  --rarity-1: var(--heat-slate);
+  --rarity-2: var(--heat-green);
+  --rarity-3: var(--heat-blue);
+  --rarity-4: var(--heat-purple);
+  --rarity-5: var(--heat-gold);
+  --rarity-6: var(--heat-red);
   /* Brand orange (matches the logo) for the active nav pill. */
   --fire: oklch(0.66 0.21 50);
   /* Opaque equivalent of the table fill, for sticky cells that can't be
@@ -115,7 +122,14 @@
   --heat-teal: oklch(0.78 0.14 195);
   --heat-cyan: oklch(0.76 0.13 215);
   --heat-orange: oklch(0.76 0.19 48);
-  --heat-slate: #a3a3a3; /* gear common-tier grey; theme-invariant by design */
+  --heat-slate: #a3a3a3;
+  --heat-text-dim: 0;
+  --rarity-1: #a3a3a3;
+  --rarity-2: #34d399;
+  --rarity-3: #60a5fa;
+  --rarity-4: #c4b5fd;
+  --rarity-5: #fcd34d;
+  --rarity-6: #f87171;
   --fire: oklch(0.79 0.19 55);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);

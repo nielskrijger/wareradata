@@ -1,4 +1,4 @@
-import { rarityHex } from '@/lib/gear/rarity'
+import { rarityColor, rarityTint as tint } from '@/lib/gear/rarity'
 import { gearScoreTier } from '@/lib/gear/score'
 
 interface Props {
@@ -24,12 +24,12 @@ export function GearScorePill({ score, tier }: Props) {
     return null
   }
 
-  const color = rarityHex(tier ?? gearScoreTier(score))
+  const color = rarityColor(tier ?? gearScoreTier(score))
 
   return (
     <span
       className="rounded-md px-2 py-0.5 text-[12px] font-medium leading-tight tabular-nums"
-      style={{ background: `${color}22`, color, boxShadow: `inset 0 0 0 1px ${color}55` }}
+      style={{ background: tint(color, 13), color, boxShadow: `inset 0 0 0 1px ${tint(color, 33)}` }}
     >
       {score}
       <span className="text-[10px] opacity-70">/100</span>

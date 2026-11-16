@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { EMPTY } from '@/lib/format'
-import { heatColor } from '@/lib/utils'
+import { heatColor, heatTextColor } from '@/lib/utils'
 
 interface Props {
   /**
@@ -31,6 +31,7 @@ export function FillBar({ pct, icon }: Props) {
   }
 
   const color = heatColor(pct)
+  const textColor = heatTextColor(pct)
 
   return (
     <div className="flex items-center gap-2">
@@ -38,7 +39,7 @@ export function FillBar({ pct, icon }: Props) {
       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
       </div>
-      <span className="w-9 text-right text-[11px] tabular-nums" style={{ color }}>
+      <span className="w-9 text-right text-[11px] tabular-nums" style={{ color: textColor }}>
         {pct}
         %
       </span>

@@ -1,6 +1,6 @@
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
-import { heatColor } from '@/lib/utils'
+import { heatColor, heatTextColor } from '@/lib/utils'
 
 interface Props {
   /**
@@ -25,10 +25,11 @@ export function PercentBar({ value, width = 64 }: Props) {
   }
 
   const color = heatColor(value)
+  const textColor = heatTextColor(value)
 
   return (
     <div className="flex items-center gap-2">
-      <span className="w-9 text-right text-xs tabular-nums" style={{ color }}>
+      <span className="w-9 text-right text-xs tabular-nums" style={{ color: textColor }}>
         {value}
         %
       </span>

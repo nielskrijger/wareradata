@@ -89,10 +89,19 @@ export function archiveDir(): string {
 }
 
 /**
- * Matches every temp file our atomic writers create (`<file>.tmp.<pid>.<ms>`),
- * capturing the writer's pid. Shared by the snapshot, NDJSON, and archive writers.
+ * Matches every temp file {@link tempPathFor} names (`<file>.tmp.<pid>.<ms>`),
+ * capturing the writer's pid and start time.
  */
-const TEMP_FILE_RE = /\.tmp\.(\d+)\.\d+$/
+const TEMP_FILE_RE = /\.tmp\.(\d+)\.(\d+)$/
+
+const PROCESS_START_MS = Date.now() - process.uptime() * 1000
+
+/**
+ * Where an atomic writer stages `filePath` before renaming it into place.
+ */
+export function tempPathFor(filePath: string): string {
+  return `${filePath}.tmp.${process.pid}.${Date.now()}`
+}
 
 /**
  * Whether a process with this pid is still running. `kill(pid, 0)` sends no
@@ -134,9 +143,14 @@ export async function readJsonFile<T>(filePath: string, fallback: T): Promise<T>
 export async function writeJsonFile(filePath: string, data: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true })
 
-  const tmp = `${filePath}.tmp.${process.pid}.${Date.now()}`
-  await writeFile(tmp, JSON.stringify(data))
-  await rename(tmp, filePath)
+  const tmp = tempPathFor(filePath)
+  try {
+    await writeFile(tmp, JSON.stringify(data))
+    await rename(tmp, filePath)
+  } catch (err) {
+    await unlink(tmp).catch(() => undefined)
+    throw err
+  }
 }
 
 export function emptyRawSnapshot(): RawSnapshot {
@@ -207,6 +221,18 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
   yield sep === '{' ? '{}' : '}'
 }
 
+function isStaleTempFile(name: string): boolean {
+  const match = TEMP_FILE_RE.exec(name)
+  if (!match) {
+    return false
+  }
+
+  const pid = Number(match[1])
+
+  // A redeploy's container reuses pids, so a killed writer's pid is often ours.
+  return pid === process.pid ? Number(match[2]) < PROCESS_START_MS : !isProcessAlive(pid)
+}
+
 /**
  * Removes temp files left by writes that died before their rename.
  *
@@ -222,11 +248,7 @@ export async function sweepStaleTempFiles(): Promise<void> {
       continue
     }
 
-    const stale = entries.filter((name) => {
-      const match = TEMP_FILE_RE.exec(name)
-
-      return match !== null && !isProcessAlive(Number(match[1]))
-    })
+    const stale = entries.filter(isStaleTempFile)
 
     await Promise.all(stale.map(name => unlink(path.join(dir, name)).catch(() => undefined)))
     if (stale.length) {
@@ -243,7 +265,7 @@ export async function writeRawSnapshot(snapshot: RawSnapshot): Promise<void> {
   const dir = dataDir()
   await mkdir(dir, { recursive: true })
 
-  const tmp = `${snapshotPath()}.tmp.${process.pid}.${Date.now()}`
+  const tmp = tempPathFor(snapshotPath())
   try {
     await pipeline(serializeSnapshot(snapshot), createWriteStream(tmp))
     await rename(tmp, snapshotPath())

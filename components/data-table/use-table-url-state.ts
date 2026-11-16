@@ -62,11 +62,13 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     'sort',
     parseAsString.withDefault(initialSort.id).withOptions(urlOpts),
   )
+
   const initialDir: 'asc' | 'desc' = initialSort.desc ? 'desc' : 'asc'
   const [dirParam, setDirParam] = useQueryState(
     'dir',
     parseAsStringEnum(['asc', 'desc']).withDefault(initialDir).withOptions(urlOpts),
   )
+
   const [pageParam, setPageParam] = useQueryState(
     'page',
     parseAsInteger.withDefault(1).withOptions(urlOpts),
@@ -76,6 +78,7 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     'size',
     parseAsInteger.withDefault(defaultPageSize).withOptions(urlOpts),
   )
+
   // Hand-edited URLs can carry any number; fall back to the default for sizes
   // the picker doesn't offer.
   const pageSize = (PAGE_SIZES as readonly number[]).includes(sizeParam) ? sizeParam : defaultPageSize
@@ -111,10 +114,12 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     if (filterInput === q) {
       return
     }
+
     const handle = setTimeout(() => {
       lastTypedQRef.current = filterInput
       setQ(filterInput || null)
     }, FILTER_DEBOUNCE_MS)
+
     return () => clearTimeout(handle)
   }, [filterInput, q, setQ])
 
@@ -122,6 +127,7 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     () => [{ id: sortParam, desc: dirParam === 'desc' }],
     [sortParam, dirParam],
   )
+
   const setSorting = useCallback(
     (updater: SortingState | ((prev: SortingState) => SortingState)) => {
       const next = typeof updater === 'function' ? updater(sorting) : updater

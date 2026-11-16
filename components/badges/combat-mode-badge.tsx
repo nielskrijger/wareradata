@@ -25,5 +25,6 @@ interface Props {
  */
 export function CombatModeBadge({ mode }: Props) {
   const meta = MODE_META[mode]
+
   return <Badge className={meta.className}>{meta.label}</Badge>
 }

@@ -26,6 +26,7 @@ interface PageMeta {
  */
 export function pageMetadata({ title, description, path }: PageMeta): Metadata {
   const fullTitle = `${title} — ${SITE_NAME}`
+
   return {
     title,
     description,

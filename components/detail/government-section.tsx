@@ -63,9 +63,11 @@ function assignPartyColors(officials: GovernmentOfficial[]): Map<string, string>
       counts.set(o.partyId, (counts.get(o.partyId) ?? 0) + 1)
     }
   }
+
   const ordered = [...counts.entries()].sort((a, b) => b[1] - a[1])
   const colors = new Map<string, string>()
   ordered.forEach(([id], i) => colors.set(id, PARTY_PALETTE[i % PARTY_PALETTE.length]))
+
   return colors
 }
 
@@ -73,6 +75,7 @@ function colorFor(partyId: string | null, colors: Map<string, string>): string {
   if (!partyId) {
     return INDEPENDENT_RGB
   }
+
   return colors.get(partyId) ?? INDEPENDENT_RGB
 }
 
@@ -88,6 +91,7 @@ function dedupeById(officials: GovernmentOfficial[]): GovernmentOfficial[] {
       out.push(o)
     }
   }
+
   return out
 }
 
@@ -108,17 +112,22 @@ function congressBenches(congress: GovernmentOfficial[], colors: Map<string, str
         color: colorFor(o.partyId, colors),
         members: [],
       }
+
       byParty.set(key, bench)
     }
+
     bench.members.push(o)
   }
+
   return [...byParty.values()].sort((a, b) => {
     if (a.id === INDEPENDENT_KEY) {
       return 1
     }
+
     if (b.id === INDEPENDENT_KEY) {
       return -1
     }
+
     return b.members.length - a.members.length
   })
 }

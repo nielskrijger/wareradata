@@ -33,6 +33,7 @@ const getBattle = cache(async (id: string) => {
   // battle isn't active (finished, or just ended between refreshes), fall back
   // to the latest snapshot.
   const [liveActive, { battles }] = await Promise.all([getLiveActiveBattles(), getSnapshot()])
+
   return liveActive.find(b => b.id === id) ?? battles.find(b => b.id === id) ?? null
 })
 
@@ -42,8 +43,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'Battle not found' }
   }
+
   const { attackerName, defenderName } = result
   const title = `${attackerName ?? '?'} vs ${defenderName ?? '?'}`
+
   return pageMetadata({
     title,
     description: `WarEra.io battle stats: ${title}.`,
@@ -55,6 +58,7 @@ function battleVerb(b: { isTournament: boolean, isResistance: boolean }): string
   if (b.isTournament) {
     return 'VS'
   }
+
   return b.isResistance ? 'RESISTING' : 'INVADING'
 }
 

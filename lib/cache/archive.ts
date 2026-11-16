@@ -27,6 +27,7 @@ function indexFile(): string {
  */
 function battleDay(b: Battle): string {
   const iso = b.endedAt ?? b.createdAt ?? new Date().toISOString()
+
   return iso.slice(0, 10)
 }
 
@@ -40,6 +41,7 @@ function trimForArchive(b: Battle): Battle {
   if (!b.currentRound) {
     return b
   }
+
   return {
     ...b,
     currentRound: {
@@ -102,12 +104,14 @@ export async function recordBattleHistory(battles: Battle[]): Promise<ArchiveRes
     index.add(day)
     log.info({ day, added: dayBattles.length, total: merged.length }, 'recorded day')
   }
+
   await writeJsonFile(indexFile(), [...index].sort())
 
   // Persist the seen set so the next cycle dedupes against it.
   for (const b of fresh) {
     seen.add(b._id)
   }
+
   await writeJsonFile(seenFile(), [...seen])
 
   return {

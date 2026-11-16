@@ -38,9 +38,11 @@ export async function getLiveActiveBattles(): Promise<BattleRow[]> {
     // / MU / region names, tournament team → MU), exactly as the hourly rows
     // are.
     const [battles, snapshot] = await Promise.all([getActiveBattles(), getSnapshot()])
+
     return buildBattleRows(battles, snapshot.tournament, snapshot.lookups)
   } catch (err) {
     log.warn({ err }, 'active-battle fetch failed, serving empty')
+
     return []
   }
 }
@@ -60,6 +62,7 @@ export async function getActiveBattlesByCountry(): Promise<Map<string, ActiveBat
       if (side.kind !== 'country' || !side.id) {
         continue
       }
+
       const opponent = side === b.attacker ? b.defender : b.attacker
       const list = byCountry.get(side.id) ?? []
       list.push({
@@ -70,9 +73,11 @@ export async function getActiveBattlesByCountry(): Promise<Map<string, ActiveBat
         isResistance: b.isResistance,
         isTournament: b.isTournament,
       })
+
       byCountry.set(side.id, list)
     }
   }
+
   return byCountry
 }
 
@@ -87,8 +92,10 @@ export async function withActiveBattleCounts(rows: CountryRow[]): Promise<Countr
   if (!byCountry.size) {
     return rows
   }
+
   return rows.map((r) => {
     const list = byCountry.get(r.id) ?? []
+
     return { ...r, activeBattles: list.length, activeBattlesList: list }
   })
 }

@@ -67,6 +67,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
           if (ppd !== null) {
             return ppd.toLocaleString()
           }
+
           const created = row.original.createdAt
           const hasValidJoinDate = !!created && !created.startsWith('0000')
           if (hasValidJoinDate) {
@@ -78,6 +79,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
               />
             )
           }
+
           return null
         },
         sortDescFirst: true,

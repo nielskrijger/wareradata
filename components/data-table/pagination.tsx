@@ -40,6 +40,7 @@ export function Pagination({
     if (Number.isNaN(page)) {
       return
     }
+
     const next = Math.min(pageCount, Math.max(1, page)) - 1
     if (next !== pageIndex) {
       onPageChange(next)

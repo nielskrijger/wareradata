@@ -250,6 +250,7 @@ export function countryColumn<
   opts: { sortKey?: Key<T>, width?: number } = {},
 ): ColumnDef<T> {
   const accessorKey: Key<T> = opts.sortKey ?? ('countryName' as Key<T>)
+
   return {
     accessorKey,
     header: 'Country',
@@ -296,6 +297,7 @@ export function percentColumn<T>(
       if (!opts.rankKey) {
         return display
       }
+
       return (
         <ValueWithRankTooltip rank={row.original[opts.rankKey] as number | null}>
           {display}

@@ -20,6 +20,7 @@ export function LoadingPage({ title }: Props) {
       <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
     </div>
   )
+
   return title
     ? <PageShell title={title}>{spinner}</PageShell>
     : <main className="px-6 py-8 sm:px-8 lg:px-12">{spinner}</main>

@@ -53,6 +53,7 @@ function useExpired(iso: string | null | undefined): boolean {
     const update = () => setNow(Date.now())
     const initial = setTimeout(update, 0)
     const id = setInterval(update, 30_000)
+
     return () => {
       clearTimeout(initial)
       clearInterval(id)
@@ -90,6 +91,7 @@ export function ReadinessBadge({ status, endsAt, withTooltip = true }: Props) {
   const cls = isBuff
     ? 'bg-green-500/15 text-green-800 gap-0.5 dark:text-green-300'
     : 'bg-red-500/15 text-red-800 gap-0.5 dark:text-red-300'
+
   const Icon = isBuff ? ArrowUp : ArrowDown
 
   const badge = (

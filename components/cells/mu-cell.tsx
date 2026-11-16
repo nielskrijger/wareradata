@@ -41,6 +41,7 @@ export function MUCell({ muName, muId, avatarUrl, bold }: Props) {
   const href = muId
     ? `/mus/${muId}`
     : `/users?q=${encodeURIComponent(`mu:"${muName}"`)}`
+
   const link = (
     <InternalLink href={href} bold={bold} title={muName} className="truncate">
       {muName}
@@ -50,6 +51,7 @@ export function MUCell({ muName, muId, avatarUrl, bold }: Props) {
   if (avatarUrl === undefined) {
     return link
   }
+
   return (
     <div className="flex min-w-0 items-center gap-2">
       <Avatar src={avatarUrl} name={muName} size={22} />

@@ -60,6 +60,7 @@ function accumulate(scores: LuckScores, type: 'case1' | 'case2', byRarity: Parti
     if (p === 0) {
       continue
     }
+
     droppable += 1
     const count = byRarity[rarity] ?? 0
     pulls += count
@@ -86,6 +87,7 @@ export function caseLuckScores(stats: { case1?: CaseStat, case2?: CaseStat } | u
       accumulate(scores, type, byRarity)
     }
   }
+
   return scores
 }
 
@@ -97,5 +99,6 @@ export function luckPercent(actual: number, expected: number, categorized: numbe
   if (expected <= 0 || categorized < MIN_LUCK_PULLS) {
     return null
   }
+
   return Math.round((actual / expected) * 1000) / 10
 }

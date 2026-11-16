@@ -32,6 +32,7 @@ export function BattleTabs({ active, finished }: Props) {
     'tab',
     parseAsStringEnum([...TABS]).withDefault('active').withOptions({ shallow: true, history: 'replace' }),
   )
+
   const [, setTableState] = useQueryStates(
     { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString },
     { shallow: true, history: 'replace' },

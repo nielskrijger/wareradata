@@ -148,5 +148,6 @@ function countMusByCountry(mus: MU[], lookups: Lookups): Map<string, number> {
       out.set(countryId, (out.get(countryId) ?? 0) + 1)
     }
   }
+
   return out
 }

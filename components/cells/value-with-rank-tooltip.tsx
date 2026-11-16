@@ -21,6 +21,7 @@ export function ValueWithRankTooltip({ rank, children }: Props) {
   if (rank == null) {
     return <>{children}</>
   }
+
   return (
     <Tooltip>
       <TooltipTrigger render={<span className="hover:text-foreground cursor-default" />}>

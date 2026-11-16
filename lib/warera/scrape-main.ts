@@ -59,7 +59,9 @@ async function mapWithConcurrency<T, R>(
       results[i] = await worker(items[i], i)
     }
   }
+
   await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => next()))
+
   return results
 }
 
@@ -90,6 +92,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
       }
     },
   )
+
   const governments: RawSnapshot['governments'] = {}
   for (let i = 0; i < countries.length; i++) {
     const gov = governmentList[i]
@@ -97,6 +100,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
       governments[countries[i]._id] = gov
     }
   }
+
   log.info({ governments: Object.keys(governments).length, countries: countries.length }, 'fetched governments')
 
   // 2b. Strategic resource bonuses: one call per country. Members of an
@@ -113,6 +117,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
       }
     },
   )
+
   const strategicBonuses: Record<string, StrategicBonuses> = {}
   for (let i = 0; i < countries.length; i++) {
     const bonus = bonusList[i]
@@ -120,6 +125,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
       strategicBonuses[countries[i]._id] = bonus
     }
   }
+
   log.info({ countries: Object.keys(strategicBonuses).length }, 'fetched strategic resource bonuses')
 
   // 3. User IDs: paginate per country with bounded concurrency.
@@ -128,6 +134,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     COUNTRY_PAGINATION_CONCURRENCY,
     countryId => getUserIdsForCountry(countryId),
   )
+
   const userIds = userIdLists.flat()
   log.info({ userIds: userIds.length, countries: countries.length }, 'collected user ids')
 
@@ -187,6 +194,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     name: tournament.name,
     teams: Object.fromEntries(tournament.teams),
   }
+
   log.info({ tournament: tournament.name, teams: tournament.teams.size }, 'fetched tournament')
 
   // 12. Game config: static catalog (item stats, skill cost curves, …). One
@@ -267,5 +275,6 @@ export async function runMainScrape(): Promise<ScrapeResult> {
     alliances: raw.alliances.length,
     battles: raw.battles.length,
   }
+
   return { scrapedAt: raw.meta.scrapedAt!, counts, durationMs: raw.meta.scrapeDurationMs! }
 }

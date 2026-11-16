@@ -39,6 +39,7 @@ const battleSortValue = makeSortValue<BattleRow>({
 export const GET = createTableRoute<BattleRow>(
   async () => {
     const [{ battles }, liveActive] = await Promise.all([getSnapshot(), getLiveActiveBattles()])
+
     return [...liveActive, ...battles.filter(b => !b.isActive)]
   },
   battleSortValue,

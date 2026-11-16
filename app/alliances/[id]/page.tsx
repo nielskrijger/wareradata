@@ -64,6 +64,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'Alliance not found' }
   }
+
   return pageMetadata({
     title: result.alliance.name,
     description: `WarEra.io alliance stats for ${result.alliance.name}: member countries, strength and wealth.`,
@@ -99,6 +100,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
+
   const { alliance: a, ranges, total, citizenPage, strategicBonus } = result
   const rgb = schemeRgb(a.scheme)
 

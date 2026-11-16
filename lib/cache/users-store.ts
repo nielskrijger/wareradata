@@ -48,5 +48,6 @@ export async function loadFactoryOwnerIds(): Promise<string[]> {
       ownerIds.push(u._id)
     }
   })
+
   return ownerIds
 }

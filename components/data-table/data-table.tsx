@@ -218,6 +218,7 @@ function DataTableInner<TData, TValue>({
         return
       }
     }
+
     const first = sorting[0]
     const req: PageRequest = {
       page: pageIndex,
@@ -226,6 +227,7 @@ function DataTableInner<TData, TValue>({
       dir: first?.desc ? 'desc' : 'asc',
       filter: q,
     }
+
     // Responses can arrive out of order (typing fast, clicking through pages);
     // only the latest request's response may land, so an older one never
     // overwrites a newer result.
@@ -243,6 +245,7 @@ function DataTableInner<TData, TValue>({
         }
       }
     })
+
     return () => {
       superseded = true
     }

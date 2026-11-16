@@ -63,6 +63,7 @@ export async function scrapeFactories(
           if (factories.length) {
             const rows = factories.map<FactoryRawRow>((f) => {
               const input = factoryInputFromData(f, () => '', model)
+
               return {
                 itemCode: input.itemCode,
                 regionId: f.company.region,
@@ -74,6 +75,7 @@ export async function scrapeFactories(
                 employeeCap: input.employeeCap,
               }
             })
+
             await write(`${JSON.stringify({ userId, rows })}\n`)
             withFactories++
           }

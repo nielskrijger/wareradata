@@ -46,6 +46,7 @@ export function ReadinessPillBar({ mix, width = 96 }: Props) {
   if (total === 0) {
     return <EmptyDash />
   }
+
   return (
     <Tooltip>
       <TooltipTrigger

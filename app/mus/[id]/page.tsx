@@ -43,6 +43,7 @@ const getMU = cache(async (id: string) => {
   if (!mu) {
     return null
   }
+
   // Ranges over the full set, same as the /mus table, so each stat can show
   // where this MU sits.
   const ranges = computeRanges(mus)
@@ -63,8 +64,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'MU not found' }
   }
+
   const { mu } = result
   const from = mu.countryName ? ` from ${mu.countryName}` : ''
+
   return pageMetadata({
     title: mu.name,
     description: `WarEra.io military unit${from} with ${mu.memberCount} members: points, damage, gear and member stats.`,
@@ -79,6 +82,7 @@ export default async function MUDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
+
   const { mu, ranges, total, memberPage } = result
 
   return (

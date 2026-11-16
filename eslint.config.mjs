@@ -63,6 +63,14 @@ export default antfu({
       allowEnumStart: true,
       allowModuleStart: true,
     }],
+    // Blank lines split a function into its steps: after a block (if, for, …),
+    // after a statement that spans several lines, and before the final return.
+    'style/padding-line-between-statements': [
+      'error',
+      { blankLine: 'always', prev: 'block-like', next: '*' },
+      { blankLine: 'always', prev: ['multiline-const', 'multiline-let', 'multiline-expression'], next: '*' },
+      { blankLine: 'always', prev: '*', next: 'return' },
+    ],
     // Keep lines readable. Stylistic can't auto-wrap, so long lines are wrapped by
     // hand. Exempt: URLs, regexes, and a line that is nothing but one string
     // (`key: '…',`, `attr="…"`), since splitting prose or a class list only hurts.

@@ -29,6 +29,7 @@ export function GearBand({ score, equipment, gearLookup }: Props) {
   // rarity rings; fall back to the score band only if equipment is missing.
   const tier = computeGearTier(equipment, gearLookup) ?? gearScoreTier(score)
   const color = rarityHex(tier)
+
   return (
     <div className="flex items-end gap-1 sm:gap-2">
       {/* Score tile matches GearStrip's card-surface tile footprint (32px on

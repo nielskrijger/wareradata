@@ -23,6 +23,7 @@ export async function streamNdjson<T>(filePath: string, onRecord: (record: T) =>
       if (!line.trim()) {
         continue
       }
+
       try {
         onRecord(JSON.parse(line) as T)
       } catch {

@@ -17,6 +17,7 @@ type TriState = 'all' | 'some' | 'none'
 
 function labelOf<TData>(column: Column<TData>): string {
   const header = column.columnDef.header
+
   return typeof header === 'string' ? header : column.id
 }
 
@@ -37,6 +38,7 @@ export function ColumnsMenu<TData>({ table }: { table: Table<TData> }) {
       } else {
         next.add(category)
       }
+
       return next
     })
 
@@ -97,6 +99,7 @@ export function ColumnsMenu<TData>({ table }: { table: Table<TData> }) {
           if (!cols || cols.length === 0) {
             return null
           }
+
           const meta = CATEGORY_META[category]
           const Icon = meta.Icon
           const onCount = cols.filter(c => c.getIsVisible()).length

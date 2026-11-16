@@ -79,6 +79,7 @@ async function resolveCasesByType(user: UserRow): Promise<CasesByType> {
   }
 
   const live = user.casesOpened ? await getUserCasesByType(user.id) : null
+
   return live ?? { standardOpened: null, mythicOpened: null, standardByRarity: null, mythicByRarity: null }
 }
 
@@ -88,13 +89,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'User not found' }
   }
+
   const { user } = result
   const facts = [
     user.level != null ? `Level ${user.level}` : null,
     user.countryName ? `from ${user.countryName}` : null,
     user.muName ? `in ${user.muName}` : null,
   ].filter(Boolean).join(' ')
+
   const summary = `WarEra.io stats for ${user.username}: points, damage, wealth, gear and factories.`
+
   return pageMetadata({
     title: user.username,
     description: facts ? `${facts}. ${summary}` : summary,
@@ -109,6 +113,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
+
   const { user, ranges, total, gearLookup } = result
 
   const cases = await resolveCasesByType(user)

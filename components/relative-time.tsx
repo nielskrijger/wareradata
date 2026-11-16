@@ -28,6 +28,7 @@ function useClockTick() {
   const [, tick] = useReducer((n: number) => n + 1, 0)
   useEffect(() => {
     const id = setInterval(tick, TICK_MS)
+
     return () => clearInterval(id)
   }, [])
 }

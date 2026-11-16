@@ -75,6 +75,7 @@ export function HeatCell({ value, range, mode = 'ramp', center, logScale = false
     if (span <= 0) {
       return <>{children}</>
     }
+
     // Square-root curve (or log, when set) so skewed columns (e.g. premium
     // gifts, where most rows bunch near the minimum) still read clearly green —
     // linear would leave the bulk near neutral and only the rare max bright.
@@ -83,6 +84,7 @@ export function HeatCell({ value, range, mode = 'ramp', center, logScale = false
     if (t < 0.05) {
       return <>{children}</>
     }
+
     return tinted('--heat-green', 0.3 + 0.7 * t, children)
   }
 
@@ -96,6 +98,7 @@ export function HeatCell({ value, range, mode = 'ramp', center, logScale = false
   if (reach <= 0) {
     return <>{children}</>
   }
+
   const raw = Math.min(1, Math.abs(value - pivot) / reach)
   const intensity = logScale ? logCurve(raw) : raw
   if (intensity < 0.05) {
@@ -105,6 +108,7 @@ export function HeatCell({ value, range, mode = 'ramp', center, logScale = false
   // 'median' greens above center; the invert modes green below.
   const isGreen = mode === 'median' ? high : !high
   const token = isGreen ? '--heat-green' : '--heat-red'
+
   return tinted(token, 0.45 + 0.45 * intensity, children)
 }
 

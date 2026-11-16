@@ -43,6 +43,7 @@ const getCountry = cache(async (id: string) => {
     getLiveActiveBattles(),
     getActiveBattlesByCountry(),
   ])
+
   const { countries, users, mus, parties, governments, strategicBonuses } = snapshot
   const country = countries.find(c => c.id === id)
   if (!country) {
@@ -87,6 +88,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'Country not found' }
   }
+
   return pageMetadata({
     title: result.country.name,
     description: `WarEra.io country stats for ${result.country.name}: citizens, military units, parties, government, economy and active battles.`,
@@ -101,6 +103,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
+
   const {
     country: c,
     government,

@@ -56,6 +56,7 @@ interface RowProps {
 function BreakdownRow({ label, value, total, max }: RowProps) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0
   const { color, icon: Icon } = POINTS_LEGEND[label]
+
   return (
     <div className="space-y-0.5">
       <div className="flex items-center gap-1.5 tabular-nums">

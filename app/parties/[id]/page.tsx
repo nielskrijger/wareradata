@@ -36,6 +36,7 @@ const getParty = cache(async (id: string) => {
   if (!party) {
     return null
   }
+
   // Ranges over the full set, same as the /parties table, so each stat can
   // show where this party sits.
   const ranges = computeRanges(parties)
@@ -51,6 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'Party not found' }
   }
+
   return pageMetadata({
     title: result.party.name,
     description: `WarEra.io political-party stats for ${result.party.name}.`,
@@ -65,6 +67,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
+
   const { party: p, ranges, memberPage } = result
 
   return (

@@ -43,6 +43,7 @@ export function memoryUsage(): {
 } {
   const m = process.memoryUsage()
   const heapLimit = getHeapStatistics().heap_size_limit
+
   return {
     rssMb: Math.round(m.rss / MB),
     heapUsedMb: Math.round(m.heapUsed / MB),
@@ -71,5 +72,6 @@ export function logRetainedMemory(log: Logger, label: string): void {
   if (gc) {
     gc()
   }
+
   logMemory(log, gc ? `${label} (post-gc)` : label)
 }

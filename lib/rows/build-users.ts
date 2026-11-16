@@ -274,7 +274,9 @@ function barPercent(bar: { currentBarValue?: number, total?: number } | undefine
   if (!bar || !bar.total || bar.currentBarValue == null) {
     return null
   }
+
   const pct = (bar.currentBarValue / bar.total) * 100
+
   return Math.round(Math.min(100, Math.max(0, pct)))
 }
 
@@ -289,14 +291,17 @@ function toReadinessStatus(
   if (!attack) {
     return null
   }
+
   const buff = attack.buffsPercent ?? 0
   const debuff = attack.debuffsPercent ?? 0
   if (buff > debuff) {
     return 'buff'
   }
+
   if (debuff > buff) {
     return 'debuff'
   }
+
   return 'neither'
 }
 
@@ -313,10 +318,13 @@ function daysSinceJoin(createdAt: string | null | undefined, nowMs: number): num
   if (!createdAt) {
     return null
   }
+
   const t = Date.parse(createdAt)
   if (Number.isNaN(t) || new Date(t).getUTCFullYear() < 2020) {
     return null
   }
+
   const days = (nowMs - t) / DAY_MS
+
   return days < MIN_AGE_DAYS ? null : days
 }

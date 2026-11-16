@@ -30,6 +30,7 @@ export async function loadFactoryAggregates(
       v = (netPerUnit(itemCode, prices, recipe) ?? 0) / (recipe[itemCode]?.productionPoints ?? 1)
       valuePerPpByItem.set(itemCode, v)
     }
+
     return v
   }
 

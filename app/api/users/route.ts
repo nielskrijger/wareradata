@@ -98,12 +98,14 @@ function readinessSortValue(row: UserRow): number | null {
   if (row.readinessStatus == null) {
     return null
   }
+
   if (row.readinessStatus === 'neither') {
     return 0
   }
 
   const endsAt = row.readinessEndsAt ? Date.parse(row.readinessEndsAt) : Number.NaN
   const magnitude = Number.isNaN(endsAt) ? 1 : endsAt
+
   return row.readinessStatus === 'buff' ? magnitude : -magnitude
 }
 

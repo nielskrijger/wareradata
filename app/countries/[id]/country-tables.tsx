@@ -38,6 +38,7 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
     'tab',
     parseAsStringEnum([...TABS]).withDefault('citizens').withOptions({ shallow: true, history: 'replace' }),
   )
+
   const [, setTableState] = useQueryStates(
     { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString },
     { shallow: true, history: 'replace' },
@@ -55,11 +56,14 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
   useEffect(() => {
     if (skipScrollRef.current) {
       skipScrollRef.current = false
+
       return
     }
+
     if (tab === 'citizens') {
       return
     }
+
     tablesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [tab])
 

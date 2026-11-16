@@ -1,7 +1,6 @@
 'use client'
 
 import type { LucideIcon } from 'lucide-react'
-import type { CSSProperties } from 'react'
 import type { AdvisorResult, TodoItem } from '@/lib/advisor/types'
 import {
   ArrowLeftRight,
@@ -16,6 +15,9 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
+import { goldSigned } from '@/components/factories/format'
+import { ProgressRing } from '@/components/progress-ring'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -39,8 +41,8 @@ function tint(color: string, pct: number): string {
   return `color-mix(in oklch, ${color} ${pct}%, transparent)`
 }
 
-function gold(value: number): string {
-  return `${value >= 0 ? '+' : '−'}${Math.abs(value).toFixed(2)}`
+function perDay(value: number): string {
+  return `${goldSigned(value, 2)}/day`
 }
 
 function hours(value: number): string {
@@ -70,9 +72,9 @@ export function AdviseTodo({ result }: Props) {
   const total = items.reduce((s, i) => s + (i.gainPerDay ?? 0), 0)
   const best = Math.max(0, ...items.map(i => i.gainPerDay ?? 0))
   const ticked = items.filter(i => done.has(i.id))
-  const spent = ticked.reduce((s, i) => s + i.energy, 0)
+  const spent = ticked.reduce((s, i) => s + (i.energy ?? 0), 0)
   const banked = ticked.reduce((s, i) => s + (i.gainPerDay ?? 0), 0)
-  const planned = items.reduce((s, i) => s + i.energy, 0) - spent
+  const planned = items.reduce((s, i) => s + (i.energy ?? 0), 0) - spent
   const left = Math.max(0, energy.current - spent)
   const short = Math.max(0, planned - left)
 
@@ -90,9 +92,9 @@ export function AdviseTodo({ result }: Props) {
           <p className="text-muted-foreground text-sm">
             Do all of it and you earn
             {' '}
-            <strong className="font-mono" style={{ color: GAIN }}>{gold(total)}</strong>
+            <strong className="font-mono" style={{ color: GAIN }}>{perDay(total)}</strong>
             {' '}
-            gold a day more, priced at today&apos;s market.
+            more, priced at today&apos;s market.
           </p>
         </div>
         <RingCard
@@ -107,7 +109,7 @@ export function AdviseTodo({ result }: Props) {
         />
         <RingCard
           label="Gain locked in"
-          value={`${gold(banked)}/day`}
+          value={perDay(banked)}
           valueColor={GAIN}
           sub={`${ticked.length} of ${items.length} done`}
           center={`${total > 0 ? Math.round((banked / total) * 100) : 0}%`}
@@ -195,26 +197,23 @@ function Row({ item, rank, share, done, onToggle }: {
         </span>
         <span className="flex min-w-0 flex-col gap-1">
           <span className="flex flex-wrap items-center gap-2">
-            <span
-              className="inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-semibold"
-              style={{ color: kind.color, borderColor: kind.color }}
-            >
-              <Icon aria-hidden className="size-3.5" />
+            <Badge variant="outline" style={{ color: kind.color, borderColor: kind.color }}>
+              <Icon aria-hidden />
               {kind.label}
-            </span>
+            </Badge>
             <span className={cn('text-sm font-semibold', done && 'line-through')}>{item.title}</span>
           </span>
           <span className="text-muted-foreground text-xs">{item.why}</span>
         </span>
         <span className="col-start-3 flex items-baseline gap-3 sm:col-start-auto sm:flex-col sm:items-end sm:gap-0.5">
           <span className="font-mono text-base tabular-nums sm:text-lg" style={{ color: GAIN }}>
-            {item.gainPerDay != null ? `${gold(item.gainPerDay)}/day` : 'unpriced'}
+            {item.gainPerDay != null ? perDay(item.gainPerDay) : 'unpriced'}
           </span>
           <span
-            className={cn('text-xs whitespace-nowrap', item.energy === 0 && 'text-muted-foreground')}
-            style={item.energy > 0 ? { color: 'var(--fire)' } : undefined}
+            className={cn('text-xs whitespace-nowrap', !item.energy && 'text-muted-foreground')}
+            style={(item.energy ?? 0) > 0 ? { color: 'var(--fire)' } : undefined}
           >
-            {item.energy > 0 ? `${item.energy} energy` : 'no energy'}
+            {(item.energy ?? 0) > 0 ? `${item.energy} energy` : 'no energy'}
           </span>
         </span>
       </button>
@@ -254,16 +253,9 @@ function RingCard({ label, value, valueColor, sub, center, fraction, color }: {
   fraction: number
   color: string
 }) {
-  const pct = Math.round(Math.min(1, Math.max(0, fraction)) * 100)
-  const ring: CSSProperties = { background: `conic-gradient(${color} 0 ${pct}%, var(--muted) ${pct}% 100%)` }
-
   return (
     <div className="bg-card flex items-center gap-4 rounded-xl border p-4">
-      <div className="flex size-[72px] shrink-0 items-center justify-center rounded-full" style={ring}>
-        <div className="bg-card flex size-14 items-center justify-center rounded-full font-mono text-base tabular-nums">
-          {center}
-        </div>
-      </div>
+      <ProgressRing fraction={fraction} color={color}>{center}</ProgressRing>
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className="text-muted-foreground text-xs">{label}</span>
         <span className="text-lg font-semibold tabular-nums" style={valueColor ? { color: valueColor } : undefined}>

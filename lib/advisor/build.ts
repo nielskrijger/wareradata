@@ -72,7 +72,7 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
 
   const { current, cap, regenPerHour } = input.energy
   const energyHours = regenPerHour > 0 ? Math.max(0, (cap - current) / regenPerHour) : Number.POSITIVE_INFINITY
-  const planned = items.reduce((s, i) => s + i.energy, 0)
+  const planned = items.reduce((s, i) => s + (i.energy ?? 0), 0)
   const spare = input.energy.current - planned
   if (spare >= TRAIN_ENERGY && energyHours < HOURS_PER_DAY) {
     items.push({

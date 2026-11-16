@@ -4,8 +4,8 @@ import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip'
 
 import { cn } from '@/lib/utils'
 
-function TooltipProvider({ delay = 80, ...props }: TooltipPrimitive.Provider.Props) {
-  return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delay} {...props} />
+function TooltipProvider({ delay = 0, closeDelay = 0, ...props }: TooltipPrimitive.Provider.Props) {
+  return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delay} closeDelay={closeDelay} {...props} />
 }
 
 function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
@@ -39,7 +39,7 @@ function TooltipContent({
           data-slot="tooltip-content"
           // `dark` so content inside picks the dark palette that suits this surface.
           className={cn(
-            'dark border border-white/25 bg-gradient-to-b from-neutral-800 to-neutral-900 text-neutral-50 data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 z-50 rounded-md px-3 py-2 text-xs shadow-md',
+            'dark border border-white/25 bg-gradient-to-b from-neutral-800 to-neutral-900 text-neutral-50 z-50 rounded-md px-3 py-2 text-xs shadow-md',
             className,
           )}
           {...props}

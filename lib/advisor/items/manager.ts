@@ -34,7 +34,7 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
         id: `fire-manager-${c.id}`,
         kind: 'manager',
         title: `Fire the manager at ${c.name}`,
-        why: `Their +${counted}% adds ${fmt(net + HOURS_PER_DAY * m.hourlyWage)} a day of output for ${fmt(HOURS_PER_DAY * m.hourlyWage)} in wages. Leaves out their daily +5 happiness care.`,
+        why: `Their +${counted}% adds ${fmt(net + HOURS_PER_DAY * m.hourlyWage)} gold of output a day but costs ${fmt(HOURS_PER_DAY * m.hourlyWage)} in wages. Their daily +5 happiness isn't counted.`,
         gainPerDay: -net,
       }]
     }
@@ -63,7 +63,7 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
     id: `hire-manager-${c.id}`,
     kind: 'manager',
     title: `Post a manager job at ${c.name}`,
-    why: `A manager with ${pct / RULES.managementPctPerPoint} Management adds +${pct}% here. At the market's ${fmt(input.managerMarketWage, 3)} an hour that nets this much a day.`,
+    why: `A manager with ${pct / RULES.managementPctPerPoint} Management adds ${pct}% output, for the market wage of ${fmt(input.managerMarketWage, 3)} gold an hour.`,
     gainPerDay: net,
     group: { key: 'manager-job', short: c.name },
   }]

@@ -24,7 +24,7 @@ export function moneyItem(input: AdvisorInput, hourlyCost: number): TodoItem | n
     id: 'money',
     kind: 'money',
     title: `Add ${fmt(short, 1)} gold: wages run out in ${fmt(hours, 1)} h`,
-    why: `Wages and managers cost ${fmt(hourlyCost)} an hour and you hold ${fmt(input.cash, 1)}. An hour that can't be paid in full stops that company for the hour.`,
+    why: `You pay ${fmt(hourlyCost)} gold an hour in wages and hold ${fmt(input.cash, 1)}. A company that can't pay a full hour stops for that hour.`,
     gainPerDay: null,
   }
 }

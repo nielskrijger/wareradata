@@ -2,7 +2,7 @@ import type { AdvisorInput, Bar } from './types'
 import type { ItemPrices } from '@/lib/factories/profit'
 import type { AdviceData, GameConfig } from '@/lib/warera/api'
 
-import { humanizeItem } from '@/components/factories/format'
+import { humanizeCode } from '@/components/factories/format'
 import { buildEngineModel, enginePointsPerDay } from '@/lib/factories/engine'
 import { engineLevelOf, recipeFromGameConfig } from '@/lib/factories/inputs'
 
@@ -35,7 +35,7 @@ export function advisorInputFromData(
       return {
         id: f.company._id,
         // Players often name companies with just a number.
-        name: `${humanizeItem(f.company.itemCode)} ${f.company.name}`,
+        name: `${humanizeCode(f.company.itemCode)} ${f.company.name}`,
         itemCode: f.company.itemCode,
         employeeCap: f.hourly?.cap ?? 0,
         enginePointsPerDay: enginePointsPerDay(engineLevelOf(f), model, f.hourly?.engineMultiplier ?? 1),

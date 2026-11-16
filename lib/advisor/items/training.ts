@@ -43,12 +43,13 @@ export function trainingItems(input: AdvisorInput, c: AdvisorCompany, vpp: numbe
     }
 
     const draws = Math.min(e.potential ?? 0, (e.trainingsPerDay ?? 1) - (e.trainingsToday ?? 0))
-    const perCard = ranked.map(k => `${CARD_LABEL[k].split(' ')[0]} ${signedFmt(gains[k])}`).join(', ')
+    const card = (k: CardKind) => CARD_LABEL[k].split(' ')[0]
+    const others = ranked.slice(1).map(k => `${signedFmt(gains[k])} for ${card(k)}`).join(' and ')
     items.push({
       id: `train-${e._id}`,
       kind: 'train',
       title: `Train ${firstName(e.name)} (${c.name}): pick ${CARD_LABEL[best]}`,
-      why: `Per day: ${perCard}. Pays for ${days} days.`,
+      why: `${card(best)} earns ${signedFmt(gains[best])} gold a day, against ${others}. Keeps paying for ${days} days.`,
       gainPerDay: gains[best] * draws,
       energy: TRAIN_ENERGY * draws,
     })

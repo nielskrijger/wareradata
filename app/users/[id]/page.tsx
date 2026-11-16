@@ -150,7 +150,7 @@ export default async function UserDetailPage({ params }: PageProps) {
           />
         </section>
 
-        <RankMap title={`Where ${user.username} ranks`} total={total} groups={rankGroups(user)} />
+        <RankMap title={`Where ${user.username} ranks`} total={total} unit="players" groups={rankGroups(user)} />
 
         <Suspense
           fallback={(

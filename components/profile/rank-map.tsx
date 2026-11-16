@@ -34,27 +34,32 @@ interface Props {
    * Size of the ranked set; the track runs from last to #1.
    */
   total: number
+
+  /**
+   * What the ranked set holds, plural ("players", "MUs").
+   */
+  unit: string
 }
 
 /**
- * Track marks as the share of players ranked below, from last to #1.
+ * Track marks as the share of the set ranked below, from last to #1.
  */
 const MARKS = [0, 25, 50, 75, 100]
 
 /**
- * Every stat as a dot on one shared rank track, so a player's strong and weak
+ * Every stat as a dot on one shared rank track, so strong and weak
  * spots read at a glance.
  *
- * Linear in percentile, so bar length is simply the share of players beaten;
+ * Linear in percentile, so bar length is simply the share of the set beaten;
  * the "top x%" beside each rank separates the very best.
  */
-export function RankMap({ title, groups, total }: Props) {
+export function RankMap({ title, groups, total, unit }: Props) {
   return (
     <section className="bg-card rounded-md border p-4 sm:p-5">
       <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="font-medium">{title}</h2>
         <span className="text-muted-foreground text-xs">
-          among {total.toLocaleString()} players · further right is better
+          among {total.toLocaleString()} {unit} · further right is better
         </span>
       </div>
 

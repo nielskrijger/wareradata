@@ -5,6 +5,7 @@ import type { KeyboardEvent } from 'react'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 import { PAGE_SIZES } from './use-table-url-state'
@@ -94,7 +95,7 @@ export function Pagination({
         </Button>
         <label className="flex items-center gap-1.5 px-1">
           <span>Page</span>
-          <input
+          <Input
             // Remount so the buttons can reset it while it stays uncontrolled for typing.
             key={pageIndex}
             type="number"
@@ -106,7 +107,7 @@ export function Pagination({
             onBlur={e => commitPage(e.currentTarget.value)}
             disabled={pageCount <= 1}
             aria-label={`Page number, 1 to ${pageCount}`}
-            className="border-input bg-card text-foreground h-7 w-16 rounded-md border px-1.5 text-center text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="h-7 w-16 px-1.5 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
           <span>
             of

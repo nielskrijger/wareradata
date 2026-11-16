@@ -42,7 +42,9 @@ export function SiteSearch() {
         aria-label="Search"
         className={cn(
           'text-muted-foreground hover:text-foreground hover:bg-accent/50 inline-flex h-8 w-8 items-center',
-          'justify-center gap-2 rounded-lg text-sm xl:w-56 xl:justify-start xl:border xl:px-2.5',
+          'justify-center gap-2 rounded-lg text-sm xl:w-56 xl:justify-start xl:px-2.5',
+          // Matches SearchInput so the nav field and table filters look alike.
+          'xl:border-input xl:dark:bg-input/50 xl:border',
         )}
       >
         <Search className="h-4 w-4" />

@@ -7,11 +7,11 @@ import type { ColumnDef } from './features'
 
 import type { Range } from '@/lib/query'
 import { useTable } from '@tanstack/react-table'
-import { RotateCw, X } from 'lucide-react'
+import { RotateCw } from 'lucide-react'
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { SearchInput } from '@/components/ui/search-input'
 import {
   Table,
   TableBody,
@@ -218,24 +218,14 @@ function DataTableInner<TData extends RowData>({
   return (
     <div className="space-y-3" data-pending={isPending ? 'true' : 'false'}>
       <div className="flex items-center gap-2">
-        <div className="relative w-full max-w-xl">
-          <Input
-            value={filterInput}
-            onChange={e => setFilterInput(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="bg-card pr-8"
-          />
-          {filterInput && (
-            <button
-              type="button"
-              onClick={() => setFilterInput('')}
-              aria-label="Clear filter"
-              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <SearchInput
+          value={filterInput}
+          onChange={e => setFilterInput(e.target.value)}
+          onClear={() => setFilterInput('')}
+          placeholder={searchPlaceholder}
+          aria-label="Filter table"
+          className="w-full max-w-xl"
+        />
         {searchHint}
         <ColumnsMenu table={table} />
       </div>

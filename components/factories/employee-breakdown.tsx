@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import type { LedgerEmployee } from '@/lib/factories/ledger'
 
+import { ItemIcon } from '@/components/item-icon'
 import { signed, STAT_NAMES } from '@/lib/factories/employee-stats'
+
 import { cn } from '@/lib/utils'
 
 import { goldSigned, humanizeCode } from './format'
@@ -36,7 +38,7 @@ function Section({ title, children }: { title: string, children: ReactNode }) {
  * each stat comes from, the bonus and happiness reasons, specialization, tool and
  * the money behind Net/day.
  */
-export function EmployeeBreakdown({ e, factoryName }: { e: LedgerEmployee, factoryName?: string }) {
+export function EmployeeBreakdown({ e, factory }: { e: LedgerEmployee, factory?: ReactNode }) {
   const wageRate = e.wagePerHour.toLocaleString('en', { maximumFractionDigits: 3 })
 
   return (
@@ -44,7 +46,7 @@ export function EmployeeBreakdown({ e, factoryName }: { e: LedgerEmployee, facto
       <div>
         <div className="text-sm font-medium">{e.name}</div>
         <div className="text-neutral-400">
-          {factoryName && <>{factoryName} · </>}{e.age}y · retires in {e.retireInDays}d
+          {factory && <>{factory} · </>}{e.age}y · retires in {e.retireInDays}d
         </div>
       </div>
 
@@ -86,7 +88,11 @@ export function EmployeeBreakdown({ e, factoryName }: { e: LedgerEmployee, facto
             <Row label="Specialization">
               {e.specHere} here
               {e.specBest.level > e.specHere && (
-                <span className="text-neutral-400"> · {humanizeCode(e.specBest.itemCode)} {e.specBest.level}</span>
+                <span className="text-neutral-400">
+                  {' · best '}
+                  <ItemIcon code={e.specBest.itemCode} small />
+                  {` ${e.specBest.level}`}
+                </span>
               )}
             </Row>
           )}

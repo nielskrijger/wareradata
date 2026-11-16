@@ -4,7 +4,7 @@ import type { AdvisorResult } from '@/lib/advisor/types'
 import Link from 'next/link'
 
 import { AdviseTable } from './advise-table'
-import { AllSet, EnergyCard, MoneyCard } from './cards'
+import { AllSet, MoneyCard } from './cards'
 import { sum } from './format'
 import { RefreshButton } from './refresh-button'
 import { splitBySize } from './rows'
@@ -43,12 +43,11 @@ export function AdviseList({ result, user }: Props) {
         ? <ShareBar big={big} small={small} total={total} />
         : <AllSet />}
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <EnergyCard energy={result.energy} needed={sum(big, 'energy')} />
-        {money && <MoneyCard item={money} />}
-      </div>
+      {money && <MoneyCard item={money} />}
 
-      {(big.length > 0 || small.length > 0) && <AdviseTable big={big} small={small} total={total} />}
+      {(big.length > 0 || small.length > 0) && (
+        <AdviseTable big={big} small={small} total={total} energy={result.energy} />
+      )}
 
       {result.skipped.length > 0 && (
         <aside className="bg-card flex flex-col gap-2 rounded-xl border p-4">

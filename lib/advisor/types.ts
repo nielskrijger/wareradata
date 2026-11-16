@@ -2,13 +2,50 @@ import type { EmployeeLike } from './model'
 import type { ItemPrices, RecipeLookup } from '@/lib/factories/profit'
 
 /**
+ * One number behind an action: a line of its breakdown, and optionally a
+ * phrase on the row's short summary.
+ */
+export interface Fact {
+  label: string
+  value: string
+
+  /**
+   * Shown on the row itself; facts without one only appear in the breakdown.
+   */
+  brief?: string
+
+  /**
+   * Item code whose icon goes before the value.
+   */
+  icon?: string
+}
+
+/**
+ * A company as a row names it; the page shows it styled, with a hover card.
+ */
+export interface CompanyRef {
+  id: string
+  name: string
+  itemCode: string
+  workers: number
+}
+
+export type TitlePart = string | CompanyRef | { item: string }
+
+/**
  * One row of the to-do list.
  */
 export interface TodoItem {
   id: string
   kind: 'money' | 'train' | 'tool' | 'manager' | 'employee' | 'item' | 'hire' | 'work'
   title: string
+
+  /**
+   * The title with companies and items kept apart, so the page can style them.
+   */
+  titleParts?: TitlePart[]
   why: string
+  facts?: Fact[]
 
   /**
    * Gold per day the action adds; null when it can't be priced.
@@ -24,7 +61,8 @@ export interface TodoItem {
    * Set on actions repeated per company or worker, so the page can fold them
    * into one row; `short` names this one inside that row.
    */
-  group?: { key: 'manager-job' | 'tool-move', short: string }
+  group?: { key: 'manager-job' | 'tool-move', short: string, company?: CompanyRef }
+
 }
 
 /**
@@ -47,6 +85,11 @@ export interface Bar {
 export interface AdvisorCompany {
   id: string
   name: string
+
+  /**
+   * The name as the player typed it, often just a number.
+   */
+  ownName: string
   itemCode: string
   employeeCap: number
   enginePointsPerDay: number

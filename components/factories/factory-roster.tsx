@@ -7,14 +7,17 @@ import type { PortfolioTotals } from '@/lib/factories/profit'
 import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
+import { CompanyName } from '@/components/company-name'
 import { EmptyDash } from '@/components/empty-dash'
+import { ItemIcon } from '@/components/item-icon'
 import { StackedBar } from '@/components/stacked-bar'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-
 import { EmployeeBreakdown } from './employee-breakdown'
+
 import { ENGINE_FILL, goldSigned, humanizeCode, humanizeItem, netClass } from './format'
 import { TraitIcon } from './trait-icon'
 import { hasTraitIcon } from './trait-icons'
@@ -286,7 +289,7 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
             </TooltipContent>
           </Tooltip>
           <span className="text-muted-foreground block text-xs">
-            {showFactory && <>{e.factory.name} · {humanizeItem(e.factory.itemCode)} · </>}
+            {showFactory && <><ItemIcon code={e.factory.itemCode} small /> {e.factory.name} · </>}
             {e.age}y · retires {e.retireInDays}d
           </span>
         </TableCell>
@@ -359,16 +362,19 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
             >
               <ChevronRight className={cn('size-4 transition-transform', isOpen && 'rotate-90')} />
             </button>
-            <span className="shrink-0">
-              <span className="font-medium">{row.name}</span>
-              <span className="text-muted-foreground"> · {humanizeItem(row.itemCode)}</span>
+            {/* Its own card, so opening it doesn't fold the row. */}
+            <span className="min-w-0 shrink font-medium" onClick={e => e.stopPropagation()}>
+              <CompanyName
+                company={{ id: row.id, name: row.name, itemCode: row.itemCode, workers: row.employees.length }}
+              />
             </span>
             <span className="text-muted-foreground hidden truncate text-xs sm:inline">{details}</span>
             {row.bestOpportunityPerDay >= 1 && (
               <Tooltip>
                 <TooltipTrigger render={<span className="shrink-0 cursor-help" />}>
                   <Badge className="bg-green-500/15 text-green-800 dark:text-green-300">
-                    {humanizeItem(row.bestProductCode)} {goldSigned(row.bestOpportunityPerDay)}
+                    <ItemIcon code={row.bestProductCode} small />
+                    {goldSigned(row.bestOpportunityPerDay)}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-60">

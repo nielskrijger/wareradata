@@ -1,4 +1,5 @@
 import type { EmployeeLike } from './model'
+import type { AdvisorCompany, CompanyRef, TodoItem } from './types'
 import type { ItemPrices, RecipeLookup } from '@/lib/factories/profit'
 
 import { netPerUnit } from '@/lib/factories/profit'
@@ -7,6 +8,17 @@ import { netPerUnit } from '@/lib/factories/profit'
  * Gains below this are noise next to daily price moves.
  */
 export const MIN_GAIN_PER_DAY = 0.1
+
+export function companyRef(c: AdvisorCompany): CompanyRef {
+  return { id: c.id, name: c.ownName, itemCode: c.itemCode, workers: c.employees.length }
+}
+
+/**
+ * A title naming a company, as plain text and with the company kept apart.
+ */
+export function titleAt(before: string, c: AdvisorCompany, after = ''): Pick<TodoItem, 'title' | 'titleParts'> {
+  return { title: `${before}${c.name}${after}`, titleParts: [before, companyRef(c), after] }
+}
 
 export function firstName(name: string): string {
   return name.split(' ')[0]

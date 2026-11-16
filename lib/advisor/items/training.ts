@@ -6,7 +6,7 @@ import {
   cardGainsPerDay,
   payingDays,
 } from '../model'
-import { firstName, MIN_GAIN_PER_DAY, signedFmt } from '../shared'
+import { firstName, MIN_GAIN_PER_DAY, signedFmt, titleAt } from '../shared'
 
 export const TRAIN_ENERGY = 10
 
@@ -48,8 +48,16 @@ export function trainingItems(input: AdvisorInput, c: AdvisorCompany, vpp: numbe
     items.push({
       id: `train-${e._id}`,
       kind: 'train',
-      title: `Train ${firstName(e.name)} (${c.name}): pick ${CARD_LABEL[best]}`,
+      ...titleAt(`Train ${firstName(e.name)} at `, c, `: pick ${CARD_LABEL[best]}`),
       why: `${card(best)} earns ${signedFmt(gains[best])} gold a day, against ${others}. Keeps paying for ${days} days.`,
+      facts: [
+        ...ranked.map(k => ({
+          label: card(k),
+          value: `${signedFmt(gains[k])} g/day`,
+          brief: k === best ? `${card(k)} ${signedFmt(gains[k])}` : undefined,
+        })),
+        { label: 'Keeps paying', value: `${days} days`, brief: `pays ${days} days` },
+      ],
       gainPerDay: gains[best] * draws,
       energy: TRAIN_ENERGY * draws,
     })

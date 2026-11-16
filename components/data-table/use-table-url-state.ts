@@ -38,7 +38,14 @@ interface State {
   setPageSize: (size: number) => void
 
   /**
-   * True when state matches the page's defaults (no params in URL).
+   * The column view tab, '' for the table's default.
+   */
+  view: string
+  setView: (view: string | null) => void
+
+  /**
+   * True when the fetched rows match the page's defaults (no params in URL).
+   * The view only picks columns, so it doesn't count.
    */
   isAtInitialState: boolean
 }
@@ -72,6 +79,8 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     'size',
     parseAsInteger.withDefault(defaultPageSize).withOptions(urlOpts),
   )
+
+  const [view, setView] = useQueryState('view', parseAsString.withDefault('').withOptions(urlOpts))
 
   // Hand-edited URLs can carry any size.
   const pageSize = (PAGE_SIZES as readonly number[]).includes(sizeParam) ? sizeParam : defaultPageSize
@@ -158,6 +167,8 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     setPageIndex,
     pageSize,
     setPageSize,
+    view,
+    setView,
     isAtInitialState,
   }
 }

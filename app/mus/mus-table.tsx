@@ -1,6 +1,6 @@
 'use client'
 
-import type { PageResult } from '@/components/data-table/data-table'
+import type { EntityTableProps } from '@/components/data-table/data-table'
 import type { MURow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
@@ -8,22 +8,7 @@ import { DataTable } from '@/components/data-table/data-table'
 
 import { muColumns } from './columns'
 
-interface Props {
-  initial: PageResult<MURow>
-
-  /**
-   * Scopes the table via a structured filter that's always applied (e.g.
-   * `countryCode:<code>` on the country page). Combined with the user's search.
-   */
-  baseFilter?: string
-
-  /**
-   * Column ids the page's context makes redundant; see DataTable.
-   */
-  omitColumns?: string[]
-}
-
-export function MUsTable({ initial, baseFilter, omitColumns }: Props) {
+export function MUsTable({ initial, baseFilter, omitColumns }: EntityTableProps<MURow>) {
   return (
     <DataTable
       tableId="mus"

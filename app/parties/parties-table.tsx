@@ -1,6 +1,6 @@
 'use client'
 
-import type { PageResult } from '@/components/data-table/data-table'
+import type { EntityTableProps } from '@/components/data-table/data-table'
 import type { PartyRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
@@ -8,22 +8,7 @@ import { DataTable } from '@/components/data-table/data-table'
 
 import { partyColumns } from './columns'
 
-interface Props {
-  initial: PageResult<PartyRow>
-
-  /**
-   * Scopes the table via a structured filter that's always applied (e.g.
-   * `countryCode:<code>` on the country page). Combined with the user's search.
-   */
-  baseFilter?: string
-
-  /**
-   * Column ids the page's context makes redundant; see DataTable.
-   */
-  omitColumns?: string[]
-}
-
-export function PartiesTable({ initial, baseFilter, omitColumns }: Props) {
+export function PartiesTable({ initial, baseFilter, omitColumns }: EntityTableProps<PartyRow>) {
   return (
     <DataTable
       tableId="parties"

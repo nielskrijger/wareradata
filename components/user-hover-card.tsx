@@ -18,6 +18,7 @@ import { HeatCell } from '@/components/data-table/heat-cell'
 import { GearStrip } from '@/components/detail/gear-strip'
 import { Flag } from '@/components/flag'
 import { FillBar } from '@/components/hover-card/fill-bar'
+import { HoverCardError, HoverLabel } from '@/components/hover-card/hover-card-parts'
 import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
 import { useEntityHover } from '@/components/hover-card/use-entity-hover'
 import { EMPTY, formatRelativeTime } from '@/lib/format'
@@ -106,7 +107,7 @@ function Body({ data }: { data: FetchedData }) {
 
       <div className="border-y border-neutral-50/15 px-3 py-2">
         <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-wide text-neutral-50/50">Vitals</span>
+          <HoverLabel>Vitals</HoverLabel>
           <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} withTooltip={false} />
         </div>
         <div className="space-y-1">
@@ -117,7 +118,7 @@ function Body({ data }: { data: FetchedData }) {
 
       <div className="border-b border-neutral-50/15 px-3 py-2">
         <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-wide text-neutral-50/50">Gear score</span>
+          <HoverLabel>Gear score</HoverLabel>
           {user.gearScore != null && (
             <GearScorePill
               score={user.gearScore}
@@ -132,7 +133,7 @@ function Body({ data }: { data: FetchedData }) {
       </div>
 
       <div className="px-3 py-2">
-        <div className="mb-1 text-[10px] uppercase tracking-wide text-neutral-50/50">Performance</div>
+        <HoverLabel className="mb-1 block">Performance</HoverLabel>
         <div className="space-y-0.5 text-[11px]">
           <StatRow icon={<Trophy className={ICON_CLS} />} label="Points" value={user.points} range={ranges.points} />
           <StatRow
@@ -175,11 +176,7 @@ function StatRow({ icon, label, value, range }: {
  */
 function Placeholder({ status }: { status: HoverStatus }) {
   if (status === 'error') {
-    return (
-      <div className="px-3 py-2 text-[11px] text-neutral-50/70">
-        Couldn't load details.
-      </div>
-    )
+    return <HoverCardError />
   }
 
   return (

@@ -1,7 +1,7 @@
 import { Drumstick, Heart } from 'lucide-react'
 
 import { StackedBar } from '@/components/stacked-bar'
-import { heatColor } from '@/lib/utils'
+import { heatColor, heatTextColor } from '@/lib/utils'
 
 interface Props {
   /**
@@ -46,15 +46,16 @@ function Row({ label, icon, value }: {
   }
 
   const color = heatColor(value)
+  const textColor = heatTextColor(value)
 
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-baseline justify-between">
-        <span className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color }}>
+        <span className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: textColor }}>
           {icon}
           {label}
         </span>
-        <span className="tabular-nums" style={{ color }}>
+        <span className="tabular-nums" style={{ color: textColor }}>
           {value}
           %
         </span>

@@ -1,18 +1,15 @@
 /**
- * Rarity palette shared by every gear-rendering surface: the tile rings on
- * the gear strip and the score pill on the hover-card.
- *
- * Tier 1 (common, neutral) → tier 6 (mythic, fuchsia). Kept as raw hex so
- * the same color can drive a Tailwind ring (via inline style) and an
- * inline rgb-tinted background without round-tripping through CSS variables.
+ * Rarity palette shared by every gear-rendering surface, tier 1 (common) to
+ * tier 6 (mythic). CSS variables so light surfaces get darker, readable shades
+ * (defined in globals.css).
  */
-export const RARITY_HEX = [
-  '#a3a3a3', // 1 common
-  '#34d399', // 2 uncommon
-  '#60a5fa', // 3 rare
-  '#c4b5fd', // 4 epic
-  '#fcd34d', // 5 legendary
-  '#f87171', // 6 mythic
+const RARITY_COLORS = [
+  'var(--rarity-1)', // common
+  'var(--rarity-2)', // uncommon
+  'var(--rarity-3)', // rare
+  'var(--rarity-4)', // epic
+  'var(--rarity-5)', // legendary
+  'var(--rarity-6)', // mythic
 ] as const
 
 const RARITY_LABELS = [
@@ -24,8 +21,15 @@ const RARITY_LABELS = [
   'Mythic',
 ] as const
 
-export function rarityHex(tier: number): string {
-  return RARITY_HEX[Math.max(0, Math.min(5, tier - 1))]
+export function rarityColor(tier: number): string {
+  return RARITY_COLORS[Math.max(0, Math.min(5, tier - 1))]
+}
+
+/**
+ * A rarity colour at `percent` opacity, for tile fills and rings.
+ */
+export function rarityTint(color: string, percent: number): string {
+  return `color-mix(in oklab, ${color} ${percent}%, transparent)`
 }
 
 export function rarityLabel(tier: number): string {

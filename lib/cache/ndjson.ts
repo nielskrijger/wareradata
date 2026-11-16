@@ -4,6 +4,8 @@ import { mkdir, rename, unlink } from 'node:fs/promises'
 import path from 'node:path'
 import { createInterface } from 'node:readline'
 
+import { tempPathFor } from './file-store'
+
 /**
  * Streams a newline-delimited JSON file, invoking `onRecord` per parsed line.
  * Resolves silently when the file doesn't exist yet (no scrape has run). Skips
@@ -50,7 +52,7 @@ export async function writeFileAtomic(
   // data dir may not exist yet.
   await mkdir(path.dirname(filePath), { recursive: true })
 
-  const tmpPath = `${filePath}.tmp.${process.pid}.${Date.now()}`
+  const tmpPath = tempPathFor(filePath)
   const out = createWriteStream(tmpPath, { encoding: 'utf8' })
 
   async function write(chunk: string): Promise<void> {

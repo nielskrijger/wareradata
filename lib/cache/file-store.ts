@@ -95,6 +95,14 @@ export function archiveDir(): string {
 const TEMP_FILE_RE = /\.tmp\.(\d+)\.\d+$/
 
 /**
+ * The temp file an atomic write of `filePath` goes through, named so
+ * {@link sweepStaleTempFiles} can find it if the write dies before its rename.
+ */
+export function tempPathFor(filePath: string): string {
+  return `${filePath}.tmp.${process.pid}.${Date.now()}`
+}
+
+/**
  * Whether a process with this pid is still running. `kill(pid, 0)` sends no
  * signal, it only checks: ESRCH means gone, EPERM means alive but not ours.
  */
@@ -134,9 +142,14 @@ export async function readJsonFile<T>(filePath: string, fallback: T): Promise<T>
 export async function writeJsonFile(filePath: string, data: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true })
 
-  const tmp = `${filePath}.tmp.${process.pid}.${Date.now()}`
-  await writeFile(tmp, JSON.stringify(data))
-  await rename(tmp, filePath)
+  const tmp = tempPathFor(filePath)
+  try {
+    await writeFile(tmp, JSON.stringify(data))
+    await rename(tmp, filePath)
+  } catch (err) {
+    await unlink(tmp).catch(() => undefined)
+    throw err
+  }
 }
 
 export function emptyRawSnapshot(): RawSnapshot {
@@ -268,7 +281,7 @@ export async function writeRawSnapshot(snapshot: RawSnapshot): Promise<void> {
   const dir = dataDir()
   await mkdir(dir, { recursive: true })
 
-  const tmp = `${snapshotPath()}.tmp.${process.pid}.${Date.now()}`
+  const tmp = tempPathFor(snapshotPath())
   try {
     await pipeline(serializeSnapshot(snapshot), createWriteStream(tmp))
     await rename(tmp, snapshotPath())

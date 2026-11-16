@@ -41,6 +41,26 @@ export const RULES = {
 export const HOURS_PER_DAY = 24
 
 /**
+ * Goods each tool kind works on; on other goods a tool adds nothing. Read
+ * from `toolStatus.isUsable` on live rosters.
+ */
+const TOOL_GOODS: Record<string, string[]> = {
+  sickle: ['grain', 'fish', 'livestock', 'coca', 'wood'],
+  pickaxe: ['iron', 'lead', 'limestone', 'petroleum'],
+  skillet: ['bread', 'steak', 'cookedFish'],
+  hammer: ['concrete', 'steel'],
+  flask: ['oil', 'paper', 'cocain'],
+  caliper: ['ammo', 'lightAmmo', 'heavyAmmo'],
+}
+
+/**
+ * Whether a tool (`pickaxe3`) works on an item.
+ */
+export function toolFits(toolCode: string, itemCode: string): boolean {
+  return TOOL_GOODS[toolCode.replace(/\d+$/, '')]?.includes(itemCode) ?? false
+}
+
+/**
  * The bits of an employee the advisor reads, so checks can build one by hand.
  */
 export type EmployeeLike = Pick<

@@ -18,16 +18,10 @@ const battleFieldAliases: FieldAliases = {
 }
 
 const battleSortValue = makeSortValue<BattleRow>({
-  passthrough: [
-    'totalDamage',
-    'moneyPool',
-    'attackerWonRounds',
-    'roundAttackerDamage',
-    'roundDefenderDamage',
-    'endedAt',
-  ],
-  text: ['attackerName', 'defenderName', 'regionName'],
-  default: 'totalDamage',
+  // The Type column: tournament, then resistance, then regular.
+  isResistance: row => (row.isTournament ? 2 : row.isResistance ? 1 : 0),
+  // The Winner column, by the winning side's name.
+  wonBy: row => (row.wonBy ? row[`${row.wonBy}Name`]?.toLowerCase() ?? null : null),
 })
 
 /**

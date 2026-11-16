@@ -5,7 +5,6 @@ import type { RegionRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
-import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 import { regionColumns } from './columns'
 
@@ -20,7 +19,7 @@ export function RegionsTable({ initial }: Props) {
       columns={regionColumns}
       initialData={initial}
       initialSort={{ id: 'development', desc: true }}
-      fetchPage={req => fetchPaginated<RegionRow>('/api/regions', req)}
+      endpoint="/api/regions"
       searchPlaceholder="Filter by region, country, city, or resource…"
       searchHint={(
         <AdvancedSearchHint

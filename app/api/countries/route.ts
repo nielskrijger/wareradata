@@ -7,14 +7,9 @@ import { createTableRoute, makeSortValue } from '@/lib/query'
 import { readinessScore } from '@/lib/rows'
 import {
   CASE_FIELD_ALIASES,
-  CASE_SORT_KEYS,
-  COMBAT_SORT_KEYS,
   FACTORY_FIELD_ALIASES,
-  FACTORY_SORT_KEYS,
   PREMIUM_FIELD_ALIASES,
-  PREMIUM_KEYS,
   WEALTH_FIELD_ALIASES,
-  WEALTH_PART_KEYS,
 } from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
@@ -44,45 +39,8 @@ const countryFieldAliases: FieldAliases = {
 }
 
 const countrySortValue = makeSortValue<CountryRow>({
-  passthrough: [
-    ...CASE_SORT_KEYS,
-    ...WEALTH_PART_KEYS,
-    ...PREMIUM_KEYS,
-    ...FACTORY_SORT_KEYS,
-    'totalPoints',
-    'avgPoints',
-    'avgPointsPerDay',
-    'avgLevel',
-    'avgHealth',
-    'avgHunger',
-    'avgGearScore',
-    'avgWarShare',
-    ...COMBAT_SORT_KEYS,
-    'weeklyDamagePerCitizen',
-    'wealth',
-    'wealthRank',
-    'citizenWealth',
-    'bounty',
-    'money',
-    'development',
-    'dailyIncome',
-    'activePopulation',
-    'musCount',
-    'partyCount',
-    'alliesCount',
-    'warsCount',
-    'code',
-    'taxIncome',
-    'taxMarket',
-    'taxManager',
-    'unrestPercent',
-  ],
-  text: ['name', 'govType'],
-  custom: {
-    damageTier: row => (row.damageTier ? TIER_INDEX[row.damageTier] : null),
-    readinessScore: row => readinessScore(row.readinessPill),
-  },
-  default: 'damageRank',
+  damageTier: row => (row.damageTier ? TIER_INDEX[row.damageTier] : null),
+  readinessScore: row => readinessScore(row.readinessPill),
 })
 
 /**

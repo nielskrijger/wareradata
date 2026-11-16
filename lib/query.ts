@@ -116,12 +116,8 @@ function sortAndPaginate<T extends object>(
       const av = sortValue(a, sortField)
       const bv = sortValue(b, sortField)
       // Nulls always sort last regardless of direction.
-      if (av === null || av === undefined) {
-        return 1
-      }
-
-      if (bv === null || bv === undefined) {
-        return -1
+      if (av == null || bv == null) {
+        return (av == null ? 1 : 0) - (bv == null ? 1 : 0)
       }
 
       if (av < bv) {
@@ -146,42 +142,17 @@ function sortAndPaginate<T extends object>(
 }
 
 /**
- * Filter → sort → paginate. `getFilterHaystack` returns the lowercased text the
- * filter substring is matched against (concat of fields that should be searchable).
- * `sortValue` returns the comparable value for a given column id, or undefined if
- * the column isn't sortable / unknown.
- */
-export function applyQuery<T extends object>(
-  rows: T[],
-  query: QueryParams,
-  getFilterHaystack: (row: T) => string,
-  sortValue: (row: T, sort: string) => number | string | null,
-): PagedResult<T> {
-  let filtered = rows
-  if (query.filter) {
-    const needle = query.filter.toLowerCase()
-    filtered = rows.filter(r => getFilterHaystack(r).includes(needle))
-  }
-
-  return sortAndPaginate(filtered, query, sortValue)
-}
-
-/**
- * The server-rendered first page for a list or detail view: the top
- * {@link DEFAULT_PAGE_SIZE} rows sorted by `sortField` descending, with heat
- * ranges over the full set. There's no user filter to apply at this stage (the
- * client takes over paging, sorting, and filtering once hydrated), so the
- * haystack is empty and `sortField` doubles as the row accessor.
+ * The server-rendered first page; the client takes over paging, sorting and
+ * filtering once hydrated.
  */
 export function firstPage<T extends object>(
   rows: T[],
   sortField: Extract<keyof T, string>,
 ): PagedResult<T> {
-  return applyQuery(
+  return sortAndPaginate(
     rows,
     { page: 0, pageSize: DEFAULT_PAGE_SIZE, sort: sortField, dir: 'desc', filter: '' },
-    () => '',
-    row => (row as Record<string, unknown>)[sortField] as number | string | null,
+    makeSortValue(),
   )
 }
 
@@ -273,74 +244,31 @@ export function applyStructuredQuery<T extends object>(
   return sortAndPaginate(filtered, query, sortValue)
 }
 
-/**
- * Declarative spec for {@link makeSortValue}. Each field lists the sort ids that
- * share one handling rule, so a route states *what kind* each column is instead
- * of writing one switch arm per column.
- */
-export interface SortSpec<T> {
-  /**
-   * Returned as-is: numbers, country codes, ISO date strings, enum strings.
-   */
-  passthrough?: (keyof T)[]
-
-  /**
-   * Lowercased for case-insensitive ordering (display names).
-   */
-  text?: (keyof T)[]
-
-  /**
-   * Booleans mapped to 1 / 0 so `true` sorts after `false`.
-   */
-  boolean?: (keyof T)[]
-
-  /**
-   * Bespoke comparators keyed by sort id (tier lookups, derived scores).
-   */
-  custom?: Record<string, (row: T) => number | string | null>
-
-  /**
-   * Used when the sort id matches nothing above (the table's natural order).
-   */
-  default: keyof T | ((row: T) => number | string | null)
-}
+type SortValue = number | string | null
 
 /**
- * Turns a {@link SortSpec} into the `(row, sort) => comparable` function that
- * {@link applyStructuredQuery} expects. Columns needing special handling
- * (tier progression, readiness score) go in `custom`.
+ * Sorts any column by its own row value; `custom` covers columns whose value
+ * doesn't order naturally (tiers, readiness). Strings compare lowercased so
+ * names sort case-insensitively.
  */
 export function makeSortValue<T>(
-  spec: SortSpec<T>,
-): (row: T, sort: string) => number | string | null {
-  const passthrough = new Set<keyof T>(spec.passthrough)
-  const text = new Set<keyof T>(spec.text)
-  const boolean = new Set<keyof T>(spec.boolean)
-
+  custom: Record<string, (row: T) => SortValue> = {},
+): (row: T, sort: string) => SortValue {
   return (row, sort) => {
-    if (spec.custom && sort in spec.custom) {
-      return spec.custom[sort](row)
+    if (Object.hasOwn(custom, sort)) {
+      return custom[sort](row)
     }
 
-    const key = sort as keyof T
     const value = (row as Record<string, unknown>)[sort]
-    if (text.has(key)) {
-      return typeof value === 'string' ? value.toLowerCase() : null
+    if (typeof value === 'number') {
+      return value
     }
 
-    if (boolean.has(key)) {
+    if (typeof value === 'boolean') {
       return value ? 1 : 0
     }
 
-    if (passthrough.has(key)) {
-      return value as number | string | null
-    }
-
-    if (typeof spec.default === 'function') {
-      return spec.default(row)
-    }
-
-    return (row as Record<string, unknown>)[spec.default as string] as number | string | null
+    return typeof value === 'string' ? value.toLowerCase() : null
   }
 }
 

@@ -322,7 +322,7 @@ export interface GroupFactoryStats {
   factoryWorkers: number
   factoryWorkersRank: number | null
   factoryEfficiencyPct: number | null
-  factoryEfficiencyRank: number | null
+  factoryEfficiencyPctRank: number | null
   factoryPayrollPerDay: number
   factoryPayrollPerDayRank: number | null
 

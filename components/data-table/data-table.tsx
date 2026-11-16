@@ -25,6 +25,7 @@ import { ColumnsMenu } from './columns-menu'
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
 import { dataTableFeatures } from './features'
+import { fetchPaginated } from './fetch-paginated'
 import { Pagination } from './pagination'
 import { usePersistedColumnVisibility } from './use-persisted-column-visibility'
 import { useTableUrlState } from './use-table-url-state'
@@ -62,7 +63,16 @@ interface DataTableProps<TData extends RowData> {
    * Must match the size of `initialData` and be one of PAGE_SIZES.
    */
   pageSize?: number
-  fetchPage: (req: PageRequest) => Promise<PageResult<TData>>
+
+  /**
+   * The `/api/*` route serving this table's pages.
+   */
+  endpoint: string
+
+  /**
+   * A locked-in scope (e.g. `muId:<id>`) the user's filter can narrow but not widen.
+   */
+  baseFilter?: string
   searchPlaceholder?: string
 
   /**
@@ -92,7 +102,8 @@ function DataTableInner<TData extends RowData>({
   initialData,
   initialSort,
   pageSize: defaultPageSize = 25,
-  fetchPage,
+  endpoint,
+  baseFilter,
   searchPlaceholder = 'Filter…',
   searchHint,
 }: DataTableProps<TData>) {
@@ -154,7 +165,7 @@ function DataTableInner<TData extends RowData>({
     let superseded = false
     startTransition(async () => {
       try {
-        const result = await fetchPage(req)
+        const result = await fetchPaginated<TData>(endpoint, req, baseFilter)
         if (!superseded) {
           setData(result)
           setLoadFailed(false)
@@ -169,7 +180,7 @@ function DataTableInner<TData extends RowData>({
     return () => {
       superseded = true
     }
-  }, [pageIndex, pageSize, sorting, q, fetchPage, isAtInitialState, retryCount])
+  }, [pageIndex, pageSize, sorting, q, endpoint, baseFilter, isAtInitialState, retryCount])
 
   const pageCount = Math.max(1, Math.ceil(data.total / pageSize))
 

@@ -22,22 +22,7 @@ const regionFieldAliases: FieldAliases = {
   income: 'dailyIncome',
 }
 
-const regionSortValue = makeSortValue<RegionRow>({
-  passthrough: [
-    'development',
-    'neighborCount',
-    'biome',
-    'climate',
-    'strategicResource',
-    'population',
-    'companyCount',
-    'employeeCount',
-    'dailyIncome',
-  ],
-  text: ['name', 'countryName', 'coreCountryName', 'mainCity'],
-  boolean: ['isCapital', 'isLinkedToCapital'],
-  default: 'development',
-})
+const regionSortValue = makeSortValue<RegionRow>()
 
 /**
  * Driven by the client DataTable on /regions. Reads from the in-process snapshot

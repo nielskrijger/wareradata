@@ -5,10 +5,8 @@ import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
 import {
   CASE_FIELD_ALIASES,
-  CASE_SORT_KEYS,
   FACTORY_FIELD_ALIASES,
   WEALTH_FIELD_ALIASES,
-  WEALTH_PART_KEYS,
 } from '@/lib/rows/field-bundles'
 import { TIER_INDEX } from '@/lib/warera/api'
 
@@ -34,56 +32,8 @@ const userFieldAliases: FieldAliases = {
 }
 
 const userSortValue = makeSortValue<UserRow>({
-  passthrough: [
-    ...CASE_SORT_KEYS,
-    ...WEALTH_PART_KEYS,
-    'factoryCount',
-    'factoryPpPerDay',
-    'factoryNetPerDay',
-    'factoryEngineNetPerDay',
-    'factoryEmployeeNetPerDay',
-    'factoryWorkers',
-    'factoryPayrollPerDay',
-    'employeeAvgPpPerDay',
-    'employeeAvgNetPerDay',
-    'employeeAvgHappiness',
-    'employeeRetiringSoon',
-    'factoryEfficiencyPct',
-    'countryCode',
-    'level',
-    'levelRank',
-    'wealthRank',
-    'wealth',
-    'damageRank',
-    'damage',
-    'weeklyDamage',
-    'bounty',
-    'terrain',
-    'referrals',
-    'prestige',
-    'milestoneTiers',
-    'skinsOwned',
-    'premiumMonths',
-    'premiumGifts',
-    'casesOpened',
-    'gemsPurchased',
-    'militaryRank',
-    'lastConnectionAt',
-    'createdAt',
-    'points',
-    'pointsPerDay',
-    'health',
-    'hunger',
-    'gearScore',
-    'warShare',
-  ],
-  text: ['username', 'muName', 'partyName'],
-  boolean: ['isBanned'],
-  custom: {
-    levelTier: row => (row.levelTier ? TIER_INDEX[row.levelTier] : null),
-    readinessStatus: readinessSortValue,
-  },
-  default: 'levelRank',
+  levelTier: row => (row.levelTier ? TIER_INDEX[row.levelTier] : null),
+  readinessStatus: readinessSortValue,
 })
 
 /**

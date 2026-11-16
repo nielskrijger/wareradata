@@ -5,7 +5,6 @@ import type { CountryRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
-import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 import { countryColumns } from './columns'
 
@@ -20,7 +19,7 @@ export function CountriesTable({ initial }: Props) {
       columns={countryColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}
-      fetchPage={req => fetchPaginated<CountryRow>('/api/countries', req)}
+      endpoint="/api/countries"
       searchPlaceholder="Filter by name or code…"
       searchHint={(
         <AdvancedSearchHint

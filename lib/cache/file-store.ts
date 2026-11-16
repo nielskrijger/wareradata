@@ -189,23 +189,6 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
 
   const readMs = Date.now() - start
   const parsed = JSON.parse(raw) as RawSnapshot
-  // Backfill fields added to RawSnapshot after the persisted file was written,
-  // so a deploy that adds a new key doesn't crash on the first boot reading a
-  // legacy on-disk snapshot. The next scrape cycle will populate them properly.
-  parsed.governments ??= {}
-  parsed.alliances ??= []
-  parsed.prices ??= {} as RawSnapshot['prices']
-
-  // An older snapshot file can still embed `users` and `equipment`, which live in
-  // users.ndjson and equipment.ndjson. Drop those keys so such a file doesn't pin
-  // ~100 MB of unused data until the next scrape rewrites the snapshot.
-  // serializeSnapshot never emits them, so this only matters for a file no cycle
-  // has rewritten yet.
-  delete (parsed as { users?: unknown }).users
-  delete (parsed as { equipment?: unknown }).equipment
-  // `itemBestRegions` is unused (regions don't affect production); drop it from
-  // an older snapshot file.
-  delete (parsed as { itemBestRegions?: unknown }).itemBestRegions
 
   log.info({
     path,
@@ -218,25 +201,19 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
 }
 
 /**
- * Streams the snapshot as JSON one field at a time. The two big collections
- * (users, equipment) live in their own NDJSON files, so what remains here is
- * small (~5 MB) — but the streamed write keeps the atomic temp-file + rename
- * guarantee and avoids holding a second copy in a write buffer. Key order is
- * irrelevant to a parser.
+ * Streams the snapshot one field at a time so the write never holds a second
+ * serialized copy in memory.
  */
 function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
-  yield `{"countries":${JSON.stringify(snapshot.countries)}`
-  yield `,"governments":${JSON.stringify(snapshot.governments)}`
-  yield `,"mus":${JSON.stringify(snapshot.mus)}`
-  yield `,"regions":${JSON.stringify(snapshot.regions)}`
-  yield `,"parties":${JSON.stringify(snapshot.parties)}`
-  yield `,"alliances":${JSON.stringify(snapshot.alliances)}`
-  yield `,"battles":${JSON.stringify(snapshot.battles)}`
-  yield `,"tournament":${JSON.stringify(snapshot.tournament)}`
-  yield `,"gameConfig":${JSON.stringify(snapshot.gameConfig)}`
-  yield `,"prices":${JSON.stringify(snapshot.prices)}`
-  yield `,"meta":${JSON.stringify(snapshot.meta)}`
-  yield '}'
+  let sep = '{'
+  for (const [key, value] of Object.entries(snapshot)) {
+    if (value !== undefined) {
+      yield `${sep}${JSON.stringify(key)}:${JSON.stringify(value)}`
+      sep = ','
+    }
+  }
+
+  yield sep === '{' ? '{}' : '}'
 }
 
 /**

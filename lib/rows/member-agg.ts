@@ -469,7 +469,7 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
     factoryWorkers: agg?.factoryWorkers ?? 0,
     factoryWorkersRank: null,
     factoryEfficiencyPct: top > 0 ? Math.min(100, (netPerDay / top) * 100) : null,
-    factoryEfficiencyRank: null,
+    factoryEfficiencyPctRank: null,
     factoryPayrollPerDay: agg?.factoryPayrollPerDay ?? 0,
     factoryPayrollPerDayRank: null,
     employeeAvgPpPerDay: aggMeanRaw(agg?.employeePpSum ?? 0, agg?.employeeKnownCount ?? 0),

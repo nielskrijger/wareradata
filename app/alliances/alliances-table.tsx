@@ -5,7 +5,6 @@ import type { AllianceRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
-import { fetchPaginated } from '@/components/data-table/fetch-paginated'
 
 import { allianceColumns } from './columns'
 
@@ -20,7 +19,7 @@ export function AlliancesTable({ initial }: Props) {
       columns={allianceColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}
-      fetchPage={req => fetchPaginated<AllianceRow>('/api/alliances', req)}
+      endpoint="/api/alliances"
       searchPlaceholder="Filter by name, leader, or member country…"
       searchHint={(
         <AdvancedSearchHint

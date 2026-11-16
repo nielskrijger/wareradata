@@ -20,14 +20,14 @@ function fetchEntity<T>(url: string): Promise<T> {
 
   p = fetch(url).then(async (res) => {
     if (!res.ok) {
-      // Drop the failed entry so a later hover retries instead of replaying the
-      // error indefinitely.
-      cache.delete(url)
       throw new Error(`HTTP ${res.status}`)
     }
 
     return res.json() as Promise<T>
   })
+
+  // Forget a failure so the next hover retries.
+  p.catch(() => cache.delete(url))
 
   cache.set(url, p as Promise<unknown>)
 
@@ -56,7 +56,7 @@ export function useEntityHover<T>(url: string | null): EntityHover<T> {
   const [data, setData] = useState<T | null>(null)
 
   function onOpenChange(open: boolean) {
-    if (!open || status !== 'idle' || !url) {
+    if (!open || status === 'loading' || status === 'ready' || !url) {
       return
     }
 

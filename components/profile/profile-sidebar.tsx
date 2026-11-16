@@ -7,6 +7,7 @@ import { Avatar } from '@/components/avatar'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CountryCell } from '@/components/cells/country-cell'
+import { LevelTooltipContent } from '@/components/cells/level-tooltip-content'
 import { MUCell } from '@/components/cells/mu-cell'
 import { PartyCell } from '@/components/cells/party-cell'
 import { PrestigeSkull } from '@/components/cells/prestige-skull'
@@ -21,7 +22,6 @@ import { SkillSplit } from '@/components/profile/skill-split'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { levelTooltipLines } from '@/lib/level-tooltip'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -88,7 +88,7 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
                   {user.level}
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  {levelTooltipLines(user, total).map(line => <div key={line}>{line}</div>)}
+                  <LevelTooltipContent {...user} rankedTotal={total} />
                 </TooltipContent>
               </Tooltip>
             )}

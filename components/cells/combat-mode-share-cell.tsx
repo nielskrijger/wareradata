@@ -2,6 +2,7 @@
 
 import { Coins, Swords } from 'lucide-react'
 
+import { TooltipHeading } from '@/components/cells/tooltip-ledger'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -52,7 +53,7 @@ export function CombatModeShareCell({ avgWarShare, width = 84 }: Props) {
         )}
       />
       <TooltipContent side="top" className="w-48 px-3 py-2">
-        <div className="mb-2 font-medium">Avg member lean</div>
+        <TooltipHeading label="Avg member lean" />
         <dl className="space-y-1.5">
           <LeanRow
             label="War"

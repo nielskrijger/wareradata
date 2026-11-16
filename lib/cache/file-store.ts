@@ -14,7 +14,7 @@ import type {
 } from '@/lib/warera/api'
 
 import { createWriteStream } from 'node:fs'
-import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
 
@@ -208,10 +208,32 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
 }
 
 /**
- * Removes temp files left by writes that died before their rename.
- *
- * Only files whose writer process is gone, so a long write in flight (the
- * factory scrape, a CLI beside the server) is never touched. Never throws.
+ * When this process started. Temp files untouched since then were left by an
+ * earlier process.
+ */
+const processStartMs = Date.now() - process.uptime() * 1000
+
+/**
+ * Whether a temp file belongs to a write that died before its rename: its
+ * writer is gone, or it was last written before this process started. The
+ * second check matters in containers, where every boot reuses the same pids,
+ * so a killed container's writer looks alive as us. A write in flight (the
+ * factory scrape, a CLI beside the server) keeps touching its file and stays.
+ */
+async function isStaleTempFile(filePath: string, pid: number): Promise<boolean> {
+  if (!isProcessAlive(pid)) {
+    return true
+  }
+
+  try {
+    return (await stat(filePath)).mtimeMs < processStartMs
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Removes temp files left by writes that died before their rename. Never throws.
  */
 export async function sweepStaleTempFiles(): Promise<void> {
   for (const dir of [dataDir(), archiveDir()]) {
@@ -222,13 +244,16 @@ export async function sweepStaleTempFiles(): Promise<void> {
       continue
     }
 
-    const stale = entries.filter((name) => {
+    const temps = entries.flatMap((name) => {
       const match = TEMP_FILE_RE.exec(name)
 
-      return match !== null && !isProcessAlive(Number(match[1]))
+      return match ? [{ file: path.join(dir, name), pid: Number(match[1]) }] : []
     })
 
-    await Promise.all(stale.map(name => unlink(path.join(dir, name)).catch(() => undefined)))
+    const staleFlags = await Promise.all(temps.map(t => isStaleTempFile(t.file, t.pid)))
+    const stale = temps.filter((_, i) => staleFlags[i]).map(t => t.file)
+
+    await Promise.all(stale.map(file => unlink(file).catch(() => undefined)))
     if (stale.length) {
       log.info({ dir, removed: stale.length }, 'swept stale temp files')
     }

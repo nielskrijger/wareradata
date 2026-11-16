@@ -60,7 +60,8 @@ export function SiteNav() {
             eight items + toggle fit down to md; below that they collapse into
             the hamburger menu on the right. */}
         <div className="flex min-w-0 items-center gap-3 px-6 sm:gap-6 sm:px-8 lg:px-12">
-          <ul className="hidden items-center gap-1 text-sm md:flex">
+          {/* Pull the list left by the pill padding so "Countries" lines up with the page text. */}
+          <ul className="hidden items-center gap-1 text-sm md:flex -ml-2.5 lg:-ml-3">
             {links.map((link) => {
               const active = isActive(pathname, link.href)
 

@@ -1,5 +1,7 @@
 import type { Employee } from '@/lib/warera/api'
 
+import { potentialLeft } from '@/lib/factories/employee-stats'
+
 /**
  * Game rules the API doesn't expose. The output and wage formulas below were
  * checked against `employee.estimate` for every employee on a live account;
@@ -31,11 +33,6 @@ export const RULES = {
    */
   drillStatGain: 1,
   negotiationDrop: 0.05,
-
-  /**
-   * Trainings per owner per UTC day, across all employees; the game shows "Maxed".
-   */
-  trainingsPerOwnerDay: 15,
 
   /**
    * Values beyond this are too uncertain to count (prices, patches).
@@ -71,7 +68,7 @@ export function toolFits(toolCode: string, itemCode: string): boolean {
 export type EmployeeLike = Pick<
   Employee,
   '_id' | 'name' | 'company' | 'base' | 'wageExpectation' | 'wage' | 'traits' | 'retireInDays'
-  | 'potential' | 'trainingsPerDay' | 'trainingsToday' | 'companyDisabled' | 'estimate' | 'breakdown'
+  | 'potential' | 'potentialMax' | 'trainingsPerDay' | 'trainingsToday' | 'companyDisabled' | 'estimate' | 'breakdown'
   | 'happinessBreakdown' | 'productionBonus' | 'specializations' | 'toolStatus' | 'toolItem'
 >
 
@@ -157,15 +154,15 @@ export function cardGainsPerDay(e: EmployeeLike, valuePerPoint: number, ppValue:
 }
 
 /**
- * Draws the game allows on this employee today: limited by the daily count and
- * by the potential left.
+ * Draws the game allows on this employee today. `potential` counts trainings
+ * used, so the game shows "Maxed" once it reaches `potentialMax`.
  */
 export function trainingsLeft(e: EmployeeLike): number {
   if (e.companyDisabled) {
     return 0
   }
 
-  return Math.max(0, Math.min(e.potential ?? 0, (e.trainingsPerDay ?? 1) - (e.trainingsToday ?? 0)))
+  return Math.max(0, Math.min(potentialLeft(e), (e.trainingsPerDay ?? 1) - (e.trainingsToday ?? 0)))
 }
 
 /**

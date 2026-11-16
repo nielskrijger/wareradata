@@ -53,6 +53,13 @@ export interface EmployeeStats {
 }
 
 /**
+ * Trainings an employee has left: `potential` counts up to `potentialMax`.
+ */
+export function potentialLeft(e: { potential: number, potentialMax: number }): number {
+  return Math.max(0, e.potentialMax - e.potential)
+}
+
+/**
  * A delta with its sign: "+3", "−2", "+40%".
  */
 export function signed(value: number, unit = ''): string {

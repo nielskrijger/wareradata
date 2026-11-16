@@ -5,7 +5,7 @@ import { managerItems } from './items/manager'
 import { moneyItem } from './items/money'
 import { fireItems, hireItem } from './items/staff'
 import { toolItems } from './items/tools'
-import { capTrainings, TRAIN_ENERGY, trainingItems } from './items/training'
+import { TRAIN_ENERGY, trainingItems } from './items/training'
 import { employeeNetPerDay, HOURS_PER_DAY } from './model'
 import { fmt, valuePerPoint } from './shared'
 
@@ -35,7 +35,7 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
   }
 
   const skipped: SkippedItem[] = []
-  let items: TodoItem[] = []
+  const items: TodoItem[] = []
   let hourlyCost = 0
   const nets: number[] = []
 
@@ -61,7 +61,6 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
     items.push(...managerItems(input, c, staffVpp))
   }
 
-  items = capTrainings(input, items, skipped)
   items.push(...toolItems(input, vppByItem))
   const medianNet = median(nets)
   for (const c of input.companies) {

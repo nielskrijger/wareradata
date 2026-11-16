@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 
-import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 
 import { AdviseTodo } from '@/components/advise/advise-todo'
@@ -19,18 +18,13 @@ export const metadata: Metadata = {
 async function loadAdvice() {
   const [data, { gameConfig }, prices] = await Promise.all([getAdviceData(), getSnapshot(), getItemPrices()])
 
-  return data ? buildAdvice(advisorInputFromData(data, gameConfig, prices, new Date())) : null
+  return data ? buildAdvice(advisorInputFromData(data, gameConfig, prices)) : null
 }
 
 /**
- * The API key owner's private to-do list. It shows that one account's
- * employees, so it stays off unless `ADVISE_ENABLED=1`.
+ * The API key owner's to-do list.
  */
 export default async function AdvisePage() {
-  if (process.env.ADVISE_ENABLED !== '1') {
-    notFound()
-  }
-
   await connection()
   const result = await loadAdvice()
 
@@ -45,7 +39,7 @@ export default async function AdvisePage() {
       </header>
       {result
         ? <AdviseTodo result={result} />
-        : <Paragraph>The API key has no employees, so set ADVISE_USER_ID to your user id.</Paragraph>}
+        : <Paragraph>The API key's owner has no employees yet.</Paragraph>}
     </main>
   )
 }

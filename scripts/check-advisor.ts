@@ -11,7 +11,7 @@ import { getAdviceData, getGameConfig, getItemPrices, managerPointValue } from '
 async function main() {
   const [data, gameConfig, prices] = await Promise.all([getAdviceData(), getGameConfig(), getItemPrices()])
   if (!data) {
-    console.error('no owner: the key has no employees and ADVISE_USER_ID is unset')
+    console.error('the API key owner has no employees')
     process.exit(1)
   }
 
@@ -38,8 +38,8 @@ async function main() {
     }
   }
 
-  const result = buildAdvice(advisorInputFromData(data, gameConfig, prices, new Date()))
-  console.info(`\nwages ${result.hourlyCost.toFixed(3)}/h, cash covers ${result.hoursCovered?.toFixed(1) ?? '?'} h`)
+  const result = buildAdvice(advisorInputFromData(data, gameConfig, prices))
+  console.info(`\nwages ${result.hourlyCost.toFixed(3)}/h`)
   for (const item of result.items) {
     const gain = (item.gainPerDay?.toFixed(2) ?? '-').padStart(7)
     console.info(`${gain}  ${String(item.energy).padStart(3)}e  ${item.title}\n          ${item.why}`)

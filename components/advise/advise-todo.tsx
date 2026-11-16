@@ -1,7 +1,7 @@
 'use client'
 
 import type { AdvisorResult, TodoItem } from '@/lib/advisor/build'
-import { Check, Lock } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { useState } from 'react'
 
 import { StackedBar } from '@/components/stacked-bar'
@@ -161,15 +161,7 @@ function Row({ item, done, onToggle }: { item: TodoItem, done: boolean, onToggle
           )}
           <span className="text-muted-foreground text-xs whitespace-nowrap">
             {item.energy > 0 ? `${item.energy} energy` : 'no energy'}
-            {' · '}
-            {item.confidence}
           </span>
-          {item.lockedUntil && (
-            <span className="text-muted-foreground flex items-center gap-1 text-xs whitespace-nowrap">
-              <Lock aria-hidden className="size-3" />
-              locked for now
-            </span>
-          )}
         </span>
       </button>
     </li>

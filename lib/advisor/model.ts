@@ -161,17 +161,3 @@ export function managerNetPerDay(opts: {
 
   return HOURS_PER_DAY * (opts.basePerHourSum * (pct / 100) * opts.valuePerPoint - opts.hourlyWage)
 }
-
-/**
- * Hours the cash covers at the current hourly wage bill.
- */
-export function hoursCovered(cash: number, hourlyCost: number): number {
-  return hourlyCost > 0 ? cash / hourlyCost : Number.POSITIVE_INFINITY
-}
-
-/**
- * Hours until an energy bar is full and its regeneration is wasted.
- */
-export function hoursToFull(current: number, cap: number, regenPerHour: number): number {
-  return regenPerHour > 0 ? Math.max(0, (cap - current) / regenPerHour) : Number.POSITIVE_INFINITY
-}

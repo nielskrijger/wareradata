@@ -737,12 +737,11 @@ export interface AdviceData {
 
 /**
  * Loads the API key owner's companies, employees, managers and bars. The owner
- * is read from their employees, or `ADVISE_USER_ID` for an owner without any.
- * Null when neither names one.
+ * is read from their employees, so this is null when they have none.
  */
 export async function getAdviceData(): Promise<AdviceData | null> {
   const mine = await urgentClient.employee.getMyEmployees()
-  const userId = mine[0]?.owner ?? process.env.ADVISE_USER_ID
+  const userId = mine[0]?.owner
   if (!userId) {
     return null
   }

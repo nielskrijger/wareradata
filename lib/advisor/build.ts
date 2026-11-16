@@ -10,8 +10,6 @@ import {
   effectiveManagerPct,
   employeeNetPerDay,
   HOURS_PER_DAY,
-  hoursCovered,
-  hoursToFull,
   managerNetPerDay,
   payingDays,
   RULES,
@@ -33,17 +31,11 @@ export interface TodoItem {
    */
   gainPerDay: number | null
   energy: number
-  confidence: 'high' | 'medium' | 'low'
 
   /**
    * Pinned above everything else.
    */
   urgent?: boolean
-
-  /**
-   * Set while the game won't allow the action yet.
-   */
-  lockedUntil?: string
 }
 
 /**
@@ -70,7 +62,7 @@ export interface AdvisorCompany {
   employeeCap: number
   enginePointsPerDay: number
   employees: EmployeeLike[]
-  manager: { hourlyWage: number, productionBonusPercent: number, canEndAt: string } | null
+  manager: { hourlyWage: number, productionBonusPercent: number } | null
 }
 
 export interface AdvisorInput {
@@ -88,7 +80,6 @@ export interface AdvisorInput {
    */
   ownerManagementPct: number
   energy: Bar
-  production: Bar
   cash: number | null
 
   /**
@@ -96,7 +87,6 @@ export interface AdvisorInput {
    */
   managerMarketWage: number | null
   changeItemCost: number
-  now: Date
 }
 
 export interface AdvisorResult {
@@ -104,7 +94,6 @@ export interface AdvisorResult {
   skipped: SkippedItem[]
   energy: Bar & { hoursToFull: number }
   hourlyCost: number
-  hoursCovered: number | null
 }
 
 /**
@@ -176,7 +165,7 @@ function moneyItem(input: AdvisorInput, hourlyCost: number): TodoItem | null {
     return null
   }
 
-  const hours = hoursCovered(input.cash, hourlyCost)
+  const hours = input.cash / hourlyCost
   if (hours >= HOURS_PER_DAY) {
     return null
   }
@@ -190,7 +179,6 @@ function moneyItem(input: AdvisorInput, hourlyCost: number): TodoItem | null {
     why: `Wages and managers cost ${fmt(hourlyCost)} an hour and you hold ${fmt(input.cash, 1)}. An hour that can't be paid in full stops that company for the hour.`,
     gainPerDay: null,
     energy: 0,
-    confidence: 'high',
     urgent: true,
   }
 }
@@ -225,7 +213,6 @@ function trainingItems(input: AdvisorInput, c: AdvisorCompany, vpp: number, skip
       why: `Per day: ${perCard}. Pays for ${days} days.`,
       gainPerDay: gains[best] * draws,
       energy: TRAIN_ENERGY * draws,
-      confidence: 'medium',
     })
   }
 
@@ -250,7 +237,6 @@ function fireItems(c: AdvisorCompany, vpp: number): TodoItem[] {
       why: `Their output is worth ${fmt(HOURS_PER_DAY * (e.estimate?.production ?? 0) * vpp)} a day and they cost ${fmt(HOURS_PER_DAY * (e.estimate?.wage ?? 0))} in wages.${helpsTeam || leanedOn ? ' A trait links them to coworkers, so check those first.' : ''}`,
       gainPerDay: -net,
       energy: 0,
-      confidence: helpsTeam || leanedOn ? 'low' : 'high',
     })
   }
 
@@ -274,7 +260,6 @@ function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number): Todo
     })
 
     const counted = effectiveManagerPct(m.productionBonusPercent, ownerPct)
-    const locked = new Date(m.canEndAt) > input.now ? m.canEndAt : undefined
     if (net < -MIN_GAIN_PER_DAY) {
       return [{
         id: `fire-manager-${c.id}`,
@@ -283,21 +268,6 @@ function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number): Todo
         why: `Their +${counted}% adds ${fmt(net + HOURS_PER_DAY * m.hourlyWage)} a day of output for ${fmt(HOURS_PER_DAY * m.hourlyWage)} in wages. Leaves out their daily +5 happiness care.`,
         gainPerDay: -net,
         energy: 0,
-        confidence: 'high',
-        lockedUntil: locked,
-      }]
-    }
-
-    const wasted = HOURS_PER_DAY * m.hourlyWage * (1 - counted / m.productionBonusPercent)
-    if (wasted >= MIN_GAIN_PER_DAY) {
-      return [{
-        id: `manager-cap-${c.id}`,
-        kind: 'manager',
-        title: `Manager at ${c.name} is past the Management cap`,
-        why: `Only ${counted}% of their ${m.productionBonusPercent}% counts with your own +${ownerPct}%. A manager with fewer points would cost less for the same output.`,
-        gainPerDay: wasted,
-        energy: 0,
-        confidence: 'medium',
       }]
     }
 
@@ -328,7 +298,6 @@ function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number): Todo
     why: `A manager with ${pct / RULES.managementPctPerPoint} Management adds +${pct}% here. At the market's ${fmt(input.managerMarketWage, 3)} an hour that nets this much a day.`,
     gainPerDay: net,
     energy: 0,
-    confidence: 'medium',
   }]
 }
 
@@ -384,7 +353,6 @@ function toolItems(input: AdvisorInput, vppByItem: Map<string, number>): TodoIte
         why: `${firstName(to.e.name)} has ${fmt(basePerHour(to.e))} base points an hour against ${fmt(basePerHour(from.e))}, and a tool adds a percent of base output.`,
         gainPerDay: HOURS_PER_DAY * (best.gain / 100) * vpp,
         energy: 0,
-        confidence: 'high',
       })
 
       const pct = from.pct
@@ -450,7 +418,6 @@ function itemSwitchItem(
     why: `${humanizeItem(best.code)} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemCost} gold.${hasTools ? ' Check the tools fit the new item.' : ''}`,
     gainPerDay: best.gain,
     energy: 0,
-    confidence: 'medium',
   }
 
   return { item, vpp: vppByItem.get(best.code) ?? current }
@@ -469,7 +436,6 @@ function hireItem(c: AdvisorCompany, medianNet: number | null): TodoItem | null 
     why: 'Pick the candidate with the lowest wage per Production. Trait and potential show after hiring, and a new hire can be fired for free after 12 hours.',
     gainPerDay: medianNet,
     energy: HIRE_ENERGY,
-    confidence: 'low',
   }
 }
 
@@ -531,7 +497,8 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
     }
   }
 
-  const energyHours = hoursToFull(input.energy.current, input.energy.cap, input.energy.regenPerHour)
+  const { current, cap, regenPerHour } = input.energy
+  const energyHours = regenPerHour > 0 ? Math.max(0, (cap - current) / regenPerHour) : Number.POSITIVE_INFINITY
   const planned = items.reduce((s, i) => s + i.energy, 0)
   const spare = input.energy.current - planned
   if (spare >= TRAIN_ENERGY && energyHours < HOURS_PER_DAY) {
@@ -539,10 +506,9 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
       id: 'work',
       kind: 'work',
       title: 'Work in your own companies with the spare energy',
-      why: `Energy is full in ${fmt(energyHours, 1)} h, after which regeneration is lost. Self-work also uses your production bar (${fmt(input.production.current, 0)} of ${input.production.cap}).`,
+      why: `Energy is full in ${fmt(energyHours, 1)} h, after which regeneration is lost.`,
       gainPerDay: null,
       energy: Math.floor(spare / TRAIN_ENERGY) * TRAIN_ENERGY,
-      confidence: 'low',
     })
   }
 
@@ -554,6 +520,5 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
     skipped,
     energy: { ...input.energy, hoursToFull: energyHours },
     hourlyCost,
-    hoursCovered: input.cash == null ? null : hoursCovered(input.cash, hourlyCost),
   }
 }

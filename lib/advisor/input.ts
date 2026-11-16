@@ -25,7 +25,6 @@ export function advisorInputFromData(
   data: AdviceData,
   gameConfig: GameConfig,
   prices: ItemPrices,
-  now: Date,
 ): AdvisorInput {
   const model = buildEngineModel(gameConfig)
   const skills = data.user.skills
@@ -44,7 +43,7 @@ export function advisorInputFromData(
         enginePointsPerDay: enginePointsPerDay(engineLevelOf(f), model, f.hourly?.engineMultiplier ?? 1),
         employees: f.employees,
         manager: m
-          ? { hourlyWage: m.hourlyWage, productionBonusPercent: m.productionBonusPercent, canEndAt: m.canEndAt }
+          ? { hourlyWage: m.hourlyWage, productionBonusPercent: m.productionBonusPercent }
           : null,
       }
     }),
@@ -53,10 +52,8 @@ export function advisorInputFromData(
     recipe: recipeFromGameConfig(gameConfig),
     ownerManagementPct: (skills.management?.total ?? 0) * RULES.managementPctPerPoint,
     energy: bar(skills.energy),
-    production: bar(skills.production),
     cash: wealth?.money ?? null,
     managerMarketWage: data.managerMarketWage,
     changeItemCost: gameConfig.company?.changeItemCost ?? 0,
-    now,
   }
 }

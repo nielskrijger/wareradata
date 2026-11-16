@@ -694,6 +694,102 @@ export interface BattleRow {
   wonBy: 'attacker' | 'defender' | null
 }
 
+export type BattleSideKey = 'attacker' | 'defender'
+
+/**
+ * One entry of a battle leaderboard: a user, MU or country, by which list it
+ * sits in. Fields that kind lacks stay null.
+ */
+export interface BattleFighter {
+  id: string | null
+  name: string | null
+  avatarUrl: string | null
+  colorScheme: string | null
+  countryCode: string | null
+  value: number
+}
+
+export interface BattleRoundRow {
+  number: number
+  attackerDamage: number
+  defenderDamage: number
+  attackerPoints: number
+  defenderPoints: number
+  wonBy: BattleSideKey | null
+  isActive: boolean
+}
+
+export interface BattleHit {
+  id: string
+  side: BattleSideKey
+
+  /**
+   * The hitter, with the hit's damage as `value`.
+   */
+  user: BattleFighter
+  isCritical: boolean
+  isMissed: boolean
+  weaponCode: string | null
+  hitAt: string
+}
+
+export interface BattleOrderRow {
+  side: BattleSideKey
+  kind: 'country' | 'mu'
+  id: string
+  name: string | null
+
+  /**
+   * The MU's avatar or the country's flag code, by `kind`.
+   */
+  avatarUrl: string | null
+  countryCode: string | null
+  priority: string
+}
+
+export interface BattleContractRow {
+  id: string
+  side: BattleSideKey
+  muId: string | null
+  muName: string | null
+  muAvatarUrl: string | null
+  budget: number
+  perK: number
+  status: string
+}
+
+export interface BattleSideStats {
+  damage: number
+  hits: number
+  moneyPool: number
+  moneyPer1k: number | null
+
+  /**
+   * Distinct players who dealt damage, from the ranking's entry count.
+   */
+  fighters: number
+}
+
+/**
+ * What the battle page adds to its {@link BattleRow}, fetched live per battle.
+ */
+export interface BattleDetail {
+  startedAt: string
+  sides: Record<BattleSideKey, BattleSideStats>
+  rounds: BattleRoundRow[]
+  players: Record<BattleSideKey, BattleFighter[]>
+  earners: Record<BattleSideKey, BattleFighter[]>
+  mus: Record<BattleSideKey, BattleFighter[]>
+  countries: Record<BattleSideKey, BattleFighter[]>
+
+  /**
+   * The live round's latest hits, newest first; empty once the battle ends.
+   */
+  hits: BattleHit[]
+  orders: BattleOrderRow[]
+  contracts: BattleContractRow[]
+}
+
 /**
  * Projected political-party row used by /parties and /api/parties.
  */

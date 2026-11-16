@@ -108,7 +108,21 @@ export function formatCountdown(iso: string | null): string {
     return EMPTY
   }
 
-  const totalMinutes = Math.max(0, Math.round((then - Date.now()) / 60_000))
+  return formatDuration(then - Date.now())
+}
+
+/**
+ * Time between two ISO timestamps, up to now when `to` is null.
+ */
+export function elapsedMs(from: string, to: string | null): number {
+  return (to ? Date.parse(to) : Date.now()) - Date.parse(from)
+}
+
+/**
+ * A span of time as "3h12m" or "12m"; negative spans read "0m".
+ */
+export function formatDuration(ms: number): string {
+  const totalMinutes = Math.max(0, Math.round(ms / 60_000))
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
   if (hours > 0) {

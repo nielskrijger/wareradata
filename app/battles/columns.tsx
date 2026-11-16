@@ -9,8 +9,10 @@ import { BattleMatchupCell } from '@/components/cells/battle-matchup-cell'
 import { CountryCell } from '@/components/cells/country-cell'
 import { GroupCell } from '@/components/cells/group-cell'
 import { compactNumberColumn } from '@/components/data-table/column-factories'
-import { ExternalLink, InternalLink } from '@/components/links'
+import { ExternalLink } from '@/components/links'
+import { RegionLink } from '@/components/region-link'
 import { RelativeTime } from '@/components/relative-time'
+import { wareraUrl } from '@/lib/warera/urls'
 
 export type { BattleRow }
 
@@ -43,19 +45,6 @@ function winnerCell(row: BattleRow) {
     : <CountryCell countryCode={side.code} countryName={side.name} countryId={side.id} />
 }
 
-function regionCell(row: BattleRow) {
-  const { regionId, regionName } = row
-  if (!regionName) {
-    return null
-  }
-
-  return regionId ? (
-    <InternalLink href={`/regions?q=${encodeURIComponent(regionName)}`} className="truncate">
-      {regionName}
-    </InternalLink>
-  ) : <span className="truncate">{regionName}</span>
-}
-
 const matchupColumn: ColumnDef<BattleRow> = {
   accessorKey: 'attackerName',
   header: 'Battle',
@@ -73,7 +62,11 @@ const matchupColumn: ColumnDef<BattleRow> = {
 const regionColumn: ColumnDef<BattleRow> = {
   accessorKey: 'regionName',
   header: 'Region',
-  cell: ({ row }) => regionCell(row.original),
+  cell: ({ row }) => {
+    const { regionId, regionName } = row.original
+
+    return regionName && <RegionLink id={regionId} name={regionName} className="truncate" />
+  },
   meta: { width: 160 },
 }
 
@@ -96,7 +89,7 @@ const wareraColumn: ColumnDef<BattleRow> = {
   header: 'Link',
   enableSorting: false,
   cell: ({ row }) => (
-    <ExternalLink href={`https://app.warera.io/battle/${row.original.id}`}>
+    <ExternalLink href={wareraUrl('battle', row.original.id)}>
       WarEra.io
     </ExternalLink>
   ),

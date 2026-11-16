@@ -60,7 +60,7 @@ export function basePerHour(e: EmployeeLike): number {
 /**
  * The additive production bonus as a fraction (0.73 for +73%).
  */
-export function bonusFraction(e: EmployeeLike): number {
+function bonusFraction(e: EmployeeLike): number {
   return (e.productionBonus?.total ?? 0) / 100
 }
 
@@ -74,7 +74,7 @@ export function outputPerHour(e: EmployeeLike): number {
 /**
  * Greedy and Modest scale the wage; nothing else does.
  */
-export function wageTraitMult(e: EmployeeLike): number {
+function wageTraitMult(e: EmployeeLike): number {
   let mult = 1
   for (const t of e.traits ?? []) {
     if (t.code === 'greedy') {

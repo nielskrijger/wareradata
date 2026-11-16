@@ -20,10 +20,10 @@ export interface QueryParams {
   baseFilter?: string
 }
 
-export const DEFAULT_PAGE_SIZE = 25
+const DEFAULT_PAGE_SIZE = 25
 const MAX_PAGE_SIZE = 200
 
-export function parseQuery(searchParams: URLSearchParams): QueryParams {
+function parseQuery(searchParams: URLSearchParams): QueryParams {
   const page = Math.max(0, Number(searchParams.get('page') ?? 0) | 0)
   const pageSize = Math.min(
     MAX_PAGE_SIZE,
@@ -212,7 +212,7 @@ function runLiqeFilter<T extends object>(rows: T[], expr: string, aliases: Field
  * Filters with liqe (`country:nl -mu:"Bla" rank:[1 TO 100]`, or plain text),
  * then sorts and pages. `aliases` maps friendly field names to row keys.
  */
-export function applyStructuredQuery<T extends object>(
+function applyStructuredQuery<T extends object>(
   rows: T[],
   query: QueryParams,
   sortValue: (row: T, sort: string) => number | string | null,

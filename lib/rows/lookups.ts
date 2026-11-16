@@ -94,7 +94,7 @@ export function leaderFields(leaderId: string | null, lookups: Lookups): LeaderF
  * Standard competition rank (1 = highest; ties share a rank). Null values stay
  * unranked rather than last. Mutates the rows.
  */
-export function assignRank<T extends Record<string, unknown>>(
+function assignRank<T extends Record<string, unknown>>(
   rows: T[],
   valueKey: keyof T,
   rankKey: keyof T,

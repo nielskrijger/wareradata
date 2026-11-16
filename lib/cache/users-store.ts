@@ -12,7 +12,7 @@ import { streamNdjson, writeNdjson } from './ndjson'
  * Never appended to: refreshes go through an in-memory overlay, so each main
  * scrape rewrites it whole.
  */
-export function usersNdjsonPath(): string {
+function usersNdjsonPath(): string {
   return path.join(dataDir(), 'users.ndjson')
 }
 

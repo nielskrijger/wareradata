@@ -22,14 +22,14 @@ export interface EquipmentUserLine {
  * The last line per user wins, so a refresh can append instead of rewriting;
  * each main scrape rewrites the file clean.
  */
-export function equipmentNdjsonPath(): string {
+function equipmentNdjsonPath(): string {
   return path.join(dataDir(), 'equipment.ndjson')
 }
 
 /**
  * Streams the equipment file line by line, invoking `onUser` per record.
  */
-export function streamEquipmentUsers(onUser: (line: EquipmentUserLine) => void): Promise<void> {
+function streamEquipmentUsers(onUser: (line: EquipmentUserLine) => void): Promise<void> {
   return streamNdjson(equipmentNdjsonPath(), onUser)
 }
 

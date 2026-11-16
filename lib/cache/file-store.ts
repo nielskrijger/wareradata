@@ -80,7 +80,7 @@ export function dataDir(): string {
   return path.resolve(/* turbopackIgnore: true */ process.cwd(), process.env.DATA_DIR ?? '.data')
 }
 
-export function snapshotPath(): string {
+function snapshotPath(): string {
   return path.join(dataDir(), 'snapshot.json')
 }
 

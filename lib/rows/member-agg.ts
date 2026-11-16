@@ -211,7 +211,7 @@ export function aggMean(sum: number, count: number): number | null {
  * the war-share average, which lives in 0..1 where rounding would collapse the
  * signal — kept separate from {@link aggMean} (which rounds to whole percents).
  */
-export function aggMeanRaw(sum: number, count: number): number | null {
+function aggMeanRaw(sum: number, count: number): number | null {
   return count > 0 ? sum / count : null
 }
 
@@ -296,7 +296,7 @@ export const PREMIUM_KEYS = ['gemsPurchasedTotal', 'premiumMonthsTotal', 'premiu
  * {@link MemberAgg}, or all-zero when the agg is missing. Feeds the
  * ReadinessPillBar on country / MU rows.
  */
-export function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, ready: number, debuff: number } {
+function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, ready: number, debuff: number } {
   return {
     buff: agg?.buffCount ?? 0,
     ready: agg?.readyCount ?? 0,

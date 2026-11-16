@@ -119,7 +119,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
   } = result
 
   return (
-    <main className="mx-auto max-w-[96rem] space-y-3 px-6 py-8 sm:px-8 lg:px-12">
+    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={c.name}
         titleSuffix={c.damageTier ? <TierBadge tier={c.damageTier} /> : undefined}

@@ -72,7 +72,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
   const { party: p, ranges, memberPage } = result
 
   return (
-    <main className="mx-auto max-w-[96rem] space-y-3 px-6 py-8 sm:px-8 lg:px-12">
+    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={p.name}
         emblem={(

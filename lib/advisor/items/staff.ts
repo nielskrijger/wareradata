@@ -31,7 +31,7 @@ export function fireItems(c: AdvisorCompany, vpp: number): TodoItem[] {
       id: `fire-${e._id}`,
       kind: 'employee',
       title: `Fire ${firstName(e.name)} (${c.name})`,
-      why: `Their output is worth ${fmt(HOURS_PER_DAY * (e.estimate?.production ?? 0) * vpp)} a day and they cost ${fmt(HOURS_PER_DAY * (e.estimate?.wage ?? 0))} in wages.${helpsTeam || leanedOn ? ' A trait links them to coworkers, so check those first.' : ''}`,
+      why: `They make ${fmt(HOURS_PER_DAY * (e.estimate?.production ?? 0) * vpp)} gold of output a day but cost ${fmt(HOURS_PER_DAY * (e.estimate?.wage ?? 0))} in wages.${helpsTeam || leanedOn ? ' A trait links them to coworkers, so check those first.' : ''}`,
       gainPerDay: -net,
     })
   }
@@ -52,7 +52,7 @@ export function hireItem(c: AdvisorCompany, medianNet: number | null): TodoItem 
     id: `hire-${c.id}`,
     kind: 'hire',
     title: `Hire into ${open === 1 ? 'the empty slot' : `${open} empty slots`} at ${c.name}`,
-    why: 'Pick the candidate with the lowest wage per Production. Trait and potential show after hiring, and a new hire can be fired for free after 12 hours.',
+    why: 'Pick the candidate with the lowest wage per Production point. Trait and potential only show after hiring; firing is free once they have worked 12 hours.',
     gainPerDay: medianNet,
     energy: HIRE_ENERGY,
   }

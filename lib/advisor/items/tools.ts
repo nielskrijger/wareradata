@@ -64,7 +64,7 @@ export function toolItems(input: AdvisorInput, vppByItem: Map<string, number>): 
         title: to.pct > 0
           ? `Swap tools: ${firstName(from.e.name)}'s ${tool} (+${from.pct}%) to ${firstName(to.e.name)}, theirs back`
           : `Move ${firstName(from.e.name)}'s ${tool} (+${from.pct}%) to ${firstName(to.e.name)} (${to.company})`,
-        why: `${firstName(to.e.name)} has ${fmt(basePerHour(to.e))} base points an hour against ${fmt(basePerHour(from.e))}, and a tool adds a percent of base output.`,
+        why: `${firstName(to.e.name)} makes ${fmt(basePerHour(to.e))} base points an hour against ${fmt(basePerHour(from.e))} for ${firstName(from.e.name)}, and a tool adds a percent of base output.`,
         gainPerDay: HOURS_PER_DAY * (best.gain / 100) * vpp,
         group: {
           key: 'tool-move',

@@ -63,12 +63,24 @@ export function itemSwitchItem(
 
   const n = working.length || 1
   const hasTools = working.some(e => toolPct(e) > 0)
+  const next = vppByItem.get(best.code) ?? 0
+  const specFrom = Math.round(best.specFrom / n)
+  const specTo = Math.round(best.specTo / n)
+  const why = [
+    current > 0
+      ? `${humanizeCode(best.code)} pays ${Math.round((next / current - 1) * 100)}% more per production point.`
+      : `${humanizeCode(best.code)} pays ${fmt(next, 3)} gold per production point.`,
+    `Costs ${input.changeItemConcrete} concrete (${fmt(cost)} gold), earned back in ${Math.ceil(cost / best.gain)} days.`,
+    specTo < specFrom ? `Specialization drops from ${specFrom}% to ${specTo}%, already counted.` : '',
+    hasTools ? 'Check the tools still fit the new item.' : '',
+  ]
 
   const item: TodoItem = {
     id: `item-${c.id}`,
     kind: 'item',
-    title: `Switch ${c.name} from ${humanizeItem(c.itemCode)} to ${humanizeItem(best.code)}`,
-    why: `${humanizeCode(best.code)} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemConcrete} concrete (${fmt(cost)} gold).${hasTools ? ' Check the tools fit the new item.' : ''}`,
+    // The name already starts with the current item, so only the new one is named.
+    title: `Switch ${c.name} to ${humanizeItem(best.code)}`,
+    why: why.filter(Boolean).join(' '),
     gainPerDay: best.gain,
   }
 

@@ -1,5 +1,5 @@
 /**
- * Shared formatting for the factory views (the income waterfall and the roster).
+ * Shared formatting for the factory views (the income bar and the roster).
  */
 
 /**

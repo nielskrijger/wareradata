@@ -135,7 +135,8 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         sortDescFirst: true,
         meta: { width: 110 },
       },
-      dateColumn<UserRow>('createdAt', 'Joined'),
+      // Rarely what people compare players on; the user page still shows it.
+      dateColumn<UserRow>('createdAt', 'Joined', { hiddenByDefault: true }),
     ],
     combat: [
       percentBarColumn<UserRow>('health', 'Health', { width: 120 }),

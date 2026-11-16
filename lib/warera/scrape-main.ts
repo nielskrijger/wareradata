@@ -132,12 +132,13 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   const userIds = userIdLists.flat()
   log.info({ userIds: userIds.length, countries: countries.length }, 'collected user ids')
 
-  // 4. Hydrate users. Stamp each with the capture time (like MUs below) so the
-  // user page can show data freshness; an on-demand refresh bumps it later.
-  // Streamed straight to users.ndjson (not held in the RawSnapshot) — the raw
-  // user array is the biggest collection (~84 MB), so keeping it off the
-  // persisted snapshot and the scraper's resident heap is the main memory win;
-  // the build streams it back into the rows. Failed fetches keep their previous line so a hiccup doesn't drop users.
+  // 4. Hydrate users, stamped with the capture time so the user page can show
+  // data freshness.
+  //
+  // Streamed to users.ndjson rather than kept in the RawSnapshot: it's the
+  // biggest collection (~84 MB), so keeping it off the heap is the main memory win.
+  //
+  // Failed fetches keep their previous line so a hiccup doesn't drop users.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
   const failedUsers = failedIds(userIds, usersRaw)
@@ -153,13 +154,13 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   logFailures('users', failedUsers.size, previousUsers.size)
   log.info({ users: users.length }, 'hydrated users')
 
-  // 5. Per-user equipment. One HTTP call per user, batched by the tRPC client
-  // up to 50 ops. Streamed straight to a separate equipment.ndjson file (not held
-  // in the RawSnapshot), keeping ~14 MB out of snapshot.json and off the
-  // scraper's resident heap; the build streams it back for gear scoring.
-  // Many entries come back `{}` (player stripped gear between battles); a line
-  // is written for each so readers can tell "captured, none equipped" from "not
-  // captured". Failed fetches keep their previous line so a hiccup doesn't drop users.
+  // 5. Per-user equipment, streamed to equipment.ndjson to keep ~14 MB off the
+  // snapshot and the heap.
+  //
+  // Users wearing nothing still get a `{}` line, so readers can tell "none
+  // equipped" from "not captured".
+  //
+  // Failed fetches keep their previous line so a hiccup doesn't drop users.
   const equipmentRaw = await getEquipment(userIds)
   const failedEquipment = failedIds(userIds, equipmentRaw)
   const previousEquipment = await loadEquipmentByIds(failedEquipment)

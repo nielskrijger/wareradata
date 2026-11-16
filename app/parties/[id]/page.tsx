@@ -185,7 +185,12 @@ export default async function PartyDetailPage({ params }: PageProps) {
 
       <section className="space-y-3">
         <h2 className="font-brand text-lg tracking-wide">Members</h2>
-        <UsersTable initial={memberPage} baseFilter={`partyId:${p.id}`} />
+        {/* Party members are citizens of the party's country. */}
+        <UsersTable
+          initial={memberPage}
+          baseFilter={`partyId:${p.id}`}
+          omitColumns={['partyName', 'countryCode']}
+        />
       </section>
     </main>
   )

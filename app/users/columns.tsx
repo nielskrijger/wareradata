@@ -109,9 +109,9 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         accessorKey: 'muName',
         header: 'MU',
         cell: ({ row }) => (
-          <MUCell muName={row.original.muName} muId={row.original.muId} avatarUrl={row.original.muAvatarUrl} />
+          <MUCell muName={row.original.muName} muId={row.original.muId} avatarUrl={row.original.muAvatarUrl} iconOnly />
         ),
-        meta: { width: 200 },
+        meta: { width: 64 },
       },
       {
         accessorKey: 'partyName',
@@ -121,9 +121,10 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
             partyName={row.original.partyName}
             partyId={row.original.partyId}
             avatarUrl={row.original.partyAvatarUrl}
+            iconOnly
           />
         ),
-        meta: { width: 200 },
+        meta: { width: 64 },
       },
       {
         accessorKey: 'lastConnectionAt',

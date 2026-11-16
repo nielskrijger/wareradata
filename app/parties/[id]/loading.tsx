@@ -1,5 +1,5 @@
-import { DetailLoadingPage } from '@/components/layout/detail-loading-page'
+import { LoadingPage } from '@/components/layout/loading-page'
 
 export default function Loading() {
-  return <DetailLoadingPage />
+  return <LoadingPage />
 }

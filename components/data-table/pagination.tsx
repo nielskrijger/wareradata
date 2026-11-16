@@ -61,8 +61,7 @@ export function Pagination({
           rows
         </span>
         <label className="flex items-center gap-1.5">
-          <span className="hidden sm:inline">Rows per page</span>
-          <span className="sr-only sm:hidden">Rows per page</span>
+          <span className="sr-only sm:not-sr-only">Rows per page</span>
           <select
             value={pageSize}
             onChange={e => onPageSizeChange(Number(e.target.value))}

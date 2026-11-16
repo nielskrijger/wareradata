@@ -9,6 +9,7 @@ import { useTransition } from 'react'
 
 import { ProgressRing } from '@/components/progress-ring'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
 import { SMALL_GAIN_PER_DAY, splitBySize } from './rows'
@@ -160,29 +161,21 @@ function ShareBar({ big, small, total }: { big: AdviseRow[], small: AdviseRow[],
       </div>
       <div className="flex h-8 gap-0.5 overflow-hidden rounded-lg">
         {big.map(row => (
-          <span
+          <Slice
             key={row.id}
-            title={`${row.title}: ${gain(row.gainPerDay)}/day`}
-            className="flex min-w-0 items-center"
-            style={{ flex: row.gainPerDay, background: KIND[row.kind].color }}
-          >
-            {row.gainPerDay / total >= 0.12 && (
-              <span className="hidden truncate px-2 text-xs font-semibold text-black md:inline">
-                {row.title}
-                {' · '}
-                {gain(row.gainPerDay)}
-              </span>
-            )}
-          </span>
+            title={row.title}
+            gainPerDay={row.gainPerDay}
+            share={row.gainPerDay / total}
+            background={KIND[row.kind].color}
+            label={row.gainPerDay / total >= 0.12}
+          />
         ))}
         {smallGain > 0 && (
-          <span
-            title={`Small stuff: ${gain(smallGain)}/day`}
-            style={{
-              flex: smallGain,
-              background: 'repeating-linear-gradient(45deg, var(--muted-foreground) 0 2px, transparent 2px 7px)',
-              opacity: 0.45,
-            }}
+          <Slice
+            title={`${things(small.length)}, each under ${SMALL_GAIN_PER_DAY} g/day`}
+            gainPerDay={smallGain}
+            share={smallGain / total}
+            background="repeating-linear-gradient(45deg, color-mix(in oklch, var(--muted-foreground) 45%, transparent) 0 2px, transparent 2px 7px)"
           />
         )}
       </div>
@@ -204,6 +197,44 @@ function ShareBar({ big, small, total }: { big: AdviseRow[], small: AdviseRow[],
         )}
       </ul>
     </section>
+  )
+}
+
+/**
+ * One block of the share bar. A popover rather than a tooltip, so a tap opens
+ * it too: tooltips ignore touch.
+ */
+function Slice({ title, gainPerDay, share, background, label }: {
+  title: string
+  gainPerDay: number
+  share: number
+  background: string
+  label?: boolean
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger
+        openOnHover
+        delay={80}
+        aria-label={`${title}: ${gain(gainPerDay)} g/day, ${pct(share)}`}
+        className="flex min-w-0 cursor-default items-center outline-none hover:brightness-110
+          focus-visible:ring-2 focus-visible:ring-white/60"
+        style={{ flex: gainPerDay, background }}
+      >
+        {label && (
+          <span className="hidden truncate px-2 text-xs font-semibold text-black md:inline">
+            {title}
+            {' · '}
+            {gain(gainPerDay)}
+          </span>
+        )}
+      </PopoverTrigger>
+      <PopoverContent side="top" sideOffset={6} className="w-auto max-w-64 px-3 py-2 text-xs">
+        <span className="block font-semibold">{title}</span>
+        <span className="font-mono" style={{ color: GAIN }}>{`${gain(gainPerDay)} g/day`}</span>
+        {` · ${pct(share)} of the total`}
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -314,7 +345,7 @@ function RefreshButton() {
       disabled={pending}
       onClick={() => startTransition(() => router.refresh())}
     >
-      <RefreshCw aria-hidden className={cn('size-3.5', pending && 'animate-spin')} />
+      <RefreshCw aria-hidden className={cn(pending && 'animate-spin')} />
       {pending ? 'Refreshing' : 'Refresh'}
     </Button>
   )

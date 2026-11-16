@@ -106,8 +106,8 @@ function Row({ row, color, total, pos }: {
       <span className="text-right tabular-nums">{value == null ? '–' : (display ?? value.toLocaleString())}</span>
       <div className="relative order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         <div className="bg-muted absolute inset-x-0 top-1/2 h-px" />
-        {MARKS.slice(1, -1).map(m => (
-          <div key={m} className="bg-border absolute top-0.5 h-3 w-px" style={{ left: `${m}%` }} />
+        {MARKS.map(m => (
+          <div key={m} className="bg-border absolute top-0.5 h-3 w-px -translate-x-1/2" style={{ left: `${m}%` }} />
         ))}
         {ranked && (
           <>

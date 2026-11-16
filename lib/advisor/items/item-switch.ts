@@ -35,6 +35,8 @@ interface Candidate {
  *
  * Specialization grows a point a day on either path, so the gain is the average
  * over the horizon and the payback comes from the running total.
+ *
+ * Retirees are replaced, so their slot keeps producing on either path.
  */
 export function itemSwitchItem(
   input: AdvisorInput,
@@ -71,15 +73,22 @@ export function itemSwitchItem(
       }
     })
 
+    // A retiree's replacement starts at the weakest base here, unspecialized on either item.
+    const newcomerBase = Math.min(...staff.map(s => s.basePerDay))
     let total = 0
     let days = Number.POSITIVE_INFINITY
     for (let d = 0; d < RULES.horizonDays; d++) {
       let gain = c.enginePointsPerDay * (vpp - current)
-      for (const s of staff.filter(s => d < s.days)) {
-        const stayPct = Math.min(cap, s.spec + d) - s.spec
-        const switchPct = Math.min(cap, s.specNext + d) - s.spec + s.toolNext - s.tool
-        gain += (s.pointsPerDay + s.basePerDay * switchPct / 100) * vpp
-          - (s.pointsPerDay + s.basePerDay * stayPct / 100) * current
+      for (const s of staff) {
+        if (d < s.days) {
+          const stayPct = Math.min(cap, s.spec + d) - s.spec
+          const switchPct = Math.min(cap, s.specNext + d) - s.spec + s.toolNext - s.tool
+          gain += (s.pointsPerDay + s.basePerDay * switchPct / 100) * vpp
+            - (s.pointsPerDay + s.basePerDay * stayPct / 100) * current
+        } else {
+          const spec = Math.min(cap, d - s.days)
+          gain += newcomerBase * ((1 + (spec + s.toolNext) / 100) * vpp - (1 + (spec + s.tool) / 100) * current)
+        }
       }
 
       total += gain

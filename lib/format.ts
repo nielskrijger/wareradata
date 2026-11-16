@@ -85,3 +85,12 @@ export function formatCountdown(iso: string | null): string {
 
   return `${minutes}m`
 }
+
+/**
+ * "top 9%", with a decimal under 1% so the very best don't all read "top 0%".
+ */
+export function topPercent(rank: number, total: number): string {
+  const pct = (rank / total) * 100
+
+  return pct < 1 ? `top ${pct.toFixed(1)}%` : `top ${Math.round(pct)}%`
+}

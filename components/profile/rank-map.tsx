@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 
+import { topPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 /**
  * The tick header's insets must match the row columns either side of the track.
  */
-const ROW_COLUMNS = 'grid-cols-[minmax(0,1fr)_auto_4rem] sm:grid-cols-[9.5rem_5rem_minmax(0,1fr)_4rem]'
-const TRACK_INSET = 'mr-[calc(4rem+1rem)] ml-[calc(9.5rem+5rem+2rem)]'
+const ROW_COLUMNS = 'grid-cols-[minmax(0,1fr)_auto_8.5rem] sm:grid-cols-[9.5rem_5rem_minmax(0,1fr)_8.5rem]'
+const TRACK_INSET = 'mr-[calc(8.5rem+1rem)] ml-[calc(9.5rem+5rem+2rem)]'
 
 export interface RankMapRow {
   label: string
@@ -36,28 +37,19 @@ interface Props {
 }
 
 /**
- * Powers of ten below the total, then the total itself as "last".
+ * Track marks as the share of players ranked below, from last to #1.
  */
-function ticks(total: number): number[] {
-  const out: number[] = []
-  for (let t = 1; t < total; t *= 10) {
-    out.push(t)
-  }
-
-  return [...out, total]
-}
+const MARKS = [0, 25, 50, 75, 100]
 
 /**
  * Every stat as a dot on one shared rank track, so a player's strong and weak
  * spots read at a glance.
  *
- * Log scale, because the difference between #10 and #100 matters far more
- * than between #20,000 and #30,000. Reversed so better sits further right.
+ * Linear in percentile, so bar length is simply the share of players beaten;
+ * the "top x%" beside each rank separates the very best.
  */
 export function RankMap({ title, groups, total }: Props) {
-  const scale = Math.log10(Math.max(total, 2))
-  const pos = (rank: number) => 100 - (Math.log10(Math.min(rank, total)) / scale) * 100
-  const marks = ticks(total)
+  const pos = (rank: number) => 100 * (1 - (Math.min(rank, total) - 1) / Math.max(total - 1, 1))
 
   return (
     <section className="bg-card rounded-md border p-4 sm:p-5">
@@ -70,9 +62,9 @@ export function RankMap({ title, groups, total }: Props) {
 
       {/* Lines up with the track column of the rows below. */}
       <div className={cn('text-muted-foreground relative hidden h-6 text-[10px] sm:block', TRACK_INSET)}>
-        {marks.map(t => (
-          <span key={t} className="absolute top-2 -translate-x-1/2 tabular-nums" style={{ left: `${pos(t)}%` }}>
-            {tickLabel(t, total)}
+        {MARKS.map(m => (
+          <span key={m} className="absolute top-2 -translate-x-1/2 tabular-nums" style={{ left: `${m}%` }}>
+            {markLabel(m)}
           </span>
         ))}
       </div>
@@ -80,32 +72,33 @@ export function RankMap({ title, groups, total }: Props) {
       {groups.map(g => (
         <div key={g.title} className="mt-2 border-t pt-2">
           <h3 className="text-xs font-medium tracking-wide uppercase" style={{ color: g.color }}>{g.title}</h3>
-          {g.rows.map(row => <Row key={row.label} row={row} color={g.color} marks={marks} pos={pos} />)}
+          {g.rows.map(row => <Row key={row.label} row={row} color={g.color} total={total} pos={pos} />)}
         </div>
       ))}
     </section>
   )
 }
 
-function tickLabel(t: number, total: number): string {
-  if (t === total) {
+function markLabel(m: number): string {
+  if (m === 0) {
     return 'last'
   }
 
-  return t >= 1000 ? `#${t / 1000}k` : `#${t}`
+  return m === 100 ? '#1' : `top ${100 - m}%`
 }
 
 /**
  * On phones the track drops under the label so it keeps the full width.
  */
-function Row({ row, color, marks, pos }: {
+function Row({ row, color, total, pos }: {
   row: RankMapRow
   color: string
-  marks: number[]
+  total: number
   pos: (rank: number) => number
 }) {
   const { label, value, display, rank } = row
-  const ranked = rank != null && value != null
+  // Everyone at zero shares one rank, which would read as "top 12%" for nothing.
+  const ranked = rank != null && value != null && value !== 0
 
   return (
     <div className={cn('grid items-center gap-x-3 gap-y-0.5 py-1 text-sm sm:gap-x-4', ROW_COLUMNS)}>
@@ -113,8 +106,8 @@ function Row({ row, color, marks, pos }: {
       <span className="text-right tabular-nums">{value == null ? '–' : (display ?? value.toLocaleString())}</span>
       <div className="relative order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         <div className="bg-muted absolute inset-x-0 top-1/2 h-px" />
-        {marks.slice(1, -1).map(t => (
-          <div key={t} className="bg-border absolute top-0.5 h-3 w-px" style={{ left: `${pos(t)}%` }} />
+        {MARKS.slice(1, -1).map(m => (
+          <div key={m} className="bg-border absolute top-0.5 h-3 w-px" style={{ left: `${m}%` }} />
         ))}
         {ranked && (
           <>
@@ -130,7 +123,14 @@ function Row({ row, color, marks, pos }: {
         )}
       </div>
       <span className="text-muted-foreground text-right text-xs tabular-nums">
-        {ranked ? `#${rank.toLocaleString()}` : 'unranked'}
+        {ranked
+          ? (
+              <>
+                #{rank.toLocaleString()}
+                <span className="text-muted-foreground/60"> · {topPercent(rank, total)}</span>
+              </>
+            )
+          : 'unranked'}
       </span>
     </div>
   )

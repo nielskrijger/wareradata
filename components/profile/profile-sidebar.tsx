@@ -6,6 +6,7 @@ import type { CasesByType, Equipment } from '@/lib/warera/api'
 import { Avatar } from '@/components/avatar'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
+import { RED_BADGE } from '@/components/badges/tone'
 import { CountryCell } from '@/components/cells/country-cell'
 import { GroupCell } from '@/components/cells/group-cell'
 import { LevelTooltipContent } from '@/components/cells/level-tooltip-content'
@@ -72,7 +73,7 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
           {user.readinessStatus != null && (
             <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} />
           )}
-          {user.isBanned && <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
+          {user.isBanned && <Badge className={RED_BADGE}>banned</Badge>}
         </SidebarTitle>
 
         <dl className="space-y-1 text-sm">

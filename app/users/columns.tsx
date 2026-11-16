@@ -5,6 +5,7 @@ import type { ColumnDef } from '@/components/data-table/features'
 import type { UserRow } from '@/lib/rows'
 
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
+import { RED_BADGE } from '@/components/badges/tone'
 import { CombatModeCell } from '@/components/cells/combat-mode-cell'
 import { GroupCell } from '@/components/cells/group-cell'
 import { IdentityCell } from '@/components/cells/identity-cell'
@@ -27,6 +28,7 @@ import { InfoTooltip } from '@/components/info-tooltip'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { UserHoverCard } from '@/components/user-hover-card'
+import { cn } from '@/lib/utils'
 
 export type { UserRow }
 
@@ -46,7 +48,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
           />
         </UserHoverCard>
         {row.original.isBanned && (
-          <Badge className="shrink-0 bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>
+          <Badge className={cn(RED_BADGE, 'shrink-0')}>banned</Badge>
         )}
       </IdentityCell>
     ),

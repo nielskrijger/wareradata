@@ -16,9 +16,14 @@ interface Props {
    * `countryCode:<code>` on the country page). Combined with the user's search.
    */
   baseFilter?: string
+
+  /**
+   * Column ids the page's context makes redundant; see DataTable.
+   */
+  omitColumns?: string[]
 }
 
-export function PartiesTable({ initial, baseFilter }: Props) {
+export function PartiesTable({ initial, baseFilter, omitColumns }: Props) {
   return (
     <DataTable
       tableId="parties"
@@ -27,6 +32,7 @@ export function PartiesTable({ initial, baseFilter }: Props) {
       initialSort={{ id: 'totalPoints', desc: true }}
       endpoint="/api/parties"
       baseFilter={baseFilter}
+      omitColumns={omitColumns}
       searchPlaceholder="Filter by party, country, or leader…"
       searchHint={(
         <AdvancedSearchHint

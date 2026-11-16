@@ -80,13 +80,13 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
       </TabsList>
 
       <TabsPanel value="citizens" className="pt-4">
-        <UsersTable initial={citizens} baseFilter={`countryCode:${code}`} />
+        <UsersTable initial={citizens} baseFilter={`countryCode:${code}`} omitColumns={['countryCode']} />
       </TabsPanel>
       <TabsPanel value="mus" className="pt-4">
-        <MUsTable initial={mus} baseFilter={`countryCode:${code}`} />
+        <MUsTable initial={mus} baseFilter={`countryCode:${code}`} omitColumns={['countryName']} />
       </TabsPanel>
       <TabsPanel value="parties" className="pt-4">
-        <PartiesTable initial={parties} baseFilter={`countryCode:${code}`} />
+        <PartiesTable initial={parties} baseFilter={`countryCode:${code}`} omitColumns={['countryName']} />
       </TabsPanel>
       <TabsPanel value="battles" className="pt-4">
         <BattlesTable

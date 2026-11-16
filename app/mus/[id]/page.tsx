@@ -307,7 +307,7 @@ export default async function MUDetailPage({ params }: PageProps) {
 
       <section className="space-y-3">
         <h2 className="font-brand text-lg tracking-wide">Members</h2>
-        <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} />
+        <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} omitColumns={['muName']} />
       </section>
     </main>
   )

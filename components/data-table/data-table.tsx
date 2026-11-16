@@ -81,6 +81,12 @@ interface DataTableProps<TData extends RowData> {
    * query syntax.
    */
   searchHint?: ReactNode
+
+  /**
+   * Column ids left out entirely, for columns the page already implies (e.g.
+   * MU on an MU's members). Gone from the Columns menu too.
+   */
+  omitColumns?: string[]
 }
 
 /**
@@ -98,7 +104,7 @@ export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
 
 function DataTableInner<TData extends RowData>({
   tableId,
-  columns,
+  columns: allColumns,
   initialData,
   initialSort,
   pageSize: defaultPageSize = 25,
@@ -106,7 +112,12 @@ function DataTableInner<TData extends RowData>({
   baseFilter,
   searchPlaceholder = 'Filter…',
   searchHint,
+  omitColumns,
 }: DataTableProps<TData>) {
+  const columns = omitColumns
+    ? allColumns.filter(c => !omitColumns.includes(columnId(c)))
+    : allColumns
+
   const {
     q,
     filterInput,
@@ -120,9 +131,10 @@ function DataTableInner<TData extends RowData>({
     isAtInitialState,
   } = useTableUrlState({ initialSort, defaultPageSize })
 
-  const hiddenByDefault = columns
+  // From all columns, so stored choices for omitted ones match the full table's.
+  const hiddenByDefault = allColumns
     .filter(c => c.meta?.hiddenByDefault)
-    .map(c => c.id ?? ('accessorKey' in c ? String(c.accessorKey) : ''))
+    .map(columnId)
 
   const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId, hiddenByDefault)
   const [data, setData] = useState<PageResult<TData>>(initialData)
@@ -194,7 +206,8 @@ function DataTableInner<TData extends RowData>({
     onSortingChange: setSorting,
     onColumnVisibilityChange: updater => setColumnVisibility(
       updater,
-      table.getAllLeafColumns().filter(c => c.getCanHide()).map(c => c.id),
+      // Omitted ids count as known so this page keeps their stored choices.
+      [...table.getAllLeafColumns().filter(c => c.getCanHide()).map(c => c.id), ...(omitColumns ?? [])],
     ),
     manualSorting: true,
     meta: { ranges: data.ranges },
@@ -287,4 +300,8 @@ function DataTableInner<TData extends RowData>({
       />
     </div>
   )
+}
+
+function columnId<TData extends RowData>(c: ColumnDef<TData>): string {
+  return c.id ?? ('accessorKey' in c ? String(c.accessorKey) : '')
 }

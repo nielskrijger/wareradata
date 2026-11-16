@@ -16,9 +16,14 @@ interface Props {
    * always applied (e.g. `muId:<id>`). Combined with the user's search.
    */
   baseFilter?: string
+
+  /**
+   * Column ids the page's context makes redundant; see DataTable.
+   */
+  omitColumns?: string[]
 }
 
-export function UsersTable({ initial, baseFilter }: Props) {
+export function UsersTable({ initial, baseFilter, omitColumns }: Props) {
   return (
     <DataTable
       tableId="users"
@@ -27,6 +32,7 @@ export function UsersTable({ initial, baseFilter }: Props) {
       initialSort={{ id: 'points', desc: true }}
       endpoint="/api/users"
       baseFilter={baseFilter}
+      omitColumns={omitColumns}
       searchPlaceholder="Filter by username, country, MU, or party…"
       searchHint={(
         <AdvancedSearchHint

@@ -93,6 +93,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: result.country.name,
     description: `WarEra.io country stats for ${result.country.name}: citizens, military units, parties, government, economy and active battles.`,
     path: `/countries/${id}`,
+    image: `/og/countries/${id}`,
   })
 }
 

@@ -51,6 +51,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description: `WarEra.io battle stats: ${title}.`,
     path: `/battles/${id}`,
+    image: `/og/battles/${id}`,
   })
 }
 

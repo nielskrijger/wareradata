@@ -167,14 +167,16 @@ The in-server loop refreshes continuously; there is no external cron.
 
 ## Project layout
 
-| Path           | Contents                                                                                                                                                                    |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/`         | App Router pages: `/countries`, `/users`, `/mus`, `/regions`, `/parties`, `/alliances`, `/battles` (each with detail routes), plus `/about`. `/` redirects to `/countries`. |
-| `lib/warera/`  | API client config and the scrape logic (`scrape-main.ts`, `scrape-factories.ts`, `api.ts`).                                                                                 |
-| `lib/scraper/` | The in-process loop, publishing, and on-demand refreshes.                                                                                                                   |
-| `lib/cache/`   | On-disk snapshot (`file-store.ts`), in-memory snapshot (`memory.ts`), and battle archive (`archive.ts`).                                                                    |
-| `lib/rows/`    | Builds the row + lookup shapes the tables render from raw entities.                                                                                                         |
-| `components/`  | Table, detail-page, and UI building blocks.                                                                                                                                 |
+| Path               | Contents                                                                                                                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`             | App Router pages: `/countries`, `/users`, `/mus`, `/regions`, `/parties`, `/alliances`, `/battles` (each with detail routes), plus `/about`. `/` redirects to `/countries`. |
+| `lib/warera/`      | API client config and the scrape logic (`scrape-main.ts`, `scrape-factories.ts`, `api.ts`).                                                                                 |
+| `lib/scraper/`     | The in-process loop, publishing, and on-demand refreshes.                                                                                                                   |
+| `lib/cache/`       | On-disk snapshot (`file-store.ts`), in-memory snapshot (`memory.ts`), and battle archive (`archive.ts`).                                                                    |
+| `lib/rows/`        | Builds the row + lookup shapes the tables render from raw entities.                                                                                                         |
+| `lib/share-image/` | Per-page link-preview images served at `/og/<kind>/<id>`: layout, per-entity cards, fonts.                                                                                  |
+| `lib/sitemap.ts`   | The sitemap index at `/sitemap.xml` and its child files under `/sitemaps/`.                                                                                                 |
+| `components/`      | Table, detail-page, and UI building blocks.                                                                                                                                 |
 
 ## License
 

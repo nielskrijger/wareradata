@@ -105,6 +105,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: user.username,
     description: facts ? `${facts}. ${summary}` : summary,
     path: `/users/${id}`,
+    image: `/og/users/${id}`,
   })
 }
 

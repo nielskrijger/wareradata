@@ -1,4 +1,4 @@
-import type { TodoItem } from '@/lib/advisor/types'
+import type { Fact, TodoItem } from '@/lib/advisor/types'
 
 /**
  * Actions earning less than this a day each count as small stuff and fold away.
@@ -13,6 +13,7 @@ export interface AdviseRow {
   kind: TodoItem['kind']
   title: string
   why: string
+  facts: Fact[]
   gainPerDay: number
   energy: number
   parts: { short: string, gainPerDay: number }[]
@@ -36,6 +37,7 @@ function single(item: TodoItem): AdviseRow {
     kind: item.kind,
     title: item.title,
     why: item.why,
+    facts: item.facts ?? [],
     gainPerDay: item.gainPerDay ?? 0,
     energy: item.energy ?? 0,
     parts: [],
@@ -73,6 +75,8 @@ export function toRows(items: TodoItem[]): AdviseRow[] {
       kind: sorted[0].kind,
       title: GROUP[key as GroupKey].title(sorted.length),
       why: GROUP[key as GroupKey].why ?? sorted[0].why,
+      // A group's own reason has no breakdown; otherwise the first stands for all.
+      facts: GROUP[key as GroupKey].why ? [] : sorted[0].facts ?? [],
       gainPerDay: sorted.reduce((s, i) => s + (i.gainPerDay ?? 0), 0),
       energy: sorted.reduce((s, i) => s + (i.energy ?? 0), 0),
       parts: sorted.map(i => ({ short: i.group!.short, gainPerDay: i.gainPerDay ?? 0 })),

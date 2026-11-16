@@ -1,4 +1,4 @@
-import type { AdvisorCompany, AdvisorInput, TodoItem } from '../types'
+import type { AdvisorCompany, AdvisorInput, Fact, TodoItem } from '../types'
 
 import { humanizeCode, humanizeItem } from '@/components/factories/format'
 
@@ -66,11 +66,35 @@ export function itemSwitchItem(
   const next = vppByItem.get(best.code) ?? 0
   const specFrom = Math.round(best.specFrom / n)
   const specTo = Math.round(best.specTo / n)
+  const morePct = Math.round((next / current - 1) * 100)
+  const days = Math.ceil(cost / best.gain)
+  const facts: Fact[] = [
+    current > 0
+      ? { label: 'Value per point', value: `+${morePct}%`, brief: `+${morePct}% per point` }
+      : { label: 'Value per point', value: `${fmt(next, 3)} g`, brief: `${fmt(next, 3)} g per point` },
+    {
+      label: 'Switch cost',
+      value: `${input.changeItemConcrete} = ${fmt(cost)} g`,
+      brief: `${input.changeItemConcrete} · ${fmt(cost)} g`,
+      icon: 'concrete',
+    },
+    { label: 'Earned back', value: `${days} days`, brief: `back in ${days} days` },
+  ]
+
+  if (specTo < specFrom) {
+    const drop = `${specFrom}% → ${specTo}%`
+    facts.push({ label: 'Specialization', value: `${drop}, counted`, brief: `spec ${drop}` })
+  }
+
+  if (hasTools) {
+    facts.push({ label: 'Tools', value: 'check they still fit', brief: 'check tools' })
+  }
+
   const why = [
     current > 0
-      ? `${humanizeCode(best.code)} pays ${Math.round((next / current - 1) * 100)}% more per production point.`
+      ? `${humanizeCode(best.code)} pays ${morePct}% more per production point.`
       : `${humanizeCode(best.code)} pays ${fmt(next, 3)} gold per production point.`,
-    `Costs ${input.changeItemConcrete} concrete (${fmt(cost)} gold), earned back in ${Math.ceil(cost / best.gain)} days.`,
+    `Costs ${input.changeItemConcrete} concrete (${fmt(cost)} gold), earned back in ${days} days.`,
     specTo < specFrom ? `Specialization drops from ${specFrom}% to ${specTo}%, already counted.` : '',
     hasTools ? 'Check the tools still fit the new item.' : '',
   ]
@@ -81,6 +105,7 @@ export function itemSwitchItem(
     // The name already starts with the current item, so only the new one is named.
     title: `Switch ${c.name} to ${humanizeItem(best.code)}`,
     why: why.filter(Boolean).join(' '),
+    facts,
     gainPerDay: best.gain,
     switch: { company: c.ownName, from: c.itemCode, to: best.code },
   }

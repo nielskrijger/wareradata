@@ -58,6 +58,8 @@ export function toolItems(input: AdvisorInput, vppByItem: Map<string, number>): 
       const from = staff[best.a]
       const to = staff[best.b]
       const tool = toolLabel(from.code ?? '')
+      const [toName, fromName] = [firstName(to.e.name), firstName(from.e.name)]
+      const [toBase, fromBase] = [fmt(basePerHour(to.e)), fmt(basePerHour(from.e))]
       items.push({
         id: `tool-${from.e._id}-${to.e._id}`,
         kind: 'tool',
@@ -65,6 +67,14 @@ export function toolItems(input: AdvisorInput, vppByItem: Map<string, number>): 
           ? `Swap tools: ${firstName(from.e.name)}'s ${tool} (+${from.pct}%) to ${firstName(to.e.name)}, theirs back`
           : `Move ${firstName(from.e.name)}'s ${tool} (+${from.pct}%) to ${firstName(to.e.name)} (${to.company})`,
         why: `${firstName(to.e.name)} makes ${fmt(basePerHour(to.e))} base points an hour against ${fmt(basePerHour(from.e))} for ${firstName(from.e.name)}, and a tool adds a percent of base output.`,
+        facts: [
+          {
+            label: `${toName}'s base`,
+            value: `${toBase} pts/h`,
+            brief: `${toName} ${toBase} vs ${fromBase} base pts/h`,
+          },
+          { label: `${fromName}'s base`, value: `${fromBase} pts/h` },
+        ],
         gainPerDay: HOURS_PER_DAY * (best.gain / 100) * vpp,
         group: {
           key: 'tool-move',

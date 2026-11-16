@@ -27,11 +27,19 @@ export function fireItems(c: AdvisorCompany, vpp: number): TodoItem[] {
 
     const helpsTeam = (e.traits ?? []).some(t => TEAM_TRAITS.has(t.code))
     const leanedOn = c.employees.some(o => o._id !== e._id && (o.traits ?? []).some(t => t.arg === e._id))
+    const linked = helpsTeam || leanedOn
+    const output = fmt(HOURS_PER_DAY * (e.estimate?.production ?? 0) * vpp)
+    const wages = fmt(HOURS_PER_DAY * (e.estimate?.wage ?? 0))
     items.push({
       id: `fire-${e._id}`,
       kind: 'employee',
       title: `Fire ${firstName(e.name)} (${c.name})`,
-      why: `They make ${fmt(HOURS_PER_DAY * (e.estimate?.production ?? 0) * vpp)} gold of output a day but cost ${fmt(HOURS_PER_DAY * (e.estimate?.wage ?? 0))} in wages.${helpsTeam || leanedOn ? ' A trait links them to coworkers, so check those first.' : ''}`,
+      why: `They make ${output} gold of output a day but cost ${wages} in wages.${linked ? ' A trait links them to coworkers, so check those first.' : ''}`,
+      facts: [
+        { label: 'Output', value: `${output} g/day`, brief: `makes ${output} g/day` },
+        { label: 'Wages', value: `${wages} g/day`, brief: `costs ${wages}` },
+        ...(linked ? [{ label: 'Trait', value: 'linked to coworkers', brief: 'check linked coworkers' }] : []),
+      ],
       gainPerDay: -net,
     })
   }
@@ -53,6 +61,11 @@ export function hireItem(c: AdvisorCompany, medianNet: number | null): TodoItem 
     kind: 'hire',
     title: `Hire into ${open === 1 ? 'the empty slot' : `${open} empty slots`} at ${c.name}`,
     why: 'Pick the candidate with the lowest wage per Production point. Trait and potential only show after hiring; firing is free once they have worked 12 hours.',
+    facts: [
+      { label: 'Pick', value: 'lowest wage per Production point', brief: 'lowest wage per point' },
+      { label: 'Shown after hiring', value: 'trait, potential' },
+      { label: 'Free to fire', value: 'after 12 h', brief: 'free to fire after 12 h' },
+    ],
     gainPerDay: medianNet,
     energy: HIRE_ENERGY,
   }

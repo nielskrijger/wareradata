@@ -3,9 +3,10 @@ import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 
 import { humanizeItem } from '@/components/factories/format'
+import { cn } from '@/lib/utils'
 import { itemIconUrl } from '@/lib/warera/urls'
 
-function ItemIcon({ code }: { code: string }) {
+export function ItemIcon({ code, small }: { code: string, small?: boolean }) {
   return (
     <Image
       src={itemIconUrl(code)}
@@ -13,7 +14,7 @@ function ItemIcon({ code }: { code: string }) {
       title={humanizeItem(code)}
       width={20}
       height={20}
-      className="size-5 shrink-0 object-contain"
+      className={cn('inline-block shrink-0 object-contain', small ? 'size-4 align-[-0.2em]' : 'size-5')}
       unoptimized
     />
   )

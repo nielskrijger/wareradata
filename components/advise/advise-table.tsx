@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { COLUMNS, GAIN, gain, KIND, pct, sum, things } from './format'
+import { Reason } from './reason'
 import { SMALL_GAIN_PER_DAY } from './rows'
 import { SwitchTitle } from './switch-title'
 
@@ -68,7 +69,7 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
             ))}
           </span>
         )}
-        <span className="text-muted-foreground max-w-[70ch] text-xs">{row.why}</span>
+        <Reason row={row} />
       </span>
       <span className="col-start-2 flex items-center gap-1.5 text-xs md:col-start-auto">
         <span className="size-2 shrink-0 rounded-full" style={{ background: kind.color }} />

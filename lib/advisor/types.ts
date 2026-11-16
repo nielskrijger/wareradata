@@ -2,6 +2,25 @@ import type { EmployeeLike } from './model'
 import type { ItemPrices, RecipeLookup } from '@/lib/factories/profit'
 
 /**
+ * One number behind an action: a line of its breakdown, and optionally a
+ * phrase on the row's short summary.
+ */
+export interface Fact {
+  label: string
+  value: string
+
+  /**
+   * Shown on the row itself; facts without one only appear in the breakdown.
+   */
+  brief?: string
+
+  /**
+   * Item code whose icon goes before the value.
+   */
+  icon?: string
+}
+
+/**
  * One row of the to-do list.
  */
 export interface TodoItem {
@@ -9,6 +28,7 @@ export interface TodoItem {
   kind: 'money' | 'train' | 'tool' | 'manager' | 'employee' | 'item' | 'hire' | 'work'
   title: string
   why: string
+  facts?: Fact[]
 
   /**
    * Gold per day the action adds; null when it can't be priced.

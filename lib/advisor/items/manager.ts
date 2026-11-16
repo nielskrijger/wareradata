@@ -29,12 +29,19 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
     })
 
     const counted = effectiveManagerPct(m.productionBonusPercent, ownerPct)
+    const output = fmt(net + HOURS_PER_DAY * m.hourlyWage)
+    const wages = fmt(HOURS_PER_DAY * m.hourlyWage)
     if (net < -MIN_GAIN_PER_DAY) {
       return [{
         id: `fire-manager-${c.id}`,
         kind: 'manager',
         title: `Fire the manager at ${c.name}`,
-        why: `Their +${counted}% adds ${fmt(net + HOURS_PER_DAY * m.hourlyWage)} gold of output a day but costs ${fmt(HOURS_PER_DAY * m.hourlyWage)} in wages. Their daily +5 happiness isn't counted.`,
+        why: `Their +${counted}% adds ${output} gold of output a day but costs ${wages} in wages. Their daily +5 happiness isn't counted.`,
+        facts: [
+          { label: 'Output', value: `+${counted}% · ${output} g/day`, brief: `adds ${output} g/day` },
+          { label: 'Wages', value: `${wages} g/day`, brief: `costs ${wages}` },
+          { label: 'Not counted', value: '+5 happiness a day' },
+        ],
         gainPerDay: -net,
       }]
     }
@@ -59,11 +66,19 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
     return []
   }
 
+  const points = pct / RULES.managementPctPerPoint
+  const wage = fmt(input.managerMarketWage, 3)
+
   return [{
     id: `hire-manager-${c.id}`,
     kind: 'manager',
     title: `Post a manager job at ${c.name}`,
-    why: `A manager with ${pct / RULES.managementPctPerPoint} Management adds ${pct}% output, for the market wage of ${fmt(input.managerMarketWage, 3)} gold an hour.`,
+    why: `A manager with ${points} Management adds ${pct}% output, for the market wage of ${wage} gold an hour.`,
+    facts: [
+      { label: 'Management', value: `${points}`, brief: `${points} Management` },
+      { label: 'Output', value: `+${pct}%`, brief: `+${pct}% output` },
+      { label: 'Market wage', value: `${wage} g/h`, brief: `${wage} g/h` },
+    ],
     gainPerDay: net,
     group: { key: 'manager-job', short: c.name },
   }]

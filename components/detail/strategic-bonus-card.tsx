@@ -22,7 +22,9 @@ function label(code: string, labels: Record<string, string>): string {
   if (labels[code]) {
     return labels[code]
   }
+
   const words = code.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
+
   return words.charAt(0).toUpperCase() + words.slice(1)
 }
 
@@ -44,7 +46,9 @@ export function StrategicBonusCard({ bonus, scope }: Props) {
   if (!bonus || (bonus.skills.length === 0 && bonus.resources.length === 0)) {
     return null
   }
+
   const shared = scope === 'country' && bonus.allianceId !== null
+
   return (
     <MultiStatCard
       label={shared ? 'Strategic resources (alliance)' : 'Strategic resources'}

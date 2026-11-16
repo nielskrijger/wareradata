@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 
 import { notFound } from 'next/navigation'
+
 import { connection } from 'next/server'
 import { cache } from 'react'
-
 import { BattleCountBadge } from '@/components/badges/battle-count-badge'
+
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CombatModeCard } from '@/components/detail/combat-mode-card'
@@ -21,6 +22,7 @@ import { ExternalLink, InternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
+import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { formatGovType } from '@/lib/warera/gov-type'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -41,6 +43,7 @@ const getCountry = cache(async (id: string) => {
     getLiveActiveBattles(),
     getActiveBattlesByCountry(),
   ])
+
   const { countries, users, mus, parties, governments, strategicBonuses } = snapshot
   const country = countries.find(c => c.id === id)
   if (!country) {
@@ -85,10 +88,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'Country not found' }
   }
-  return {
+
+  return pageMetadata({
     title: result.country.name,
-    description: `WarEra.io country stats for ${result.country.name}.`,
-  }
+    description: `WarEra.io country stats for ${result.country.name}: citizens, military units, parties, government, economy and active battles.`,
+    path: `/countries/${id}`,
+  })
 }
 
 export default async function CountryDetailPage({ params }: PageProps) {
@@ -98,6 +103,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
+
   const {
     country: c,
     government,

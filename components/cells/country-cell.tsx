@@ -33,7 +33,9 @@ export function CountryCell({ countryCode, countryName, countryId, activeBattles
   if (!countryCode && !countryName) {
     return <EmptyDash />
   }
+
   const label = countryName ?? countryCode ?? ''
+
   return (
     <div className="flex min-w-0 items-center gap-2">
       {/* Only the flag + name trigger the hover-card; the battle pill stays

@@ -24,6 +24,7 @@ interface Props {
 export function CombatModeCard({ avgWarShare, rank, total }: Props) {
   const mode = classifyWarShare(avgWarShare)
   const warPct = avgWarShare === null ? null : Math.round(avgWarShare * 100)
+
   return (
     <div className="bg-card flex flex-col gap-2 rounded-md border p-3">
       <div className="flex items-center justify-between">

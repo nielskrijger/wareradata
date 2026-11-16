@@ -45,6 +45,7 @@ export async function getUserById(id: string): Promise<UserDetails | null> {
   }
 
   const equipment = (await getUserEquipment(id)) ?? {}
+
   return { user, ranges: userRanges, total: users.length, equipment, gearLookup }
 }
 
@@ -54,5 +55,6 @@ export async function getUserById(id: string): Promise<UserDetails | null> {
  */
 export async function getUserEquipment(id: string): Promise<Equipment | null> {
   const json = (await getSnapshot()).equipmentJsonByUser.get(id)
+
   return json === undefined ? null : JSON.parse(json) as Equipment
 }

@@ -40,6 +40,7 @@ export function ReadinessPillCard({ mix }: { mix: ReadinessPill }) {
   if (total === 0) {
     return null
   }
+
   return (
     <div className="bg-card flex flex-col gap-2 rounded-md border p-3 sm:col-span-2">
       <span className="text-xs font-medium">Readiness</span>

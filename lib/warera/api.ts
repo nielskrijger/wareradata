@@ -247,6 +247,7 @@ const retryStats: Record<ClientName, RetryStats> = {
 export function takeRetryStats(name: ClientName): RetryStats {
   const stats = retryStats[name]
   retryStats[name] = { retries: 0, rateLimited: 0 }
+
   return stats
 }
 
@@ -295,6 +296,7 @@ export async function getGovernmentForCountry(countryId: string): Promise<Govern
     scrapeClient.government.getByCountryId({ countryId }) as Promise<Government>,
     scrapeClient.government.getCongressSeats({ countryId }).catch(() => undefined),
   ])
+
   return seats ? { ...gov, congressSeats: seats } : gov
 }
 
@@ -328,6 +330,7 @@ export async function getUserIdsForCountry(countryId: string): Promise<string[]>
       ids.push(item._id)
     }
   }
+
   return ids
 }
 
@@ -492,6 +495,7 @@ export function getEquipmentUrgent(userIds: string[]): Promise<(Equipment | unde
 
 export async function getAllRegions(): Promise<Region[]> {
   const obj = await scrapeClient.region.getRegionsObject()
+
   return Object.values(obj)
 }
 
@@ -500,6 +504,7 @@ export async function getAllMUs(): Promise<MU[]> {
   for await (const page of scrapeClient.mu.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...(page.items as MU[]))
   }
+
   return all
 }
 
@@ -520,6 +525,7 @@ export async function getAllParties(): Promise<Party[]> {
   for await (const page of scrapeClient.party.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...page.items)
   }
+
   return all
 }
 
@@ -528,6 +534,7 @@ export async function getAllAlliances(): Promise<Alliance[]> {
   for await (const page of scrapeClient.alliance.getManyPaginated({ limit: 100, autoPaginate: true })) {
     all.push(...page.items)
   }
+
   return all
 }
 
@@ -555,6 +562,7 @@ async function pageBattles(client: Client, isActive: boolean, max: number): Prom
       limit: BATTLES_PAGE_SIZE,
       cursor,
     })
+
     out.push(...(page.items as Battle[]))
     cursor = page.nextCursor
   } while (cursor && out.length < max)
@@ -569,6 +577,7 @@ async function pageBattles(client: Client, isActive: boolean, max: number): Prom
 export async function getAllBattles(): Promise<Battle[]> {
   const active = await pageBattles(scrapeClient, true, Infinity)
   const finished = await pageBattles(scrapeClient, false, FINISHED_BATTLES_LIMIT)
+
   return [...active, ...finished]
 }
 
@@ -737,6 +746,7 @@ export async function getItemPrices(): Promise<MarketPrices> {
 
   const data = await urgentClient.itemTrading.getPrices({})
   pricesCache = { at: Date.now(), data }
+
   return data
 }
 

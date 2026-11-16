@@ -114,6 +114,11 @@ export interface Snapshot {
    * entry had no gear captured; `'{}'` means captured with nothing equipped.
    */
   equipmentJsonByUser: Map<string, string>
+
+  /**
+   * Null before the first main cycle.
+   */
+  scrapedAt: string | null
 }
 
 /**
@@ -143,6 +148,7 @@ const GLOBAL_KEY = Symbol.for('wareradata.snapshotStore')
 function store(): SnapshotStore {
   const g = globalThis as typeof globalThis & { [GLOBAL_KEY]?: SnapshotStore }
   g[GLOBAL_KEY] ??= { current: null, loading: null }
+
   return g[GLOBAL_KEY]
 }
 
@@ -178,6 +184,7 @@ export async function buildSnapshot(
     gearLookup,
     factoryAggByUser,
   )
+
   const countryRows = buildCountryRows(raw.countries, raw.mus, userRows, lookups, raw.alliances)
   const governmentRows = buildGovernmentRows(raw.governments, lookups)
   const strategicBonuses = buildStrategicRows(raw.strategicBonuses)
@@ -204,6 +211,7 @@ export async function buildSnapshot(
     gameConfig: raw.gameConfig,
     gearLookup,
     equipmentJsonByUser: new Map(Object.entries(equipmentByUser).map(([id, gear]) => [id, JSON.stringify(gear)])),
+    scrapedAt: raw.meta.scrapedAt ?? null,
   }
 }
 
@@ -259,7 +267,9 @@ export async function buildSnapshotFromRaw(
     factoryAggByUser,
     equipmentByUser,
   )
+
   log.info({ label, durationMs: Date.now() - start, users: snapshot.users.length }, 'built rows')
+
   return snapshot
 }
 
@@ -282,12 +292,14 @@ export async function initSnapshot(): Promise<void> {
   if (s.current) {
     return
   }
+
   log.info('boot: loading persisted snapshot from disk')
   const raw = (await readRawSnapshot()) ?? emptyRawSnapshot()
   s.current = await buildSnapshotFromRaw(raw, 'boot')
   if (!s.current.users.length) {
     log.info('boot: no persisted data, starting empty until the scraper completes its first cycle')
   }
+
   log.info({ users: s.current.users.length }, 'boot: ready')
 }
 
@@ -306,6 +318,7 @@ export function getSnapshot(): Promise<Snapshot> {
   if (s.current) {
     return Promise.resolve(s.current)
   }
+
   if (!s.loading) {
     s.loading = readRawSnapshot()
       .then(raw => raw ?? emptyRawSnapshot())
@@ -313,8 +326,10 @@ export function getSnapshot(): Promise<Snapshot> {
       .then((snapshot) => {
         s.current ??= snapshot
         s.loading = null
+
         return s.current
       })
   }
+
   return s.loading
 }

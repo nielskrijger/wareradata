@@ -44,21 +44,25 @@ export function deriveGearLookup(config: GameConfig): GearLookup {
     rarity?: string
     flatStats?: { percentAttack?: number }
   } | undefined>
+
   const tierByCode: Record<string, number> = {}
   const ammoBonusByCode: Record<string, number> = {}
   for (const [code, item] of Object.entries(items)) {
     if (!item) {
       continue
     }
+
     const tier = rarityTier(item.rarity)
     if (tier) {
       tierByCode[code] = tier
     }
+
     const bonus = item.flatStats?.percentAttack
     if (typeof bonus === 'number') {
       ammoBonusByCode[code] = bonus
     }
   }
+
   return { tierByCode, ammoBonusByCode }
 }
 
@@ -114,8 +118,10 @@ export function deriveSlotSpecs(config: GameConfig): Record<string, SlotSpec> {
         }
       }
     }
+
     out[slot] = { stat, bounds }
   }
+
   return out
 }
 
@@ -126,7 +132,9 @@ function itemRarityTier(items: unknown, code: string): number {
   if (!items || typeof items !== 'object') {
     return 0
   }
+
   const item = (items as Record<string, { rarity?: string } | undefined>)[code]
+
   return rarityTier(item?.rarity)
 }
 
@@ -139,11 +147,13 @@ function itemStatRange(items: unknown, code: string, stat: string): [number, num
   if (!items || typeof items !== 'object') {
     return null
   }
+
   const item = (items as Record<string, { dynamicStats?: Record<string, unknown> } | undefined>)[code]
   const arr = item?.dynamicStats?.[stat]
   if (Array.isArray(arr) && typeof arr[0] === 'number' && typeof arr[1] === 'number') {
     return [arr[0], arr[1]]
   }
+
   return null
 }
 
@@ -171,10 +181,13 @@ function slotScore(
   if (!piece) {
     return 0
   }
+
   if (slot === 'ammo') {
     const tier = tierOfCode(piece as string, lookup)
+
     return (tier - 1 + 0.5) / 6
   }
+
   const code = typeof piece === 'string' ? piece : piece.code
   const spec = specs[slot]
   const tier = tierOfCode(code, lookup)
@@ -184,6 +197,7 @@ function slotScore(
     const [lo, hi] = spec.bounds[tier] ?? [0, 1]
     frac = hi > lo ? clamp01((stat - lo) / (hi - lo)) : 0.5
   }
+
   return (tier - 1 + frac) / 6
 }
 
@@ -203,10 +217,12 @@ export function computeGearScore(
   if (!equipment) {
     return 0
   }
+
   let sum = 0
   for (const slot of SCORE_SLOTS) {
     sum += slotScore(slot, equipment[slot], specs, lookup)
   }
+
   return Math.round((sum / SCORE_SLOTS.length) * 100)
 }
 
@@ -219,6 +235,7 @@ export function gearScoreTier(score: number | null | undefined): number {
   if (!score || score <= 0) {
     return 1
   }
+
   return Math.max(1, Math.min(6, Math.ceil((score / 100) * 6)))
 }
 
@@ -237,6 +254,7 @@ export function computeGearTier(equipment: Equipment | undefined, lookup: GearLo
   if (!equipment) {
     return null
   }
+
   const slots = ['weapon', 'helmet', 'chest', 'gloves', 'pants', 'boots'] as const
   let sum = 0
   let present = 0
@@ -245,12 +263,15 @@ export function computeGearTier(equipment: Equipment | undefined, lookup: GearLo
     if (!v) {
       continue
     }
+
     const code = typeof v === 'string' ? v : v.code
     sum += tierOfCode(code, lookup)
     present += 1
   }
+
   if (present === 0) {
     return null
   }
+
   return Math.max(1, Math.min(6, Math.round(sum / slots.length)))
 }

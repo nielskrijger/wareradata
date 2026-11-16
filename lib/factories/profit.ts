@@ -163,6 +163,7 @@ export function netPerUnit(code: string, prices: ItemPrices, recipe: RecipeLooku
     if (price == null) {
       return null
     }
+
     inputCost += qty * price
   }
 
@@ -293,6 +294,7 @@ export function portfolioTotals(rows: FactoryProfit[]): PortfolioTotals {
     if (!row.isIdle) {
       totals.activeCount += 1
     }
+
     totals.revenuePerDay += row.revenuePerDay
     totals.costPerDay += row.inputCostPerDay + row.wagePerDay + row.managerPerDay
     totals.netPerDay += row.netPerDay

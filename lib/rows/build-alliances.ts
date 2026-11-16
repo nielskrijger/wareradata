@@ -32,6 +32,7 @@ export function buildAllianceRows(
       allianceIdByCountry.set(m.country, a._id)
     }
   }
+
   const citizensByAlliance = aggregateMembers(userRows, u => allianceIdByCountry.get(u.countryId) ?? null)
 
   const rows = alliances
@@ -51,11 +52,13 @@ export function buildAllianceRows(
         equipmentWealth: 0,
         weaponsWealth: 0,
       }
+
       for (const m of a.memberCountries) {
         const c = countryRowById.get(m.country)
         if (!c) {
           continue
         }
+
         wealth.citizenWealth += c.citizenWealth
         wealth.companiesWealth += c.companiesWealth
         wealth.stockpileWealth += c.stockpileWealth
@@ -71,6 +74,7 @@ export function buildAllianceRows(
       const members: AllianceMemberRow[] = a.memberCountries
         .map((m) => {
           const c = countryRowById.get(m.country)
+
           return {
             countryId: m.country,
             code: c?.code ?? null,

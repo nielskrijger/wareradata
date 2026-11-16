@@ -46,6 +46,7 @@ export async function loadEquipmentByUser(): Promise<Record<string, Equipment>> 
   await streamEquipmentUsers(({ userId, equipment }) => {
     out[userId] = equipment
   })
+
   return out
 }
 
@@ -61,6 +62,7 @@ export async function loadEquipmentByIds(ids: ReadonlySet<string>): Promise<Map<
       }
     })
   }
+
   return out
 }
 
@@ -91,5 +93,6 @@ export async function appendEquipmentLines(userIds: string[], equipmentList: Equ
   for (let i = 0; i < userIds.length; i++) {
     buf += `${JSON.stringify({ userId: userIds[i], equipment: equipmentList[i] })}\n`
   }
+
   await appendFile(equipmentNdjsonPath(), buf, 'utf8')
 }

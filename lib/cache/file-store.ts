@@ -108,6 +108,7 @@ const TEMP_FILE_RE = /\.tmp\.(\d+)\.\d+$/
 function isProcessAlive(pid: number): boolean {
   try {
     process.kill(pid, 0)
+
     return true
   } catch (err) {
     return (err as NodeJS.ErrnoException).code === 'EPERM'
@@ -126,8 +127,10 @@ export async function readJsonFile<T>(filePath: string, fallback: T): Promise<T>
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
       return fallback
     }
+
     throw err
   }
+
   return JSON.parse(raw) as T
 }
 
@@ -177,10 +180,13 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
       log.info({ path }, 'no snapshot yet (cold volume)')
+
       return null
     }
+
     throw err
   }
+
   const readMs = Date.now() - start
   const parsed = JSON.parse(raw) as RawSnapshot
   // Backfill fields added to RawSnapshot after the persisted file was written,
@@ -207,6 +213,7 @@ export async function readRawSnapshot(): Promise<RawSnapshot | null> {
     countries: parsed.countries?.length ?? 0,
     readMs,
   }, 'read snapshot')
+
   return parsed
 }
 
@@ -248,10 +255,13 @@ export async function sweepStaleTempFiles(): Promise<void> {
     } catch {
       continue
     }
+
     const stale = entries.filter((name) => {
       const match = TEMP_FILE_RE.exec(name)
+
       return match !== null && !isProcessAlive(Number(match[1]))
     })
+
     await Promise.all(stale.map(name => unlink(path.join(dir, name)).catch(() => undefined)))
     if (stale.length) {
       log.info({ dir, removed: stale.length }, 'swept stale temp files')

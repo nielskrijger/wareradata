@@ -41,6 +41,7 @@ export function SiteNavFallback() {
 
 export function SiteNav() {
   const pathname = usePathname()
+
   return (
     <nav className="bg-background sticky top-0 z-30 border-b">
       <div className="flex items-center gap-3 px-6 py-3 sm:gap-6 sm:px-8 lg:px-12">
@@ -57,6 +58,7 @@ export function SiteNav() {
         <ul className="hidden items-center gap-1 text-sm md:flex">
           {links.map((link) => {
             const active = isActive(pathname, link.href)
+
             return (
               <li key={link.href}>
                 <Link
@@ -87,6 +89,7 @@ export function SiteNav() {
             <DropdownMenuContent align="end" className="min-w-40">
               {links.map((link) => {
                 const active = isActive(pathname, link.href)
+
                 return (
                   <DropdownMenuItem
                     key={link.href}

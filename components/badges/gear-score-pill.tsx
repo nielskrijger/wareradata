@@ -27,7 +27,9 @@ export function GearScorePill({ score, tier }: Props) {
   if (score == null) {
     return null
   }
+
   const color = rarityHex(tier ?? gearScoreTier(score))
+
   return (
     <span
       className="rounded-md px-2 py-0.5 text-[12px] font-medium leading-tight tabular-nums"

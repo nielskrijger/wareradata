@@ -13,5 +13,6 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function heatColor(pct: number): string {
   const hue = 27 + (145 - 27) * (Math.min(100, Math.max(0, pct)) / 100)
+
   return `oklch(0.68 0.19 ${hue})`
 }

@@ -23,7 +23,9 @@ export function PercentBar({ value, width = 64 }: Props) {
   if (value == null) {
     return <EmptyDash />
   }
+
   const color = heatColor(value)
+
   return (
     <div className="flex items-center gap-2">
       <span className="w-9 text-right text-xs tabular-nums" style={{ color }}>

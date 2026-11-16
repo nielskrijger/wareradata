@@ -10,7 +10,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { X } from 'lucide-react'
+import { RotateCw, X } from 'lucide-react'
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils'
 import { ColumnsMenu } from './columns-menu'
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
+import { Pagination } from './pagination'
 import { useTableUrlState } from './use-table-url-state'
 
 /**
@@ -134,6 +135,10 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   initialData: PageResult<TData>
   initialSort: { id: string, desc: boolean }
+
+  /**
+   * Must match the size of `initialData` and be one of PAGE_SIZES.
+   */
   pageSize?: number
   fetchPage: (req: PageRequest) => Promise<PageResult<TData>>
   searchPlaceholder?: string
@@ -163,7 +168,7 @@ function DataTableInner<TData, TValue>({
   columns,
   initialData,
   initialSort,
-  pageSize = 25,
+  pageSize: defaultPageSize = 25,
   fetchPage,
   searchPlaceholder = 'Filter…',
   searchHint,
@@ -176,12 +181,18 @@ function DataTableInner<TData, TValue>({
     setSorting,
     pageIndex,
     setPageIndex,
+    pageSize,
+    setPageSize,
     isAtInitialState,
-  } = useTableUrlState({ initialSort })
+  } = useTableUrlState({ initialSort, defaultPageSize })
 
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [data, setData] = useState<PageResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
+  const [loadFailed, setLoadFailed] = useState(false)
+
+  // Lets Retry re-run the fetch effect with unchanged params.
+  const [retryCount, setRetryCount] = useState(0)
 
   // Adopt a fresh `initialData` prop (e.g. after revalidatePath) only while the
   // user hasn't sorted/filtered/paged. This is React's "adjusting state when a
@@ -206,6 +217,7 @@ function DataTableInner<TData, TValue>({
         return
       }
     }
+
     const first = sorting[0]
     const req: PageRequest = {
       page: pageIndex,
@@ -214,11 +226,27 @@ function DataTableInner<TData, TValue>({
       dir: first?.desc ? 'desc' : 'asc',
       filter: q,
     }
+
+    // Responses can arrive out of order; a stale one must not overwrite a newer result.
+    let superseded = false
     startTransition(async () => {
-      const result = await fetchPage(req)
-      setData(result)
+      try {
+        const result = await fetchPage(req)
+        if (!superseded) {
+          setData(result)
+          setLoadFailed(false)
+        }
+      } catch {
+        if (!superseded) {
+          setLoadFailed(true)
+        }
+      }
     })
-  }, [pageIndex, pageSize, sorting, q, fetchPage, isAtInitialState])
+
+    return () => {
+      superseded = true
+    }
+  }, [pageIndex, pageSize, sorting, q, fetchPage, isAtInitialState, retryCount])
 
   const pageCount = Math.max(1, Math.ceil(data.total / pageSize))
 
@@ -263,6 +291,24 @@ function DataTableInner<TData, TValue>({
         <ColumnsMenu table={table} />
       </div>
 
+      {loadFailed && (
+        <div
+          role="alert"
+          className="border-destructive/40 bg-destructive/10 flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+        >
+          <span>Couldn&apos;t load these results. The rows below may be out of date.</span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setRetryCount(n => n + 1)}
+            disabled={isPending}
+          >
+            <RotateCw />
+            Retry
+          </Button>
+        </div>
+      )}
+
       <div className={cn(
         // Full-bleed on mobile: a -mx-6 cancels the px-6 page padding so the
         // (horizontally scrolling) table uses the whole screen width. Side
@@ -296,30 +342,15 @@ function DataTableInner<TData, TValue>({
         </Table>
       </div>
 
-      <div className="text-muted-foreground flex items-center justify-between text-sm">
-        <span>{data.total.toLocaleString()} rows</span>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPageIndex(p => Math.max(0, p - 1))}
-            disabled={pageIndex === 0 || isPending}
-          >
-            Previous
-          </Button>
-          <span>
-            Page {pageIndex + 1} of {pageCount}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPageIndex(p => Math.min(pageCount - 1, p + 1))}
-            disabled={pageIndex >= pageCount - 1 || isPending}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        pageSize={pageSize}
+        total={data.total}
+        disabled={isPending}
+        onPageChange={setPageIndex}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   )
 }

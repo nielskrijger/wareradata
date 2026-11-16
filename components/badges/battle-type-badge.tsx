@@ -29,6 +29,7 @@ export function BattleTypeBadge({ isTournament, isResistance, tournamentName, to
       </span>
     )
   }
+
   return isResistance
     ? <Badge className="bg-amber-500/15 text-amber-800 dark:text-amber-300">Resistance</Badge>
     : <Badge className="bg-red-500/15 text-red-800 dark:text-red-300">War</Badge>

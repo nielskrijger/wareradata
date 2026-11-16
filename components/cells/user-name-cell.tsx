@@ -21,6 +21,7 @@ export function UserNameCell({ userId, name, avatarUrl, colorScheme }: Props) {
   if (!name) {
     return null
   }
+
   return (
     <div className="flex min-w-0 items-center gap-2">
       <Avatar src={avatarUrl} name={name} size={22} colorScheme={colorScheme} />

@@ -25,7 +25,9 @@ export function Flag({ code, className, style }: Props) {
   if (!code) {
     return null
   }
+
   const normalized = CODE_ALIASES[code.toLowerCase()] ?? code.toLowerCase()
+
   return (
     <span
       className={cn(

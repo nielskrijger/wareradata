@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
 
 import type { BattleSide } from '@/lib/rows'
-import Link from 'next/link'
 
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+
 import { connection } from 'next/server'
 import { cache } from 'react'
-
 import { Avatar } from '@/components/avatar'
+
 import { BattleTypeBadge } from '@/components/badges/battle-type-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { Flag } from '@/components/flag'
@@ -16,6 +17,7 @@ import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
+import { pageMetadata } from '@/lib/metadata'
 import { cn } from '@/lib/utils'
 
 interface PageProps {
@@ -31,6 +33,7 @@ const getBattle = cache(async (id: string) => {
   // battle isn't active (finished, or just ended between refreshes), fall back
   // to the latest snapshot.
   const [liveActive, { battles }] = await Promise.all([getLiveActiveBattles(), getSnapshot()])
+
   return liveActive.find(b => b.id === id) ?? battles.find(b => b.id === id) ?? null
 })
 
@@ -40,18 +43,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'Battle not found' }
   }
+
   const { attackerName, defenderName } = result
   const title = `${attackerName ?? '?'} vs ${defenderName ?? '?'}`
-  return {
+
+  return pageMetadata({
     title,
     description: `WarEra.io battle stats: ${title}.`,
-  }
+    path: `/battles/${id}`,
+  })
 }
 
 function battleVerb(b: { isTournament: boolean, isResistance: boolean }): string {
   if (b.isTournament) {
     return 'VS'
   }
+
   return b.isResistance ? 'RESISTING' : 'INVADING'
 }
 

@@ -46,6 +46,7 @@ function rarityRing(t: number, surface: Surface): string {
   if (i === 0 && surface === 'card') {
     return 'ring-1 ring-border'
   }
+
   return RARITY_RING[i]
 }
 
@@ -58,6 +59,7 @@ function iconUrl(slot: Slot, code: string): string {
   const filename = slot === 'helmet' || slot === 'chest' || slot === 'pants' || slot === 'gloves' || slot === 'boots'
     ? slot
     : code
+
   return `https://media.warera.io/images/itemsv2/${filename}.webp?v=2`
 }
 
@@ -79,14 +81,17 @@ function primarySkill(skills: SkillsBag | undefined): { skill: string, value: nu
   if (!skills) {
     return null
   }
+
   if (skills.attack != null) {
     return { skill: 'attack', value: skills.attack }
   }
+
   for (const k of ['criticalDamages', 'armor', 'dodge', 'precision', 'criticalChance'] as const) {
     if (skills[k] != null) {
       return { skill: k, value: skills[k] as number }
     }
   }
+
   return null
 }
 
@@ -119,21 +124,27 @@ function SlotIcon({ slot, className }: { slot: Slot, className?: string }) {
   if (slot === 'weapon') {
     return <Sword className={cls} />
   }
+
   if (slot === 'ammo') {
     return <Target className={cls} />
   }
+
   if (slot === 'helmet') {
     return <HardHat className={cls} />
   }
+
   if (slot === 'chest') {
     return <Shield className={cls} />
   }
+
   if (slot === 'gloves') {
     return <Hand className={cls} />
   }
+
   if (slot === 'pants') {
     return <PantsIcon className={cls} />
   }
+
   return <Footprints className={cls} />
 }
 
@@ -181,6 +192,7 @@ export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }
   const tileW = surface === 'card' ? 'w-8 sm:w-9' : 'w-9'
   const tileSize = surface === 'card' ? 'size-8 sm:size-9' : 'size-9'
   const imgSize = surface === 'card' ? 'size-6 sm:size-7' : 'size-7'
+
   return (
     <div className={cn('flex items-end', rowGap, className)}>
       {SLOT_ORDER.map((slot) => {
@@ -204,6 +216,7 @@ export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }
         const bonus = typeof v === 'string'
           ? `+${gearLookup.ammoBonusByCode[v] ?? 0}%`
           : primarySkill(v.skills as SkillsBag)
+
         const rgb = rarityHex(t)
 
         return (

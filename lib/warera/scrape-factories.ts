@@ -56,6 +56,7 @@ export async function scrapeFactories(
       const chunk = ids.slice(start, start + CHUNK_SIZE)
       const results = await Promise.all(chunk.map(userId => getUserCompaniesSlow(userId).catch((err) => {
         log.warn({ userId, err }, 'user failed')
+
         return []
       })))
 
@@ -64,8 +65,10 @@ export async function scrapeFactories(
         if (!factories.length) {
           continue
         }
+
         const rows = factories.map<FactoryRawRow>((f) => {
           const input = factoryInputFromData(f, () => '', model)
+
           return {
             itemCode: input.itemCode,
             regionId: f.company.region,
@@ -77,6 +80,7 @@ export async function scrapeFactories(
             employeeCap: input.employeeCap,
           }
         })
+
         await write(`${JSON.stringify({ userId: chunk[i], rows })}\n`)
         withFactories++
       }

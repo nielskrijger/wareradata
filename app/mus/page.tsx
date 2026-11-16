@@ -3,16 +3,19 @@ import type { Metadata } from 'next'
 import { connection } from 'next/server'
 
 import { NoDataPage } from '@/components/layout/no-data-page'
+
 import { PageShell } from '@/components/layout/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
+import { pageMetadata } from '@/lib/metadata'
 import { firstPage } from '@/lib/query'
 
 import { MUsTable } from './mus-table'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Military Units',
-  description: 'All Military Units in WarEra.io.',
-}
+  description: 'Every WarEra.io military unit ranked by points, with members, damage, gear and wealth.',
+  path: '/mus',
+})
 
 export default async function MUsPage() {
   await connection()

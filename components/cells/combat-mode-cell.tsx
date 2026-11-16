@@ -102,6 +102,7 @@ function BreakdownRow({ label, value, total, color, icon }: {
   icon: React.ReactNode
 }) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0
+
   return (
     <div>
       <div className="flex items-baseline gap-1.5 text-xs">
@@ -136,8 +137,10 @@ function Footer({ mode, warPointsRank, ecoPointsRank }: {
   } else if (mode === 'eco' && ecoPointsRank != null) {
     line = `#${ecoPointsRank.toLocaleString()} most-invested economist`
   }
+
   if (!line) {
     return null
   }
+
   return <div className="text-neutral-50/60 mt-2 border-t border-neutral-50/15 pt-1.5 text-[11px]">{line}</div>
 }

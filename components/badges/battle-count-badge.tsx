@@ -26,6 +26,7 @@ function battleLabel(b: ActiveBattleSummary): string {
   if (b.isTournament) {
     return 'Tournament'
   }
+
   return b.isResistance ? 'Resistance' : 'War'
 }
 

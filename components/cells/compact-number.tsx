@@ -20,11 +20,13 @@ export function CompactNumber({ value }: Props) {
   if (value === null || value === undefined) {
     return <>—</>
   }
+
   const text = compactNumber.format(value)
   const match = text.match(/^([\d.,]+)([A-Z]+)$/i)
   if (!match) {
     return <>{text}</>
   }
+
   return (
     <span className="inline-flex items-baseline">
       <span>{match[1]}</span>

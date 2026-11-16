@@ -8,6 +8,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteNav, SiteNavFallback } from '@/components/layout/site-nav'
 import { ThemeProvider } from '@/components/layout/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/metadata'
 
 import 'flag-icons/css/flag-icons.min.css'
 import './globals.css'
@@ -31,24 +32,20 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   metadataBase: new URL('https://wareradata.com'),
   title: {
-    default: 'Warera Data',
-    template: '%s — Warera Data',
+    default: SITE_NAME,
+    template: `%s — ${SITE_NAME}`,
   },
-  description: 'Sortable, filterable datatables of War Era game data.',
+  description: SITE_DESCRIPTION,
   openGraph: {
     type: 'website',
-    siteName: 'Warera Data',
-    url: 'https://wareradata.com',
-    title: 'Warera Data',
-    description: 'Sortable, filterable datatables of War Era game data.',
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
   },
   twitter: {
     card: 'summary',
-    title: 'Warera Data',
-    description: 'Sortable, filterable datatables of War Era game data.',
-  },
-  alternates: {
-    canonical: '/',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
   },
 }
 

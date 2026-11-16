@@ -69,6 +69,7 @@ export async function scrapeMain(previous?: RawSnapshot | null): Promise<RawSnap
       governments[id] = gov
     }
   })
+
   log.info({ governments: Object.keys(governments).length, countries: countries.length }, 'fetched governments')
 
   // 2b. Strategic resource bonuses: one call per country. Members of an
@@ -77,12 +78,14 @@ export async function scrapeMain(previous?: RawSnapshot | null): Promise<RawSnap
   const bonusList = await Promise.all(countryIds.map(id => getStrategicBonusesForCountry(id).catch(() => undefined)))
   const bonuses = await keepPrevious('strategic bonuses', countryIds, bonusList, failed =>
     new Map(Object.entries(previous?.strategicBonuses ?? {}).filter(([id]) => failed.has(id))))
+
   const strategicBonuses: Record<string, StrategicBonuses> = {}
   for (const [id, bonus] of bonuses) {
     if (bonus) {
       strategicBonuses[id] = bonus
     }
   }
+
   log.info({ countries: Object.keys(strategicBonuses).length }, 'fetched strategic resource bonuses')
 
   // 3. User IDs, paginated per country.
@@ -148,6 +151,7 @@ export async function scrapeMain(previous?: RawSnapshot | null): Promise<RawSnap
     name: tournament.name,
     teams: Object.fromEntries(tournament.teams),
   }
+
   log.info({ tournament: tournament.name, teams: tournament.teams.size }, 'fetched tournament')
 
   // 12. Game config: static catalog (item stats, skill cost curves, …). One
@@ -215,6 +219,7 @@ async function keepPrevious<T>(
       out.set(id, value)
     }
   })
+
   return out
 }
 
@@ -255,5 +260,6 @@ export async function runMainScrape(): Promise<ScrapeResult> {
     alliances: raw.alliances.length,
     battles: raw.battles.length,
   }
+
   return { scrapedAt: raw.meta.scrapedAt!, counts, durationMs: raw.meta.scrapeDurationMs! }
 }

@@ -20,12 +20,15 @@ export async function fetchPaginated<T>(
     pageSize: String(req.pageSize),
     dir: req.dir,
   })
+
   if (req.sort) {
     params.set('sort', req.sort)
   }
+
   if (req.filter) {
     params.set('filter', req.filter)
   }
+
   if (baseFilter) {
     params.set('baseFilter', baseFilter)
   }
@@ -34,5 +37,6 @@ export async function fetchPaginated<T>(
   if (!res.ok) {
     throw new Error(`Fetch failed: ${endpoint} returned ${res.status}`)
   }
+
   return res.json() as Promise<PageResult<T>>
 }

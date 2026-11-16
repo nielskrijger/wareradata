@@ -18,6 +18,7 @@ function toRow(b: StrategicBonuses): StrategicBonusRow {
     resources: Object.entries(b.regionIds ?? {})
       .map(([resource, ids]) => {
         const regionCount = Array.isArray(ids) ? ids.length : 0
+
         return { resource, regionCount, level: resourceLevel(regionCount) }
       })
       .filter(r => r.regionCount > 0)
@@ -47,5 +48,6 @@ export function buildStrategicRows(raw: Record<string, StrategicBonuses> | undef
       byAlliance[row.allianceId] ??= row
     }
   }
+
   return { byCountry, byAlliance }
 }

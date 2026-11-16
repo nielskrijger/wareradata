@@ -40,8 +40,10 @@ export function CombatModeShareCell({ avgWarShare, width = 84 }: Props) {
   if (avgWarShare === null) {
     return <EmptyDash />
   }
+
   const warPct = Math.round(avgWarShare * 100)
   const ecoPct = 100 - warPct
+
   return (
     <Tooltip>
       <TooltipTrigger

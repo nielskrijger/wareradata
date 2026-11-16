@@ -15,6 +15,7 @@ function firstGrapheme(value: string): string {
       return first.segment
     }
   }
+
   return Array.from(value)[0] ?? '?'
 }
 

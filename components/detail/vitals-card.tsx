@@ -26,6 +26,7 @@ export function VitalsCard({ health, hunger, average }: Props) {
   if (health == null && hunger == null) {
     return null
   }
+
   return (
     <div className="bg-card flex flex-col gap-3 rounded-md border p-3">
       <span className="text-xs font-medium">Vitals</span>
@@ -43,7 +44,9 @@ function Row({ label, icon, value }: {
   if (value == null) {
     return null
   }
+
   const color = heatColor(value)
+
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-baseline justify-between">

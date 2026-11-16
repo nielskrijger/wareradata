@@ -41,6 +41,7 @@ const GLOBAL_KEY = Symbol.for('wareradata.scraperStore')
 function store(): ScraperStore {
   const g = globalThis as typeof globalThis & { [GLOBAL_KEY]?: ScraperStore }
   g[GLOBAL_KEY] ??= { currentRaw: null, userOverlay: new Map(), inFlightRefreshes: new Map() }
+
   return g[GLOBAL_KEY]
 }
 
@@ -157,8 +158,10 @@ function dedupe(key: string, run: () => Promise<void>): Promise<void> {
   if (existing) {
     return existing
   }
+
   const promise = run().finally(() => map.delete(key))
   map.set(key, promise)
+
   return promise
 }
 
@@ -206,6 +209,7 @@ async function refreshUsersInSnapshot(
     getUsersUrgent(userIds),
     getEquipmentUrgent(userIds),
   ])
+
   const fresh = freshRaw.filter(u => u !== undefined)
   const equipmentIds = userIds.filter((_, i) => equipmentRaw[i] !== undefined)
   const freshEquipment = equipmentRaw.filter(e => e !== undefined)
@@ -241,6 +245,7 @@ export function startScraper(): void {
   if (started) {
     return
   }
+
   started = true
 
   void seedCurrentRaw().finally(() => {
@@ -254,6 +259,7 @@ async function seedCurrentRaw(): Promise<void> {
   if (s.currentRaw) {
     return
   }
+
   try {
     const raw = await readRawSnapshot()
     if (raw && !s.currentRaw) {

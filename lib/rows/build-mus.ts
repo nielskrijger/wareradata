@@ -27,6 +27,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
       const investedMoney = m.investedMoneyByUsers
         ? Object.values(m.investedMoneyByUsers).reduce((sum, n) => sum + n, 0)
         : 0
+
       const region = m.region ? lookups.regionById.get(m.region) : undefined
       const leader = leaderFields(m.user ?? null, lookups)
 

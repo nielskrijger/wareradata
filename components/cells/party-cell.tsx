@@ -40,6 +40,7 @@ export function PartyCell({ partyName, partyId, avatarUrl, bold }: Props) {
   const href = partyId
     ? `/parties/${partyId}`
     : `/users?q=${encodeURIComponent(`party:"${partyName}"`)}`
+
   const link = (
     <InternalLink href={href} bold={bold} title={partyName} className="truncate">
       {partyName}
@@ -49,6 +50,7 @@ export function PartyCell({ partyName, partyId, avatarUrl, bold }: Props) {
   if (avatarUrl === undefined) {
     return link
   }
+
   return (
     <div className="flex min-w-0 items-center gap-2">
       <Avatar src={avatarUrl} name={partyName} size={22} />

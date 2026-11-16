@@ -1,186 +1,184 @@
-# WareraData
+# WarEra Data
 
-Sortable, filterable datatables for the [WarEra](https://app.warera.io)
-browser game. Live at **<https://wareradata.com>**.
+Sortable, filterable stats for the browser game [WarEra](https://app.warera.io).
+Live at **<https://wareradata.com>**.
 
-This README is for operating the codebase. It is not a guide for end-users of
-the site (the `/about` page covers that).
+This README is for working on the code. Players will find the site's own
+explanation on [/about](https://wareradata.com/about).
+
+## Features
+
+- **Lists** of countries, players, military units, regions, parties, alliances
+  and battles. Every table sorts, filters and paginates on the server, with a
+  query syntax for advanced filters such as `country:nl level:>30`.
+- **Detail pages** for each country, player, MU, party, alliance and battle,
+  with hover cards on linked names and a **Refresh** button on players and MUs
+  that pulls fresh data straight from the API.
+- **Factories and employees**: every player's companies, production, wages and
+  employee rosters, with per-employee net value per day.
+- **Advise** at `/users/:id/advise`: a to-do list for a player's companies,
+  ranked by gold per day. It suggests training cards, tool swaps, item
+  switches, hiring and firing staff and managers, and warns when cash will not
+  cover a day of wages. `/advise` redirects to the API key owner's list.
+- **Search** across all entities, link-preview images at `/og/<kind>/<id>`, and
+  a sitemap at `/sitemap.xml`.
+
+### Player points
+
+Each player gets one **Points** score, a flat sum of four parts
+([lib/scoring.ts](lib/scoring.ts)):
+
+```
+points = level    × 1,000
+       + prestige × 2,500
+       + damage   ÷ 2,000
+       + wealth   × 1
+```
+
+A prestige is worth 2.5 levels because its permanent bonus skill level equals
+10 skill points, at 4 skill points per level. The breakdown shows level and
+prestige together as one part.
 
 ## How it works
 
-One Next.js server does two jobs at once:
+One Next.js server does both jobs:
 
-1. **Scrapes** the WarEra API on a continuous in-process loop and keeps the
-   full dataset in memory.
-2. **Serves** that in-memory dataset as pages of tables.
+1. **Scrapes** the WarEra API in continuous in-process loops and keeps the
+   dataset in memory.
+2. **Serves** pages and `/api/*` table endpoints from that in-memory copy.
 
-There is no separate worker, queue, or database. On boot the server loads the
-last snapshot from disk, starts the scrape loop, and begins serving. Each
-finished scrape cycle persists a new snapshot file and swaps the in-memory copy
-that pages read, so reads never block on I/O or on the network.
+There is no worker, queue or database. On boot the server loads the last
+snapshot from disk, starts the loops and begins serving. Each finished cycle
+writes a new snapshot and swaps the in-memory copy by reference, so reads never
+wait on disk or network.
 
-Stack: Next.js 16 (App Router, React 19), TypeScript, Tailwind CSS 4 with
-shadcn / Base UI primitives, TanStack Table, and the
-[@wareraprojects/api](https://github.com/WarEraProjects/TRPC) tRPC client.
+**Stack:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4 with
+shadcn and Base UI, TanStack Table v9, nuqs for URL state, pino for logs, and
+the [@wareraprojects/api](https://github.com/WarEraProjects/TRPC) tRPC client.
+Packages are managed with npm.
 
-## Local development
+## Getting started
 
-Prereqs:
-
-- Node 22
-- A `WARERA_API_KEY` (issued by the game; raises the request-rate tier to
-  500/min and is required for factory data, since the employee rosters need it)
+You need Node 26 and a `WARERA_API_KEY` from the game. The key raises the rate
+limit to 500 requests per minute and is required for factory and employee data.
 
 ```bash
-cp .env.example .env.local
-# fill in WARERA_API_KEY (DATA_DIR has a default)
+cp .env.example .env.local   # then fill in WARERA_API_KEY
 npm install
-npm run dev          # next dev on port 3100
+npm run dev                  # http://localhost:3100
 ```
 
-The dev server runs the scraper in-process, same as production. On a cold start
-with no `DATA_DIR/snapshot.json`, pages render a "no data" state until the first
-cycle completes (a few minutes). To seed the file once without running the
-server, use `npm run scrape-main`.
+The dev server runs the scraper just like production. With no snapshot on
+disk, pages show a "no data" state until the first cycle finishes, which takes
+a few minutes. To seed the snapshot without starting the server, run
+`npm run scrape-main`.
 
 ### Environment
 
-| Var              | Default   | Purpose                                                 |
-| ---------------- | --------- | ------------------------------------------------------- |
-| `WARERA_API_KEY` | (none)    | API key; raises the rate tier, needed for factory data. |
-| `DATA_DIR`       | `./.data` | Where the snapshot and battle archive live.             |
-| `LOG_LEVEL`      | `info`    | Pino log level.                                         |
+| Variable         | Default   | Purpose                                                  |
+| ---------------- | --------- | -------------------------------------------------------- |
+| `WARERA_API_KEY` | (none)    | API key. Raises the rate limit; needed for factory data. |
+| `DATA_DIR`       | `./.data` | Where snapshots and the battle archive are stored.       |
+| `LOG_LEVEL`      | `info`    | pino log level.                                          |
+
+### Scripts
+
+| Command                         | What it does                                                                              |
+| ------------------------------- | ----------------------------------------------------------------------------------------- |
+| `npm run dev`                   | Dev server on port 3100 with pretty logs (`dev:raw` for JSON).                            |
+| `npm run build` / `npm start`   | Production build and server.                                                              |
+| `npm run lint` / `lint:fix`     | ESLint.                                                                                   |
+| `npm run scrape-main`           | One main scrape cycle; writes the snapshot and exits.                                     |
+| `npm run scrape-factories`      | One all-users factory pass. Needs a main scrape first. `-- --limit=N` scans only N users. |
+| `npm run record-battle-history` | Folds the current finished-battle window into the archive, without a main scrape.         |
+| `npm run check-advisor`         | Checks the Advise formulas against the game's own estimates. Takes an optional user id.   |
+
+The server refreshes continuously, so production needs no cron.
+
+## API rate limits
+
+The API allows 500 requests per minute per key. The server splits that over
+three clients, each with its own budget, so none waits behind another. The
+budgets are constants in [lib/warera/api.ts](lib/warera/api.ts):
+
+| Client  | Requests/min | Used for                                                       |
+| ------- | -----------: | -------------------------------------------------------------- |
+| scrape  |          150 | The main scrape loop.                                          |
+| urgent  |          100 | Visitor traffic: Refresh buttons, Advise, factory detail data. |
+| factory |          250 | The slow all-users factory scrape.                             |
+
+The client batches up to 50 tRPC calls per HTTP request and retries failures
+(429s included). The limit applies per HTTP request, so hydrating ~15k players
+takes hundreds of requests rather than thousands. Each loop logs its retry and
+rate-limited counts per pass. The urgent client is shared by every visitor, so
+keep enough headroom on it when changing the split.
 
 ## The scraper
 
-The scrape loop is started from [instrumentation.ts](instrumentation.ts) on
-server boot (Next's `register` hook, which runs once per server instance). The
-Node-only logic lives in [instrumentation-node.ts](instrumentation-node.ts) so
-its `fs` and scraper imports stay out of the edge bundle: it awaits
-`initSnapshot` (load the persisted snapshot into memory) then calls
-`startScraper` fire-and-forget, so the loop never blocks the server from
-becoming ready.
+[instrumentation.ts](instrumentation.ts) starts the scraper once per server
+through Next's `register` hook. The Node-only code is in
+[instrumentation-node.ts](instrumentation-node.ts) so `fs` stays out of the edge
+bundle. It loads the snapshot, then starts two loops without awaiting them:
 
-There are three [@wareraprojects/api](https://www.npmjs.com/package/@wareraprojects/api)
-clients, each with its own rate-limit budget so none waits behind another:
+- **Main loop** ([lib/warera/scrape-main.ts](lib/warera/scrape-main.ts)):
+  countries and governments, user ids per country, every user plus their
+  equipped gear, MUs, regions, parties, alliances, active and recent battles,
+  the current tournament and the game config. After each cycle it archives
+  newly finished battles and logs memory use, so a leak shows as a rising
+  baseline. On error it logs and retries after a short pause.
+- **Factory loop** ([lib/warera/scrape-factories.ts](lib/warera/scrape-factories.ts)):
+  walks every factory owner's companies and employees on its own budget and
+  writes `factories.ndjson`.
 
-- **scrape client** (`SCRAPE_RATE_LIMIT`): the continuous main-scrape loop.
-- **urgent client** (`URGENT_RATE_LIMIT`): on-demand, latency-sensitive
-  traffic (the per-page Refresh buttons).
-- **factory client** (`FACTORY_RATE_LIMIT`): the slow all-users factory scrape.
+### Refresh buttons
 
-The client handles tRPC batching (up to 50 calls per request) and retries, and
-enforces the rate limit at the HTTP-request level. So the user phase below is
-hundreds of requests, not ~16k, and a full cycle is a few minutes. The three
-budgets are constants in [lib/warera/api.ts](lib/warera/api.ts) and sum to the
-API's 500 requests per minute per key.
+The Refresh button on player and MU pages calls a Server Action that fetches on
+the urgent client, then revalidates the page. An MU refresh re-fetches the
+roster and each member's profile and gear; a player refresh re-fetches that
+one player. Requests for the same key share one fetch. Refreshes patch the
+in-memory snapshot only, and the next full cycle replaces them.
 
-### Cycle phases
+## Storage
 
-A full cycle ([lib/warera/scrape-main.ts](lib/warera/scrape-main.ts)) runs these
-phases, then publishes and immediately starts the next:
+Everything lives under `DATA_DIR`, which is a mounted volume in production.
 
-1. **Countries**: `country.getAllCountries`, one call (~180 countries).
-   1b. **Governments**: one call per country (no bulk endpoint), fanned out at
-   concurrency 10; unoccupied countries return an all-empty record and are
-   dropped.
-2. **User IDs per country**: paginate `user.getUsersByCountry`, bounded
-   concurrency 10.
-3. **Hydrate users**: `user.getUserById` per id (~15k users), streamed to a
-   separate `users.ndjson` file rather than the snapshot.
-   3b. **Equipment**: currently-equipped gear, one call per user (batched),
-   streamed to a separate `equipment.ndjson` file rather than the snapshot. Many come
-   back empty and are kept as-is so readers can tell "captured, none equipped"
-   from "not captured".
-4. **MUs**: cursor loop, 100 per page (~950 MUs).
-5. **Regions**: single `region.getRegionsObject` call (~700 regions).
-6. **Parties**: cursor loop, 100 per page (~480 parties).
-   6b. **Alliances**: cursor loop (~10 of them, one page in practice).
-7. **Battles + tournament**: active plus a recent window of finished battles,
-   plus the current tournament's team→MU map.
-8. **Game config**: static catalog (item stats, skill cost curves, …), one
-   no-arg call; persisted so derived constants can read live data.
+| Path                              | Contents                                                                                                                            |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `snapshot.json`                   | `countries, governments, strategicBonuses, mus, regions, parties, alliances, battles, tournament, gameConfig, prices, meta` (~5 MB) |
+| `users.ndjson`                    | One `User` per line (~84 MB).                                                                                                       |
+| `equipment.ndjson`                | One `{ userId, equipment }` per line.                                                                                               |
+| `factories.ndjson`                | One `{ userId, rows }` per line, from the factory loop.                                                                             |
+| `archive/battles-YYYY-MM-DD.json` | Battles that finished on that UTC day.                                                                                              |
+| `archive/seen.json`               | Archived battle ids, for deduplication.                                                                                             |
+| `archive/index.json`              | Days available in the archive.                                                                                                      |
 
-After each cycle the loop also folds newly-finished battles into the archive
-(see below) and logs a post-GC memory reading, so a slow leak shows up as the
-baseline climbing cycle over cycle. On error it logs and retries after a short
-pause; the loop never exits.
+Writes go to a temp file and are then renamed, so a reader never sees a
+half-written file. The three per-user collections are NDJSON so the row build
+can stream them without holding a full array in memory.
 
-### Piecemeal refreshes
-
-MU and user detail pages each carry a **Refresh** button
-([components/detail/refresh-button.tsx](components/detail/refresh-button.tsx)).
-Clicking it calls a Server Action (`requestMuRefresh` / `requestUserRefresh`)
-that awaits an on-demand fetch on the **urgent client** (so it returns promptly
-regardless of where the scrape loop is), then `revalidatePath`s the page so the
-same view re-renders against the freshly updated data:
-
-- **MU**: fetch the live roster (`muMember.getByMu`), then re-hydrate those
-  members' lite profiles + equipment.
-- **User**: re-fetch that one player's lite profile + equipment.
-
-Refreshes are single-flighted per key (`mu:<id>` / `user:<id>`), so concurrent
-requests share one fetch. They are **in-memory only**: they patch the served
-snapshot but do not write the file. The whole snapshot is rebuilt so every
-aggregate and rank stays globally consistent, and the next full cycle subsumes
-the overlay.
-
-## Storage on disk
-
-Everything lives under `DATA_DIR` (the mounted volume in production):
-
-| Path                              | Shape                                                                                                                                   |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `snapshot.json`                   | `{ countries, governments, strategicBonuses, mus, regions, parties, alliances, battles, tournament, gameConfig, prices, meta }` (~5 MB) |
-| `users.ndjson`                    | one `User` per line — the raw user array (~84 MB), split out of the snapshot                                                            |
-| `equipment.ndjson`                | one `{ userId, equipment }` per line — currently-equipped gear                                                                          |
-| `factories.ndjson`                | one `{ userId, rows }` per line — the slow all-users factory scrape's output                                                            |
-| `archive/battles-YYYY-MM-DD.json` | `Battle[]` finished that UTC day                                                                                                        |
-| `archive/seen.json`               | `string[]` archived battle ids (dedupe)                                                                                                 |
-| `archive/index.json`              | `string[]` days available                                                                                                               |
-
-Writes are atomic (stream to a temp file, then rename), so a request landing
-mid-scrape sees the old or new file, never a torn one. The three big per-user
-collections (users, equipment, factories) live in their own NDJSON files: the
-build streams each into the derived rows (and a one-user lookup serves the detail
-page / hover-card), so a full per-user array never resides in memory alongside
-the built rows. That leaves `snapshot.json` itself small. The in-memory snapshot
-of built rows is swapped by reference after each cycle, so reads never block on
-I/O.
-
-### Battle history archive
-
-The API only serves a rolling ~2-week window of finished battles, so the full
-history is built **forward**: after each cycle the loop folds newly-finished
-battles into the per-day archive files, deduped by id via `seen.json`. It can't
-backfill older battles (they age out of the API).
-
-## Scripts
-
-| Command                         | What it does                                                                                                           |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                   | Next dev server on port 3100 (scraper runs in-process).                                                                |
-| `npm run build` / `npm start`   | Production build and serve.                                                                                            |
-| `npm run scrape-main`           | One-off main scrape; writes `DATA_DIR/snapshot.json` and exits. Seeds or rebuilds the file without running the server. |
-| `npm run record-battle-history` | Fetch the current finished-battle window and fold it into the archive, idempotently, without a main scrape.            |
-| `npm run lint` / `lint:fix`     | ESLint.                                                                                                                |
-
-The in-server loop refreshes continuously; there is no external cron.
+The API only returns about two weeks of finished battles, so the archive grows
+forward from when the site started and cannot backfill older battles.
 
 ## Project layout
 
-| Path               | Contents                                                                                                                                                                    |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/`             | App Router pages: `/countries`, `/users`, `/mus`, `/regions`, `/parties`, `/alliances`, `/battles` (each with detail routes), plus `/about`. `/` redirects to `/countries`. |
-| `lib/warera/`      | API client config and the scrape logic (`scrape-main.ts`, `scrape-factories.ts`, `api.ts`).                                                                                 |
-| `lib/scraper/`     | The in-process loop, publishing, and on-demand refreshes.                                                                                                                   |
-| `lib/cache/`       | On-disk snapshot (`file-store.ts`), in-memory snapshot (`memory.ts`), and battle archive (`archive.ts`).                                                                    |
-| `lib/rows/`        | Builds the row + lookup shapes the tables render from raw entities.                                                                                                         |
-| `lib/share-image/` | Per-page link-preview images served at `/og/<kind>/<id>`: layout, per-entity cards, fonts.                                                                                  |
-| `lib/sitemap.ts`   | The sitemap index at `/sitemap.xml` and its child files under `/sitemaps/`.                                                                                                 |
-| `components/`      | Table, detail-page, and UI building blocks.                                                                                                                                 |
+| Path               | Contents                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| `app/`             | Routes: list and detail pages, Advise, `/about`, `/api/*`, OG images and sitemaps. |
+| `lib/warera/`      | API clients and rate limits (`api.ts`) and the scrape phases.                      |
+| `lib/scraper/`     | The in-process loops, publishing and on-demand refreshes.                          |
+| `lib/cache/`       | The snapshot on disk and in memory, the NDJSON stores and the battle archive.      |
+| `lib/rows/`        | Builds the table rows and lookups from raw entities.                               |
+| `lib/factories/`   | Production engine, profit and per-employee stats.                                  |
+| `lib/advisor/`     | The Advise model and one file per kind of suggestion in `items/`.                  |
+| `lib/scoring.ts`   | The player points formula.                                                         |
+| `lib/share-image/` | Link-preview images.                                                               |
+| `components/`      | Tables, detail pages, factory and Advise views, and UI primitives.                 |
+| `scripts/`         | The one-off commands listed under Scripts.                                         |
+
+Contributor conventions, such as how to write comments, are in
+[AGENTS.md](AGENTS.md).
 
 ## License
 
-[MIT](LICENSE). If you use this code in your own project, a link back to
-<https://wareradata.com> is much appreciated!
+[MIT](LICENSE). If you use this code, a link back to <https://wareradata.com> is
+much appreciated.

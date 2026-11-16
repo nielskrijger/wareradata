@@ -5,8 +5,7 @@ import type { BattleDetail, BattleRow, BattleSideKey, BattleSideStats } from '@/
 import { BattleMatchup } from '@/components/battle/battle-matchup'
 import { SideDot } from '@/components/battle/side-dot'
 import { CompactNumber } from '@/components/cells/compact-number'
-import { CountryCell } from '@/components/cells/country-cell'
-import { GroupCell } from '@/components/cells/group-cell'
+import { EntityCell } from '@/components/cells/entity-cell'
 import { DetailSidebar, Fact, SidebarSection } from '@/components/detail/detail-sidebar'
 import { SectionHeading } from '@/components/detail/section-heading'
 import { EmptyDash } from '@/components/empty-dash'
@@ -71,13 +70,9 @@ function Orders({ orders }: { orders: BattleDetail['orders'] }) {
   return (
     <ul className="space-y-1.5 text-sm">
       {orders.map(o => (
-        <li key={`${o.side}-${o.id}`} className="flex items-center gap-2">
+        <li key={`${o.side}-${o.by.id}`} className="flex items-center gap-2">
           <SideDot side={o.side} />
-          <div className="min-w-0 flex-1">
-            {o.kind === 'mu'
-              ? <GroupCell kind="mu" name={o.name} id={o.id} avatarUrl={o.avatarUrl} />
-              : <CountryCell countryCode={o.countryCode} countryName={o.name} countryId={o.id} />}
-          </div>
+          <div className="min-w-0 flex-1"><EntityCell entity={o.by} /></div>
           <Badge variant="ghost" className="text-muted-foreground">{o.priority}</Badge>
         </li>
       ))}
@@ -91,9 +86,7 @@ function Contracts({ contracts }: { contracts: BattleDetail['contracts'] }) {
       {contracts.map(c => (
         <li key={c.id} className="flex items-center gap-2">
           <SideDot side={c.side} />
-          <div className="min-w-0 flex-1">
-            <GroupCell kind="mu" name={c.muName} id={c.muId} avatarUrl={c.muAvatarUrl} />
-          </div>
+          <div className="min-w-0 flex-1"><EntityCell entity={c.mu} /></div>
           {c.status === 'active' && <Badge variant="ghost" className="text-fire">bidding</Badge>}
           <span className="text-muted-foreground text-xs tabular-nums">
             <CompactNumber value={c.budget} />

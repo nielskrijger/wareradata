@@ -1,4 +1,4 @@
-import type { LeaderFields } from '@/lib/rows'
+import type { EntityRef, LeaderFields } from '@/lib/rows'
 import type { Country, MU, Party, RankingTier, Region } from '@/lib/warera/api'
 import { RANKING_TIERS } from '@/lib/warera/api'
 
@@ -74,6 +74,40 @@ export function rankPair<K extends string>(
     [key]: src?.value ?? null,
     [`${key}Rank`]: src?.rank ?? null,
   } as Record<K | `${K}Rank`, number | null>
+}
+
+/**
+ * Resolve a user, MU or country id from the snapshot. `countryId` flags a user
+ * with their citizenship, which the user lookups don't hold.
+ */
+export function entityRef(
+  kind: EntityRef['kind'],
+  id: string | null | undefined,
+  lookups: Lookups,
+  countryId?: string | null,
+): EntityRef {
+  const ref: EntityRef = { kind, id: id ?? null, name: null, code: null, avatarUrl: null, colorScheme: null }
+  if (!id) {
+    return ref
+  }
+
+  if (kind === 'country') {
+    const country = lookups.countryById.get(id)
+
+    return { ...ref, name: country?.name ?? null, code: country?.code ?? null }
+  }
+
+  if (kind === 'mu') {
+    return { ...ref, name: lookups.muNameById.get(id) ?? null, avatarUrl: lookups.muAvatarById.get(id) ?? null }
+  }
+
+  return {
+    ...ref,
+    name: lookups.userNameById.get(id) ?? null,
+    code: countryId ? lookups.countryById.get(countryId)?.code ?? null : null,
+    avatarUrl: lookups.userAvatarById.get(id) ?? null,
+    colorScheme: lookups.userColorSchemeById.get(id) ?? null,
+  }
 }
 
 /**

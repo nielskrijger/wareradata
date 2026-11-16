@@ -6,8 +6,7 @@ import type { BattleRow } from '@/lib/rows'
 
 import { BattleTypeBadge } from '@/components/badges/battle-type-badge'
 import { BattleMatchupCell } from '@/components/cells/battle-matchup-cell'
-import { CountryCell } from '@/components/cells/country-cell'
-import { GroupCell } from '@/components/cells/group-cell'
+import { EntityCell } from '@/components/cells/entity-cell'
 import { compactNumberColumn } from '@/components/data-table/column-factories'
 import { ExternalLink } from '@/components/links'
 import { RegionLink } from '@/components/region-link'
@@ -40,9 +39,7 @@ function winnerCell(row: BattleRow) {
 
   const side = row.wonBy === 'attacker' ? row.attacker : row.defender
 
-  return side.kind === 'mu'
-    ? <GroupCell kind="mu" name={side.name} id={side.id} avatarUrl={side.avatarUrl} />
-    : <CountryCell countryCode={side.code} countryName={side.name} countryId={side.id} />
+  return <EntityCell entity={side} />
 }
 
 const matchupColumn: ColumnDef<BattleRow> = {

@@ -633,31 +633,38 @@ export interface RegionRow {
 }
 
 /**
- * One side of a matchup: a country, or for tournaments the team's MU.
+ * A user, MU or country, resolved to what a cell needs to show and link it.
  */
-export interface BattleSide {
-  kind: 'country' | 'mu'
+export interface EntityRef {
+  kind: 'user' | 'mu' | 'country'
 
   /**
-   * Country or MU id, for the detail-page link. Null if unresolved.
+   * For the detail-page link. Null if unresolved.
    */
   id: string | null
-
-  /**
-   * Country name, MU name, or "Team #N" fallback.
-   */
   name: string | null
 
   /**
-   * ISO-3166 code for the flag (country sides only).
+   * ISO-3166 code for the flag: the country's own, or a user's citizenship.
    */
   code: string | null
 
   /**
-   * MU avatar url (mu sides only).
+   * User or MU avatar url.
    */
   avatarUrl: string | null
+
+  /**
+   * A user's profile colour scheme.
+   */
+  colorScheme: string | null
 }
+
+/**
+ * One side of a matchup: a country, or for tournaments the team's MU, whose
+ * name falls back to "Team #N".
+ */
+export type BattleSide = EntityRef & { kind: 'country' | 'mu' }
 
 /**
  * Battles are events, not ranked entities, so there are no rank fields.
@@ -697,17 +704,9 @@ export interface BattleRow {
 export type BattleSideKey = 'attacker' | 'defender'
 
 /**
- * One entry of a battle leaderboard: a user, MU or country, by which list it
- * sits in. Fields that kind lacks stay null.
+ * One entry of a battle leaderboard with its damage or money.
  */
-export interface BattleFighter {
-  id: string | null
-  name: string | null
-  avatarUrl: string | null
-  colorScheme: string | null
-  countryCode: string | null
-  value: number
-}
+export type BattleFighter = EntityRef & { value: number }
 
 export interface BattleRoundRow {
   number: number
@@ -722,11 +721,8 @@ export interface BattleRoundRow {
 export interface BattleHit {
   id: string
   side: BattleSideKey
-
-  /**
-   * The hitter, with the hit's damage as `value`.
-   */
-  user: BattleFighter
+  user: EntityRef
+  damage: number
   isCritical: boolean
   isMissed: boolean
   weaponCode: string | null
@@ -735,24 +731,18 @@ export interface BattleHit {
 
 export interface BattleOrderRow {
   side: BattleSideKey
-  kind: 'country' | 'mu'
-  id: string
-  name: string | null
 
   /**
-   * The MU's avatar or the country's flag code, by `kind`.
+   * The country or MU that set the order.
    */
-  avatarUrl: string | null
-  countryCode: string | null
+  by: EntityRef
   priority: string
 }
 
 export interface BattleContractRow {
   id: string
   side: BattleSideKey
-  muId: string | null
-  muName: string | null
-  muAvatarUrl: string | null
+  mu: EntityRef
   budget: number
   perK: number
   status: string

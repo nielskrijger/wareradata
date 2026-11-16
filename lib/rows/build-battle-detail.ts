@@ -1,52 +1,14 @@
-import type { BattleDetail, BattleFighter, BattleHit, BattleSideKey } from '@/lib/rows'
+import type { BattleDetail, BattleFighter, BattleHit, BattleSideKey, EntityRef } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { BattleExtras, BattleRanking, BattleRound } from '@/lib/warera/api'
+
+import { entityRef } from '@/lib/rows/lookups'
 
 const SIDES: BattleSideKey[] = ['attacker', 'defender']
 const LAST_HITS = 10
 
 function toSide(value: string | undefined): BattleSideKey | null {
   return value === 'attacker' || value === 'defender' ? value : null
-}
-
-function userFighter(
-  userId: string,
-  countryId: string | null | undefined,
-  value: number,
-  lookups: Lookups,
-): BattleFighter {
-  return {
-    id: userId,
-    name: lookups.userNameById.get(userId) ?? null,
-    avatarUrl: lookups.userAvatarById.get(userId) ?? null,
-    colorScheme: lookups.userColorSchemeById.get(userId) ?? null,
-    countryCode: countryId ? lookups.countryById.get(countryId)?.code ?? null : null,
-    value,
-  }
-}
-
-function muFighter(muId: string | null | undefined, value: number, lookups: Lookups): BattleFighter {
-  return {
-    id: muId ?? null,
-    name: muId ? lookups.muNameById.get(muId) ?? null : null,
-    avatarUrl: muId ? lookups.muAvatarById.get(muId) ?? null : null,
-    colorScheme: null,
-    countryCode: null,
-    value,
-  }
-}
-
-function countryFighter(countryId: string | null | undefined, value: number, lookups: Lookups): BattleFighter {
-  const country = countryId ? lookups.countryById.get(countryId) : undefined
-
-  return {
-    id: countryId ?? null,
-    name: country?.name ?? null,
-    avatarUrl: null,
-    colorScheme: null,
-    countryCode: country?.code ?? null,
-    value,
-  }
 }
 
 function bySide<T>(fn: (side: BattleSideKey) => T): Record<BattleSideKey, T> {
@@ -62,7 +24,8 @@ function lastHits(round: BattleRound | undefined, lookups: Lookups): BattleHit[]
     .flatMap(side => round[side].lastHits.map(h => ({
       id: h._id,
       side,
-      user: userFighter(h.user, null, h.damages, lookups),
+      user: entityRef('user', h.user, lookups),
+      damage: h.damages,
       isCritical: h.isCriticalHit,
       isMissed: h.isMissed,
       weaponCode: h.weapon?.code ?? null,
@@ -74,8 +37,8 @@ function lastHits(round: BattleRound | undefined, lookups: Lookups): BattleHit[]
 
 export function buildBattleDetail(extras: BattleExtras, lookups: Lookups): BattleDetail {
   const { battle, rounds } = extras
-  const users = (list: BattleRanking[]) =>
-    list.flatMap(r => (r.user ? [userFighter(r.user, r.country, r.value, lookups)] : []))
+  const ranked = (kind: EntityRef['kind'], list: BattleRanking[]): BattleFighter[] =>
+    list.map(r => ({ ...entityRef(kind, r[kind], lookups, r.country), value: r.value }))
 
   return {
     startedAt: battle.createdAt,
@@ -95,29 +58,16 @@ export function buildBattleDetail(extras: BattleExtras, lookups: Lookups): Battl
       wonBy: toSide(r.wonBy),
       isActive: r.isActive,
     })),
-    players: bySide(side => users(extras.players[side])),
-    earners: bySide(side => users(extras.earners[side])),
-    mus: bySide(side => extras.mus[side].map(r => muFighter(r.mu, r.value, lookups))),
-    countries: bySide(side => extras.countries[side].map(r => countryFighter(r.country, r.value, lookups))),
+    players: bySide(side => ranked('user', extras.players[side])),
+    earners: bySide(side => ranked('user', extras.earners[side])),
+    mus: bySide(side => ranked('mu', extras.mus[side])),
+    countries: bySide(side => ranked('country', extras.countries[side])),
     hits: lastHits(rounds.find(r => r.isActive), lookups),
     orders: extras.orders.flatMap((o) => {
       const side = toSide(o.side)
-      const id = o.mu ?? o.country
-      if (!side || !id) {
-        return []
-      }
+      const by = o.mu ? entityRef('mu', o.mu, lookups) : entityRef('country', o.country, lookups)
 
-      const group = o.mu ? muFighter(o.mu, 0, lookups) : countryFighter(id, 0, lookups)
-
-      return [{
-        side,
-        kind: o.mu ? 'mu' as const : 'country' as const,
-        id,
-        name: group.name,
-        avatarUrl: group.avatarUrl,
-        countryCode: group.countryCode,
-        priority: o.priority,
-      }]
+      return side ? [{ side, by, priority: o.priority }] : []
     }),
     contracts: extras.contracts.flatMap((c) => {
       const side = toSide(c.forCountrySide)
@@ -125,14 +75,10 @@ export function buildBattleDetail(extras: BattleExtras, lookups: Lookups): Battl
         return []
       }
 
-      const mu = muFighter(c.currentWinner, 0, lookups)
-
       return [{
         id: c._id,
         side,
-        muId: mu.id,
-        muName: mu.name,
-        muAvatarUrl: mu.avatarUrl,
+        mu: entityRef('mu', c.currentWinner, lookups),
         budget: c.budget,
         perK: c.currentPerK,
         status: c.status,

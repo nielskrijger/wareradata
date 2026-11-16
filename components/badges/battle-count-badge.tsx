@@ -3,10 +3,12 @@ import type { ActiveBattleSummary } from '@/lib/rows'
 import { Swords } from 'lucide-react'
 import Link from 'next/link'
 
+import { RED_BADGE } from '@/components/badges/tone'
 import { Flag } from '@/components/flag'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatNumber } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 interface Props {
   count: number
@@ -49,7 +51,7 @@ export function BattleCountBadge({ count, countryId, battles }: Props) {
   if (!countryId) {
     return (
       <Badge
-        className="bg-red-500/15 text-red-800 shrink-0 gap-0.5 dark:text-red-300"
+        className={cn(RED_BADGE, 'shrink-0 gap-0.5')}
         title={summary}
       >
         <Swords className="size-3" />
@@ -64,7 +66,7 @@ export function BattleCountBadge({ count, countryId, battles }: Props) {
       aria-label={summary}
       className="shrink-0"
     >
-      <Badge className="bg-red-500/15 text-red-800 gap-0.5 hover:bg-red-500/25 dark:text-red-300">
+      <Badge className={cn(RED_BADGE, 'hover:bg-heat-red/25 gap-0.5')}>
         <Swords className="size-3" />
         {formatNumber(count)}
       </Badge>

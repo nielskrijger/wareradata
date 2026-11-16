@@ -21,13 +21,13 @@ export function CompanyName({ company }: { company: CompanyRef }) {
         delay={0}
         className="inline-flex max-w-full min-w-0 cursor-default items-center gap-1 align-bottom outline-none"
       >
-        <ItemIcon code={company.itemCode} small />
         <span
           className="max-w-56 truncate underline decoration-dotted decoration-1 underline-offset-4"
           style={{ color: 'var(--fire)' }}
         >
           {company.name}
         </span>
+        <ItemIcon code={company.itemCode} small />
       </PopoverTrigger>
       <PopoverContent side="top" className="flex w-auto max-w-72 flex-col gap-1 text-xs">
         <span className="flex items-center gap-2 font-semibold">

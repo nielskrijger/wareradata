@@ -160,13 +160,11 @@ function StatRow({ icon, label, value, range }: {
     <div className="flex justify-between">
       <span className="inline-flex items-center gap-1.5">{icon}{label}</span>
       <span className="tabular-nums">
-        {value == null
-          ? <span className="text-neutral-50/40">—</span>
-          : (
-              <HeatCell value={value} range={range} mode="median">
-                {intFull.format(value)}
-              </HeatCell>
-            )}
+        {value == null ? <span className="text-neutral-50/40">—</span> : (
+          <HeatCell value={value} range={range} mode="median">
+            {intFull.format(value)}
+          </HeatCell>
+        )}
       </span>
     </div>
   )

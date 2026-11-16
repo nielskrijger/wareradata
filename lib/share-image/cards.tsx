@@ -232,9 +232,7 @@ async function battleCard(id: string): Promise<ReactElement | null> {
         <div style={VERB_STYLE}>{verb}</div>
         <BattleSideBlock side={defender} />
       </div>
-      {b.regionName
-        ? <div style={REGION_STYLE}>{b.regionName}</div>
-        : null}
+      {b.regionName ? <div style={REGION_STYLE}>{b.regionName}</div> : null}
     </CardFrame>
   )
 }

@@ -41,9 +41,7 @@ export function buildCountryRows(
     .map((c) => {
       const agg = membersByCountry.get(c._id)
       const r = c.rankings
-      const unrestPercent = c.unrest?.barMax
-        ? ((c.unrest.bar ?? 0) / c.unrest.barMax) * 100
-        : null
+      const unrestPercent = c.unrest?.barMax ? ((c.unrest.bar ?? 0) / c.unrest.barMax) * 100 : null
 
       return {
         activeBattles: 0,

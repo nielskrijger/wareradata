@@ -37,9 +37,7 @@ export default async function AdvisePage() {
           your energy is going to.
         </Paragraph>
       </header>
-      {result
-        ? <AdviseTodo result={result} />
-        : <Paragraph>The API key's owner has no employees yet.</Paragraph>}
+      {result ? <AdviseTodo result={result} /> : <Paragraph>The API key's owner has no employees yet.</Paragraph>}
     </main>
   )
 }

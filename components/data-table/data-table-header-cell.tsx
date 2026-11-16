@@ -41,7 +41,9 @@ export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
   const iconState = sortInvert && sorted ? (sorted === 'asc' ? 'desc' : 'asc') : sorted
   const headClass = cn(align === 'right' ? 'text-right' : undefined, sticky && STICKY, sticky && width && STICKY_WIDTH)
   const style: CSSProperties | undefined = width
-    ? (sticky ? { '--col-w': `${width}px` } as CSSProperties : { width: `${width}px` })
+    ? (sticky
+        ? { '--col-w': `${width}px` } as CSSProperties
+        : { width: `${width}px` })
     : undefined
 
   const rendered = flexRender(header.column.columnDef.header, header.getContext())
@@ -55,28 +57,24 @@ export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
   const meta = CATEGORY_META[category]
   const catMeta = meta.color ? meta : null
   const CatIcon = catMeta?.Icon
-  const label = CatIcon
-    ? (
-        <span className="inline-flex items-center gap-1">
-          <CatIcon className="size-3.5 shrink-0" style={catMeta?.color ? { color: catMeta.color } : undefined} />
-          {rendered}
-        </span>
-      )
-    : rendered
+  const label = CatIcon ? (
+    <span className="inline-flex items-center gap-1">
+      <CatIcon className="size-3.5 shrink-0" style={catMeta?.color ? { color: catMeta.color } : undefined} />
+      {rendered}
+    </span>
+  ) : rendered
 
   // Optional header help text (meta.tooltip). The trigger renders as a plain
   // inline span so it nests cleanly inside the sort button below.
   const tip = header.column.columnDef.meta?.tooltip
-  const content = tip
-    ? (
-        <Tooltip>
-          <TooltipTrigger render={<span className="inline-flex items-center gap-1" />}>
-            {label}
-          </TooltipTrigger>
-          <TooltipContent>{tip}</TooltipContent>
-        </Tooltip>
-      )
-    : label
+  const content = tip ? (
+    <Tooltip>
+      <TooltipTrigger render={<span className="inline-flex items-center gap-1" />}>
+        {label}
+      </TooltipTrigger>
+      <TooltipContent>{tip}</TooltipContent>
+    </Tooltip>
+  ) : label
 
   if (!canSort) {
     return <TableHead className={headClass} style={style}>{content}</TableHead>

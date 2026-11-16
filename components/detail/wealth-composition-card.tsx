@@ -69,13 +69,11 @@ function WealthRow({ label, value, range, rank }: WealthPart) {
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="flex items-baseline gap-2 tabular-nums">
         <span>
-          {value == null
-            ? <EmptyDash />
-            : (
-                <HeatCell value={value} range={range} mode="median">
-                  <CompactNumber value={value} />
-                </HeatCell>
-              )}
+          {value == null ? <EmptyDash /> : (
+            <HeatCell value={value} range={range} mode="median">
+              <CompactNumber value={value} />
+            </HeatCell>
+          )}
         </span>
         {rank != null && value != null && (
           <span className="text-muted-foreground/60 w-14 text-right text-xs">

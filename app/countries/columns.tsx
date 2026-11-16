@@ -63,13 +63,11 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
         accessorKey: 'activePopulation',
         header: 'Active pop.',
         cell: ({ row }) =>
-          row.original.activePopulation === null
-            ? null
-            : (
-                <InternalLink href={`/users?q=${encodeURIComponent(`country:${row.original.code}`)}`}>
-                  {row.original.activePopulation.toLocaleString()}
-                </InternalLink>
-              ),
+          row.original.activePopulation === null ? null : (
+            <InternalLink href={`/users?q=${encodeURIComponent(`country:${row.original.code}`)}`}>
+              {row.original.activePopulation.toLocaleString()}
+            </InternalLink>
+          ),
         sortDescFirst: true,
         meta: { align: 'right', width: 115 },
       },

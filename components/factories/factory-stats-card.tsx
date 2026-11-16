@@ -40,7 +40,9 @@ export function FactoryStatsCard({ className, rows, totals }: Props) {
   const counts = [
     totals.activeCount < totals.count
       ? `${totals.activeCount}/${totals.count} active`
-      : `${totals.count} ${totals.count === 1 ? 'factory' : 'factories'}`,
+      : `${totals.count} ${totals.count === 1
+        ? 'factory'
+        : 'factories'}`,
     `${employees.length} ${employees.length === 1 ? 'employee' : 'employees'}`,
   ].join(' · ')
 

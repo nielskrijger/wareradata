@@ -288,9 +288,7 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
             <span>dot size = room to train</span>
           </span>
         </div>
-        {points.length
-          ? <Scatter points={points} />
-          : <p className="text-muted-foreground text-sm">No employees.</p>}
+        {points.length ? <Scatter points={points} /> : <p className="text-muted-foreground text-sm">No employees.</p>}
       </div>
       <div className="min-w-0 space-y-2">
         <span className="text-muted-foreground text-xs">Points per day by factory</span>

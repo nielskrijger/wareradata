@@ -8,14 +8,14 @@ import { buildFrontier, computeFactoryProfit, portfolioTotals } from '@/lib/fact
 import { logger } from '@/lib/log'
 import { getItemPrices, getUserCompanies } from '@/lib/warera/api'
 
-import { FactoriesTable } from './factories-table'
+import { FactoryOverview } from './factory-overview'
 
 const log = logger.child({ component: 'factories' })
 
 /**
  * Fetches and computes a user's factory ledger rows: daily profit from the
  * automated engine plus the NPC employees, the Top potential (the same output on
- * the most profitable item), and a per-employee revenue/wage breakdown. Fetches
+ * the most profitable item), and per-employee money and stats. Fetches
  * live on the urgent client (companies and their rosters; prices are cached and
  * shared across users). Net excludes self-work.
  *
@@ -36,13 +36,14 @@ async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | nul
     const prices = await getItemPrices()
     const frontier = buildFrontier(prices, recipe)
     const regionName = (id: string) => lookups.regionById.get(id)?.name ?? '—'
+    const nameById = new Map(factories.flatMap(f => f.employees.map(e => [e._id, e.name] as const)))
 
     return factories
       .map((f) => {
         const profit = computeFactoryProfit(factoryInputFromData(f, regionName, model), prices, recipe, frontier)
         const productionPoints = recipe[f.company.itemCode]?.productionPoints ?? 1
 
-        return buildFactoryLedgerRow(profit, f.employees, engineLevelOf(f), productionPoints)
+        return buildFactoryLedgerRow(profit, f.employees, engineLevelOf(f), productionPoints, nameById)
       })
       .sort((a, b) => b.netPerDay - a.netPerDay)
   } catch (error) {
@@ -58,5 +59,5 @@ export async function FactoriesSection({ userId }: { userId: string }) {
     return null
   }
 
-  return <FactoriesTable rows={rows} totals={portfolioTotals(rows)} />
+  return <FactoryOverview rows={rows} totals={portfolioTotals(rows)} />
 }

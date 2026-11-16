@@ -699,6 +699,8 @@ export interface FactoryData {
 /**
  * Two round trips: the ids, then one batch with each company and roster. A
  * failed roster leaves that factory engine-only.
+ *
+ * getCompanies lists them in the game's order (most recently moved up first).
  */
 async function fetchUserCompanies(client: Client, userId: string): Promise<FactoryData[]> {
   const list = await client.company.getCompanies({ userId, perPage: 100 })

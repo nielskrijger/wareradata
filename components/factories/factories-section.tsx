@@ -25,7 +25,8 @@ const log = logger.child({ component: 'factories' })
  * Returns null when they own none or a call fails: the section is optional, so
  * an API outage shouldn't fail the user page.
  *
- * Request-memoized so the KPI and the roster share one fetch.
+ * Rows keep the game's factory order. Request-memoized so the KPI and the
+ * roster share one fetch.
  */
 const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[] | null> => {
   try {
@@ -49,7 +50,6 @@ const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[]
 
         return buildFactoryLedgerRow(profit, f.employees, engineLevelOf(f), productionPoints, nameById)
       })
-      .sort((a, b) => b.netPerDay - a.netPerDay)
   } catch (error) {
     log.error({ userId, err: error }, 'failed to load factories')
 

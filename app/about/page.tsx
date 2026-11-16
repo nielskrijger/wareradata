@@ -32,14 +32,15 @@ export default function AboutPage() {
           {' '}
           <strong className="text-foreground">Points</strong>
           {' '}
-          score that combines their level, total damage dealt, and accumulated
+          score that combines their level, prestige, total damage dealt, and accumulated
           wealth. It&apos;s a flat sum: 10× more damage means 10× more points.
         </Paragraph>
         <pre className="bg-muted overflow-x-auto rounded-md p-4 text-xs leading-relaxed">
           <code>
-            {`points = level   × 1,000
-       + damage  ÷ 2,000
-       + wealth  × 1`}
+            {`points = level    × 1,000
+       + prestige × 2,500
+       + damage   ÷ 2,000
+       + wealth   × 1`}
           </code>
         </pre>
         <ul className="text-muted-foreground dark:text-foreground/70 space-y-1 text-sm">
@@ -47,6 +48,13 @@ export default function AboutPage() {
             <strong className="text-foreground">Level</strong>
             : 1,000 points per level. A level-50 player gets 50,000 points
             from leveling alone.
+          </li>
+          <li>
+            <strong className="text-foreground">Prestige</strong>
+            : 2,500 points per prestige, for the permanent bonus skill level it
+            grants (worth 2.5 levels of skill points). Prestiging resets level
+            50 to 25, so a fresh prestige still lowers the score until the
+            player levels back up. Shown as part of Level in the breakdown.
           </li>
           <li>
             <strong className="text-foreground">Damage</strong>

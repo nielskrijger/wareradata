@@ -128,7 +128,8 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     : null
 
   const r = u.rankings
-  const pts = computePoints({ level: levelValue, damage, wealth })
+  const prestige = u.leveling?.prestigeLevel ?? null
+  const pts = computePoints({ level: levelValue, prestige, damage, wealth })
   const party = lookups.partyByUser.get(u._id)
   const days = daysSinceJoin(u.createdAt, nowMs)
   const pointsPerDay = days === null ? null : Math.round(pts.total / days)
@@ -223,7 +224,7 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     readinessEndsAt,
     referrals: r?.userReferrals?.value ?? null,
     referralsRank: null,
-    prestige: u.leveling?.prestigeLevel ?? null,
+    prestige,
     prestigePoints: u.leveling?.prestige ?? null,
     totalXp: u.leveling?.totalXp ?? null,
     milestoneTiers: r?.userMilestoneTiers?.value ?? null,

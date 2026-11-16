@@ -7,6 +7,7 @@ import { ImageResponse } from 'next/og'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 
 import { getSnapshot } from '@/lib/cache/memory'
+import { EMPTY } from '@/lib/format'
 import { avatarSrc, flagSrc, loadFonts } from './assets'
 import { CardFrame, EmblemImage, EntityCard, MUTED, ORANGE } from './layout'
 
@@ -15,11 +16,11 @@ import 'server-only'
 const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
 
 function formatCompact(n: number | null | undefined): string {
-  return n == null ? '—' : compact.format(n)
+  return n == null ? EMPTY : compact.format(n)
 }
 
 function avgLevel(n: number | null): string {
-  return n == null ? '—' : n.toFixed(1)
+  return n == null ? EMPTY : n.toFixed(1)
 }
 
 async function CountryLine({ code, name }: { code: string | null, name: string | null }) {
@@ -45,7 +46,7 @@ async function userCard(id: string): Promise<ReactElement | null> {
   }
 
   const stats: Stat[] = [
-    { label: 'Level', value: String(u.level ?? '—'), rank: u.levelRank },
+    { label: 'Level', value: String(u.level ?? EMPTY), rank: u.levelRank },
     { label: 'Damage', value: formatCompact(u.damage), rank: u.damageRank },
     { label: 'Wealth', value: formatCompact(u.wealth), rank: u.wealthRank },
     { label: 'Gear', value: formatCompact(u.gearScore), rank: u.gearScoreRank },

@@ -21,6 +21,34 @@ export interface FactoryRawRow {
   managerPerDay?: number
   employeeCount?: number
   employeeCap?: number
+
+  /**
+   * The roster call failed, so the employee fields are unknown rather than zero.
+   */
+  rosterMissing?: true
+
+  /**
+   * The NPC roster, trimmed to what the users list aggregates.
+   */
+  employees?: FactoryRawEmployee[]
+}
+
+/**
+ * One NPC employee as the factory scrape stores it. Stats are totals after
+ * training and traits.
+ */
+export interface FactoryRawEmployee {
+  production: number
+  luck: number
+  responsibility: number
+  potential: number
+  potentialMax: number
+  happiness: number
+  bonusPct: number
+  age: number
+  retireInDays: number
+  wagePerHour: number
+  pointsPerHour: number
 }
 
 /**

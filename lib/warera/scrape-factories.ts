@@ -1,5 +1,6 @@
-import type { FactoryRawRow } from '@/lib/cache/factory-store'
+import type { FactoryRawEmployee, FactoryRawRow } from '@/lib/cache/factory-store'
 import type { EngineModel } from '@/lib/factories/engine'
+import type { Employee } from '@/lib/warera/api'
 
 import { factoriesNdjsonPath } from '@/lib/cache/factory-store'
 import { writeFileAtomic } from '@/lib/cache/ndjson'
@@ -21,11 +22,28 @@ const CHUNK_SIZE = 50
  */
 const PROGRESS_EVERY = 250
 
+function trimEmployee(e: Employee): FactoryRawEmployee {
+  return {
+    production: e.breakdown?.production?.total ?? 0,
+    luck: e.breakdown?.luck?.total ?? 0,
+    responsibility: e.breakdown?.responsibility?.total ?? 0,
+    potential: e.potential,
+    potentialMax: e.potentialMax,
+    happiness: e.happinessBreakdown?.value ?? 0,
+    bonusPct: e.productionBonus?.total ?? 0,
+    age: e.age,
+    retireInDays: e.retireInDays,
+    wagePerHour: e.estimate?.wage ?? e.wage ?? 0,
+    pointsPerHour: e.estimate?.production ?? 0,
+  }
+}
+
 /**
  * The all-users factory pass on the slow factory client: for each company-owning
  * user, enumerate their factories with their NPC employee rosters, and record
  * each factory's daily production per source (the engine at its level, the
- * employees from the roster's hourly estimate) and its wages. `model` carries the
+ * employees from the roster's hourly estimate), its wages and a trimmed copy of
+ * the roster. `model` carries the
  * engine output per level. Net and the Top potential are NOT computed here — the
  * readers derive those at build time from these points plus the snapshot's
  * market data.
@@ -78,6 +96,9 @@ export async function scrapeFactories(
             managerPerDay: input.managerPerDay,
             employeeCount: input.employeeCount,
             employeeCap: input.employeeCap,
+            ...(f.hourly
+              ? { employees: f.employees.map(trimEmployee) }
+              : { rosterMissing: true as const }),
           }
         })
 

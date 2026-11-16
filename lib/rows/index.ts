@@ -183,12 +183,25 @@ export interface UserRow {
   factoryEfficiencyPct: number | null
 
   /**
-   * Net split by source and the employee headcount, for the Factories group.
-   * factoryEngineNetPerDay + factoryEmployeeNetPerDay = factoryNetPerDay.
+   * Net split by source and the employee headcount. The employee fields are
+   * null when the roster is unknown.
    */
   factoryEngineNetPerDay: number | null
   factoryEmployeeNetPerDay: number | null
   factoryWorkers: number | null
+
+  /**
+   * Employee and manager wages per day.
+   */
+  factoryPayrollPerDay: number | null
+
+  /**
+   * The Employees group: per-employee averages and the count retiring within a
+   * week. Null when the roster is unknown.
+   */
+  employeeAvgPpPerDay: number | null
+  employeeAvgHappiness: number | null
+  employeeRetiringSoon: number | null
 }
 
 /**

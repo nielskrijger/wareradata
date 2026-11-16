@@ -33,6 +33,11 @@ export const RULES = {
   negotiationDrop: 0.05,
 
   /**
+   * Trainings per owner per UTC day, across all employees; the game shows "Maxed".
+   */
+  trainingsPerOwnerDay: 15,
+
+  /**
    * Values beyond this are too uncertain to count (prices, patches).
    */
   horizonDays: 30,
@@ -152,10 +157,15 @@ export function cardGainsPerDay(e: EmployeeLike, valuePerPoint: number, ppValue:
 }
 
 /**
- * Whether the game lets the owner train this employee right now.
+ * Draws the game allows on this employee today: limited by the daily count and
+ * by the potential left.
  */
-export function canTrain(e: EmployeeLike): boolean {
-  return !e.companyDisabled && (e.potential ?? 0) > 0 && (e.trainingsToday ?? 0) < (e.trainingsPerDay ?? 1)
+export function trainingsLeft(e: EmployeeLike): number {
+  if (e.companyDisabled) {
+    return 0
+  }
+
+  return Math.max(0, Math.min(e.potential ?? 0, (e.trainingsPerDay ?? 1) - (e.trainingsToday ?? 0)))
 }
 
 /**

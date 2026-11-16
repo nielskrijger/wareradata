@@ -2,9 +2,10 @@ import type { CardKind } from '../model'
 import type { AdvisorCompany, AdvisorInput, SkippedItem, TodoItem } from '../types'
 
 import {
-  canTrain,
   cardGainsPerDay,
   payingDays,
+  RULES,
+  trainingsLeft,
 } from '../model'
 import { firstName, MIN_GAIN_PER_DAY, signedFmt, titleAt } from '../shared'
 
@@ -25,7 +26,8 @@ export function trainingItems(input: AdvisorInput, c: AdvisorCompany, vpp: numbe
   const items: TodoItem[] = []
 
   for (const e of c.employees) {
-    if (!canTrain(e)) {
+    const draws = trainingsLeft(e)
+    if (!draws) {
       continue
     }
 
@@ -42,7 +44,6 @@ export function trainingItems(input: AdvisorInput, c: AdvisorCompany, vpp: numbe
       continue
     }
 
-    const draws = Math.min(e.potential ?? 0, (e.trainingsPerDay ?? 1) - (e.trainingsToday ?? 0))
     const card = (k: CardKind) => CARD_LABEL[k].split(' ')[0]
     const others = ranked.slice(1).map(k => `${signedFmt(gains[k])} for ${card(k)}`).join(' and ')
     items.push({
@@ -64,4 +65,34 @@ export function trainingItems(input: AdvisorInput, c: AdvisorCompany, vpp: numbe
   }
 
   return items
+}
+
+/**
+ * Trims training items to the owner's daily limit, keeping the best gain per draw.
+ */
+export function capTrainings(input: AdvisorInput, items: TodoItem[], skipped: SkippedItem[]): TodoItem[] {
+  const used = input.companies.flatMap(c => c.employees).reduce((s, e) => s + (e.trainingsToday ?? 0), 0)
+  let left = Math.max(0, RULES.trainingsPerOwnerDay - used)
+  const perDraw = (i: TodoItem) => (i.gainPerDay ?? 0) / (i.energy! / TRAIN_ENERGY)
+  const trains = items.filter(i => i.kind === 'train').sort((a, b) => perDraw(b) - perDraw(a))
+  const kept = new Set<TodoItem>()
+  for (const i of trains) {
+    const draws = Math.min(left, i.energy! / TRAIN_ENERGY)
+    if (draws > 0) {
+      left -= draws
+      i.gainPerDay = perDraw(i) * draws
+      i.energy = TRAIN_ENERGY * draws
+      kept.add(i)
+    }
+  }
+
+  if (kept.size < trains.length) {
+    const waiting = trains.length - kept.size
+    skipped.push({
+      title: 'More training today',
+      why: `All ${RULES.trainingsPerOwnerDay} of today's trainings are used, so ${waiting} ${waiting === 1 ? 'employee waits' : 'employees wait'} until midnight UTC.`,
+    })
+  }
+
+  return items.filter(i => i.kind !== 'train' || kept.has(i))
 }

@@ -12,6 +12,7 @@ import { Avatar } from '@/components/avatar'
 import { BattleTypeBadge } from '@/components/badges/battle-type-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { Flag } from '@/components/flag'
+import { PageMain } from '@/components/layout/page-main'
 import { ExternalLink, InternalLink } from '@/components/links'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -117,7 +118,7 @@ export default async function BattleDetailPage({ params }: PageProps) {
   const defenderShare = 100 - attackerShare
 
   return (
-    <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
+    <PageMain className="space-y-6">
       <div className="flex flex-col items-center gap-4 py-4">
         <div className="flex items-center justify-center gap-8">
           <BattleSideEmblem side={b.attacker} won={b.wonBy === 'attacker'} />
@@ -185,6 +186,6 @@ export default async function BattleDetailPage({ params }: PageProps) {
           <ExternalLink href={`https://app.warera.io/battle/${b.id}`}>WarEra.io</ExternalLink>
         </div>
       </section>
-    </main>
+    </PageMain>
   )
 }

@@ -16,6 +16,7 @@ import { Kpi, KpiStrip } from '@/components/detail/kpi'
 import { RankMap } from '@/components/detail/rank-map'
 import { rankRow } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
+import { PageSection } from '@/components/layout/page-section'
 import { MUSidebar } from '@/components/mu/mu-sidebar'
 import { SquadMap } from '@/components/mu/squad-map'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
@@ -142,11 +143,10 @@ export default async function MUDetailPage({ params }: PageProps) {
 
       <RankMap title={`Where ${mu.name} ranks`} total={total} unit="MUs" groups={rankGroups(mu)} />
 
-      <section className="min-w-0 space-y-3">
-        <h2 className="font-brand text-lg tracking-wide">Members</h2>
+      <PageSection title="Members">
         <SquadMap members={squad} />
         <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} omitColumns={['muName']} />
-      </section>
+      </PageSection>
     </DetailLayout>
   )
 }

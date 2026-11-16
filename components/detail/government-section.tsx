@@ -3,7 +3,9 @@ import type { GovernmentOfficial, GovernmentRow } from '@/lib/rows'
 import Link from 'next/link'
 
 import { Avatar } from '@/components/avatar'
+import { PageSection } from '@/components/layout/page-section'
 import { InternalLink } from '@/components/links'
+import { Panel } from '@/components/panel'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { cn } from '@/lib/utils'
 
@@ -166,9 +168,8 @@ export function GovernmentSection({ government }: Props) {
   const benches = congressBenches(congress, colors)
 
   return (
-    <section className="space-y-3">
-      <h2 className="font-brand text-lg tracking-wide">Government</h2>
-      <div className="bg-card space-y-4 rounded-md border p-4">
+    <PageSection title="Government">
+      <Panel className="space-y-4">
         {seats.length > 0 && (
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:gap-x-6">
             <span className="text-muted-foreground text-[10px] uppercase tracking-wide sm:w-20 sm:shrink-0 sm:pt-1">
@@ -238,8 +239,8 @@ export function GovernmentSection({ government }: Props) {
             ))}
           </div>
         )}
-      </div>
-    </section>
+      </Panel>
+    </PageSection>
   )
 }
 

@@ -3,6 +3,7 @@
 import type { AdvisorResult } from '@/lib/advisor/types'
 import Link from 'next/link'
 
+import { Panel } from '@/components/panel'
 import { AdviseTable } from './advise-table'
 import { AllSet, MoneyCard } from './cards'
 import { sum } from './format'
@@ -50,7 +51,7 @@ export function AdviseList({ result, user }: Props) {
       )}
 
       {result.skipped.length > 0 && (
-        <aside className="bg-card flex flex-col gap-2 rounded-xl border p-4">
+        <Panel as="aside" className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold">Checked and skipped</h2>
           <ul className="text-muted-foreground flex flex-col gap-1.5 text-sm">
             {result.skipped.map(s => (
@@ -61,7 +62,7 @@ export function AdviseList({ result, user }: Props) {
               </li>
             ))}
           </ul>
-        </aside>
+        </Panel>
       )}
     </div>
   )

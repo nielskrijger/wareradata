@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { Avatar } from '@/components/avatar'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { SectionHeading } from '@/components/detail/section-heading'
+import { Panel } from '@/components/panel'
 import { READINESS_COLOR } from '@/components/readiness-pill-colors'
 import { UserHoverCard } from '@/components/user-hover-card'
 import { formatCompact } from '@/lib/format'
@@ -45,7 +46,7 @@ export function SquadMap({ members }: { members: SquadMember[] }) {
   const laggards = lowDamageForLevel(placed)
 
   return (
-    <section className="bg-card grid gap-6 rounded-md border p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_15rem]">
+    <Panel as="section" className="grid gap-6 md:grid-cols-[minmax(0,1fr)_15rem]">
       <div className="min-w-0">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="font-medium">Squad map</h2>
@@ -75,7 +76,7 @@ export function SquadMap({ members }: { members: SquadMember[] }) {
           </div>
         )}
       </div>
-    </section>
+    </Panel>
   )
 }
 

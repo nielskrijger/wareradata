@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { PointsSplit } from '@/components/detail/points-split'
+import { Panel } from '@/components/panel'
 import { formatNumber, topPercent } from '@/lib/format'
 
 interface Props {
@@ -54,9 +55,9 @@ export function KpiStrip({ points, children }: {
   children: ReactNode
 }) {
   return (
-    <section className="bg-card grid grid-cols-2 gap-4 rounded-md border p-4 sm:p-5 xl:grid-cols-4">
+    <Panel as="section" className="grid grid-cols-2 gap-4 xl:grid-cols-4">
       {children}
       <PointsSplit className="col-span-full" {...points} />
-    </section>
+    </Panel>
   )
 }

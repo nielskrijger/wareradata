@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 
-import { PageTitle } from '@/components/layout/page-title'
+import { PageMain } from '@/components/layout/page-main'
 
+import { PageTitle } from '@/components/layout/page-title'
 import { ExternalLink } from '@/components/links'
 import { Paragraph } from '@/components/paragraph'
 import { pageMetadata } from '@/lib/metadata'
@@ -14,7 +15,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function AboutPage() {
   return (
-    <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
+    <PageMain className="space-y-6">
       <header className="space-y-2">
         <PageTitle>About</PageTitle>
         <Paragraph className="max-w-2xl">
@@ -140,6 +141,6 @@ export default function AboutPage() {
           in-game.
         </Paragraph>
       </section>
-    </main>
+    </PageMain>
   )
 }

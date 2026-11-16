@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { PageMain } from '@/components/layout/page-main'
+import { Panel } from '@/components/panel'
 
 interface Props {
   /**
@@ -20,8 +22,9 @@ interface Props {
  */
 export function DetailSidebar({ wash, avatar, refresh, children }: Props) {
   return (
-    <aside
-      className="bg-card flex flex-col gap-4 self-start rounded-md border p-5"
+    <Panel
+      as="aside"
+      className="flex flex-col gap-4 self-start"
       style={{ backgroundImage: `linear-gradient(180deg, ${wash}, transparent 9rem)` }}
     >
       <div className="flex items-start justify-between gap-2">
@@ -29,7 +32,7 @@ export function DetailSidebar({ wash, avatar, refresh, children }: Props) {
         {refresh}
       </div>
       {children}
-    </aside>
+    </Panel>
   )
 }
 
@@ -66,9 +69,9 @@ export function Fact({ label, children }: { label: string, children: ReactNode }
  */
 export function DetailLayout({ sidebar, children }: { sidebar: ReactNode, children: ReactNode }) {
   return (
-    <main className="grid grid-cols-1 gap-4 px-6 py-8 sm:px-8 lg:px-12 xl:grid-cols-[23.5rem_minmax(0,1fr)]">
+    <PageMain className="grid grid-cols-1 gap-4 xl:grid-cols-[23.5rem_minmax(0,1fr)]">
       {sidebar}
       <div className="flex min-w-0 flex-col gap-4">{children}</div>
-    </main>
+    </PageMain>
   )
 }

@@ -1,4 +1,4 @@
-import type { AdvisorInput, Bar } from './build'
+import type { AdvisorInput, Bar } from './types'
 import type { ItemPrices } from '@/lib/factories/profit'
 import type { AdviceData, GameConfig } from '@/lib/warera/api'
 

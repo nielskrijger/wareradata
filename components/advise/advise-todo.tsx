@@ -1,6 +1,6 @@
 'use client'
 
-import type { AdvisorResult, TodoItem } from '@/lib/advisor/build'
+import type { AdvisorResult, TodoItem } from '@/lib/advisor/types'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 

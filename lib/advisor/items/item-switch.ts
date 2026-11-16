@@ -1,0 +1,75 @@
+import type { AdvisorCompany, AdvisorInput, TodoItem } from '../types'
+
+import { humanizeItem } from '@/components/factories/format'
+
+import {
+  basePerHour,
+  HOURS_PER_DAY,
+  RULES,
+} from '../model'
+import { fmt, specializationPct, toolPct } from '../shared'
+
+/**
+ * An item change must pay back its cost within this many days.
+ */
+const ITEM_PAYBACK_DAYS = 3
+
+/**
+ * The best item to switch to, net of lost specialization, when it repays the switch
+ * cost in time. Also returns the new item's value so staff are judged on it.
+ */
+export function itemSwitchItem(
+  input: AdvisorInput,
+  c: AdvisorCompany,
+  vppByItem: Map<string, number>,
+): { item: TodoItem, vpp: number } | null {
+  const current = vppByItem.get(c.itemCode)
+  if (current == null) {
+    return null
+  }
+
+  const working = c.employees.filter(e => !e.companyDisabled)
+  const employeePoints = working.reduce((s, e) => s + HOURS_PER_DAY * (e.estimate?.production ?? 0), 0)
+  const pointsNow = c.enginePointsPerDay + employeePoints
+
+  let best: { code: string, gain: number, specFrom: number, specTo: number } | null = null
+  for (const [code, vpp] of vppByItem) {
+    if (code === c.itemCode || vpp <= current) {
+      continue
+    }
+
+    let specLoss = 0
+    let specFrom = 0
+    let specTo = 0
+    for (const e of working) {
+      const from = specializationPct(e)
+      const to = Math.min(e.specializations?.[code] ?? 0, RULES.specializationCapPct)
+      specLoss += HOURS_PER_DAY * basePerHour(e) * (from - to) / 100
+      specFrom += from
+      specTo += to
+    }
+
+    const gain = (pointsNow - specLoss) * vpp - pointsNow * current
+    if (!best || gain > best.gain) {
+      best = { code, gain, specFrom, specTo }
+    }
+  }
+
+  if (!best || best.gain * ITEM_PAYBACK_DAYS <= input.changeItemCost) {
+    return null
+  }
+
+  const n = working.length || 1
+  const hasTools = working.some(e => toolPct(e) > 0)
+
+  const item: TodoItem = {
+    id: `item-${c.id}`,
+    kind: 'item',
+    title: `Switch ${c.name} from ${humanizeItem(c.itemCode)} to ${humanizeItem(best.code)}`,
+    why: `${humanizeItem(best.code)} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemCost} gold.${hasTools ? ' Check the tools fit the new item.' : ''}`,
+    gainPerDay: best.gain,
+    energy: 0,
+  }
+
+  return { item, vpp: vppByItem.get(best.code) ?? current }
+}

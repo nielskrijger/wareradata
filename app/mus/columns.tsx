@@ -82,7 +82,7 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
       localeNumberColumn<MURow>('terrain', 'Terrain', { heat: 'median', width: 105 }),
     ],
     muSpecific: [
-      localeNumberColumn<MURow>('reputation', 'Reputation', { heat: 'median', center: 0, width: 135 }),
+      localeNumberColumn<MURow>('reputation', 'Reputation', { heat: 'median', heatCenter: 0, width: 135 }),
       {
         accessorKey: 'dormitoriesLevel',
         header: 'Dorms',

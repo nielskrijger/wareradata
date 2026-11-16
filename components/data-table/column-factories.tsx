@@ -1,11 +1,12 @@
 import type { RowData } from '@tanstack/react-table'
 
-import type { ColumnDef } from './features'
+import type { ColumnDef, DataColumnMeta } from './features'
+
+import type { PointsStat } from '@/components/cells/points-breakdown-cell'
 
 import type { ReadinessPill } from '@/lib/rows'
 
 import type { RankingTier } from '@/lib/warera/api'
-
 import { GearScorePill } from '@/components/badges/gear-score-pill'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CombatModeShareCell } from '@/components/cells/combat-mode-share-cell'
@@ -73,21 +74,14 @@ export function dateColumn<T extends RowData>(
 export function localeNumberColumn<T extends RowData>(
   key: Key<T>,
   header: string,
-  opts: { heat?: HeatMode, center?: number, logScale?: boolean, width?: number, tooltip?: string } = {},
+  opts: Pick<DataColumnMeta, 'heat' | 'heatCenter' | 'heatLogScale' | 'width' | 'tooltip' | 'hiddenByDefault'> = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
     header,
     cell: ({ row }) => (row.original[key] as number | null)?.toLocaleString() ?? null,
     sortDescFirst: true,
-    meta: {
-      heat: opts.heat,
-      heatCenter: opts.center,
-      heatLogScale: opts.logScale,
-      align: 'right',
-      width: opts.width ?? 100,
-      tooltip: opts.tooltip,
-    },
+    meta: { align: 'right', width: 100, ...opts },
   }
 }
 
@@ -188,14 +182,14 @@ export function combatModeColumn<T extends { avgWarShare: number | null }>(
 /**
  * The headline points column: a {@link PointsBreakdownCell} reading the entity's
  * total (`totalKey`) plus the fixed `levelPoints`/`damagePoints`/`wealthPoints`
- * breakdown every row carries.
+ * breakdown every row carries. `stats` adds rows (averages, rates) to the tooltip.
  */
 export function pointsBreakdownColumn<
   T extends { levelPoints: number, damagePoints: number, wealthPoints: number },
 >(
   totalKey: Key<T>,
   header: string,
-  opts: { width?: number, tooltip?: string } = {},
+  opts: { width?: number, tooltip?: string, stats?: (row: T) => PointsStat[] } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: totalKey,
@@ -206,6 +200,7 @@ export function pointsBreakdownColumn<
         level={row.original.levelPoints}
         damage={row.original.damagePoints}
         wealth={row.original.wealthPoints}
+        stats={opts.stats?.(row.original)}
       />
     ),
     sortDescFirst: true,

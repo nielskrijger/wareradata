@@ -33,23 +33,32 @@ interface PointsRow {
 }
 
 /**
- * Member-summed total points plus the two per-member averages; `who` names the
+ * Member-summed total points with the per-member averages in its tooltip. The
+ * averages also have their own hidden columns, for sorting. `who` names the
  * collective in the tooltips.
  */
 export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
   const one = who.slice(0, -1)
 
   return [
-    pointsBreakdownColumn<T>('totalPoints' as Key<T>, 'Total', { tooltip: `Combined points of all ${who}.` }),
+    pointsBreakdownColumn<T>('totalPoints' as Key<T>, 'Points', {
+      tooltip: `Combined points of all ${who}.`,
+      stats: row => [
+        { label: `Average per ${one}`, value: row.avgPoints },
+        { label: `Avg / day per ${one}`, value: row.avgPointsPerDay },
+      ],
+    }),
     localeNumberColumn<T>('avgPoints' as Key<T>, 'Average', {
       heat: 'median',
       width: 110,
       tooltip: `Average points per ${one}.`,
+      hiddenByDefault: true,
     }),
     localeNumberColumn<T>('avgPointsPerDay' as Key<T>, 'Avg / day', {
       heat: 'median',
       width: 125,
       tooltip: `Average points earned per day, per ${one}.`,
+      hiddenByDefault: true,
     }),
   ]
 }
@@ -270,13 +279,13 @@ export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
   return [
     localeNumberColumn<T>('standardCasesOpened' as Key<T>, 'Standard Cases', {
       heat: 'ramp',
-      logScale: true,
+      heatLogScale: true,
       width: 155,
       tooltip: 'Standard cases opened.',
     }),
     localeNumberColumn<T>('mythicCasesOpened' as Key<T>, 'Mythic Cases', {
       heat: 'ramp',
-      logScale: true,
+      heatLogScale: true,
       width: 140,
       tooltip: 'Premium mythic cases opened.',
     }),
@@ -293,7 +302,7 @@ export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
 
       return localeNumberColumn<T>(`cases${label}` as Key<T>, label, {
         heat: 'ramp',
-        logScale: true,
+        heatLogScale: true,
         width: CASE_RARITY_WIDTHS[rarity],
       })
     }),

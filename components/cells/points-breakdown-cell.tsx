@@ -5,19 +5,25 @@ import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
+export interface PointsStat {
+  label: string
+  value: number | null
+}
+
 interface Props {
   total: number
   level: number
   damage: number
   wealth: number
+  stats?: PointsStat[]
 }
 
 /**
- * Renders a points total in a table cell with a hover tooltip that breaks
- * it down into the three contributing slices (level, damage, wealth), each as
- * an icon-led row with its value, percent, and a mini bar.
+ * Renders a points total in a table cell with a hover tooltip listing any
+ * extra `stats` (averages, rates), then the three contributing slices (level,
+ * damage, wealth), each as an icon-led row with its value, percent, and a mini bar.
  */
-export function PointsBreakdownCell({ total, level, damage, wealth }: Props) {
+export function PointsBreakdownCell({ total, level, damage, wealth, stats = [] }: Props) {
   const slices = [
     { label: 'Level' as const, value: level },
     { label: 'Damage' as const, value: damage },
@@ -25,6 +31,7 @@ export function PointsBreakdownCell({ total, level, damage, wealth }: Props) {
   ].sort((a, b) => b.value - a.value)
 
   const max = Math.max(level, damage, wealth)
+  const shownStats = stats.filter((s): s is { label: string, value: number } => s.value !== null)
 
   return (
     <Tooltip>
@@ -33,9 +40,19 @@ export function PointsBreakdownCell({ total, level, damage, wealth }: Props) {
       </TooltipTrigger>
       <TooltipContent align="end" side="top" className="w-60 px-3 py-2">
         <div className="mb-2 flex items-baseline justify-between">
-          <span className="font-medium">Points breakdown</span>
+          <span className="font-medium">Points</span>
           <span className="font-medium tabular-nums">{total.toLocaleString()}</span>
         </div>
+        {shownStats.length > 0 && (
+          <dl className="mb-2 space-y-1 border-b border-white/10 pb-2 tabular-nums">
+            {shownStats.map(s => (
+              <div key={s.label} className="flex justify-between gap-3">
+                <dt className="opacity-70">{s.label}</dt>
+                <dd>{s.value.toLocaleString()}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
         <dl className="space-y-1.5">
           {slices.map(s => (
             <BreakdownRow key={s.label} label={s.label} value={s.value} total={total} max={max} />

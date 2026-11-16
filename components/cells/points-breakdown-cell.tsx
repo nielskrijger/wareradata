@@ -5,6 +5,7 @@ import { TooltipHeading, TooltipRow } from '@/components/cells/tooltip-ledger'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { formatNumber } from '@/lib/format'
 
 export interface PointsStat {
   label: string
@@ -37,13 +38,13 @@ export function PointsBreakdownCell({ total, level, damage, wealth, stats = [] }
   return (
     <Tooltip>
       <TooltipTrigger className="hover:text-foreground cursor-default">
-        {total.toLocaleString()}
+        {formatNumber(total)}
       </TooltipTrigger>
       <TooltipContent align="end" side="top" className="w-60 px-3 py-2">
-        <TooltipHeading label="Points">{total.toLocaleString()}</TooltipHeading>
+        <TooltipHeading label="Points">{formatNumber(total)}</TooltipHeading>
         {shownStats.length > 0 && (
           <div className="mb-2 space-y-1 border-b border-white/10 pb-2">
-            {shownStats.map(s => <TooltipRow key={s.label} label={s.label}>{s.value.toLocaleString()}</TooltipRow>)}
+            {shownStats.map(s => <TooltipRow key={s.label} label={s.label}>{formatNumber(s.value)}</TooltipRow>)}
           </div>
         )}
         <dl className="space-y-1.5">
@@ -72,7 +73,7 @@ function BreakdownRow({ label, value, total, max }: RowProps) {
       <div className="flex items-center gap-1.5 tabular-nums">
         <Icon className="size-3 shrink-0" style={{ color }} />
         <span className="flex-1">{label}</span>
-        <span>{value.toLocaleString()}</span>
+        <span>{formatNumber(value)}</span>
         <span className="w-8 text-right opacity-60">
           {pct}
           %

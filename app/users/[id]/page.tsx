@@ -22,7 +22,7 @@ import { ProfileSidebar } from '@/components/profile/profile-sidebar'
 import { WAR_COLOR } from '@/components/war-eco-colors'
 import { getSnapshot } from '@/lib/cache/memory'
 import { getUserEquipment } from '@/lib/cache/users'
-import { EMPTY } from '@/lib/format'
+import { EMPTY, formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 
 import { getUserCasesByType } from '@/lib/warera/api'
@@ -129,8 +129,8 @@ export default async function UserDetailPage({ params }: PageProps) {
         <Kpi
           label="Points"
           icon={<Trophy />}
-          value={user.points.toLocaleString()}
-          sub={user.pointsPerDay != null ? `${user.pointsPerDay.toLocaleString()}/day` : undefined}
+          value={formatNumber(user.points)}
+          sub={user.pointsPerDay != null ? `${formatNumber(user.pointsPerDay)}/day` : undefined}
         />
         <Kpi
           label="Damage"

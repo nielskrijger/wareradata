@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { SectionHeading } from '@/components/detail/section-heading'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
+import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CASE_RARITIES } from '@/lib/warera/api'
 
@@ -111,10 +112,10 @@ export function CasesSummary({
       <div className="flex items-baseline justify-between gap-2 text-sm">
         <span className="text-muted-foreground">Opened</span>
         <span className="tabular-nums">
-          {active.opened == null ? <EmptyDash /> : active.opened.toLocaleString()}
+          {active.opened == null ? <EmptyDash /> : formatNumber(active.opened)}
           {seg === 'all' && rank != null && combinedOpened != null && rankOf != null && (
             <span className="text-muted-foreground/60 ml-2 text-xs">
-              #{rank.toLocaleString()} of {rankOf.toLocaleString()}
+              #{formatNumber(rank)} of {formatNumber(rankOf)}
             </span>
           )}
         </span>
@@ -136,7 +137,7 @@ export function CasesSummary({
                 <div key={rarity} className={cn('inline-flex items-center gap-1', count === 0 && 'opacity-40')}>
                   <span className="size-2 shrink-0 rounded-full" style={{ background: RARITY_COLOR[rarity] }} />
                   <dt className="capitalize">{rarity}</dt>
-                  <dd className="text-foreground">{count.toLocaleString()}</dd>
+                  <dd className="text-foreground">{formatNumber(count)}</dd>
                 </div>
               )
             })}

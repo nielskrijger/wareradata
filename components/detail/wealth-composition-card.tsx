@@ -3,6 +3,7 @@ import type { Range } from '@/lib/query'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { EmptyDash } from '@/components/empty-dash'
+import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 export interface WealthPart {
@@ -74,7 +75,7 @@ function WealthRow({ label, value, range, rank }: WealthPart) {
         {rank != null && value != null && (
           <span className="text-muted-foreground/60 w-14 text-right text-xs">
             #
-            {rank.toLocaleString()}
+            {formatNumber(rank)}
           </span>
         )}
       </dd>

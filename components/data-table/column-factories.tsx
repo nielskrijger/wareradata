@@ -17,6 +17,7 @@ import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
 import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
+import { formatDecimal, formatNumber } from '@/lib/format'
 import { readinessScore } from '@/lib/rows'
 
 /**
@@ -80,9 +81,26 @@ export function localeNumberColumn<T extends RowData>(
   return {
     accessorKey: key,
     header,
-    cell: ({ row }) => (row.original[key] as number | null)?.toLocaleString() ?? null,
+    cell: ({ row }) => formatNumber(row.original[key] as number | null),
     sortDescFirst: true,
     meta: { align: 'right', width: 100, ...opts },
+  }
+}
+
+/**
+ * Right-aligned score with a fixed decimal (development).
+ */
+export function decimalColumn<T extends RowData>(
+  key: Key<T>,
+  header: string,
+  opts: { width?: number, tooltip?: string } = {},
+): ColumnDef<T> {
+  return {
+    accessorKey: key,
+    header,
+    cell: ({ row }) => formatDecimal(row.original[key] as number | null),
+    sortDescFirst: true,
+    meta: { heat: 'median', align: 'right', width: opts.width, tooltip: opts.tooltip },
   }
 }
 
@@ -106,7 +124,7 @@ export function rankTooltipColumn<T extends RowData>(
         <ValueWithRankTooltip
           rank={row.original[rankKey] as number | null}
           label={opts.rankLabel ?? header}
-          value={value?.toLocaleString()}
+          value={formatNumber(value)}
         >
           <CompactNumber value={value} />
         </ValueWithRankTooltip>

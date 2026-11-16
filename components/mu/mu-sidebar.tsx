@@ -13,6 +13,7 @@ import { VitalRows } from '@/components/detail/vitals-card'
 import { EmptyDash } from '@/components/empty-dash'
 import { ExternalLink } from '@/components/links'
 import { ReadinessRows } from '@/components/readiness-pill-card'
+import { formatNumber } from '@/lib/format'
 import { classifyWarShare } from '@/lib/skills/classify'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -50,7 +51,7 @@ export function MUSidebar({ mu, refresh }: { mu: MURow, refresh: ReactNode }) {
           <Fact label="Leader">
             {mu.leaderName ? <LeaderCell leader={mu} /> : <EmptyDash />}
           </Fact>
-          <Fact label="Members">{mu.memberCount.toLocaleString()}</Fact>
+          <Fact label="Members">{formatNumber(mu.memberCount)}</Fact>
           <Fact label="Headquarters"><Level value={mu.headquartersLevel} /></Fact>
           <Fact label="Dormitories"><Level value={mu.dormitoriesLevel} /></Fact>
         </dl>

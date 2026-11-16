@@ -12,6 +12,7 @@ import { MUsTable } from '@/app/mus/mus-table'
 import { PartiesTable } from '@/app/parties/parties-table'
 import { UsersTable } from '@/app/users/users-table'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
+import { formatNumber } from '@/lib/format'
 
 const TABS = ['citizens', 'mus', 'parties', 'battles'] as const
 type Tab = (typeof TABS)[number]
@@ -76,7 +77,7 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
         <TabsTab value="citizens">Citizens</TabsTab>
         <TabsTab value="mus">MUs</TabsTab>
         <TabsTab value="parties">Parties</TabsTab>
-        <TabsTab value="battles">{`Active Battles (${battles.total.toLocaleString()})`}</TabsTab>
+        <TabsTab value="battles">{`Active Battles (${formatNumber(battles.total)})`}</TabsTab>
       </TabsList>
 
       <TabsPanel value="citizens" className="pt-4">

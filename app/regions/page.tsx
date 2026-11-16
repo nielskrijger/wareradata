@@ -6,9 +6,10 @@ import { NoDataPage } from '@/components/layout/no-data-page'
 
 import { PageShell } from '@/components/layout/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
+import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-import { firstPage } from '@/lib/query'
 
+import { firstPage } from '@/lib/query'
 import { RegionsTable } from './regions-table'
 
 export const metadata: Metadata = pageMetadata({
@@ -30,7 +31,7 @@ export default async function RegionsPage() {
   return (
     <PageShell
       title="Regions"
-      subtitle={`All ${initial.total.toLocaleString()} regions in WarEra.io.`}
+      subtitle={`All ${formatNumber(initial.total)} regions in WarEra.io.`}
     >
       <RegionsTable initial={initial} />
     </PageShell>

@@ -1,3 +1,4 @@
+import { EntityIconCell } from '@/components/cells/entity-icon-cell'
 import { TableAvatar } from '@/components/cells/table-avatar'
 import { EmptyDash } from '@/components/empty-dash'
 import { InternalLink } from '@/components/links'
@@ -28,18 +29,27 @@ interface Props {
    * Shown as a small flag on the avatar.
    */
   countryCode?: string | null
+
+  /**
+   * Show only the avatar, with the name in a tooltip. Needs `avatarUrl`.
+   */
+  iconOnly?: boolean
 }
 
 /**
  * Links to the MU page when there's an id, else to /users filtered to the MU
  * (quoted, since MU names contain spaces).
  */
-export function MUCell({ muName, muId, avatarUrl, bold, countryCode }: Props) {
+export function MUCell({ muName, muId, avatarUrl, bold, countryCode, iconOnly }: Props) {
   if (!muName) {
     return <EmptyDash />
   }
 
   const href = muId ? `/mus/${muId}` : `/users?q=${encodeURIComponent(`mu:"${muName}"`)}`
+
+  if (iconOnly && avatarUrl !== undefined) {
+    return <EntityIconCell href={href} name={muName} avatarUrl={avatarUrl} kind="Military unit" />
+  }
 
   const link = (
     <InternalLink href={href} bold={bold} title={muName} className="truncate">

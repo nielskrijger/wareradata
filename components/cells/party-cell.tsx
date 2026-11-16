@@ -1,3 +1,4 @@
+import { EntityIconCell } from '@/components/cells/entity-icon-cell'
 import { TableAvatar } from '@/components/cells/table-avatar'
 import { EmptyDash } from '@/components/empty-dash'
 import { InternalLink } from '@/components/links'
@@ -28,6 +29,11 @@ interface Props {
    * Shown as a small flag on the avatar.
    */
   countryCode?: string | null
+
+  /**
+   * Show only the avatar, with the name in a tooltip. Needs `avatarUrl`.
+   */
+  iconOnly?: boolean
 }
 
 /**
@@ -37,12 +43,16 @@ interface Props {
  * links to /users prefiltered to everyone in that party (`?q=party:"<name>"` —
  * quoted because party names often contain spaces).
  */
-export function PartyCell({ partyName, partyId, avatarUrl, bold, countryCode }: Props) {
+export function PartyCell({ partyName, partyId, avatarUrl, bold, countryCode, iconOnly }: Props) {
   if (!partyName) {
     return <EmptyDash />
   }
 
   const href = partyId ? `/parties/${partyId}` : `/users?q=${encodeURIComponent(`party:"${partyName}"`)}`
+
+  if (iconOnly && avatarUrl !== undefined) {
+    return <EntityIconCell href={href} name={partyName} avatarUrl={avatarUrl} kind="Party" />
+  }
 
   const link = (
     <InternalLink href={href} bold={bold} title={partyName} className="truncate">

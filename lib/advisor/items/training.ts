@@ -2,9 +2,9 @@ import type { CardKind } from '../model'
 import type { AdvisorCompany, AdvisorInput, SkippedItem, TodoItem } from '../types'
 
 import {
-  canTrain,
   cardGainsPerDay,
   payingDays,
+  trainingsLeft,
 } from '../model'
 import { firstName, MIN_GAIN_PER_DAY, signedFmt, titleAt } from '../shared'
 
@@ -25,7 +25,8 @@ export function trainingItems(input: AdvisorInput, c: AdvisorCompany, vpp: numbe
   const items: TodoItem[] = []
 
   for (const e of c.employees) {
-    if (!canTrain(e)) {
+    const draws = trainingsLeft(e)
+    if (!draws) {
       continue
     }
 
@@ -42,7 +43,6 @@ export function trainingItems(input: AdvisorInput, c: AdvisorCompany, vpp: numbe
       continue
     }
 
-    const draws = Math.min(e.potential ?? 0, (e.trainingsPerDay ?? 1) - (e.trainingsToday ?? 0))
     const card = (k: CardKind) => CARD_LABEL[k].split(' ')[0]
     const others = ranked.slice(1).map(k => `${signedFmt(gains[k])} for ${card(k)}`).join(' and ')
     items.push({

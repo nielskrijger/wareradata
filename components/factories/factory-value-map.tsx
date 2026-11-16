@@ -8,6 +8,7 @@ import { ItemIcon } from '@/components/item-icon'
 import { Panel } from '@/components/panel'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { potentialLeft } from '@/lib/factories/employee-stats'
 import { cn } from '@/lib/utils'
 
 import { EmployeeBreakdown } from './employee-breakdown'
@@ -65,7 +66,7 @@ function ticks(max: number, count = 5): number[] {
 
 function EmployeeDot({ p, x, y }: { p: Point, x: number, y: number }) {
   // Larger dots have more room to train, the cheapest upside to act on.
-  const r = 4 + Math.max(0, p.e.potentialMax - p.e.potential) * 0.4
+  const r = 4 + potentialLeft(p.e) * 0.4
 
   return (
     <Tooltip>

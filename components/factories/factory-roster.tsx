@@ -133,7 +133,8 @@ function TraitChips({ e }: { e: LedgerEmployee }) {
     <span className="flex flex-wrap items-center gap-1">
       {e.traits.map(t => hasTraitIcon(t.code) ? (
         <Tooltip key={t.code + (t.arg ?? '')}>
-          <TooltipTrigger render={<span className="inline-flex" />}>
+          {/* Fade traits that do nothing for this employee, as warera.io does. */}
+          <TooltipTrigger render={<span className={cn('inline-flex', !t.effects.length && 'opacity-50')} />}>
             <TraitIcon code={t.code} label={traitLabel(t.code, t.arg)} />
           </TooltipTrigger>
           <TooltipContent>

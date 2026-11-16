@@ -22,9 +22,9 @@ import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
-
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
+
 import { MembersTable } from './members-table'
 
 interface PageProps {

@@ -1,4 +1,6 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { RowData } from '@tanstack/react-table'
+
+import type { ColumnDef } from './features'
 
 import type { ReadinessPill } from '@/lib/rows'
 
@@ -38,7 +40,7 @@ type Key<T> = Extract<keyof T, string>
 /**
  * Right-aligned `<CompactNumber>` cell (damage, wealth, bounty, money pools …).
  */
-export function compactNumberColumn<T>(
+export function compactNumberColumn<T extends RowData>(
   key: Key<T>,
   header: string,
   opts: { heat?: HeatMode, width?: number, tooltip?: string } = {},
@@ -57,7 +59,7 @@ export function compactNumberColumn<T>(
  * keeps the stored UTC date instead of shifting it into the viewer's zone.
  * Shared by the "Joined" / "Founded" columns.
  */
-export function dateColumn<T>(
+export function dateColumn<T extends RowData>(
   key: Key<T>,
   header: string,
   opts: { width?: number } = {},
@@ -75,7 +77,7 @@ export function dateColumn<T>(
  * Right-aligned locale-formatted integer (`12,345`), null-safe. Suits both the
  * nullable averages (avgPoints) and the always-present totals (gems, premium).
  */
-export function localeNumberColumn<T>(
+export function localeNumberColumn<T extends RowData>(
   key: Key<T>,
   header: string,
   opts: { heat?: HeatMode, center?: number, logScale?: boolean, width?: number, tooltip?: string } = {},
@@ -100,7 +102,7 @@ export function localeNumberColumn<T>(
  * A `<CompactNumber>` value whose companion rank shows on hover, sorted by the
  * rank field (ascending = best), so no separate rank column is needed.
  */
-export function rankTooltipColumn<T>(
+export function rankTooltipColumn<T extends RowData>(
   valueKey: Key<T>,
   rankKey: Key<T>,
   header: string,
@@ -123,7 +125,7 @@ export function rankTooltipColumn<T>(
 /**
  * Inline 0-100 `<PercentBar>` (health, hunger).
  */
-export function percentBarColumn<T>(
+export function percentBarColumn<T extends RowData>(
   key: Key<T>,
   header: string,
   opts: { width?: number, tooltip?: string } = {},
@@ -142,7 +144,7 @@ export function percentBarColumn<T>(
  * Rarity-tinted `<TierBadge>` for a {@link RankingTier} field. Header defaults
  * to "Tier".
  */
-export function tierColumn<T>(
+export function tierColumn<T extends RowData>(
   key: Key<T>,
   opts: { header?: string, width?: number } = {},
 ): ColumnDef<T> {
@@ -225,7 +227,7 @@ export function pointsBreakdownColumn<
 /**
  * Rarity-tinted 0-100 gear-score pill (a player's gear, or a member average).
  */
-export function gearColumn<T>(
+export function gearColumn<T extends RowData>(
   key: Key<T>,
   header: string,
   opts: { width?: number, tooltip?: string } = {},
@@ -271,7 +273,7 @@ export function countryColumn<
  * A null-safe percentage cell (`12%`, or `1.5%` with `decimals`), for policy
  * rates (taxes, unrest) where the stored value is the percent.
  */
-export function percentColumn<T>(
+export function percentColumn<T extends RowData>(
   key: Key<T>,
   header: string,
   opts: {

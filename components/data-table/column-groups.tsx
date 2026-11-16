@@ -1,4 +1,4 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef } from './features'
 
 import type { CaseRarity } from '@/lib/warera/api'
 

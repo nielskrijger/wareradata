@@ -1,7 +1,9 @@
-import type { Header } from '@tanstack/react-table'
+import type { Header, RowData } from '@tanstack/react-table'
 import type { CSSProperties } from 'react'
 
-import { flexRender } from '@tanstack/react-table'
+import type { DataTableFeatures } from './features'
+
+import { FlexRender } from '@tanstack/react-table'
 
 import { TableHead } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -10,8 +12,8 @@ import { cn } from '@/lib/utils'
 import { CATEGORY_META, columnCategory } from './column-categories'
 import { SortIcon } from './sort-icon'
 
-interface Props<TData> {
-  header: Header<TData, unknown>
+interface Props<TData extends RowData> {
+  header: Header<DataTableFeatures, TData>
   sticky?: boolean
 }
 
@@ -28,7 +30,7 @@ const STICKY = 'bg-table-surface sticky left-0 z-20 shadow-[4px_0_6px_-2px_rgba(
  */
 const STICKY_WIDTH = 'w-[140px] sm:w-[var(--col-w)]'
 
-export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
+export function DataTableHeaderCell<TData extends RowData>({ header, sticky }: Props<TData>) {
   if (header.isPlaceholder) {
     return <TableHead className={sticky ? STICKY : undefined} />
   }
@@ -46,7 +48,7 @@ export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
         : { width: `${width}px` })
     : undefined
 
-  const rendered = flexRender(header.column.columnDef.header, header.getContext())
+  const rendered = <FlexRender header={header} />
 
   // Prefix each column with its category's icon, the same symbol the Columns
   // menu shows for that group (Points trophy, Combat swords, Wealth coin, …).

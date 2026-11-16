@@ -1,15 +1,12 @@
 'use client'
 
-import type { ColumnDef, RowData } from '@tanstack/react-table'
+import type { RowData } from '@tanstack/react-table'
 import type { ReactNode } from 'react'
 
-import type { Category } from './column-categories'
+import type { ColumnDef } from './features'
 
 import type { Range } from '@/lib/query'
-import {
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
+import { useTable } from '@tanstack/react-table'
 import { RotateCw, X } from 'lucide-react'
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react'
 
@@ -27,92 +24,10 @@ import { cn } from '@/lib/utils'
 import { ColumnsMenu } from './columns-menu'
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
+import { dataTableFeatures } from './features'
 import { Pagination } from './pagination'
 import { usePersistedColumnVisibility } from './use-persisted-column-visibility'
 import { useTableUrlState } from './use-table-url-state'
-
-/**
- * Extend TanStack's `columnDef.meta` so column defs can declare `meta:
- * { align: 'right', minWidth: 80 }` in a type-safe way. The generics match
- * the library's signature (required for declaration merging) but go unused
- * here.
- */
-declare module '@tanstack/react-table' {
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  interface ColumnMeta<TData extends RowData, TValue> {
-    align?: 'left' | 'right'
-
-    /**
-     * Column width in px. With table-layout: fixed (set on the <Table>),
-     * this is the actual rendered width — content overflowing gets the
-     * whitespace-nowrap + ellipsis treatment from TableCell.
-     */
-    width?: number
-
-    /**
-     * Heat-tint the cell text by the column's value relative to the dataset
-     * range (see HeatCell). `'ramp'` = green-only full gradient (min neutral →
-     * max full green); `'median'` = diverging green→red centered on the
-     * median, higher is better; `'invert'` = diverging the other way (lower is
-     * better) centered on the midpoint, for ranks/taxes; `'invertMedian'` =
-     * lower is better but centered on the median, for skewed columns like wars.
-     * The accessorKey must match a key present in the response `ranges`.
-     */
-    heat?: 'ramp' | 'median' | 'invert' | 'invertMedian'
-
-    /**
-     * For diverging columns (`'median'` / `'invert'`), the value that reads
-     * neutral (no tint). Defaults to the median (`'median'`) or dataset
-     * midpoint (`'invert'`); set it for scales with a meaningful baseline,
-     * e.g. `10` so a 10% tax is neutral, lower greens, higher reds.
-     */
-    heatCenter?: number
-
-    /**
-     * Compress the heat scale logarithmically for extremely skewed columns
-     * (e.g. casesOpened, spanning 1 → 170k) so typical values still get tinted
-     * instead of everything reading neutral until the lone outlier.
-     */
-    heatLogScale?: boolean
-
-    /**
-     * Flip the sort-direction indicator. For rank columns sorted ascending
-     * (rank #1 first), the up-arrow reads as "smallest first" → confusing
-     * since "smallest" is actually the best. Setting this true shows the
-     * down-arrow on asc and up-arrow on desc so the icon points toward the
-     * "less good" end of the column.
-     */
-    sortInvert?: boolean
-
-    /**
-     * The column's category, driving the Columns-menu grouping, the header icon,
-     * and column ordering. Set by buildColumns from the group the column was
-     * declared in (see column-categories.ts); columns left unstamped fall back to
-     * General. Authoring it by hand is unnecessary in a buildColumns table.
-     */
-    category?: Category
-
-    /**
-     * Help text shown in a tooltip when hovering the column header. Use for
-     * columns whose terse label benefits from a word of explanation.
-     */
-    tooltip?: string
-
-    /**
-     * Extra classes for the body TableCell, e.g. `relative` so the cell
-     * renderer can paint a full-bleed background layer (`absolute inset-0`)
-     * that tracks the row height. A negative-margin wrapper can't: its height
-     * stays that of its own content, so it falls short when another cell makes
-     * the row taller.
-     */
-    cellClassName?: string
-  }
-
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  interface TableMeta<TData extends RowData> {
-    ranges?: Record<string, Range>
-  }
-}
 
 export interface PageRequest {
   page: number
@@ -122,7 +37,7 @@ export interface PageRequest {
   filter: string
 }
 
-export interface PageResult<TData> {
+export interface PageResult<TData extends RowData> {
   rows: TData[]
   total: number
 
@@ -132,14 +47,14 @@ export interface PageResult<TData> {
   ranges?: Record<string, Range>
 }
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends RowData> {
   /**
    * Names the table's remembered column visibility. Tables sharing a column
    * set share an id, so hiding a column on /users also hides it on a country's
    * citizens tab.
    */
   tableId: string
-  columns: ColumnDef<TData, TValue>[]
+  columns: ColumnDef<TData>[]
   initialData: PageResult<TData>
   initialSort: { id: string, desc: boolean }
 
@@ -163,7 +78,7 @@ interface DataTableProps<TData, TValue> {
  * search params (via nuqs `useTableUrlState` -> `useSearchParams`). Next
  * requires a Suspense boundary around any client component that reads them.
  */
-export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
   return (
     <Suspense>
       <DataTableInner {...props} />
@@ -171,7 +86,7 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
   )
 }
 
-function DataTableInner<TData, TValue>({
+function DataTableInner<TData extends RowData>({
   tableId,
   columns,
   initialData,
@@ -180,7 +95,7 @@ function DataTableInner<TData, TValue>({
   fetchPage,
   searchPlaceholder = 'Filter…',
   searchHint,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData>) {
   const {
     q,
     filterInput,
@@ -258,21 +173,18 @@ function DataTableInner<TData, TValue>({
 
   const pageCount = Math.max(1, Math.ceil(data.total / pageSize))
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data: data.rows,
     columns,
-    state: { sorting, columnVisibility, pagination: { pageIndex, pageSize } },
+    state: { sorting, columnVisibility },
     onSortingChange: setSorting,
     onColumnVisibilityChange: updater => setColumnVisibility(
       updater,
       table.getAllLeafColumns().filter(c => c.getCanHide()).map(c => c.id),
     ),
-    manualPagination: true,
     manualSorting: true,
-    manualFiltering: true,
-    pageCount,
     meta: { ranges: data.ranges },
-    getCoreRowModel: getCoreRowModel(),
   })
 
   const rows = table.getRowModel().rows

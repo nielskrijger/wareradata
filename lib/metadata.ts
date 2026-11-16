@@ -1,8 +1,21 @@
 import type { Metadata } from 'next'
 
+export const SITE_URL = 'https://wareradata.com'
+
 export const SITE_NAME = 'Warera Data'
 
 export const SITE_DESCRIPTION = 'Sortable, filterable datatables of War Era game data.'
+
+/**
+ * A static file rather than `opengraph-image`, whose file-based image Next
+ * drops on any page that sets its own `openGraph`, as every page does.
+ */
+export const SHARE_IMAGE = {
+  url: '/og-image.png',
+  width: 1200,
+  height: 630,
+  alt: SITE_NAME,
+}
 
 interface PageMeta {
   /**
@@ -34,11 +47,13 @@ export function pageMetadata({ title, description, path }: PageMeta): Metadata {
       url: path,
       title: fullTitle,
       description,
+      images: [SHARE_IMAGE],
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title: fullTitle,
       description,
+      images: [SHARE_IMAGE],
     },
   }
 }

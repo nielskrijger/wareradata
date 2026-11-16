@@ -8,7 +8,7 @@ import { SiteFooter } from '@/components/layout/site-footer'
 import { SiteNav, SiteNavFallback } from '@/components/layout/site-nav'
 import { ThemeProvider } from '@/components/layout/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/metadata'
+import { SHARE_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/metadata'
 
 import 'flag-icons/css/flag-icons.min.css'
 import './globals.css'
@@ -30,7 +30,7 @@ const bebasNeue = Bebas_Neue({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://wareradata.com'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_NAME,
     template: `%s — ${SITE_NAME}`,
@@ -41,11 +41,13 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
+    images: [SHARE_IMAGE],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
+    images: [SHARE_IMAGE],
   },
 }
 

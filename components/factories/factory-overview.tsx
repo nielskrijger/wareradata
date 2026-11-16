@@ -7,7 +7,7 @@ import { FactoryRoster } from './factory-roster'
 import { FactoryValueMap } from './factory-value-map'
 
 /**
- * The user-page factories section: the roster card, then the value map card
+ * The user-page factories section: the roster card, then the value map cards
  * when there are employees to plot.
  */
 export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], totals: PortfolioTotals }) {
@@ -18,12 +18,7 @@ export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], to
       <section className="bg-card overflow-hidden rounded-md border">
         <FactoryRoster rows={rows} totals={totals} />
       </section>
-      {hasEmployees && (
-        <section className="bg-card rounded-md border">
-          <h2 className="px-3 pt-3 text-sm font-medium">Value map</h2>
-          <FactoryValueMap rows={rows} />
-        </section>
-      )}
+      {hasEmployees && <FactoryValueMap rows={rows} />}
     </>
   )
 }

@@ -251,7 +251,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         tooltip: 'Daily profit from this player\'s NPC employees, after their wages and the managers\' wages.',
       }),
       compactNumberColumn<UserRow>('factoryPayrollPerDay', 'Payroll / day', {
-        heat: 'median',
+        heat: 'invertMedian',
         width: 140,
         tooltip: 'Daily wages of this player\'s NPC employees and managers.',
       }),
@@ -289,7 +289,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         tooltip: 'Average employee happiness. Below 50 hurts production.',
       }),
       localeNumberColumn<UserRow>('employeeRetiringSoon', 'Retiring ≤7d', {
-        heat: 'ramp',
+        heat: 'invertMedian',
         width: 135,
         tooltip: 'Employees retiring within a week.',
       }),

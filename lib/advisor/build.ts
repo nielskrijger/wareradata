@@ -1,6 +1,7 @@
 import type { CardKind, EmployeeLike } from './model'
 import type { ItemPrices, RecipeLookup } from '@/lib/factories/profit'
 
+import { humanizeItem } from '@/components/factories/format'
 import { netPerUnit } from '@/lib/factories/profit'
 import {
   basePerHour,
@@ -445,8 +446,8 @@ function itemSwitchItem(
   const item: TodoItem = {
     id: `item-${c.id}`,
     kind: 'item',
-    title: `Switch ${c.name} from ${c.itemCode} to ${best.code}`,
-    why: `${best.code} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemCost} gold.${hasTools ? ' Check the tools fit the new item.' : ''}`,
+    title: `Switch ${c.name} from ${humanizeItem(c.itemCode)} to ${humanizeItem(best.code)}`,
+    why: `${humanizeItem(best.code)} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemCost} gold.${hasTools ? ' Check the tools fit the new item.' : ''}`,
     gainPerDay: best.gain,
     energy: 0,
     confidence: 'medium',

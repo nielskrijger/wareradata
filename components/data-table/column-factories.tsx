@@ -4,7 +4,7 @@ import type { ColumnDef, DataColumnMeta } from './features'
 
 import type { PointsStat } from '@/components/cells/points-breakdown-cell'
 
-import type { ReadinessPill } from '@/lib/rows'
+import type { LeaderFields, ReadinessPill } from '@/lib/rows'
 
 import type { RankingTier } from '@/lib/warera/api'
 import { GearScorePill } from '@/components/badges/gear-score-pill'
@@ -12,6 +12,7 @@ import { TierBadge } from '@/components/badges/tier-badge'
 import { CombatModeShareCell } from '@/components/cells/combat-mode-share-cell'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
+import { LeaderCell } from '@/components/cells/leader-cell'
 import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
@@ -258,6 +259,31 @@ export function countryColumn<
     // Tight enough that most names fit; long ones (e.g. "Bosnia and
     // Herzegovina") truncate to an ellipsis with the full name on hover.
     meta: { width: opts.width ?? 150, hiddenByDefault: opts.hiddenByDefault },
+  }
+}
+
+/**
+ * A group's average member level.
+ */
+export function avgLevelColumn<T extends { avgLevel: number | null }>(): ColumnDef<T> {
+  return {
+    accessorKey: 'avgLevel',
+    header: 'Avg Level',
+    cell: ({ row }) => row.original.avgLevel ?? null,
+    sortDescFirst: true,
+    meta: { heat: 'median', align: 'right', width: 105 },
+  }
+}
+
+/**
+ * A group's leader, sorted by name.
+ */
+export function leaderColumn<T extends LeaderFields>(): ColumnDef<T> {
+  return {
+    accessorKey: 'leaderName',
+    header: 'Leader',
+    cell: ({ row }) => <LeaderCell leader={row.original} />,
+    meta: { width: 220 },
   }
 }
 

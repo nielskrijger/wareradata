@@ -7,9 +7,8 @@ import { Avatar } from '@/components/avatar'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CountryCell } from '@/components/cells/country-cell'
+import { GroupCell } from '@/components/cells/group-cell'
 import { LevelTooltipContent } from '@/components/cells/level-tooltip-content'
-import { MUCell } from '@/components/cells/mu-cell'
-import { PartyCell } from '@/components/cells/party-cell'
 import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { DetailSidebar, Fact, SidebarSection, SidebarTitle } from '@/components/detail/detail-sidebar'
 import { GearBand } from '@/components/detail/gear-band'
@@ -95,12 +94,12 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
           </Fact>
           <Fact label="MU">
             {user.muName
-              ? <MUCell muName={user.muName} muId={user.muId} avatarUrl={user.muAvatarUrl} />
+              ? <GroupCell kind="mu" name={user.muName} id={user.muId} avatarUrl={user.muAvatarUrl} />
               : <EmptyDash />}
           </Fact>
           <Fact label="Party">
             {user.partyName
-              ? <PartyCell partyName={user.partyName} partyId={user.partyId} avatarUrl={user.partyAvatarUrl} />
+              ? <GroupCell kind="party" name={user.partyName} id={user.partyId} avatarUrl={user.partyAvatarUrl} />
               : <EmptyDash />}
           </Fact>
           <Fact label="Joined">{user.createdAt?.slice(0, 10) ?? <EmptyDash />}</Fact>

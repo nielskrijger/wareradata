@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
 import type { RankMapGroup } from '@/components/detail/rank-map'
-import type { SquadMember } from '@/components/mu/squad-map'
 import type { MURow } from '@/lib/rows'
 
 import { Coins, Swords, Trophy, Users } from 'lucide-react'
@@ -18,12 +17,11 @@ import { GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { PageSection } from '@/components/layout/page-section'
 import { MUSidebar } from '@/components/mu/mu-sidebar'
-import { SquadMap } from '@/components/mu/squad-map'
 import { getSnapshot } from '@/lib/cache/memory'
 import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-
 import { firstPage } from '@/lib/query'
+
 import { requestMuRefresh } from './actions'
 
 interface PageProps {
@@ -46,21 +44,9 @@ const getMU = cache(async (id: string) => {
   // First page of this MU's members, sorted like /users (points desc). The
   // embedded UsersTable takes over client-side, re-fetching with the same
   // muId scope applied as a base filter.
-  const members = users.filter(u => u.muId === id)
-  const memberPage = firstPage(members, 'points')
-  const squad: SquadMember[] = members.map(u => ({
-    id: u.id,
-    username: u.username,
-    avatarUrl: u.avatarUrl,
-    colorScheme: u.colorScheme,
-    level: u.level,
-    damage: u.damage,
-    wealth: u.wealth,
-    health: u.health,
-    readinessStatus: u.readinessStatus,
-  }))
+  const memberPage = firstPage(users.filter(u => u.muId === id), 'points')
 
-  return { mu, total, memberPage, squad }
+  return { mu, total, memberPage }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -89,7 +75,7 @@ export default async function MUDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { mu, total, memberPage, squad } = result
+  const { mu, total, memberPage } = result
 
   return (
     <DetailLayout
@@ -142,7 +128,6 @@ export default async function MUDetailPage({ params }: PageProps) {
       <RankMap title={`Where ${mu.name} ranks`} total={total} unit="MUs" groups={rankGroups(mu)} />
 
       <PageSection title="Members">
-        <SquadMap members={squad} />
         <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} omitColumns={['muName']} />
       </PageSection>
     </DetailLayout>

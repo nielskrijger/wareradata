@@ -43,6 +43,7 @@ export function advisorInputFromData(
         name: `${humanizeCode(f.company.itemCode)} ${f.company.name}`,
         ownName: f.company.name,
         itemCode: f.company.itemCode,
+        regionId: f.company.region,
         employeeCap: f.hourly?.cap ?? 0,
         enginePointsPerDay: profit.enginePointsPerDay,
         employees: f.employees,

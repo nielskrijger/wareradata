@@ -81,7 +81,7 @@ export function toolKindFor(itemCode: string): string | null {
  */
 export type EmployeeLike = Pick<
   Employee,
-  '_id' | 'name' | 'company' | 'base' | 'wageExpectation' | 'wage' | 'traits' | 'retireInDays'
+  '_id' | 'name' | 'gender' | 'company' | 'base' | 'wageExpectation' | 'wage' | 'traits' | 'retireInDays'
   | 'potential' | 'potentialMax' | 'trainingsPerDay' | 'trainingsToday' | 'companyDisabled' | 'estimate' | 'breakdown'
   | 'happinessBreakdown' | 'productionBonus' | 'specializations' | 'toolStatus' | 'toolItem'
 >

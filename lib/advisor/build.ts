@@ -3,6 +3,7 @@ import type { AdvisorInput, AdvisorResult, SkippedItem, TodoItem } from './types
 import { itemSwitchItem } from './items/item-switch'
 import { managerItems } from './items/manager'
 import { moneyItem } from './items/money'
+import { moveItems } from './items/moves'
 import { fireItems, hireItem } from './items/staff'
 import { toolItems } from './items/tools'
 import { TRAIN_ENERGY, trainingItems } from './items/training'
@@ -35,10 +36,13 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
   }
 
   const skipped: SkippedItem[] = []
-  const items: TodoItem[] = []
   const nets: number[] = []
 
-  for (const c of input.companies) {
+  // Tools, managers and hiring build on the teams after the moves.
+  const moves = moveItems(input, vppByItem)
+  const items: TodoItem[] = [...moves.items]
+
+  input.companies.forEach((c, i) => {
     const vpp = vppByItem.get(c.itemCode) ?? input.ppValue
     for (const e of c.employees) {
       if (!e.companyDisabled) {
@@ -55,12 +59,12 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
     const staffVpp = sw?.vpp ?? vpp
     items.push(...trainingItems(input, c, staffVpp, skipped))
     items.push(...fireItems(c, staffVpp))
-    items.push(...managerItems(input, c, staffVpp, skipped))
-  }
+    items.push(...managerItems(input, moves.companies[i], staffVpp, skipped))
+  })
 
-  items.push(...toolItems(input, vppByItem))
+  items.push(...toolItems({ ...input, companies: moves.companies }, vppByItem))
   const medianNet = median(nets)
-  for (const c of input.companies) {
+  for (const c of moves.companies) {
     const h = hireItem(c, medianNet)
     if (h) {
       items.push(h)

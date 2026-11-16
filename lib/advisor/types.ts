@@ -37,7 +37,7 @@ export type TitlePart = string | CompanyRef | { item: string }
  */
 export interface TodoItem {
   id: string
-  kind: 'money' | 'train' | 'tool' | 'manager' | 'employee' | 'item' | 'hire' | 'work'
+  kind: 'money' | 'train' | 'move' | 'tool' | 'manager' | 'employee' | 'item' | 'hire' | 'work'
   title: string
 
   /**
@@ -84,6 +84,7 @@ export interface AdvisorCompany {
    */
   ownName: string
   itemCode: string
+  regionId: string
   employeeCap: number
   enginePointsPerDay: number
   employees: EmployeeLike[]

@@ -7,7 +7,7 @@ import {
   managerNetPerDay,
   RULES,
 } from '../model'
-import { fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
+import { bonusPct, fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
 
 /**
  * Fire a manager whose bonus is worth less than their wage, or post a job where a
@@ -16,7 +16,7 @@ import { fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
 export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number, skipped: SkippedItem[]): TodoItem[] {
   const working = c.employees.filter(e => !e.companyDisabled)
   const baseSum = working.reduce((s, e) => s + basePerHour(e), 0)
-  const ownerPct = working[0]?.productionBonus?.contributions?.find(x => x.source === 'management')?.percent ?? 0
+  const ownerPct = working[0] ? bonusPct(working[0], 'management') : 0
 
   if (c.manager) {
     const m = c.manager

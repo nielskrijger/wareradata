@@ -42,8 +42,22 @@ export function valuePerPoint(code: string, prices: ItemPrices, recipe: RecipeLo
   return unit == null || !points ? null : unit / points
 }
 
+/**
+ * One source's part of the production bonus, in percent.
+ */
+export function bonusPct(e: EmployeeLike, source: string): number {
+  return e.productionBonus?.contributions?.find(c => c.source === source)?.percent ?? 0
+}
+
 export function specializationPct(e: EmployeeLike): number {
-  return e.productionBonus?.contributions?.find(c => c.source === 'specialization')?.percent ?? 0
+  return bonusPct(e, 'specialization')
+}
+
+/**
+ * The rolled bonus of a held tool, whether or not it works on the item made.
+ */
+export function heldToolPct(e: EmployeeLike): number {
+  return e.toolItem && !e.toolStatus?.isBroken ? e.toolStatus?.rolledPercent ?? 0 : 0
 }
 
 export function toolPct(e: EmployeeLike): number {

@@ -1,7 +1,7 @@
 import { connection } from 'next/server'
 
-import { shareCard } from '@/lib/og/cards'
-import { renderShareImage } from '@/lib/og/share-card'
+import { shareCard } from '@/lib/share-image/cards'
+import { renderShareImage } from '@/lib/share-image/render'
 
 interface RouteContext {
   params: Promise<{ kind: string, id: string }>

@@ -86,7 +86,7 @@ export default antfu({
 }, {
   // Server-only share-image templates: Satori renders plain `<img>` and never
   // reaches the client, so fast refresh doesn't apply.
-  files: ['lib/og/**/*.tsx'],
+  files: ['lib/share-image/**/*.tsx'],
   rules: {
     'react-refresh/only-export-components': 'off',
     'next/no-img-element': 'off',

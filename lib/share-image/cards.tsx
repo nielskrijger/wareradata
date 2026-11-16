@@ -1,13 +1,21 @@
 import type { ReactElement } from 'react'
 
-import type { Emblem, Stat } from './share-card'
+import type { Emblem, Stat } from './layout'
 import type { BattleSide } from '@/lib/rows'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { avatarSrc, CardFrame, EmblemImage, EntityCard, flagSrc, formatCompact, MUTED, ORANGE } from './share-card'
+import { avatarSrc, flagSrc } from './assets'
+import { CardFrame, EmblemImage, EntityCard } from './layout'
+import { MUTED, ORANGE } from './theme'
 
 import 'server-only'
+
+const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
+
+function formatCompact(n: number | null | undefined): string {
+  return n == null ? '—' : compact.format(n)
+}
 
 function avgLevel(n: number | null): string {
   return n == null ? '—' : n.toFixed(1)

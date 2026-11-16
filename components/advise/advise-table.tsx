@@ -6,7 +6,8 @@ import { CompanyName, TitleParts } from '@/components/company-name'
 
 import { Panel } from '@/components/panel'
 import { cn } from '@/lib/utils'
-import { COLUMNS, GAIN, gain, KIND, pct, sum, things } from './format'
+import { COLUMNS, KIND, pct, sum, things } from './format'
+import { Gain } from './gain'
 import { Reason } from './reason'
 import { SMALL_GAIN_PER_DAY } from './rows'
 
@@ -91,7 +92,7 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
               >
                 {p.company ? <CompanyName company={p.company} /> : p.short}
                 {' '}
-                <span className="font-mono" style={{ color: GAIN }}>{gain(p.gainPerDay)}</span>
+                <Gain value={p.gainPerDay} />
               </span>
             ))}
           </span>
@@ -111,9 +112,7 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
       <span className="col-start-3 row-start-1 flex flex-col items-end gap-0.5 md:col-start-auto md:row-start-auto
         md:flex-row md:items-baseline md:justify-end md:gap-3"
       >
-        <span className={cn('font-mono tabular-nums', small ? 'text-sm' : 'text-base')} style={{ color: GAIN }}>
-          {gain(row.gainPerDay)}
-        </span>
+        <Gain value={row.gainPerDay} className={cn('tabular-nums', small ? 'text-sm' : 'text-base')} />
         {running != null && (
           <span className="text-muted-foreground text-right font-mono text-xs tabular-nums md:w-9">{pct(running)}</span>
         )}
@@ -132,10 +131,9 @@ function SmallStuff({ rows, start, open }: { rows: AdviseRow[], start: number, o
           <ChevronRight aria-hidden className="size-4 shrink-0 transition-transform group-open:rotate-90" />
           {`${things(rows.length)}, each under ${SMALL_GAIN_PER_DAY} g/day`}
         </span>
-        <span className="shrink-0 font-mono whitespace-nowrap" style={{ color: GAIN }}>
-          {gain(sum(rows, 'gainPerDay'))}
+        <Gain value={sum(rows, 'gainPerDay')} className="shrink-0 whitespace-nowrap">
           <span className="hidden sm:inline"> together</span>
-        </span>
+        </Gain>
       </summary>
       <ol className="border-t">
         {rows.map((row, i) => <Row key={row.id} row={row} rank={start + i} small />)}

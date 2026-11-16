@@ -8,7 +8,7 @@ import { Fragment } from 'react'
 import { ItemIcon } from '@/components/item-icon'
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { GAIN, gain } from './format'
+import { Gain } from './gain'
 
 function Value({ fact, text }: { fact: Fact, text: string }) {
   return (
@@ -48,10 +48,9 @@ export function Reason({ row }: { row: AdviseRow }) {
           <Info aria-hidden className="size-3.5" />
         </PopoverTrigger>
         <PopoverContent side="bottom" align="start" className="flex w-80 flex-col gap-2.5 text-xs">
-          <span className="font-mono text-lg leading-none" style={{ color: GAIN }}>
-            {gain(row.gainPerDay)}
+          <Gain value={row.gainPerDay} className="text-lg leading-none">
             <span className="text-muted-foreground ml-1 text-xs">g/day</span>
-          </span>
+          </Gain>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
             {row.facts.map(f => (
               <Fragment key={f.label}>

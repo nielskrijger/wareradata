@@ -85,7 +85,10 @@ function Body({ data }: { data: FetchedData }) {
           </div>
           {user.level != null && (
             <span className="ml-auto inline-flex items-center gap-1 text-[11px] tabular-nums text-neutral-50/70">
-              <PrestigeSkull prestige={user.prestige} colorScheme={user.colorScheme} />
+              <PrestigeSkull
+                prestige={user.prestige}
+                className="bg-neutral-50/10 text-neutral-50/70 ring-neutral-50/25"
+              />
               Lv
               {' '}
               {user.level}

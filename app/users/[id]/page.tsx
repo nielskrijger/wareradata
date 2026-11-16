@@ -162,7 +162,7 @@ export default async function UserDetailPage({ params }: PageProps) {
                 Level
                 {' '}
                 <span className="text-foreground inline-flex items-center gap-1 font-medium">
-                  <PrestigeSkull prestige={user.prestige} colorScheme={user.colorScheme} />
+                  <PrestigeSkull prestige={user.prestige} />
                   {user.level}
                 </span>
               </TooltipTrigger>

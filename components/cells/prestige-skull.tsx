@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils'
-import { schemeRgb } from '@/lib/warera/color-schemes'
 
 /**
  * Material Design Icons' skull, the icon the game uses.
@@ -16,31 +15,30 @@ interface Props {
    * Times the player prestiged; renders nothing below 1.
    */
   prestige: number | null | undefined
-  colorScheme: string | null | undefined
   className?: string
 }
 
 /**
- * The game's prestige mark: a skull tinted in the player's color scheme, with
- * the prestige count as a superscript.
+ * The game's prestige mark: a neutral badge with a skull and the prestige
+ * count, so it stays quiet next to the coloured level.
  */
-export function PrestigeSkull({ prestige, colorScheme, className }: Props) {
+export function PrestigeSkull({ prestige, className }: Props) {
   if (!prestige || prestige < 1) {
     return null
   }
 
-  const color = `rgb(${schemeRgb(colorScheme)})`
-
   return (
     <span
-      className={cn('inline-flex shrink-0 items-center', className)}
-      style={{ color }}
+      className={cn(
+        'text-muted-foreground bg-muted-foreground/15 ring-muted-foreground/30 inline-flex shrink-0 items-center gap-0.5 rounded-md px-1 py-px text-[11px] font-medium leading-tight tabular-nums ring-1 ring-inset',
+        className,
+      )}
       aria-label={`Prestige ${prestige}`}
     >
-      <svg viewBox="0 0 24 24" fill="currentColor" className="size-[1.1em]" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="currentColor" className="size-[1.05em]" aria-hidden="true">
         <path d={SKULL_PATH} />
       </svg>
-      <sup className="ml-px text-[0.68em] font-bold leading-none">{prestige}</sup>
+      {prestige}
     </span>
   )
 }

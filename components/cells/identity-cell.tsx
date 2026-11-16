@@ -13,9 +13,6 @@ interface Props {
 /**
  * A table's first column: the entity's own cell, with its WarEra.io link
  * pinned right.
- *
- * Children shrink via their own min-w-0; clipping here would cut the avatar,
- * which overhangs the text line.
  */
 export function IdentityCell({ kind, id, children }: Props) {
   return (

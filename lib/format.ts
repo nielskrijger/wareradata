@@ -17,6 +17,21 @@ export function isOlderThan(iso: string | null, ms: number): boolean {
   return !Number.isNaN(then) && Date.now() - then > ms
 }
 
+/**
+ * Grouped number ("12,345"). Fixed to English so the server and browser
+ * render the same text.
+ */
+export function formatNumber(n: number | null | undefined, maximumFractionDigits = 3): string {
+  return n == null ? EMPTY : n.toLocaleString('en', { maximumFractionDigits })
+}
+
+/**
+ * Number with a fixed count of decimals ("12.3"), for scores like development.
+ */
+export function formatDecimal(n: number | null | undefined, digits = 1): string {
+  return n == null ? EMPTY : n.toFixed(digits)
+}
+
 const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
 
 /**

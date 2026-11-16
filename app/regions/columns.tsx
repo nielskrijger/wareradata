@@ -7,14 +7,16 @@ import type { RegionRow } from '@/lib/rows'
 import { BoolCell } from '@/components/cells/bool-cell'
 import { CountryCell } from '@/components/cells/country-cell'
 import { TruncatedCell } from '@/components/cells/truncated-cell'
-import { compactNumberColumn, countryColumn, localeNumberColumn } from '@/components/data-table/column-factories'
+import {
+  compactNumberColumn,
+  countryColumn,
+  decimalColumn,
+  localeNumberColumn,
+} from '@/components/data-table/column-factories'
 import { InfoTooltip } from '@/components/info-tooltip'
+import { formatNumber } from '@/lib/format'
 
 export type { RegionRow }
-
-function formatDevelopment(value: number | null): string | null {
-  return value === null ? null : value.toFixed(1)
-}
 
 function titleCase(value: string | null): string | null {
   if (!value) {
@@ -50,13 +52,7 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
     },
     meta: { width: 170 },
   },
-  {
-    accessorKey: 'development',
-    header: 'Development',
-    cell: ({ row }) => formatDevelopment(row.original.development),
-    sortDescFirst: true,
-    meta: { heat: 'median', align: 'right', width: 150 },
-  },
+  decimalColumn<RegionRow>('development', 'Development', { width: 150 }),
   compactNumberColumn<RegionRow>('dailyIncome', 'Daily Income', {
     heat: 'median',
     width: 135,
@@ -112,7 +108,7 @@ export const regionColumns: ColumnDef<RegionRow>[] = [
   {
     accessorKey: 'neighborCount',
     header: 'Neighbors',
-    cell: ({ row }) => row.original.neighborCount.toLocaleString(),
+    cell: ({ row }) => formatNumber(row.original.neighborCount),
     sortDescFirst: true,
     meta: { heat: 'median', align: 'right', width: 110 },
   },

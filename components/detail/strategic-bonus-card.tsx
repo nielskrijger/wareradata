@@ -1,6 +1,7 @@
 import type { StrategicBonusRow } from '@/lib/rows'
 
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
+import { formatNumber } from '@/lib/format'
 
 /**
  * Display names for the skill codes the bonuses use.
@@ -56,12 +57,12 @@ export function StrategicBonusCard({ bonus, scope }: Props) {
         ...bonus.skills.map(s => ({
           label: label(s.skill, SKILL_LABELS),
           value: s.value,
-          display: `+${s.value.toLocaleString()}`,
+          display: `+${formatNumber(s.value)}`,
         })),
         ...bonus.resources.map(r => ({
           label: label(r.resource, RESOURCE_LABELS),
           value: r.regionCount,
-          display: `${r.regionCount.toLocaleString()} ${r.regionCount === 1 ? 'region' : 'regions'} · L${r.level}`,
+          display: `${formatNumber(r.regionCount)} ${r.regionCount === 1 ? 'region' : 'regions'} · L${r.level}`,
         })),
       ]}
     />

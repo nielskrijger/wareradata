@@ -7,9 +7,10 @@ import { NoDataPage } from '@/components/layout/no-data-page'
 import { PageShell } from '@/components/layout/page-shell'
 import { withActiveBattleCounts } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
+import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-import { firstPage } from '@/lib/query'
 
+import { firstPage } from '@/lib/query'
 import { CountriesTable } from './countries-table'
 
 export const metadata: Metadata = pageMetadata({
@@ -31,7 +32,7 @@ export default async function CountriesPage() {
   return (
     <PageShell
       title="Countries"
-      subtitle={`All ${initial.total.toLocaleString()} countries in Warera.`}
+      subtitle={`All ${formatNumber(initial.total)} countries in Warera.`}
     >
       <CountriesTable initial={initial} />
     </PageShell>

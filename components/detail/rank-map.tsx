@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { topPercent } from '@/lib/format'
+import { formatNumber, topPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 /**
@@ -59,7 +59,7 @@ export function RankMap({ title, groups, total, unit }: Props) {
       <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="font-medium">{title}</h2>
         <span className="text-muted-foreground text-xs">
-          among {total.toLocaleString()} {unit} · further right is better
+          among {formatNumber(total)} {unit} · further right is better
         </span>
       </div>
 
@@ -102,7 +102,7 @@ function Row({ row, color, total }: { row: RankMapRow, color: string, total: num
   return (
     <div className={cn('grid items-center gap-x-3 gap-y-0.5 py-1 text-sm sm:gap-x-4', ROW_COLUMNS)}>
       <span className="text-muted-foreground truncate">{label}</span>
-      <span className="text-right tabular-nums">{value == null ? '–' : (display ?? value.toLocaleString())}</span>
+      <span className="text-right tabular-nums">{value == null ? '–' : (display ?? formatNumber(value))}</span>
       <div className="relative order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         <div className="bg-muted-foreground/25 absolute inset-x-0 top-1/2 h-px" />
         {MARKS.map(m => (
@@ -129,7 +129,7 @@ function Row({ row, color, total }: { row: RankMapRow, color: string, total: num
         {ranked
           ? (
               <>
-                #{rank.toLocaleString()}
+                #{formatNumber(rank)}
                 <span className="text-muted-foreground/60"> · {topPercent(rank, total)}</span>
               </>
             )

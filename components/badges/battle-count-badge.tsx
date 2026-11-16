@@ -7,6 +7,7 @@ import { RED_BADGE } from '@/components/badges/tone'
 import { Flag } from '@/components/flag'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -54,7 +55,7 @@ export function BattleCountBadge({ count, countryId, battles }: Props) {
         title={summary}
       >
         <Swords className="size-3" />
-        {count.toLocaleString()}
+        {formatNumber(count)}
       </Badge>
     )
   }
@@ -67,7 +68,7 @@ export function BattleCountBadge({ count, countryId, battles }: Props) {
     >
       <Badge className={cn(RED_BADGE, 'hover:bg-heat-red/25 gap-0.5')}>
         <Swords className="size-3" />
-        {count.toLocaleString()}
+        {formatNumber(count)}
       </Badge>
     </Link>
   )

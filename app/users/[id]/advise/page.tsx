@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 
-import { AdviseTodo } from '@/components/advise/advise-todo'
+import { AdviseList } from '@/components/advise/advise-list'
 import { buildAdvice } from '@/lib/advisor/build'
 import { advisorInputFromData } from '@/lib/advisor/input'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -34,7 +34,7 @@ export default async function AdvisePage({ params }: PageProps) {
 
   return (
     <main className={cn('space-y-6 px-6 py-8 sm:px-8', ADVISE_WIDTH)}>
-      <AdviseTodo result={buildAdvice(advisorInputFromData(data, gameConfig, prices))} />
+      <AdviseList result={buildAdvice(advisorInputFromData(data, gameConfig, prices))} />
     </main>
   )
 }

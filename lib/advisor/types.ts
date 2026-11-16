@@ -30,6 +30,8 @@ export interface CompanyRef {
   workers: number
 }
 
+export type TitlePart = string | CompanyRef | { item: string }
+
 /**
  * One row of the to-do list.
  */
@@ -39,9 +41,9 @@ export interface TodoItem {
   title: string
 
   /**
-   * The title with its company kept apart, so the page can style the name.
+   * The title with companies and items kept apart, so the page can style them.
    */
-  titleParts?: (string | CompanyRef)[]
+  titleParts?: TitlePart[]
   why: string
   facts?: Fact[]
 
@@ -61,10 +63,6 @@ export interface TodoItem {
    */
   group?: { key: 'manager-job' | 'tool-move', short: string, company?: CompanyRef }
 
-  /**
-   * Set on an item switch, so the page can show it with item icons.
-   */
-  switch?: { company: CompanyRef, to: string }
 }
 
 /**

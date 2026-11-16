@@ -107,7 +107,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
       readinessColumn<CountryRow>(),
       combatModeColumn<CountryRow>(),
       tierColumn<CountryRow>('damageTier'),
-      rankTooltipColumn<CountryRow>('damage', 'damageRank', 'Total', { width: 90 }),
+      rankTooltipColumn<CountryRow>('damage', 'damageRank', 'Total', { width: 90, label: 'Total damage' }),
       compactNumberColumn<CountryRow>('weeklyDamage', 'Weekly', { heat: 'median', width: 110 }),
       compactNumberColumn<CountryRow>('weeklyDamagePerCitizen', 'Weekly / Citizen', { heat: 'median', width: 170 }),
     ],

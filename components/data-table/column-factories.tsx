@@ -93,16 +93,24 @@ export function rankTooltipColumn<T extends RowData>(
   valueKey: Key<T>,
   rankKey: Key<T>,
   header: string,
-  opts: { width?: number, tooltip?: string } = {},
+  opts: { width?: number, tooltip?: string, label?: string } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: rankKey,
     header,
-    cell: ({ row }) => (
-      <ValueWithRankTooltip rank={row.original[rankKey] as number | null}>
-        <CompactNumber value={row.original[valueKey] as number | null} />
-      </ValueWithRankTooltip>
-    ),
+    cell: ({ row }) => {
+      const value = row.original[valueKey] as number | null
+
+      return (
+        <ValueWithRankTooltip
+          rank={row.original[rankKey] as number | null}
+          label={opts.label ?? header}
+          value={value?.toLocaleString()}
+        >
+          <CompactNumber value={value} />
+        </ValueWithRankTooltip>
+      )
+    },
     sortDescFirst: false,
     sortUndefined: 'last',
     meta: { heat: 'invert', sortInvert: true, align: 'right', width: opts.width ?? 130, tooltip: opts.tooltip },
@@ -268,6 +276,7 @@ export function percentColumn<T extends RowData>(
     width?: number
     tooltip?: string
     rankKey?: Key<T>
+    rankLabel?: string
   } = {},
 ): ColumnDef<T> {
   return {
@@ -285,7 +294,11 @@ export function percentColumn<T extends RowData>(
       }
 
       return (
-        <ValueWithRankTooltip rank={row.original[opts.rankKey] as number | null}>
+        <ValueWithRankTooltip
+          rank={row.original[opts.rankKey] as number | null}
+          label={opts.rankLabel ?? header}
+          value={display}
+        >
           {display}
         </ValueWithRankTooltip>
       )

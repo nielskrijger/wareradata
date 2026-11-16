@@ -16,6 +16,7 @@ import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
 import { MUCell } from '@/components/cells/mu-cell'
 import { PartyCell } from '@/components/cells/party-cell'
+import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { CasesCard } from '@/components/detail/cases-card'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
 import { GearBand } from '@/components/detail/gear-band'
@@ -35,6 +36,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { getSnapshot } from '@/lib/cache/memory'
 import { getUserEquipment } from '@/lib/cache/users'
 import { EMPTY } from '@/lib/format'
+import { levelTooltipLines } from '@/lib/level-tooltip'
 import { pageMetadata } from '@/lib/metadata'
 import { getUserCasesByType } from '@/lib/warera/api'
 import { schemeRgb } from '@/lib/warera/color-schemes'
@@ -160,12 +162,15 @@ export default async function UserDetailPage({ params }: PageProps) {
           {user.level != null && (
             <Tooltip>
               <TooltipTrigger render={<span className="text-muted-foreground hover:text-foreground cursor-default" />}>
-                Level <span className="text-foreground font-medium">{user.level}</span>
+                Level
+                {' '}
+                <span className="text-foreground inline-flex items-center gap-1 font-medium">
+                  <PrestigeSkull prestige={user.prestige} colorScheme={user.colorScheme} />
+                  {user.level}
+                </span>
               </TooltipTrigger>
               <TooltipContent side="top">
-                {user.levelRank != null
-                  ? `Rank #${user.levelRank.toLocaleString()} of ${total.toLocaleString()}`
-                  : 'Unranked'}
+                {levelTooltipLines(user, total).map(line => <div key={line}>{line}</div>)}
               </TooltipContent>
             </Tooltip>
           )}

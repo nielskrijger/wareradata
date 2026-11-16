@@ -6,10 +6,10 @@ import type { UserRow } from '@/lib/rows'
 
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { CombatModeCell } from '@/components/cells/combat-mode-cell'
+import { LevelCell } from '@/components/cells/level-cell'
 import { MUCell } from '@/components/cells/mu-cell'
 import { PartyCell } from '@/components/cells/party-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
-import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
 import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { buildColumns } from '@/components/data-table/column-categories'
 import {
@@ -91,14 +91,10 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       {
         accessorKey: 'levelRank',
         header: 'Level',
-        cell: ({ row }) => (
-          <ValueWithRankTooltip rank={row.original.levelRank}>
-            {row.original.level ?? null}
-          </ValueWithRankTooltip>
-        ),
+        cell: ({ row }) => <LevelCell {...row.original} />,
         sortDescFirst: false,
         sortUndefined: 'last',
-        meta: { heat: 'invert', sortInvert: true, align: 'right', width: 90 },
+        meta: { heat: 'invert', sortInvert: true, align: 'right', width: 105 },
       },
       {
         accessorKey: 'muName',
@@ -221,12 +217,6 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         heat: 'ramp',
         width: 120,
         tooltip: 'Players this user has referred.',
-      }),
-      localeNumberColumn<UserRow>('prestige', 'Prestige', {
-        heat: 'ramp',
-        width: 110,
-        tooltip: 'Times this player has prestiged: reset from level 50 for a permanent bonus. '
-          + 'Their Level column shows the level since the last reset.',
       }),
       localeNumberColumn<UserRow>('milestoneTiers', 'Milestones', {
         heat: 'ramp',

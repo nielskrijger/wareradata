@@ -49,6 +49,6 @@ export function advisorInputFromData(
     energy: bar(skills.energy),
     cash: wealth?.money ?? null,
     managerMarketWage: data.managerMarketWage,
-    changeItemCost: gameConfig.company?.changeItemCost ?? 0,
+    changeItemConcrete: gameConfig.company?.changeItemCost ?? 0,
   }
 }

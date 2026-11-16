@@ -61,7 +61,11 @@ export interface AdvisorInput {
    * Average hourly wage of a manager job on the market.
    */
   managerMarketWage: number | null
-  changeItemCost: number
+
+  /**
+   * Concrete it takes to change what a company makes.
+   */
+  changeItemConcrete: number
 }
 
 export interface AdvisorResult {

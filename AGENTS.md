@@ -23,3 +23,7 @@ Prefer simple code. Don't add complexity for performance (caching, memoization, 
 ## Leave it cleaner than you found it
 
 In every change, clean up nearby: dead code, duplication, and pieces that should be a shared utility or component. Reuse what exists before writing something new. Prefer reuse and consistency over pixel-perfect or bespoke results.
+
+## Fix the cause, not the case
+
+When one place looks wrong, first ask whether the shared piece behind it is wrong, and change that. Don't add flags, special cases or new variants to work around it for one caller. Before writing new code for a fix, look for the smallest change to what exists.

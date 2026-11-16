@@ -132,7 +132,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   const equipment = hasGearData ? (await getUserEquipment(user.id)) ?? undefined : undefined
 
   return (
-    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
+    <main className="mx-auto max-w-[96rem] space-y-3 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={user.username}
         aside={<RefreshButton id={user.id} action={requestUserRefresh} lastRefreshedAt={user.lastRefreshedAt} />}

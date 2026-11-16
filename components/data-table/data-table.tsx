@@ -131,7 +131,8 @@ function DataTableInner<TData extends RowData>({
     isAtInitialState,
   } = useTableUrlState({ initialSort, defaultPageSize })
 
-  const hiddenByDefault = columns
+  // From all columns, so stored choices for omitted ones match the full table's.
+  const hiddenByDefault = allColumns
     .filter(c => c.meta?.hiddenByDefault)
     .map(columnId)
 
@@ -205,7 +206,8 @@ function DataTableInner<TData extends RowData>({
     onSortingChange: setSorting,
     onColumnVisibilityChange: updater => setColumnVisibility(
       updater,
-      table.getAllLeafColumns().filter(c => c.getCanHide()).map(c => c.id),
+      // Omitted ids count as known so this page keeps their stored choices.
+      [...table.getAllLeafColumns().filter(c => c.getCanHide()).map(c => c.id), ...(omitColumns ?? [])],
     ),
     manualSorting: true,
     meta: { ranges: data.ranges },

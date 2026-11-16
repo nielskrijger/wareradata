@@ -168,10 +168,25 @@ function Scatter({ points }: { points: Point[] }) {
 }
 
 /**
+ * Green deepening with net/day relative to the best earner, red when an
+ * employee loses money.
+ */
+function netFill(net: number, best: number): string {
+  if (net < 0) {
+    return 'oklch(0.63 0.22 27)'
+  }
+
+  const t = best > 0 ? Math.min(1, net / best) : 0
+
+  return `oklch(${0.45 + t * 0.35} ${0.08 + t * 0.12} 150)`
+}
+
+/**
  * Production points per factory, stacked engine-first then each employee, with
  * Net/day at the end of the bar.
  */
-function OutputBars({ rows, colors }: { rows: FactoryLedgerRow[], colors: Map<string, string> }) {
+function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
+  const best = Math.max(0, ...rows.flatMap(r => r.employees.map(e => e.netPerDay)))
   const [ref, BW] = useWidth<HTMLDivElement>(380)
   const rowH = 22
   const left = 40
@@ -229,8 +244,7 @@ function OutputBars({ rows, colors }: { rows: FactoryLedgerRow[], colors: Map<st
                           width={width}
                           height={rowH - 7}
                           rx={2}
-                          fill={colors.get(row.itemCode)}
-                          fillOpacity={0.8}
+                          fill={netFill(part.e.netPerDay, best)}
                           className="cursor-help"
                         />
                       )}
@@ -291,9 +305,9 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
       </section>
       <section className="bg-card min-w-0 space-y-2 rounded-md border p-3">
         <h2 className="text-sm font-medium">Points per day by factory</h2>
-        <OutputBars rows={rows} colors={colors} />
+        <OutputBars rows={rows} />
         <p className="text-muted-foreground text-xs">
-          Grey is the automated engine; each coloured segment is an employee.
+          Grey is the automated engine. Each employee is greener the more they net per day, red when they lose money.
         </p>
       </section>
     </div>

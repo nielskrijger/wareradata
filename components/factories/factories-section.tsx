@@ -1,9 +1,11 @@
+import type { ItemCatalog } from '@/components/item-icon'
 import type { FactoryLedgerRow } from '@/lib/factories/ledger'
 
 import { Factory } from 'lucide-react'
 import { cache } from 'react'
 
 import { Kpi } from '@/components/detail/kpi'
+import { ItemCatalogProvider } from '@/components/item-icon'
 import { getSnapshot } from '@/lib/cache/memory'
 import { buildEngineModel } from '@/lib/factories/engine'
 import { engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
@@ -18,15 +20,21 @@ import { goldSigned, netClass } from './format'
 
 const log = logger.child({ component: 'factories' })
 
+interface FactoryData {
+  rows: FactoryLedgerRow[]
+  catalog: ItemCatalog
+}
+
 /**
- * A user's factory ledger, fetched live on the urgent client.
+ * A user's factory ledger, fetched live on the urgent client, with the item
+ * prices and recipes it was priced with.
  *
  * Returns null when they own none or a call fails: the section is optional, so
  * an API outage shouldn't fail the user page.
  *
  * Request-memoized so the KPI and the roster share one fetch.
  */
-const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[] | null> => {
+const loadFactoryRows = cache(async (userId: string): Promise<FactoryData | null> => {
   try {
     const factories = await getUserCompanies(userId)
     if (!factories.length) {
@@ -41,7 +49,7 @@ const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[]
     const regionName = (id: string) => lookups.regionById.get(id)?.name ?? EMPTY
     const nameById = new Map(factories.flatMap(f => f.employees.map(e => [e._id, e.name] as const)))
 
-    return factories
+    const rows = factories
       .map((f) => {
         const profit = computeFactoryProfit(factoryInputFromData(f, regionName, model), prices, recipe, frontier)
         const productionPoints = recipe[f.company.itemCode]?.productionPoints ?? 1
@@ -49,6 +57,8 @@ const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[]
         return buildFactoryLedgerRow(profit, f.employees, engineLevelOf(f), productionPoints, nameById)
       })
       .sort((a, b) => b.netPerDay - a.netPerDay)
+
+    return { rows, catalog: { prices, recipe } }
   } catch (error) {
     log.error({ userId, err: error }, 'failed to load factories')
 
@@ -61,28 +71,32 @@ const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[]
  * aggregates can lag behind it.
  */
 export async function FactoryKpi({ userId }: { userId: string }) {
-  const rows = await loadFactoryRows(userId)
-  if (!rows) {
+  const data = await loadFactoryRows(userId)
+  if (!data) {
     return null
   }
 
-  const net = portfolioTotals(rows).netPerDay
+  const net = portfolioTotals(data.rows).netPerDay
 
   return (
     <Kpi
       label="Factories"
       icon={<Factory />}
       value={<span className={netClass(net)}>{goldSigned(net)}</span>}
-      sub={`per day · ${rows.length} ${rows.length === 1 ? 'factory' : 'factories'}`}
+      sub={`per day · ${data.rows.length} ${data.rows.length === 1 ? 'factory' : 'factories'}`}
     />
   )
 }
 
 export async function FactoriesSection({ userId }: { userId: string }) {
-  const rows = await loadFactoryRows(userId)
-  if (!rows) {
+  const data = await loadFactoryRows(userId)
+  if (!data) {
     return null
   }
 
-  return <FactoryOverview rows={rows} totals={portfolioTotals(rows)} />
+  return (
+    <ItemCatalogProvider catalog={data.catalog}>
+      <FactoryOverview rows={data.rows} totals={portfolioTotals(data.rows)} />
+    </ItemCatalogProvider>
+  )
 }

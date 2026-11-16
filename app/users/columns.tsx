@@ -94,7 +94,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         cell: ({ row }) => <LevelCell {...row.original} />,
         sortDescFirst: false,
         sortUndefined: 'last',
-        meta: { heat: 'invert', sortInvert: true, align: 'right', width: 105 },
+        meta: { heat: 'invert', sortInvert: true, width: 105, cellClassName: 'tabular-nums' },
       },
       {
         accessorKey: 'muName',

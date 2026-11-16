@@ -39,6 +39,7 @@ function pointsForLevel(level: number | undefined, costs: readonly number[]): nu
   if (!level || level <= 0) {
     return 0
   }
+
   return costs[Math.min(costs.length - 1, Math.floor(level))] ?? 0
 }
 
@@ -52,14 +53,17 @@ export function deriveSkillPointCost(config: GameConfig): readonly number[] {
   const levels = (config.skills as unknown as { attack?: {
     levels?: Record<string, { totalCost?: number }>
   } } | undefined)?.attack?.levels
+
   const costs: number[] = []
   for (let level = 0; level <= 10; level++) {
     const cost = levels?.[String(level)]?.totalCost
     if (typeof cost !== 'number') {
       break
     }
+
     costs[level] = cost
   }
+
   return costs
 }
 
@@ -76,11 +80,13 @@ export function skillPoints(skills: unknown, names: readonly string[], costs: re
   if (!skills || typeof skills !== 'object') {
     return 0
   }
+
   const bag = skills as Record<string, { level?: number } | undefined>
   let sum = 0
   for (const name of names) {
     sum += pointsForLevel(bag[name]?.level, costs)
   }
+
   return sum
 }
 
@@ -94,12 +100,15 @@ export function classifyWarShare(warShare: number | null): CombatMode {
   if (warShare === null) {
     return 'untrained'
   }
+
   if (warShare >= WAR_THRESHOLD) {
     return 'war'
   }
+
   if (warShare <= ECO_THRESHOLD) {
     return 'eco'
   }
+
   return 'hybrid'
 }
 
@@ -110,5 +119,6 @@ export function classifyWarShare(warShare: number | null): CombatMode {
  */
 export function classifyCombatMode(warPoints: number, ecoPoints: number): CombatMode {
   const total = warPoints + ecoPoints
+
   return classifyWarShare(total > 0 ? warPoints / total : null)
 }

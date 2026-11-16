@@ -269,6 +269,7 @@ export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
     }),
     ...CASE_RARITIES.map((rarity) => {
       const label = `${rarity[0].toUpperCase()}${rarity.slice(1)}`
+
       return localeNumberColumn<T>(`cases${label}` as Key<T>, label, {
         heat: 'ramp',
         logScale: true,

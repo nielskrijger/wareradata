@@ -219,26 +219,32 @@ export function aggregateMembers(
       entry.levelSum += u.level
       entry.levelCount += 1
     }
+
     if (u.pointsPerDay !== null) {
       entry.pointsPerDaySum += u.pointsPerDay
       entry.pointsPerDayCount += 1
     }
+
     if (u.health !== null) {
       entry.healthSum += u.health
       entry.healthCount += 1
     }
+
     if (u.hunger !== null) {
       entry.hungerSum += u.hunger
       entry.hungerCount += 1
     }
+
     if (u.gearScore !== null) {
       entry.gearScoreSum += u.gearScore
       entry.gearScoreCount += 1
     }
+
     if (u.warShare !== null) {
       entry.warShareSum += u.warShare
       entry.warShareCount += 1
     }
+
     if (u.readinessStatus === 'buff') {
       entry.buffCount += 1
     } else if (u.readinessStatus === 'debuff') {
@@ -246,6 +252,7 @@ export function aggregateMembers(
     } else if (u.readinessStatus === 'neither') {
       entry.readyCount += 1
     }
+
     out.set(key, entry)
   }
 
@@ -260,6 +267,7 @@ export function aggregateMembers(
 function aggCaseLuck(agg: MemberAgg): number | null {
   const categorized = agg.casesCommon + agg.casesUncommon + agg.casesRare
     + agg.casesEpic + agg.casesLegendary + agg.casesMythic
+
   return luckPercent(agg.caseLuckActual, agg.caseLuckExpected, categorized)
 }
 
@@ -413,6 +421,7 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
   const ppPerDay = agg?.factoryPpPerDay ?? 0
   const netPerDay = agg?.factoryNetPerDay ?? 0
   const top = agg?.factoryTopPotential ?? 0
+
   return {
     factoryCount: agg?.factoryCount ?? 0,
     factoryCountRank: null,

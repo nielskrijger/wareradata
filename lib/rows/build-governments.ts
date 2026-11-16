@@ -22,7 +22,9 @@ function ministerTitle(title: string): string {
   if (known) {
     return known
   }
+
   const words = title.replace(/^minOf/, '').replace(/([a-z])([A-Z])/g, '$1 $2').trim()
+
   return words.length > 0 ? words.charAt(0).toUpperCase() + words.slice(1) : 'Minister'
 }
 
@@ -35,6 +37,7 @@ function ministersOf(gov: Government): GovernmentMinister[] {
   if (gov.ministers) {
     return gov.ministers
   }
+
   const seats: GovernmentMinister[] = []
   for (const title of ['minOfDefense', 'minOfEconomy', 'minOfForeignAffairs'] as const) {
     const user = gov[title]
@@ -42,6 +45,7 @@ function ministersOf(gov: Government): GovernmentMinister[] {
       seats.push({ user, title })
     }
   }
+
   return seats
 }
 
@@ -56,11 +60,14 @@ function resolveOfficial(userId: string | undefined, lookups: Lookups, partyId?:
   if (!userId) {
     return null
   }
+
   const name = lookups.userNameById.get(userId)
   if (!name) {
     return null
   }
+
   const party = (partyId ? lookups.partyById.get(partyId) : undefined) ?? lookups.partyByUser.get(userId)
+
   return {
     id: userId,
     name,
@@ -92,6 +99,7 @@ export function buildGovernmentRows(
         ministers.push({ title: ministerTitle(m.title), official })
       }
     }
+
     out[countryId] = {
       president: resolveOfficial(gov.president, lookups),
       vicePresident: resolveOfficial(gov.vicePresident, lookups),
@@ -101,5 +109,6 @@ export function buildGovernmentRows(
         .filter((o): o is GovernmentOfficial => o !== null),
     }
   }
+
   return out
 }

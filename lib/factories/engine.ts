@@ -28,6 +28,7 @@ export function buildEngineModel(gameConfig: GameConfig): EngineModel {
   for (const [level, cfg] of Object.entries(gameConfig.upgradesConfig.automatedEngine.levels)) {
     dailyProdByLevel[Number(level)] = cfg.stats.dailyProd
   }
+
   return { dailyProdByLevel }
 }
 

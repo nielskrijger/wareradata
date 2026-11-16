@@ -3,16 +3,19 @@ import type { Metadata } from 'next'
 import { connection } from 'next/server'
 
 import { NoDataPage } from '@/components/layout/no-data-page'
+
 import { PageShell } from '@/components/layout/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
+import { pageMetadata } from '@/lib/metadata'
 import { firstPage } from '@/lib/query'
 
 import { UsersTable } from './users-table'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Users',
-  description: 'All ranked WarEra.io players.',
-}
+  description: 'Leaderboard of all ranked WarEra.io players: points, level, damage, wealth, gear, factories and more.',
+  path: '/users',
+})
 
 export default async function UsersPage() {
   // Marks the page as request-time dynamic under cacheComponents. Without

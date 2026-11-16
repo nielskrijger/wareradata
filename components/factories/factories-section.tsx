@@ -41,11 +41,13 @@ async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | nul
       .map((f) => {
         const profit = computeFactoryProfit(factoryInputFromData(f, regionName, model), prices, recipe, frontier)
         const productionPoints = recipe[f.company.itemCode]?.productionPoints ?? 1
+
         return buildFactoryLedgerRow(profit, f.employees, engineLevelOf(f), productionPoints)
       })
       .sort((a, b) => b.netPerDay - a.netPerDay)
   } catch (error) {
     log.error({ userId, err: error }, 'failed to load factories')
+
     return null
   }
 }

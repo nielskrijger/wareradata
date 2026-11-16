@@ -106,6 +106,7 @@ export function FactoriesTable({ rows, totals }: Props) {
       } else {
         next.add(id)
       }
+
       return next
     })
   }
@@ -227,6 +228,7 @@ function FactoryRows({ row, isOpen, onToggle }: RowProps) {
  */
 function LedgerRow({ label, amount, divider }: { label: ReactNode, amount: ReactNode, divider?: boolean }) {
   const top = divider ? '[&]:border-t' : ''
+
   return (
     <TableRow className="hover:bg-transparent border-b-0">
       <TableCell colSpan={LABEL_SPAN} className={cn('bg-muted/30 py-0.5 pl-8', top, divider && 'font-medium')}>

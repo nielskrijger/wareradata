@@ -64,6 +64,7 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, caption, cl
         {slices.map((s) => {
           const pct = total > 0 ? Math.round((s.value / total) * 100) : 0
           const { color, icon: Icon } = POINTS_LEGEND[s.label]
+
           return (
             <div key={s.label}>
               <div className="flex items-baseline justify-between gap-2 text-sm">

@@ -1,13 +1,16 @@
 import type { Metadata } from 'next'
 
 import { PageTitle } from '@/components/layout/page-title'
+
 import { ExternalLink } from '@/components/links'
 import { Paragraph } from '@/components/paragraph'
+import { pageMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'About',
   description: 'How Warera Data works, where the numbers come from, and how players are scored.',
-}
+  path: '/about',
+})
 
 export default function AboutPage() {
   return (

@@ -1,14 +1,15 @@
 import type { Metadata } from 'next'
 
 import type { UserRow } from '@/lib/rows'
-import type { CasesByType } from '@/lib/warera/api'
 
+import type { CasesByType } from '@/lib/warera/api'
 import { Clock } from 'lucide-react'
+
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache, Suspense } from 'react'
-
 import { Avatar } from '@/components/avatar'
+
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
@@ -36,6 +37,7 @@ import { getSnapshot } from '@/lib/cache/memory'
 import { getUserEquipment } from '@/lib/cache/users'
 import { EMPTY } from '@/lib/format'
 import { levelTooltipLines } from '@/lib/level-tooltip'
+import { pageMetadata } from '@/lib/metadata'
 import { getUserCasesByType } from '@/lib/warera/api'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -79,6 +81,7 @@ async function resolveCasesByType(user: UserRow): Promise<CasesByType> {
   }
 
   const live = user.casesOpened ? await getUserCasesByType(user.id) : null
+
   return live ?? { standardOpened: null, mythicOpened: null, standardByRarity: null, mythicByRarity: null }
 }
 
@@ -88,10 +91,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) {
     return { title: 'User not found' }
   }
-  return {
-    title: result.user.username,
-    description: `WarEra.io stats for ${result.user.username}.`,
-  }
+
+  const { user } = result
+  const facts = [
+    user.level != null ? `Level ${user.level}` : null,
+    user.countryName ? `from ${user.countryName}` : null,
+    user.muName ? `in ${user.muName}` : null,
+  ].filter(Boolean).join(' ')
+
+  const summary = `WarEra.io stats for ${user.username}: points, damage, wealth, gear and factories.`
+
+  return pageMetadata({
+    title: user.username,
+    description: facts ? `${facts}. ${summary}` : summary,
+    path: `/users/${id}`,
+  })
 }
 
 export default async function UserDetailPage({ params }: PageProps) {
@@ -101,6 +115,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   if (!result) {
     notFound()
   }
+
   const { user, ranges, total, gearLookup } = result
 
   const cases = await resolveCasesByType(user)

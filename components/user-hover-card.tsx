@@ -75,6 +75,7 @@ const ICON_CLS = 'size-3 text-neutral-50/70'
 
 function Body({ data }: { data: FetchedData }) {
   const { user, ranges, equipment, gearLookup } = data
+
   return (
     <>
       <div className="px-3 py-2">
@@ -184,6 +185,7 @@ function Placeholder({ status }: { status: HoverStatus }) {
       </div>
     )
   }
+
   return (
     <div className="animate-pulse">
       <div className="flex items-center gap-2 px-3 py-2">

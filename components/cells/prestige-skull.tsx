@@ -28,7 +28,9 @@ export function PrestigeSkull({ prestige, colorScheme, className }: Props) {
   if (!prestige || prestige < 1) {
     return null
   }
+
   const color = `rgb(${schemeRgb(colorScheme)})`
+
   return (
     <span
       className={cn('inline-flex shrink-0 items-center', className)}

@@ -16,5 +16,6 @@ export async function GET(_: Request, { params }: RouteContext) {
   if (!result) {
     return Response.json({ error: 'not found' }, { status: 404 })
   }
+
   return Response.json(result)
 }

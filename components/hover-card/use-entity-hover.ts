@@ -25,9 +25,12 @@ function fetchEntity<T>(url: string): Promise<T> {
       cache.delete(url)
       throw new Error(`HTTP ${res.status}`)
     }
+
     return res.json() as Promise<T>
   })
+
   cache.set(url, p as Promise<unknown>)
+
   return p
 }
 

@@ -3,17 +3,20 @@ import type { Metadata } from 'next'
 import { connection } from 'next/server'
 
 import { NoDataPage } from '@/components/layout/no-data-page'
+
 import { PageShell } from '@/components/layout/page-shell'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
+import { pageMetadata } from '@/lib/metadata'
 import { firstPage } from '@/lib/query'
 
 import { BattleTabs } from './battle-tabs'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Battles',
   description: 'Active and recent battles in WarEra.io.',
-}
+  path: '/battles',
+})
 
 export default async function BattlesPage() {
   await connection()

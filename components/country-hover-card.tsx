@@ -49,10 +49,12 @@ function pctInRange(value: number, range: Range | undefined): number {
   if (!range) {
     return 0
   }
+
   const [min, max] = range
   if (max === min) {
     return 0
   }
+
   return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
 }
 
@@ -89,6 +91,7 @@ export function CountryHoverCard({ countryId, children, triggerClassName = 'bloc
 function Body({ data }: { data: CountryDetails }) {
   const { country: c, ranges } = data
   const war = c.avgWarShare != null ? Math.round(c.avgWarShare * 100) : null
+
   return (
     <>
       <div className="flex items-center gap-2 px-3 py-2">
@@ -173,6 +176,7 @@ interface TileProps {
 
 function Tile({ icon, label, value, rank, range, display }: TileProps) {
   const color = value != null ? heatColor(pctInRange(value, range)) : undefined
+
   return (
     <div className="overflow-hidden rounded-md bg-white/5 px-2 py-1.5">
       <div className="flex items-center gap-1 whitespace-nowrap text-[10px] uppercase tracking-wide text-neutral-50/50">

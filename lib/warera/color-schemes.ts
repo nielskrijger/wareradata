@@ -44,5 +44,6 @@ export function schemeRgb(scheme: string | null | undefined): string {
   if (scheme && scheme in SCHEME_RGB) {
     return SCHEME_RGB[scheme]
   }
+
   return FALLBACK_RGB
 }

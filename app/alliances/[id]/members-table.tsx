@@ -67,6 +67,7 @@ export function MembersTable({ alliance: a }: Props) {
         <TableBody>
           {a.members.map((m) => {
             const share = coreTotal > 0 ? m.coreDevelopment / coreTotal : null
+
             return (
               <TableRow key={m.countryId}>
                 <TableCell>

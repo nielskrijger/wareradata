@@ -29,6 +29,7 @@ export function parseQuery(searchParams: URLSearchParams): QueryParams {
     MAX_PAGE_SIZE,
     Math.max(1, Number(searchParams.get('pageSize') ?? DEFAULT_PAGE_SIZE) | 0),
   )
+
   const sort = searchParams.get('sort')
   const dir = searchParams.get('dir') === 'desc' ? 'desc' : 'asc'
 
@@ -79,6 +80,7 @@ export function computeRanges<T extends object>(rows: T[]): Record<string, Range
           values = []
           buckets.set(key, values)
         }
+
         values.push(v)
       }
     }
@@ -89,6 +91,7 @@ export function computeRanges<T extends object>(rows: T[]): Record<string, Range
     values.sort((a, b) => a - b)
     out[key] = [values[0], values[values.length - 1], values[Math.floor(values.length / 2)]]
   }
+
   return out
 }
 
@@ -116,20 +119,25 @@ function sortAndPaginate<T extends object>(
       if (av === null || av === undefined) {
         return 1
       }
+
       if (bv === null || bv === undefined) {
         return -1
       }
+
       if (av < bv) {
         return -1 * dirMul
       }
+
       if (av > bv) {
         return 1 * dirMul
       }
+
       return 0
     })
   }
 
   const start = query.page * query.pageSize
+
   return {
     rows: sorted.slice(start, start + query.pageSize),
     total: sorted.length,
@@ -154,6 +162,7 @@ export function applyQuery<T extends object>(
     const needle = query.filter.toLowerCase()
     filtered = rows.filter(r => getFilterHaystack(r).includes(needle))
   }
+
   return sortAndPaginate(filtered, query, sortValue)
 }
 
@@ -190,6 +199,7 @@ function rewriteAliases(node: unknown, aliases: FieldAliases): void {
   if (!node || typeof node !== 'object') {
     return
   }
+
   const n = node as Record<string, unknown>
   const field = n.field as { name?: string, path?: string[] } | undefined
   if (field && typeof field.name === 'string') {
@@ -227,9 +237,11 @@ function runLiqeFilter<T extends object>(rows: T[], expr: string, aliases: Field
   if (!expr) {
     return rows
   }
+
   try {
     const ast = liqeParse(expr)
     rewriteAliases(ast, aliases)
+
     return liqeFilter(ast, rows as unknown as Record<string, unknown>[]) as unknown as T[]
   } catch {
     return rows
@@ -304,24 +316,30 @@ export function makeSortValue<T>(
   const passthrough = new Set<keyof T>(spec.passthrough)
   const text = new Set<keyof T>(spec.text)
   const boolean = new Set<keyof T>(spec.boolean)
+
   return (row, sort) => {
     if (spec.custom && sort in spec.custom) {
       return spec.custom[sort](row)
     }
+
     const key = sort as keyof T
     const value = (row as Record<string, unknown>)[sort]
     if (text.has(key)) {
       return typeof value === 'string' ? value.toLowerCase() : null
     }
+
     if (boolean.has(key)) {
       return value ? 1 : 0
     }
+
     if (passthrough.has(key)) {
       return value as number | string | null
     }
+
     if (typeof spec.default === 'function') {
       return spec.default(row)
     }
+
     return (row as Record<string, unknown>)[spec.default as string] as number | string | null
   }
 }
@@ -340,6 +358,7 @@ export function createTableRoute<T extends object>(
   return async (req) => {
     const query = parseQuery(new URL(req.url).searchParams)
     const rows = await loadRows()
+
     return Response.json(applyStructuredQuery(rows, query, sortValue, aliases))
   }
 }

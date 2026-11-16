@@ -53,6 +53,7 @@ function mergeRarities(a: CaseRarityCounts | null, b: CaseRarityCounts | null): 
       out[rarity] = count
     }
   }
+
   return out
 }
 
@@ -80,6 +81,7 @@ export function CasesCard({
     { key: 'standard', label: 'Standard', opened: standardOpened, rarities: standardByRarity },
     { key: 'mythic', label: 'Mythic', opened: mythicOpened, rarities: mythicByRarity },
   ]
+
   const active = segments.find(s => s.key === seg) ?? segments[0]
 
   const total = sumRarities(active.rarities)

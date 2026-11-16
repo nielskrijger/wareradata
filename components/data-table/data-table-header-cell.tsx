@@ -32,6 +32,7 @@ export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
   if (header.isPlaceholder) {
     return <TableHead className={sticky ? STICKY : undefined} />
   }
+
   const canSort = header.column.getCanSort()
   const sorted = header.column.getIsSorted()
   const align = header.column.columnDef.meta?.align ?? 'left'
@@ -42,6 +43,7 @@ export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
   const style: CSSProperties | undefined = width
     ? (sticky ? { '--col-w': `${width}px` } as CSSProperties : { width: `${width}px` })
     : undefined
+
   const rendered = flexRender(header.column.columnDef.header, header.getContext())
 
   // Prefix each column with its category's icon, the same symbol the Columns
@@ -79,6 +81,7 @@ export function DataTableHeaderCell<TData>({ header, sticky }: Props<TData>) {
   if (!canSort) {
     return <TableHead className={headClass} style={style}>{content}</TableHead>
   }
+
   return (
     <TableHead className={headClass} style={style}>
       <button

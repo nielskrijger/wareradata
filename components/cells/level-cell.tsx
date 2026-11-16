@@ -16,6 +16,7 @@ export function LevelCell(props: Props) {
   if (props.level == null) {
     return null
   }
+
   return (
     <Tooltip>
       <TooltipTrigger

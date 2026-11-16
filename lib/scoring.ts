@@ -37,5 +37,6 @@ export function computePoints(u: PointsInput): PointsBreakdown {
   const level = Math.round((u.level ?? 0) * LEVEL_POINTS)
   const damage = Math.round((u.damage ?? 0) / DAMAGE_DIVISOR)
   const wealth = Math.round((u.wealth ?? 0) / WEALTH_DIVISOR)
+
   return { level, damage, wealth, total: level + damage + wealth }
 }

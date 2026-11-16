@@ -19,14 +19,18 @@ export function levelTooltipLines(u: LevelSummary, rankedTotal?: number): string
   } else {
     lines.push('Unranked')
   }
+
   if (u.prestige) {
     lines.push(`Prestige ${u.prestige}`)
   }
+
   if (u.prestigePoints) {
     lines.push(`${u.prestigePoints} unspent prestige ${u.prestigePoints === 1 ? 'point' : 'points'}`)
   }
+
   if (u.totalXp != null) {
     lines.push(`${u.totalXp.toLocaleString()} lifetime XP`)
   }
+
   return lines
 }

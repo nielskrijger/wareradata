@@ -20,6 +20,7 @@ export type { BattleRow }
  */
 function scoreCell(row: BattleRow) {
   const { attackerWonRounds: a, defenderWonRounds: d, roundsToWin } = row
+
   return (
     <span className="tabular-nums">
       <span className={a >= d ? 'text-foreground font-medium' : 'text-muted-foreground'}>{a}</span>
@@ -34,7 +35,9 @@ function winnerCell(row: BattleRow) {
   if (!row.wonBy) {
     return null
   }
+
   const side = row.wonBy === 'attacker' ? row.attacker : row.defender
+
   return side.kind === 'mu'
     ? <MUCell muName={side.name} muId={side.id} avatarUrl={side.avatarUrl} />
     : <CountryCell countryCode={side.code} countryName={side.name} countryId={side.id} />
@@ -45,6 +48,7 @@ function regionCell(row: BattleRow) {
   if (!regionName) {
     return null
   }
+
   return regionId
     ? (
         <InternalLink href={`/regions?q=${encodeURIComponent(regionName)}`} className="truncate">

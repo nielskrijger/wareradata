@@ -47,6 +47,7 @@ export async function loadUsersByIds(ids: ReadonlySet<string>): Promise<Map<stri
       }
     })
   }
+
   return out
 }
 
@@ -63,5 +64,6 @@ export async function loadFactoryOwnerIds(): Promise<string[]> {
       ownerIds.push(u._id)
     }
   })
+
   return ownerIds
 }

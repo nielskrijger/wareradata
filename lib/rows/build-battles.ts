@@ -17,6 +17,7 @@ function resolveSide(
     const team = tournament.teams[side.tournamentTeam]
     const muId = team?.muId ?? null
     const muName = muId ? lookups.muNameById.get(muId) ?? null : null
+
     return {
       kind: 'mu',
       id: muId,
@@ -27,6 +28,7 @@ function resolveSide(
   }
 
   const country = side.country ? lookups.countryById.get(side.country) : undefined
+
   return {
     kind: 'country',
     id: side.country ?? null,
@@ -84,9 +86,11 @@ export function buildBattleRows(
       if (a.isActive !== b.isActive) {
         return a.isActive ? -1 : 1
       }
+
       if (a.isActive) {
         return b.totalDamage - a.totalDamage
       }
+
       return (b.endedAt ?? '').localeCompare(a.endedAt ?? '')
     })
 }

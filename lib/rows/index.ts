@@ -228,6 +228,7 @@ export interface ReadinessPill {
  */
 export function readinessScore(mix: ReadinessPill): number | null {
   const total = mix.buff + mix.ready + mix.debuff
+
   return total > 0 ? (mix.buff - mix.debuff) / total : null
 }
 

@@ -38,6 +38,7 @@ export function buildBaseLookups(
         partyByUser.set(uid, { id: p._id, name: p.name, avatarUrl: p.avatarUrl ?? null })
       }
     }
+
     if (p.country) {
       partyCountByCountry.set(p.country, (partyCountByCountry.get(p.country) ?? 0) + 1)
     }
@@ -118,6 +119,7 @@ export function assignRank<T extends Record<string, unknown>>(
   ranked.forEach((row, i) => {
     const value = row[valueKey] as number
     const rank = value === lastValue ? lastRank : i + 1
+
     ;(row[rankKey] as number | null) = rank
     lastValue = value
     lastRank = rank

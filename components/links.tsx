@@ -77,6 +77,7 @@ export function ExternalLink({ href, children, label }: ExternalLinkProps) {
       </a>
     )
   }
+
   return (
     <a
       href={href}

@@ -19,5 +19,6 @@ export function TierBadge({ tier }: Props) {
   if (!tier) {
     return <>—</>
   }
+
   return <Badge className={tierColor[tier]}>{tier}</Badge>
 }

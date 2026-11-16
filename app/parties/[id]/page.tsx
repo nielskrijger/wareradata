@@ -57,6 +57,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: result.party.name,
     description: `WarEra.io political-party stats for ${result.party.name}.`,
     path: `/parties/${id}`,
+    image: `/og/parties/${id}`,
   })
 }
 

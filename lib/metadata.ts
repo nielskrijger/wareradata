@@ -28,14 +28,20 @@ interface PageMeta {
    * Becomes the canonical URL and og:url, resolved against `metadataBase`.
    */
   path: string
+
+  /**
+   * A page-specific share image; the site-wide one otherwise.
+   */
+  image?: string
 }
 
 /**
  * Builds the full `openGraph` and `twitter` objects because Next replaces a
  * parent's wholesale instead of merging them.
  */
-export function pageMetadata({ title, description, path }: PageMeta): Metadata {
+export function pageMetadata({ title, description, path, image }: PageMeta): Metadata {
   const fullTitle = `${title} — ${SITE_NAME}`
+  const shareImage = image ? { ...SHARE_IMAGE, url: image, alt: fullTitle } : SHARE_IMAGE
 
   return {
     title,
@@ -47,13 +53,13 @@ export function pageMetadata({ title, description, path }: PageMeta): Metadata {
       url: path,
       title: fullTitle,
       description,
-      images: [SHARE_IMAGE],
+      images: [shareImage],
     },
     twitter: {
       card: 'summary_large_image',
       title: fullTitle,
       description,
-      images: [SHARE_IMAGE],
+      images: [shareImage],
     },
   }
 }

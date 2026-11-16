@@ -84,6 +84,14 @@ export default antfu({
     }],
   },
 }, {
+  // Server-only share-image templates: Satori renders plain `<img>` and never
+  // reaches the client, so fast refresh doesn't apply.
+  files: ['lib/og/**/*.tsx'],
+  rules: {
+    'react-refresh/only-export-components': 'off',
+    'next/no-img-element': 'off',
+  },
+}, {
   // shadcn/ui components co-locate variant helpers (buttonVariants, badgeVariants)
   // with the component. Don't fight the upstream convention.
   files: ['components/ui/**/*.{ts,tsx}'],

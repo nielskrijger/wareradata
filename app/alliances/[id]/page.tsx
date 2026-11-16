@@ -69,6 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: result.alliance.name,
     description: `WarEra.io alliance stats for ${result.alliance.name}: member countries, strength and wealth.`,
     path: `/alliances/${id}`,
+    image: `/og/alliances/${id}`,
   })
 }
 

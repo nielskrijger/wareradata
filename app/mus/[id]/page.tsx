@@ -72,6 +72,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: mu.name,
     description: `WarEra.io military unit${from} with ${mu.memberCount} members: points, damage, gear and member stats.`,
     path: `/mus/${id}`,
+    image: `/og/mus/${id}`,
   })
 }
 

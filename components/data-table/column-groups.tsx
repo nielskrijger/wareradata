@@ -173,7 +173,7 @@ export function factoriesColumns<T extends FactoryStatsRow>(who: 'members' | 'ci
       tooltip: `Profit per day from NPC employees across ${who}, after their wages and the managers' wages.`,
     }),
     compactNumberColumn<T>('factoryPayrollPerDay' as Key<T>, 'Payroll / day', {
-      heat: 'median',
+      heat: 'invertMedian',
       width: 140,
       tooltip: `Daily wages of NPC employees and managers across ${who}.`,
     }),
@@ -219,7 +219,7 @@ export function employeesColumns<T extends FactoryStatsRow>(who: 'members' | 'ci
       tooltip: `Average happiness over every employee across ${who}. Below 50 hurts production.`,
     }),
     localeNumberColumn<T>('employeeRetiringSoon' as Key<T>, 'Retiring ≤7d', {
-      heat: 'ramp',
+      heat: 'invertMedian',
       width: 135,
       tooltip: `Employees across ${who} retiring within a week.`,
     }),

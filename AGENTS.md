@@ -15,3 +15,7 @@ Code comments and docs in the repo describe what the code does now. Don't refere
 Explain why the code is the way it is, not what it does; the code shows that. Keep it to as few words as possible, usually one line.
 
 A comment longer than three lines covers more than one point: split it into paragraphs, one point each, separated by an empty comment line.
+
+## Measure before optimizing
+
+Prefer simple code. Don't add complexity for performance (caching, memoization, batching, clever data structures) without first measuring that it makes a real difference.

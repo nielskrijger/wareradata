@@ -33,7 +33,6 @@ export function fireItems(c: AdvisorCompany, vpp: number): TodoItem[] {
       title: `Fire ${firstName(e.name)} (${c.name})`,
       why: `Their output is worth ${fmt(HOURS_PER_DAY * (e.estimate?.production ?? 0) * vpp)} a day and they cost ${fmt(HOURS_PER_DAY * (e.estimate?.wage ?? 0))} in wages.${helpsTeam || leanedOn ? ' A trait links them to coworkers, so check those first.' : ''}`,
       gainPerDay: -net,
-      energy: 0,
     })
   }
 

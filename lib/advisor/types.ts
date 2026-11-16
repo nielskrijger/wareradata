@@ -14,7 +14,11 @@ export interface TodoItem {
    * Gold per day the action adds; null when it can't be priced.
    */
   gainPerDay: number | null
-  energy: number
+
+  /**
+   * Energy the action takes; none when absent.
+   */
+  energy?: number
 }
 
 /**

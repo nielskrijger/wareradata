@@ -41,6 +41,53 @@ export function netClass(value: number): string {
 }
 
 /**
+ * Distinct hues for the value map; items not listed fall back to a hash so a
+ * new item still gets a stable colour.
+ */
+const ITEM_COLORS: Record<string, string> = {
+  lead: 'var(--color-sky-500)',
+  iron: 'var(--color-orange-500)',
+  oil: 'var(--color-stone-400)',
+  lightAmmo: 'var(--color-amber-400)',
+  ammo: 'var(--color-amber-600)',
+  heavyAmmo: 'var(--color-yellow-700)',
+  steel: 'var(--color-slate-400)',
+  grain: 'var(--color-lime-500)',
+  bread: 'var(--color-yellow-500)',
+  fish: 'var(--color-cyan-500)',
+  cookedFish: 'var(--color-teal-500)',
+  livestock: 'var(--color-rose-400)',
+  steak: 'var(--color-red-500)',
+  limestone: 'var(--color-zinc-300)',
+  concrete: 'var(--color-zinc-500)',
+  petroleum: 'var(--color-violet-500)',
+  coca: 'var(--color-emerald-500)',
+  cocain: 'var(--color-fuchsia-500)',
+  wood: 'var(--color-amber-700)',
+  paper: 'var(--color-indigo-400)',
+}
+
+const FALLBACK_COLORS = [
+  'var(--color-pink-500)',
+  'var(--color-green-500)',
+  'var(--color-blue-500)',
+  'var(--color-purple-500)',
+]
+
+export function itemColor(code: string): string {
+  if (ITEM_COLORS[code]) {
+    return ITEM_COLORS[code]
+  }
+
+  let h = 0
+  for (const ch of code) {
+    h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  }
+
+  return FALLBACK_COLORS[h % FALLBACK_COLORS.length]
+}
+
+/**
  * camelCase code → "Title case" label ("earlyBloomer" → "Early bloomer").
  */
 export function humanizeCode(code: string): string {

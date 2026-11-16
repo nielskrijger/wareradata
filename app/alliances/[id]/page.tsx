@@ -1,30 +1,25 @@
 import type { Metadata } from 'next'
 
+import type { RankMapGroup } from '@/components/detail/rank-map'
 import type { AllianceRow } from '@/lib/rows'
 
+import { Building2, Swords, Trophy, Users } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
-
 import { cache } from 'react'
-import { UsersTable } from '@/app/users/users-table'
 
-import { TierBadge } from '@/components/badges/tier-badge'
-import { AllianceAvatar } from '@/components/cells/alliance-avatar'
+import { UsersTable } from '@/app/users/users-table'
+import { AllianceSidebar } from '@/components/alliance/alliance-sidebar'
 import { CompactNumber } from '@/components/cells/compact-number'
-import { LeaderCell } from '@/components/cells/leader-cell'
-import { DetailHeader, FactRow } from '@/components/detail/detail-header'
-import { MultiStatCard } from '@/components/detail/multi-stat-card'
-import { StatCardGrid } from '@/components/detail/stat-card-grid'
-import { StrategicBonusCard } from '@/components/detail/strategic-bonus-card'
-import { PageMain } from '@/components/layout/page-main'
+import { DetailLayout } from '@/components/detail/detail-sidebar'
+import { Kpi, KpiStrip } from '@/components/detail/kpi'
+import { RankMap } from '@/components/detail/rank-map'
+import { decimalRankRow, GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { PageSection } from '@/components/layout/page-section'
-import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
 import { formatDecimal, formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-import { computeRanges, firstPage } from '@/lib/query'
-import { schemeRgb } from '@/lib/warera/color-schemes'
-import { wareraUrl } from '@/lib/warera/urls'
+import { firstPage } from '@/lib/query'
 
 import { MembersTable } from './members-table'
 
@@ -43,9 +38,6 @@ const getAlliance = cache(async (id: string) => {
     return null
   }
 
-  // Ranges over all alliances, same as the /alliances table, so each stat can
-  // show where this alliance sits.
-  const ranges = computeRanges(alliances)
   const total = alliances.length
 
   // Citizens of all member countries, the alliance-wide equivalent of the
@@ -58,7 +50,7 @@ const getAlliance = cache(async (id: string) => {
 
   const strategicBonus = strategicBonuses.byAlliance[id] ?? null
 
-  return { alliance, ranges, total, citizenPage, strategicBonus }
+  return { alliance, total, citizenPage, strategicBonus }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -76,27 +68,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   })
 }
 
-interface EmblemProps {
-  alliance: AllianceRow
-}
-
-/**
- * The header emblem: the shared alliance logo/monogram with the standard
- * card+border ring pulled up over the banner.
- */
-function AllianceEmblem({ alliance: a }: EmblemProps) {
-  return (
-    <AllianceAvatar
-      name={a.name}
-      avatarUrl={a.avatarUrl}
-      scheme={a.scheme}
-      size={64}
-      className="-mt-9"
-      style={{ boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)' }}
-    />
-  )
-}
-
 export default async function AllianceDetailPage({ params }: PageProps) {
   await connection()
   const { id } = await params
@@ -105,8 +76,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { alliance: a, ranges, total, citizenPage, strategicBonus } = result
-  const rgb = schemeRgb(a.scheme)
+  const { alliance: a, total, citizenPage, strategicBonus } = result
 
   // The user's filter on the citizens table is applied within this scope, so a
   // search can never widen past the alliance's member countries.
@@ -114,99 +84,41 @@ export default async function AllianceDetailPage({ params }: PageProps) {
   const citizensBaseFilter = `(${memberCodes.map(code => `countryCode:${code}`).join(' OR ')})`
 
   return (
-    <PageMain className="space-y-3">
-      <DetailHeader
-        title={a.name}
-        titleSuffix={a.developmentTier ? <TierBadge tier={a.developmentTier} /> : undefined}
-        bannerStyle={{ background: `linear-gradient(100deg, rgba(${rgb}, 0.38), rgba(${rgb}, 0.06))` }}
-        emblem={<AllianceEmblem alliance={a} />}
-      >
-        <FactRow>
-          <LeaderCell leader={a} />
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{a.memberCount}</span>
-            {' '}
-            countries
-          </span>
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{formatNumber(citizenPage.total)}</span>
-            {' '}
-            citizens
-          </span>
-          {a.createdAt && (
-            <span className="text-muted-foreground">
-              founded
-              {' '}
-              {a.createdAt.slice(0, 10)}
-            </span>
-          )}
-          <ExternalLink href={wareraUrl('alliance', a.id)}>WarEra.io</ExternalLink>
-        </FactRow>
-      </DetailHeader>
-
-      <StatCardGrid>
-        <MultiStatCard
+    <DetailLayout
+      sidebar={<AllianceSidebar alliance={a} citizenCount={citizenPage.total} strategicBonus={strategicBonus} />}
+    >
+      <KpiStrip points={{ total: a.totalPoints, level: a.levelPoints, damage: a.damagePoints, wealth: a.wealthPoints }}>
+        <Kpi
+          label="Points"
+          icon={<Trophy />}
+          value={formatNumber(a.totalPoints)}
+          rank={a.totalPointsRank}
+          total={total}
+        />
+        <Kpi
           label="Development"
+          icon={<Building2 />}
+          value={formatDecimal(a.development)}
+          rank={a.developmentRank}
           total={total}
-          rows={[
-            {
-              label: 'Current',
-              value: a.development,
-              display: formatDecimal(a.development),
-              range: ranges.development,
-              heat: 'median',
-              rank: a.developmentRank,
-            },
-            {
-              label: 'Core',
-              value: a.coreDevelopment,
-              display: formatDecimal(a.coreDevelopment),
-              range: ranges.coreDevelopment,
-              heat: 'median',
-              rank: a.coreDevelopmentRank,
-            },
-            {
-              label: 'Average',
-              value: a.averageDevelopment,
-              display: formatDecimal(a.averageDevelopment),
-              range: ranges.averageDevelopment,
-              heat: 'median',
-              rank: a.averageDevelopmentRank,
-            },
-          ]}
         />
-        <MultiStatCard
+        <Kpi
           label="Damage"
+          icon={<Swords />}
+          value={<CompactNumber value={a.damage} />}
+          rank={a.damageRank}
           total={total}
-          rows={[
-            {
-              label: 'Total',
-              value: a.damage,
-              display: <CompactNumber value={a.damage} />,
-              range: ranges.damage,
-              heat: 'median',
-              rank: a.damageRank,
-            },
-            {
-              label: 'Weekly',
-              value: a.weeklyDamage,
-              display: <CompactNumber value={a.weeklyDamage} />,
-              range: ranges.weeklyDamage,
-              heat: 'median',
-              rank: a.weeklyDamageRank,
-            },
-            {
-              label: 'Per citizen',
-              value: a.weeklyDamagePerCitizen,
-              display: <CompactNumber value={a.weeklyDamagePerCitizen} />,
-              range: ranges.weeklyDamagePerCitizen,
-              heat: 'median',
-              rank: a.weeklyDamagePerCitizenRank,
-            },
-          ]}
         />
-        <StrategicBonusCard bonus={strategicBonus} scope="alliance" />
-      </StatCardGrid>
+        <Kpi
+          label="Population"
+          icon={<Users />}
+          value={formatNumber(a.population)}
+          rank={a.populationRank}
+          total={total}
+        />
+      </KpiStrip>
+
+      <RankMap title={`Where ${a.name} ranks`} total={total} unit="alliances" groups={rankGroups(a)} />
 
       <PageSection title="Member countries">
         <MembersTable alliance={a} />
@@ -215,6 +127,44 @@ export default async function AllianceDetailPage({ params }: PageProps) {
       <PageSection title="Citizens">
         <UsersTable initial={citizenPage} baseFilter={citizensBaseFilter} />
       </PageSection>
-    </PageMain>
+    </DetailLayout>
   )
+}
+
+/**
+ * Every ranked stat, grouped by what it says about the alliance.
+ */
+function rankGroups(a: AllianceRow): RankMapGroup[] {
+  return [
+    {
+      title: 'Combat',
+      color: GROUP_COLOR.combat,
+      rows: [
+        rankRow('Damage', a.damage, a.damageRank, true),
+        rankRow('Weekly damage', a.weeklyDamage, a.weeklyDamageRank, true),
+        rankRow('Per citizen', a.weeklyDamagePerCitizen, a.weeklyDamagePerCitizenRank, true),
+        rankRow('Avg gear', a.avgGearScore, a.avgGearScoreRank),
+      ],
+    },
+    {
+      title: 'Economy',
+      color: GROUP_COLOR.economy,
+      rows: [
+        rankRow('Citizen wealth', a.citizenWealth, a.citizenWealthRank, true),
+        ...wealthPartRows(a),
+      ],
+    },
+    {
+      title: 'Society',
+      color: GROUP_COLOR.society,
+      rows: [
+        decimalRankRow('Development', a.development, a.developmentRank),
+        decimalRankRow('Core development', a.coreDevelopment, a.coreDevelopmentRank),
+        decimalRankRow('Avg development', a.averageDevelopment, a.averageDevelopmentRank),
+        rankRow('Population', a.population, a.populationRank),
+        rankRow('Avg points', a.avgPoints, a.avgPointsRank, true),
+      ],
+    },
+    premiumGroup(a),
+  ]
 }

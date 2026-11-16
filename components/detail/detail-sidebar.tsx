@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react'
+
+import type { WareraEntityKind } from '@/lib/warera/urls'
+
 import { PageMain } from '@/components/layout/page-main'
+import { ExternalLink } from '@/components/links'
 import { Panel } from '@/components/panel'
+import { wareraUrl } from '@/lib/warera/urls'
 
 interface Props {
   /**
@@ -10,14 +15,15 @@ interface Props {
   avatar: ReactNode
 
   /**
-   * The refresh control, pinned top-right next to the avatar.
+   * The refresh control, pinned top-right next to the avatar, for entities
+   * that can be re-fetched on demand.
    */
-  refresh: ReactNode
+  refresh?: ReactNode
   children: ReactNode
 }
 
 /**
- * The left column of a detail page (user, MU): avatar and refresh on top, then
+ * The left column of a detail page: avatar and refresh on top, then
  * the identity and sections the caller passes in.
  */
 export function DetailSidebar({ wash, avatar, refresh, children }: Props) {
@@ -36,14 +42,34 @@ export function DetailSidebar({ wash, avatar, refresh, children }: Props) {
   )
 }
 
+interface IdentityProps {
+  name: string
+
+  /**
+   * Shown beside the name (tier, status).
+   */
+  badges?: ReactNode
+  kind: WareraEntityKind
+  id: string
+
+  /**
+   * The {@link Fact} rows.
+   */
+  children: ReactNode
+}
+
 /**
- * The entity's name with its badges beside it.
+ * The sidebar's top block: name and badges, the fact list, and the WarEra.io link.
  */
-export function SidebarTitle({ name, children }: { name: string, children?: ReactNode }) {
+export function SidebarIdentity({ name, badges, kind, id, children }: IdentityProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <h1 className="font-brand text-[32px] leading-none tracking-wide break-all">{name}</h1>
-      {children}
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <h1 className="font-brand text-[32px] leading-none tracking-wide break-all">{name}</h1>
+        {badges}
+      </div>
+      <dl className="space-y-1 text-sm">{children}</dl>
+      <ExternalLink href={wareraUrl(kind, id)}>WarEra.io</ExternalLink>
     </div>
   )
 }
@@ -53,7 +79,7 @@ export function SidebarSection({ children }: { children: ReactNode }) {
 }
 
 /**
- * One label / value line of the sidebar's fact list; wrap them in a <dl>.
+ * One label / value line of a sidebar fact list.
  */
 export function Fact({ label, children }: { label: string, children: ReactNode }) {
   return (

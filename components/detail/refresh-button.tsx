@@ -25,9 +25,8 @@ interface Props {
 }
 
 /**
- * A "last updated · refresh" control for detail-page headers (the DetailHeader
- * `aside` slot). Entity-agnostic: each page supplies its own server `action`
- * plus the entity `id`. Shared by the MU and user pages, and ready for more.
+ * A "last updated · refresh" control for a detail sidebar. Each page supplies
+ * its own server `action` plus the entity `id`.
  */
 export function RefreshButton({ id, action, lastRefreshedAt }: Props) {
   const [pending, startTransition] = useTransition()

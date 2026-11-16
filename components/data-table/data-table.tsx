@@ -50,6 +50,14 @@ export interface PageResult<TData extends RowData> {
   ranges?: Record<string, Range>
 }
 
+/**
+ * Props of an entity table wrapper (UsersTable, MUsTable, …), so a detail
+ * page can scope and trim it.
+ */
+export type EntityTableProps<TData extends RowData> = {
+  initial: PageResult<TData>
+} & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns'>
+
 interface DataTableProps<TData extends RowData> {
   /**
    * Names the table's remembered column visibility. Tables sharing a column

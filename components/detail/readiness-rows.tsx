@@ -31,25 +31,8 @@ function CardRow({ icon, label, n, total, color, textColor = color }: {
 }
 
 /**
- * The readiness mix as a detail card. Renders nothing when no member has a
+ * The three buff / ready / debuff bars. Renders nothing when no member has a
  * known status.
- */
-export function ReadinessPillCard({ mix }: { mix: ReadinessPill }) {
-  if (mix.buff + mix.ready + mix.debuff === 0) {
-    return null
-  }
-
-  return (
-    <div className="bg-card flex flex-col gap-2 rounded-md border p-3 sm:col-span-2">
-      <span className="text-xs font-medium">Readiness</span>
-      <ReadinessRows mix={mix} />
-    </div>
-  )
-}
-
-/**
- * The three buff / ready / debuff bars without a frame; also used bare in the
- * MU sidebar. Renders nothing when no member has a known status.
  */
 export function ReadinessRows({ mix }: { mix: ReadinessPill }) {
   const total = mix.buff + mix.ready + mix.debuff

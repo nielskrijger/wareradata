@@ -3,6 +3,7 @@ import type { AllianceRow } from '@/lib/rows'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { HeatCell } from '@/components/data-table/heat-cell'
+import { EmptyDash } from '@/components/empty-dash'
 import { Flag } from '@/components/flag'
 import { InfoTooltip } from '@/components/info-tooltip'
 import { InternalLink } from '@/components/links'
@@ -15,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { EMPTY } from '@/lib/format'
 import { computeRanges } from '@/lib/query'
 
 interface Props {
@@ -83,7 +85,7 @@ export function MembersTable({ alliance: a }: Props) {
                   </HeatCell>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-right text-xs tabular-nums">
-                  {share !== null ? `${Math.round(share * 100)}%` : '—'}
+                  {share !== null ? `${Math.round(share * 100)}%` : EMPTY}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   <HeatCell value={m.averageDevelopment} range={ranges.averageDevelopment} mode="median">
@@ -91,7 +93,7 @@ export function MembersTable({ alliance: a }: Props) {
                   </HeatCell>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {m.activePopulation === null ? <span className="text-muted-foreground/50">—</span> : (
+                  {m.activePopulation === null ? <EmptyDash /> : (
                     <HeatCell value={m.activePopulation} range={ranges.activePopulation} mode="ramp">
                       {m.activePopulation.toLocaleString()}
                     </HeatCell>
@@ -108,7 +110,7 @@ export function MembersTable({ alliance: a }: Props) {
                   </HeatCell>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {m.avgLevel === null ? <span className="text-muted-foreground/50">—</span> : (
+                  {m.avgLevel === null ? <EmptyDash /> : (
                     <HeatCell value={m.avgLevel} range={ranges.avgLevel} mode="median">
                       {m.avgLevel}
                     </HeatCell>

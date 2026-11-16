@@ -20,7 +20,7 @@ import { Flag } from '@/components/flag'
 import { FillBar } from '@/components/hover-card/fill-bar'
 import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
 import { useEntityHover } from '@/components/hover-card/use-entity-hover'
-import { formatRelativeTime } from '@/lib/format'
+import { EMPTY, formatRelativeTime } from '@/lib/format'
 import { computeGearTier } from '@/lib/gear/score'
 
 interface Props {
@@ -85,7 +85,7 @@ function Body({ data }: { data: FetchedData }) {
             <span className="truncate font-medium">{user.username}</span>
             <span className="flex items-center gap-1 text-[11px] text-neutral-50/70">
               <Flag code={user.countryCode} />
-              {user.countryName ?? '—'}
+              {user.countryName ?? EMPTY}
             </span>
           </div>
           {user.level != null && (
@@ -98,7 +98,7 @@ function Body({ data }: { data: FetchedData }) {
           )}
         </div>
         <div className="mt-0.5 flex items-center gap-2 text-[11px] text-neutral-50/60">
-          <span className="min-w-0 flex-1 truncate">{user.muName ?? '—'}</span>
+          <span className="min-w-0 flex-1 truncate">{user.muName ?? EMPTY}</span>
           <span className="inline-flex shrink-0 items-center gap-1">
             <Clock className={ICON_CLS} />
             {formatRelativeTime(user.lastConnectionAt)}

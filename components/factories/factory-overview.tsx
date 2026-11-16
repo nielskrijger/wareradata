@@ -10,7 +10,7 @@ import { FactoryRoster } from './factory-roster'
 import { FactoryValueMap } from './factory-value-map'
 
 /**
- * The user-page factories section: the daily income waterfall and the roster
+ * The user-page factories section: the daily income bar and the roster
  * in one card, then the value map cards when there are employees to plot.
  */
 export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], totals: PortfolioTotals }) {

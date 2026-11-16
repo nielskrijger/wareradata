@@ -4,7 +4,7 @@ import type { Equipment } from '@/lib/warera/api'
 import { Footprints, Hand, HardHat, Shield, Sword, Target } from 'lucide-react'
 import Image from 'next/image'
 
-import { rarityHex } from '@/lib/gear/rarity'
+import { rarityColor } from '@/lib/gear/rarity'
 import { tierOfCode } from '@/lib/gear/score'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +22,7 @@ type Slot = (typeof SLOT_ORDER)[number]
 type Surface = 'dark' | 'card'
 
 /**
- * Ring classes matching RARITY_HEX. Classes rather than inline styles so
+ * Ring classes matching the rarity colours. Classes rather than inline styles so
  * Tailwind generates them.
  */
 const RARITY_RING = [
@@ -208,7 +208,7 @@ export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }
           ? `+${gearLookup.ammoBonusByCode[v] ?? 0}%`
           : primarySkill(v.skills as SkillsBag)
 
-        const rgb = rarityHex(t)
+        const color = rarityColor(t)
 
         return (
           <div key={slot} className={cn('flex flex-col items-center gap-0.5', tileW)}>
@@ -229,10 +229,10 @@ export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }
                 unoptimized
               />
               <div className="absolute inset-x-0.5 bottom-0.5 h-0.5 overflow-hidden rounded-sm bg-black/40">
-                <div className="h-full rounded-sm" style={{ width: `${dur}%`, background: rgb }} />
+                <div className="h-full rounded-sm" style={{ width: `${dur}%`, background: color }} />
               </div>
             </div>
-            <span className="h-3 text-[9px] font-medium leading-none tabular-nums" style={{ color: rgb }}>
+            <span className="h-3 text-[9px] font-medium leading-none tabular-nums" style={{ color }}>
               {typeof bonus === 'string' ? bonus : bonus ? `+${bonus.value}` : ''}
             </span>
           </div>

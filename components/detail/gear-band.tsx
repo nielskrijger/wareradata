@@ -2,7 +2,7 @@ import type { GearLookup } from '@/lib/gear/score'
 import type { Equipment } from '@/lib/warera/api'
 
 import { GearStrip } from '@/components/detail/gear-strip'
-import { rarityHex, rarityLabel } from '@/lib/gear/rarity'
+import { rarityColor, rarityLabel, rarityTint as tint } from '@/lib/gear/rarity'
 import { computeGearTier, gearScoreTier } from '@/lib/gear/score'
 import { cn } from '@/lib/utils'
 
@@ -25,7 +25,7 @@ export function GearBand({ score, equipment, gearLookup }: Props) {
   // Prefer the real item tiers so the score tile matches the gear strip's
   // rarity rings; fall back to the score band only if equipment is missing.
   const tier = computeGearTier(equipment, gearLookup) ?? gearScoreTier(score)
-  const color = rarityHex(tier)
+  const color = rarityColor(tier)
 
   return (
     <div className="flex items-end gap-1 sm:gap-2">
@@ -34,7 +34,7 @@ export function GearBand({ score, equipment, gearLookup }: Props) {
       <div className="flex w-8 flex-col items-center gap-0.5 sm:w-9">
         <div
           className={cn('flex size-8 flex-col items-center justify-center rounded-md sm:size-9')}
-          style={{ background: `${color}22`, boxShadow: `inset 0 0 0 1px ${color}55` }}
+          style={{ background: tint(color, 13), boxShadow: `inset 0 0 0 1px ${tint(color, 33)}` }}
         >
           <span className="text-xs font-semibold leading-none tabular-nums sm:text-sm" style={{ color }}>
             {score ?? 0}

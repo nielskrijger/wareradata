@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
  */
 const MODE_META: Record<CombatMode, { label: string, className: string }> = {
   war: { label: 'War', className: 'bg-red-500/15 text-red-800 dark:text-red-300' },
-  eco: { label: 'Eco', className: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300' },
+  eco: { label: 'Eco', className: 'bg-heat-green/15 text-heat-green-text dark:text-green-300' },
   hybrid: { label: 'Hybrid', className: 'bg-amber-500/15 text-amber-800 dark:text-amber-300' },
   untrained: { label: 'Untrained', className: 'bg-muted text-muted-foreground' },
 }

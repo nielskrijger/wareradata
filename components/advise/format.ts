@@ -15,7 +15,7 @@ export const KIND: Record<TodoItem['kind'], { label: string, color: string }> = 
   work: { label: 'Work', color: 'var(--heat-slate)' },
 }
 
-export const GAIN = 'var(--heat-green)'
+export const GAIN = 'var(--heat-green-text)'
 
 /**
  * Shared by the header and every row, so the columns line up.

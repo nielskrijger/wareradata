@@ -286,7 +286,7 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
                 y={top + 12}
                 className={cn(
                   'text-[11px] tabular-nums',
-                  row.netPerDay >= 0 ? 'fill-green-700 dark:fill-green-400' : 'fill-red-700 dark:fill-red-400',
+                  row.netPerDay >= 0 ? 'fill-heat-green-text dark:fill-green-400' : 'fill-red-700 dark:fill-red-400',
                 )}
               >
                 {goldSigned(row.netPerDay)}

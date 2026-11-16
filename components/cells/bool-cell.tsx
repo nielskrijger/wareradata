@@ -17,7 +17,7 @@ interface Props {
  */
 export function BoolCell({ value, falsy = 'no' }: Props) {
   if (value) {
-    return <span className="font-medium text-green-700 dark:text-green-400">Yes</span>
+    return <span className="font-medium text-heat-green-text dark:text-green-400">Yes</span>
   }
 
   if (falsy === 'dash') {

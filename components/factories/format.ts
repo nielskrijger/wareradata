@@ -30,7 +30,7 @@ export function goldSigned(value: number, decimals = 1): string {
  */
 export function netClass(value: number): string {
   if (value > 0) {
-    return 'text-green-700 dark:text-green-400'
+    return 'text-heat-green-text dark:text-green-400'
   }
 
   if (value < 0) {

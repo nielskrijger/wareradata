@@ -106,7 +106,7 @@ function heat(value: number, [lo, hi]: [number, number]): CSSProperties | undefi
 
   const t = Math.max(0, Math.min(1, (value - lo) / (hi - lo)))
 
-  return { background: `color-mix(in oklch, var(--color-green-500) ${Math.round(t * 30)}%, transparent)` }
+  return { background: `color-mix(in oklch, var(--heat-green) ${Math.round(t * 30)}%, transparent)` }
 }
 
 function Pips({ value, max, scale }: { value: number, max: number, scale: number }) {
@@ -118,8 +118,8 @@ function Pips({ value, max, scale }: { value: number, max: number, scale: number
             key={i}
             className={cn(
               'h-2.5 w-1 rounded-[1px]',
-              i < value && 'bg-green-600 dark:bg-green-400',
-              i >= value && i < max && 'bg-green-600/30 dark:bg-green-400/30',
+              i < value && 'bg-heat-green dark:bg-green-400',
+              i >= value && i < max && 'bg-heat-green/30 dark:bg-green-400/30',
               i >= max && 'bg-muted',
             )}
           />
@@ -158,7 +158,7 @@ function TraitChips({ e }: { e: LedgerEmployee }) {
           title={t.effects.join(', ') || 'No visible effect'}
           className={cn(
             'font-normal',
-            t.tone > 0 && 'bg-green-500/15 text-green-800 dark:text-green-300',
+            t.tone > 0 && 'bg-heat-green/15 text-heat-green-text dark:text-green-300',
             t.tone < 0 && 'bg-red-500/15 text-red-800 dark:text-red-300',
             t.tone === 0 && 'bg-muted text-muted-foreground',
           )}
@@ -302,7 +302,7 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
         <TableCell
           className={cn(
             'text-right tabular-nums',
-            e.happiness >= 65 && 'text-green-700 dark:text-green-400',
+            e.happiness >= 65 && 'text-heat-green-text dark:text-green-400',
             e.happiness < 50 && 'text-red-700 dark:text-red-400',
           )}
         >
@@ -372,7 +372,7 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
             {row.bestOpportunityPerDay >= 1 && (
               <Tooltip>
                 <TooltipTrigger render={<span className="shrink-0 cursor-help" />}>
-                  <Badge className="bg-green-500/15 text-green-800 dark:text-green-300">
+                  <Badge className="bg-heat-green/15 text-heat-green-text dark:text-green-300">
                     <ItemIcon code={row.bestProductCode} small />
                     {goldSigned(row.bestOpportunityPerDay)}
                   </Badge>

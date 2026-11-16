@@ -104,7 +104,7 @@ export function itemSwitchItem(
     kind: 'item',
     // The name already starts with the current item, so only the new one is named.
     title: `Switch ${c.name} to ${humanizeItem(best.code)}`,
-    titleParts: ['Switch ', companyRef(c), ' ', { from: c.itemCode, to: best.code }],
+    titleParts: ['Switch ', companyRef(c), ' → ', { item: best.code }],
     why: why.filter(Boolean).join(' '),
     facts,
     gainPerDay: best.gain,

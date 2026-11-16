@@ -15,7 +15,7 @@ interface Props {
   onChange: (view: ColumnView) => void
 
   /**
-   * Columns each category view adds beyond the pinned ones.
+   * Columns in each category view.
    */
   counts: Partial<Record<ColumnView, number>>
 }

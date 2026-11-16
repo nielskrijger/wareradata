@@ -65,14 +65,14 @@ export function viewVisibility<TData extends RowData>(
 }
 
 /**
- * Columns each category view adds beyond the pinned ones, for the tab counts.
+ * Columns per category, for the tab counts. The pinned Points column counts
+ * toward Points, so each count matches the category's columns on its tab.
  */
 export function columnViewCount<TData extends RowData>(columns: ColumnDef<TData>[]): Partial<Record<Category, number>> {
-  const pinned = pinnedIds(columns)
   const counts: Partial<Record<Category, number>> = {}
   for (const c of columns) {
     const category = columnCategory(c)
-    if (category !== 'general' && !pinned.has(columnId(c))) {
+    if (category !== 'general') {
       counts[category] = (counts[category] ?? 0) + 1
     }
   }

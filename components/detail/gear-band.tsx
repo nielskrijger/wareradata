@@ -18,8 +18,8 @@ interface Props {
 }
 
 /**
- * The gear score tile followed by the seven equipped slots, for the user
- * header's footer slot.
+ * The gear score tile followed by the seven equipped slots, for the profile
+ * sidebar.
  */
 export function GearBand({ score, equipment, gearLookup }: Props) {
   // Prefer the real item tiers so the score tile matches the gear strip's

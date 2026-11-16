@@ -30,13 +30,16 @@ export function VitalsCard({ health, hunger, average }: Props) {
   return (
     <div className="bg-card flex flex-col gap-3 rounded-md border p-3">
       <span className="text-xs font-medium">Vitals</span>
-      <Row label={`${average ? 'Avg ' : ''}Health`} icon={<Heart className="size-4" />} value={health} />
-      <Row label={`${average ? 'Avg ' : ''}Hunger`} icon={<Drumstick className="size-4" />} value={hunger} />
+      <VitalRow label={`${average ? 'Avg ' : ''}Health`} icon={<Heart className="size-4" />} value={health} />
+      <VitalRow label={`${average ? 'Avg ' : ''}Hunger`} icon={<Drumstick className="size-4" />} value={hunger} />
     </div>
   )
 }
 
-function Row({ label, icon, value }: {
+/**
+ * One heat-tinted reading with its bar; also used bare in the profile sidebar.
+ */
+export function VitalRow({ label, icon, value }: {
   label: string
   icon: React.ReactNode
   value: number | null

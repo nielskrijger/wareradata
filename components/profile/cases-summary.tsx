@@ -5,6 +5,8 @@ import type { CaseRarity, CaseRarityCounts, CasesByType } from '@/lib/warera/api
 import { useState } from 'react'
 
 import { EmptyDash } from '@/components/empty-dash'
+import { SectionHeading } from '@/components/profile/section-heading'
+import { StackedBar } from '@/components/stacked-bar'
 import { cn } from '@/lib/utils'
 import { CASE_RARITIES } from '@/lib/warera/api'
 
@@ -58,10 +60,11 @@ function mergeRarities(a: CaseRarityCounts | null, b: CaseRarityCounts | null): 
 }
 
 /**
- * Cases opened, with an All / Standard / Mythic toggle and the loot per
- * rarity. Standard is the daily case (case1), Mythic the premium one (case2).
+ * Cases opened for the profile sidebar, with an All / Standard / Mythic toggle
+ * and the loot per rarity as one bar. Standard is the daily case (case1),
+ * Mythic the premium one (case2).
  */
-export function CasesCard({
+export function CasesSummary({
   combinedOpened,
   standardOpened,
   mythicOpened,
@@ -80,14 +83,13 @@ export function CasesCard({
   ]
 
   const active = segments.find(s => s.key === seg) ?? segments[0]
-
   const total = sumRarities(active.rarities)
 
   return (
-    <div className="bg-card flex flex-col gap-2 rounded-md border p-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium">Cases opened</span>
-        {hasData && (
+    <div className="flex flex-col gap-2">
+      <SectionHeading
+        title="Cases"
+        aside={hasData && (
           <div className="bg-muted/50 flex rounded-md p-0.5 text-xs">
             {segments.map(s => (
               <button
@@ -104,50 +106,42 @@ export function CasesCard({
             ))}
           </div>
         )}
-      </div>
+      />
 
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-2xl tabular-nums">
+      <div className="flex items-baseline justify-between gap-2 text-sm">
+        <span className="text-muted-foreground">Opened</span>
+        <span className="tabular-nums">
           {active.opened == null ? <EmptyDash /> : active.opened.toLocaleString()}
+          {seg === 'all' && rank != null && combinedOpened != null && rankOf != null && (
+            <span className="text-muted-foreground/60 ml-2 text-xs">
+              #{rank.toLocaleString()} of {rankOf.toLocaleString()}
+            </span>
+          )}
         </span>
-        {seg === 'all' && rank != null && combinedOpened != null && rankOf != null && (
-          <span className="text-muted-foreground/60 text-xs tabular-nums">
-            #
-            {rank.toLocaleString()}
-            {' of '}
-            {rankOf.toLocaleString()}
-          </span>
-        )}
       </div>
 
-      {hasData && (
-        <dl className="space-y-0.5">
-          {CASE_RARITIES.map((rarity) => {
-            const count = active.rarities?.[rarity] ?? 0
-            const pct = total > 0 ? Math.round((count / total) * 100) : 0
+      {hasData && total > 0 && (
+        <>
+          <StackedBar
+            className="bg-muted h-2"
+            segments={CASE_RARITIES.map(r => ({ key: r, value: active.rarities?.[r] ?? 0, color: RARITY_COLOR[r] }))}
+          />
+          <dl className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums">
+            {CASE_RARITIES.map((rarity) => {
+              const count = active.rarities?.[rarity] ?? 0
 
-            // Keep the full ladder visible but dim tiers with nothing pulled
-            // yet, so the rarities the player has actually opened still stand out.
-            return (
-              <div
-                key={rarity}
-                className={cn('flex items-baseline justify-between gap-2 text-sm', count === 0 && 'opacity-40')}
-              >
-                <dt className="text-muted-foreground flex items-center gap-1.5 capitalize">
+              // Keep the full ladder visible but dim tiers with nothing pulled
+              // yet, so the rarities the player has actually opened stand out.
+              return (
+                <div key={rarity} className={cn('inline-flex items-center gap-1', count === 0 && 'opacity-40')}>
                   <span className="size-2 shrink-0 rounded-full" style={{ background: RARITY_COLOR[rarity] }} />
-                  {rarity}
-                </dt>
-                <dd className="flex items-baseline gap-2 tabular-nums">
-                  <span>{count.toLocaleString()}</span>
-                  <span className="text-muted-foreground/60 w-10 text-right text-xs">
-                    {pct}
-                    %
-                  </span>
-                </dd>
-              </div>
-            )
-          })}
-        </dl>
+                  <dt className="capitalize">{rarity}</dt>
+                  <dd className="text-foreground">{count.toLocaleString()}</dd>
+                </div>
+              )
+            })}
+          </dl>
+        </>
       )}
     </div>
   )

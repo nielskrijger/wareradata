@@ -1,7 +1,9 @@
 import type { FactoryLedgerRow } from '@/lib/factories/ledger'
 
+import { Factory } from 'lucide-react'
 import { cache } from 'react'
 
+import { Kpi } from '@/components/profile/kpi'
 import { getSnapshot } from '@/lib/cache/memory'
 import { buildEngineModel } from '@/lib/factories/engine'
 import { engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
@@ -12,7 +14,7 @@ import { logger } from '@/lib/log'
 import { getItemPrices, getUserCompanies } from '@/lib/warera/api'
 
 import { FactoryOverview } from './factory-overview'
-import { FactoryStatsCard } from './factory-stats-card'
+import { goldSigned, netClass } from './format'
 
 const log = logger.child({ component: 'factories' })
 
@@ -22,7 +24,7 @@ const log = logger.child({ component: 'factories' })
  * Returns null when they own none or a call fails: the section is optional, so
  * an API outage shouldn't fail the user page.
  *
- * Request-memoized so the summary card and the roster share one fetch.
+ * Request-memoized so the KPI and the roster share one fetch.
  */
 const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[] | null> => {
   try {
@@ -55,15 +57,25 @@ const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[]
 })
 
 /**
- * The stat-grid summary card, from the same live rows as the roster.
+ * The KPI strip's factory figure, live like the roster: the scraped
+ * aggregates can lag behind it.
  */
-export async function FactorySummaryCard({ userId, className }: { userId: string, className?: string }) {
+export async function FactoryKpi({ userId }: { userId: string }) {
   const rows = await loadFactoryRows(userId)
   if (!rows) {
     return null
   }
 
-  return <FactoryStatsCard className={className} rows={rows} totals={portfolioTotals(rows)} />
+  const net = portfolioTotals(rows).netPerDay
+
+  return (
+    <Kpi
+      label="Factories"
+      icon={<Factory />}
+      value={<span className={netClass(net)}>{goldSigned(net)}</span>}
+      sub={`per day · ${rows.length} ${rows.length === 1 ? 'factory' : 'factories'}`}
+    />
+  )
 }
 
 export async function FactoriesSection({ userId }: { userId: string }) {

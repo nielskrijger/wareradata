@@ -56,14 +56,14 @@ export function compactNumberColumn<T extends RowData>(
 export function dateColumn<T extends RowData>(
   key: Key<T>,
   header: string,
-  opts: { width?: number } = {},
+  opts: { width?: number, hiddenByDefault?: boolean } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
     header,
     cell: ({ row }) => (row.original[key] as string | null)?.slice(0, 10) ?? null,
     sortDescFirst: true,
-    meta: { width: opts.width ?? 110 },
+    meta: { width: opts.width ?? 110, hiddenByDefault: opts.hiddenByDefault },
   }
 }
 

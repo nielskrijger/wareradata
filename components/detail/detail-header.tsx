@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 
 interface FactRowProps {
   /**
-   * Render the row in muted text, for secondary facts (a user's MU/party, an
+   * Render the row in muted text, for secondary facts (a party's leader, an
    * MU's leader) under the primary line.
    */
   muted?: boolean
@@ -38,13 +38,13 @@ interface Props {
 
   /**
    * Optional node rendered inline to the right of the title, vertically centered
-   * against it (e.g. a user's level-tier badge). Omitted, the title sits alone.
+   * against it (e.g. a badge). Omitted, the title sits alone.
    */
   titleSuffix?: ReactNode
 
   /**
    * Banner background. Defaults to the neutral muted gradient (MUs, countries);
-   * the user page passes its color-scheme gradient via `style`.
+   * an alliance passes its color-scheme gradient.
    */
   bannerStyle?: CSSProperties
 
@@ -53,12 +53,6 @@ interface Props {
    * by the caller; the header just stacks them.
    */
   children: ReactNode
-
-  /**
-   * A full-width band below the facts, outside the padded column so its top
-   * divider reaches both edges.
-   */
-  footer?: ReactNode
 
   /**
    * A control pinned top-right that overlays the content, so it never shifts
@@ -71,7 +65,7 @@ interface Props {
  * Header for the detail pages: a banner strip with the emblem overlapping it,
  * the name, and the caller's fact rows.
  */
-export function DetailHeader({ emblem, title, titleSuffix, bannerStyle, children, footer, aside }: Props) {
+export function DetailHeader({ emblem, title, titleSuffix, bannerStyle, children, aside }: Props) {
   return (
     <div className="bg-card relative overflow-hidden rounded-md border">
       {bannerStyle
@@ -90,7 +84,6 @@ export function DetailHeader({ emblem, title, titleSuffix, bannerStyle, children
           </div>
         </div>
       </div>
-      {footer && <div className="border-t px-4 pt-4 pb-3">{footer}</div>}
     </div>
   )
 }

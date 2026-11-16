@@ -9,6 +9,7 @@
  */
 
 export const GREEN = 'var(--heat-green)'
+export const GREEN_TEXT = 'var(--heat-green-text)'
 export const SLATE = 'var(--heat-slate)'
 export const RED = 'var(--heat-red)'
 export const SEAM = '2px solid var(--card)'

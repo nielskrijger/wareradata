@@ -4,18 +4,19 @@ import type { ReadinessPill } from '@/lib/rows'
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
-import { GREEN, pct, RED, SLATE } from '@/components/readiness-pill-colors'
+import { GREEN, GREEN_TEXT, pct, RED, SLATE } from '@/components/readiness-pill-colors'
 
-function CardRow({ icon, label, n, total, color }: {
+function CardRow({ icon, label, n, total, color, textColor = color }: {
   icon: ReactNode
   label: string
   n: number
   total: number
   color: string
+  textColor?: string
 }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className="inline-flex w-16 items-center gap-1" style={{ color }}>
+      <span className="inline-flex w-16 items-center gap-1" style={{ color: textColor }}>
         {icon}
         {label}
       </span>
@@ -43,7 +44,14 @@ export function ReadinessPillCard({ mix }: { mix: ReadinessPill }) {
     <div className="bg-card flex flex-col gap-2 rounded-md border p-3 sm:col-span-2">
       <span className="text-xs font-medium">Readiness</span>
       <div className="flex flex-col gap-1.5">
-        <CardRow icon={<ArrowUp className="size-3.5" />} label="Buff" n={mix.buff} total={total} color={GREEN} />
+        <CardRow
+          icon={<ArrowUp className="size-3.5" />}
+          label="Buff"
+          n={mix.buff}
+          total={total}
+          color={GREEN}
+          textColor={GREEN_TEXT}
+        />
         <CardRow icon={<Minus className="size-3.5" />} label="Ready" n={mix.ready} total={total} color={SLATE} />
         <CardRow icon={<ArrowDown className="size-3.5" />} label="Debuff" n={mix.debuff} total={total} color={RED} />
       </div>

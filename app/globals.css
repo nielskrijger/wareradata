@@ -16,6 +16,8 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-fire: var(--fire);
+  --color-heat-green: var(--heat-green);
+  --color-heat-green-text: var(--heat-green-text);
   --color-table-surface: var(--table-surface);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -57,10 +59,13 @@
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   /* Heat and categorical accent hues (level purple, wealth gold, defender/rare
-     blue). Green, red, purple, blue and slate are dark enough for text on white
+     blue). Red, purple, blue and slate are dark enough for text on white
      (WCAG AA); gold, teal, cyan and orange stay lighter by choice. Brightened in
      .dark, which the always-dark tooltips also use. */
-  --heat-green: oklch(0.53 0.15 145);
+  /* Green has a bright shade for bars, dots and tints and a darker one for
+     text, the same hue so the app shows one green. */
+  --heat-green: oklch(0.68 0.19 145);
+  --heat-green-text: oklch(0.54 0.19 145);
   --heat-red: oklch(0.56 0.2 27);
   --heat-purple: oklch(0.55 0.18 295);
   --heat-gold: oklch(0.74 0.15 80);
@@ -75,10 +80,10 @@
   /* Readiness "Ready" neutral, matching the common gear tier. */
   --heat-slate: #737373;
   /* How much heatTextColor darkens the green end of the vitals ramp. */
-  --heat-text-dim: 0.13;
+  --heat-text-dim: 0.14;
   /* Gear rarity, common → mythic. Legendary keeps the lighter wealth gold. */
   --rarity-1: var(--heat-slate);
-  --rarity-2: var(--heat-green);
+  --rarity-2: var(--heat-green-text);
   --rarity-3: var(--heat-blue);
   --rarity-4: var(--heat-purple);
   --rarity-5: var(--heat-gold);
@@ -115,6 +120,7 @@
      but opaque so sticky cells don't reveal scrolled columns underneath. */
   --table-surface: color-mix(in oklab, oklch(1 0 0) 7.5%, var(--background));
   --heat-green: oklch(0.8 0.2 145);
+  --heat-green-text: var(--heat-green);
   --heat-red: oklch(0.7 0.22 27);
   --heat-purple: oklch(0.7 0.2 295);
   --heat-gold: oklch(0.82 0.15 80);

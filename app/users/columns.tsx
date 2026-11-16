@@ -172,7 +172,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         sortDescFirst: true,
         meta: { width: 110 },
       },
-      rankTooltipColumn<UserRow>('damage', 'damageRank', 'Total', { width: 90 }),
+      rankTooltipColumn<UserRow>('damage', 'damageRank', 'Total', { width: 90, rankLabel: 'Total damage' }),
       compactNumberColumn<UserRow>('weeklyDamage', 'Weekly', { heat: 'median', width: 110 }),
       {
         accessorKey: 'militaryRank',
@@ -185,6 +185,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
     ],
     wealth: [
       rankTooltipColumn<UserRow>('wealth', 'wealthRank', 'Total', {
+        rankLabel: 'Wealth',
         width: 100,
         tooltip: 'Total wealth: companies + items + cash + equipment + weapons.',
       }),

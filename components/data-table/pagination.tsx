@@ -5,6 +5,7 @@ import type { KeyboardEvent } from 'react'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 import { PAGE_SIZES } from './use-table-url-state'
 
@@ -59,16 +60,17 @@ export function Pagination({
           {' '}
           rows
         </span>
-        <label className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           <span className="sr-only sm:not-sr-only">Rows per page</span>
-          <select
-            value={pageSize}
-            onChange={e => onPageSizeChange(Number(e.target.value))}
-            className="border-input bg-card text-foreground h-7 rounded-md border px-1.5 text-sm"
-          >
-            {PAGE_SIZES.map(size => <option key={size} value={size}>{size}</option>)}
-          </select>
-        </label>
+          <Select value={pageSize} onValueChange={size => size && onPageSizeChange(size)}>
+            <SelectTrigger size="sm" aria-label="Rows per page" className="bg-card text-foreground">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="min-w-0">
+              {PAGE_SIZES.map(size => <SelectItem key={size} value={size}>{size}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <nav aria-label="Pagination" className="flex items-center gap-1">

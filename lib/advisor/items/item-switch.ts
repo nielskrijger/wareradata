@@ -7,7 +7,7 @@ import {
   HOURS_PER_DAY,
   RULES,
 } from '../model'
-import { fmt, specializationPct, toolPct } from '../shared'
+import { companyRef, fmt, specializationPct, toolPct } from '../shared'
 
 /**
  * An item change must pay back its cost within this many days.
@@ -107,7 +107,7 @@ export function itemSwitchItem(
     why: why.filter(Boolean).join(' '),
     facts,
     gainPerDay: best.gain,
-    switch: { company: c.ownName, from: c.itemCode, to: best.code },
+    switch: { company: companyRef(c), from: c.itemCode, to: best.code },
   }
 
   return { item, vpp: vppByItem.get(best.code) ?? current }

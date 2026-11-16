@@ -4,7 +4,7 @@ import {
   employeeNetPerDay,
   HOURS_PER_DAY,
 } from '../model'
-import { firstName, fmt, MIN_GAIN_PER_DAY } from '../shared'
+import { companyRef, firstName, fmt, MIN_GAIN_PER_DAY } from '../shared'
 
 const HIRE_ENERGY = 10
 
@@ -34,6 +34,7 @@ export function fireItems(c: AdvisorCompany, vpp: number): TodoItem[] {
       id: `fire-${e._id}`,
       kind: 'employee',
       title: `Fire ${firstName(e.name)} (${c.name})`,
+      titleParts: [`Fire ${firstName(e.name)} at `, companyRef(c)],
       why: `They make ${output} gold of output a day but cost ${wages} in wages.${linked ? ' A trait links them to coworkers, so check those first.' : ''}`,
       facts: [
         { label: 'Output', value: `${output} g/day`, brief: `makes ${output} g/day` },
@@ -56,10 +57,13 @@ export function hireItem(c: AdvisorCompany, medianNet: number | null): TodoItem 
     return null
   }
 
+  const slots = open === 1 ? 'the empty slot' : `${open} empty slots`
+
   return {
     id: `hire-${c.id}`,
     kind: 'hire',
-    title: `Hire into ${open === 1 ? 'the empty slot' : `${open} empty slots`} at ${c.name}`,
+    title: `Hire into ${slots} at ${c.name}`,
+    titleParts: [`Hire into ${slots} at `, companyRef(c)],
     why: 'Pick the candidate with the lowest wage per Production point. Trait and potential only show after hiring; firing is free once they have worked 12 hours.',
     facts: [
       { label: 'Pick', value: 'lowest wage per Production point', brief: 'lowest wage per point' },

@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
+import { CompanyName, TitleParts } from './company-name'
 import { COLUMNS, GAIN, gain, KIND, pct, sum, things } from './format'
 import { Reason } from './reason'
 import { SMALL_GAIN_PER_DAY } from './rows'
@@ -79,13 +80,18 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
       <span className="text-muted-foreground pt-0.5 font-mono text-xs md:pt-0">{rank}</span>
       <span className="flex min-w-0 flex-col gap-1">
         <span className={cn(small ? 'font-medium' : 'font-semibold')}>
-          {row.switch ? <SwitchTitle change={row.switch} /> : row.title}
+          {row.switch
+            ? <SwitchTitle change={row.switch} />
+            : row.titleParts ? <TitleParts parts={row.titleParts} /> : row.title}
         </span>
         {row.parts.length > 0 && (
           <span className="flex flex-wrap gap-1.5">
             {row.parts.map(p => (
-              <span key={p.short} className="bg-muted/60 rounded-md px-1.5 py-0.5 text-xs">
-                {p.short}
+              <span
+                key={p.company?.id ?? p.short}
+                className="bg-muted/60 inline-flex min-w-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs"
+              >
+                {p.company ? <CompanyName company={p.company} /> : p.short}
                 {' '}
                 <span className="font-mono" style={{ color: GAIN }}>{gain(p.gainPerDay)}</span>
               </span>

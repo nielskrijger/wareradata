@@ -1,4 +1,5 @@
 import type { EmployeeLike } from './model'
+import type { AdvisorCompany, CompanyRef } from './types'
 import type { ItemPrices, RecipeLookup } from '@/lib/factories/profit'
 
 import { netPerUnit } from '@/lib/factories/profit'
@@ -7,6 +8,10 @@ import { netPerUnit } from '@/lib/factories/profit'
  * Gains below this are noise next to daily price moves.
  */
 export const MIN_GAIN_PER_DAY = 0.1
+
+export function companyRef(c: AdvisorCompany): CompanyRef {
+  return { id: c.id, name: c.ownName, itemCode: c.itemCode, workers: c.employees.length }
+}
 
 export function firstName(name: string): string {
   return name.split(' ')[0]

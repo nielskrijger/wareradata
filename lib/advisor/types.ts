@@ -21,12 +21,27 @@ export interface Fact {
 }
 
 /**
+ * A company as a row names it; the page shows it styled, with a hover card.
+ */
+export interface CompanyRef {
+  id: string
+  name: string
+  itemCode: string
+  workers: number
+}
+
+/**
  * One row of the to-do list.
  */
 export interface TodoItem {
   id: string
   kind: 'money' | 'train' | 'tool' | 'manager' | 'employee' | 'item' | 'hire' | 'work'
   title: string
+
+  /**
+   * The title with its company kept apart, so the page can style the name.
+   */
+  titleParts?: (string | CompanyRef)[]
   why: string
   facts?: Fact[]
 
@@ -44,12 +59,12 @@ export interface TodoItem {
    * Set on actions repeated per company or worker, so the page can fold them
    * into one row; `short` names this one inside that row.
    */
-  group?: { key: 'manager-job' | 'tool-move', short: string }
+  group?: { key: 'manager-job' | 'tool-move', short: string, company?: CompanyRef }
 
   /**
    * Set on an item switch, so the page can show it with item icons.
    */
-  switch?: { company: string, from: string, to: string }
+  switch?: { company: CompanyRef, from: string, to: string }
 }
 
 /**

@@ -7,7 +7,7 @@ import {
   managerNetPerDay,
   RULES,
 } from '../model'
-import { fmt, MIN_GAIN_PER_DAY } from '../shared'
+import { companyRef, fmt, MIN_GAIN_PER_DAY } from '../shared'
 
 /**
  * Fire a manager whose bonus is worth less than their wage, or post a job where a
@@ -36,6 +36,7 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
         id: `fire-manager-${c.id}`,
         kind: 'manager',
         title: `Fire the manager at ${c.name}`,
+        titleParts: ['Fire the manager at ', companyRef(c)],
         why: `Their +${counted}% adds ${output} gold of output a day but costs ${wages} in wages. Their daily +5 happiness isn't counted.`,
         facts: [
           { label: 'Output', value: `+${counted}% · ${output} g/day`, brief: `adds ${output} g/day` },
@@ -73,6 +74,7 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
     id: `hire-manager-${c.id}`,
     kind: 'manager',
     title: `Post a manager job at ${c.name}`,
+    titleParts: ['Post a manager job at ', companyRef(c)],
     why: `A manager with ${points} Management adds ${pct}% output, for the market wage of ${wage} gold an hour.`,
     facts: [
       { label: 'Management', value: `${points}`, brief: `${points} Management` },
@@ -80,6 +82,6 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
       { label: 'Market wage', value: `${wage} g/h`, brief: `${wage} g/h` },
     ],
     gainPerDay: net,
-    group: { key: 'manager-job', short: c.name },
+    group: { key: 'manager-job', short: c.name, company: companyRef(c) },
   }]
 }

@@ -8,7 +8,7 @@ import { Fragment } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 import { GAIN, gain } from './format'
-import { ItemIcon } from './switch-title'
+import { ItemIcon } from './item-icon'
 
 function Value({ fact, text }: { fact: Fact, text: string }) {
   return (

@@ -1,7 +1,6 @@
 import { Loader2 } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
-
+import { PageMain } from './page-main'
 import { PageShell } from './page-shell'
 
 interface Props {
@@ -30,5 +29,5 @@ export function LoadingPage({ title, className }: Props) {
 
   return title
     ? <PageShell title={title} className={className}>{spinner}</PageShell>
-    : <main className={cn('px-6 py-8 sm:px-8 lg:px-12', className)}>{spinner}</main>
+    : <PageMain className={className}>{spinner}</PageMain>
 }

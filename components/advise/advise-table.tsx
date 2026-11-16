@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react'
 
 import { CompanyName, TitleParts } from '@/components/company-name'
 
+import { Panel } from '@/components/panel'
 import { cn } from '@/lib/utils'
 import { COLUMNS, GAIN, gain, KIND, pct, sum, things } from './format'
 import { Reason } from './reason'
@@ -28,7 +29,7 @@ export function AdviseTable({ big, small, total, energy }: {
   const hint = short ? `The big wins need ${needed}, ${needed - energy.current} more than you have · ${refill}` : refill
 
   return (
-    <div className="bg-card overflow-hidden rounded-xl border text-sm">
+    <Panel padding="none" className="overflow-hidden text-sm">
       <div className={cn(
         'text-muted-foreground bg-muted/40 hidden items-center gap-3 px-4 py-2 text-xs font-medium md:grid',
         COLUMNS,
@@ -61,7 +62,7 @@ export function AdviseTable({ big, small, total, energy }: {
       {small.length > 0 && (
         <SmallStuff rows={small} start={big.length + 1} open={big.length === 0} />
       )}
-    </div>
+    </Panel>
   )
 }
 

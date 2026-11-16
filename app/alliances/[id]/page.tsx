@@ -16,6 +16,8 @@ import { DetailHeader, FactRow } from '@/components/detail/detail-header'
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { StrategicBonusCard } from '@/components/detail/strategic-bonus-card'
+import { PageMain } from '@/components/layout/page-main'
+import { PageSection } from '@/components/layout/page-section'
 import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
 import { formatDecimal, formatNumber } from '@/lib/format'
@@ -112,7 +114,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
   const citizensBaseFilter = `(${memberCodes.map(code => `countryCode:${code}`).join(' OR ')})`
 
   return (
-    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
+    <PageMain className="space-y-3">
       <DetailHeader
         title={a.name}
         titleSuffix={a.developmentTier ? <TierBadge tier={a.developmentTier} /> : undefined}
@@ -206,15 +208,13 @@ export default async function AllianceDetailPage({ params }: PageProps) {
         <StrategicBonusCard bonus={strategicBonus} scope="alliance" />
       </StatCardGrid>
 
-      <section className="space-y-3 pt-3">
-        <h2 className="font-brand text-lg tracking-wide">Member countries</h2>
+      <PageSection title="Member countries">
         <MembersTable alliance={a} />
-      </section>
+      </PageSection>
 
-      <section className="space-y-3 pt-3">
-        <h2 className="font-brand text-lg tracking-wide">Citizens</h2>
+      <PageSection title="Citizens">
         <UsersTable initial={citizenPage} baseFilter={citizensBaseFilter} />
-      </section>
-    </main>
+      </PageSection>
+    </PageMain>
   )
 }

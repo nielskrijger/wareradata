@@ -15,6 +15,8 @@ import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
+import { PageMain } from '@/components/layout/page-main'
+import { PageSection } from '@/components/layout/page-section'
 import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
 import { formatNumber } from '@/lib/format'
@@ -72,7 +74,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
   const { party: p, ranges, memberPage } = result
 
   return (
-    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
+    <PageMain className="space-y-3">
       <DetailHeader
         title={p.name}
         emblem={(
@@ -176,15 +178,14 @@ export default async function PartyDetailPage({ params }: PageProps) {
         />
       </StatCardGrid>
 
-      <section className="space-y-3">
-        <h2 className="font-brand text-lg tracking-wide">Members</h2>
+      <PageSection title="Members">
         {/* Party members are citizens of the party's country. */}
         <UsersTable
           initial={memberPage}
           baseFilter={`partyId:${p.id}`}
           omitColumns={['partyName', 'countryCode']}
         />
-      </section>
-    </main>
+      </PageSection>
+    </PageMain>
   )
 }

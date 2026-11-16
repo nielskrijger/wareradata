@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
+    "@mdi/js": "^7.4.47",
     "@tanstack/react-table": "^9.3.1",
     "@wareraprojects/api": "github:WarEraProjects/TRPC#v0.5.0",
     "class-variance-authority": "^0.7.1",

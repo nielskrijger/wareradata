@@ -31,12 +31,12 @@ export function BattleTabs({ active, finished }: Props) {
   )
 
   const [, setTableState] = useQueryStates(
-    { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString },
+    { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString, view: parseAsString },
     { shallow: true, history: 'replace' },
   )
 
   function selectTab(next: Tab) {
-    setTableState({ q: null, sort: null, dir: null, page: null })
+    setTableState({ q: null, sort: null, dir: null, page: null, view: null })
     setTab(next)
   }
 

@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
+import { ColumnViewTabs } from './column-view-tabs'
+import { columnId, columnViewCount, columnViews, viewVisibility } from './column-views'
 import { ColumnsMenu } from './columns-menu'
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
@@ -128,6 +130,8 @@ function DataTableInner<TData extends RowData>({
     setPageIndex,
     pageSize,
     setPageSize,
+    view: viewParam,
+    setView,
     isAtInitialState,
   } = useTableUrlState({ initialSort, defaultPageSize })
 
@@ -137,6 +141,11 @@ function DataTableInner<TData extends RowData>({
     .map(columnId)
 
   const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId, hiddenByDefault)
+
+  // Unknown or stale view params (from another table's URL) fall back to the first view.
+  const views = columnViews(columns)
+  const view = views.find(v => v === viewParam) ?? views[0] ?? 'all'
+  const shownColumns = viewVisibility(columns, view) ?? columnVisibility
   const [data, setData] = useState<PageResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
   const [loadFailed, setLoadFailed] = useState(false)
@@ -202,7 +211,7 @@ function DataTableInner<TData extends RowData>({
     features: dataTableFeatures,
     data: data.rows,
     columns,
-    state: { sorting, columnVisibility },
+    state: { sorting, columnVisibility: shownColumns },
     onSortingChange: setSorting,
     onColumnVisibilityChange: updater => setColumnVisibility(
       updater,
@@ -227,8 +236,17 @@ function DataTableInner<TData extends RowData>({
           className="w-full max-w-xl"
         />
         {searchHint}
-        <ColumnsMenu table={table} />
+        {view === 'all' && <ColumnsMenu table={table} />}
       </div>
+
+      {views.length > 0 && (
+        <ColumnViewTabs
+          views={views}
+          value={view}
+          onChange={next => setView(next === views[0] ? null : next)}
+          counts={columnViewCount(columns)}
+        />
+      )}
 
       {loadFailed && (
         <div
@@ -290,8 +308,4 @@ function DataTableInner<TData extends RowData>({
       />
     </div>
   )
-}
-
-function columnId<TData extends RowData>(c: ColumnDef<TData>): string {
-  return c.id ?? ('accessorKey' in c ? String(c.accessorKey) : '')
 }

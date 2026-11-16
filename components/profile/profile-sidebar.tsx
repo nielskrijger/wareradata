@@ -156,7 +156,7 @@ function Fact({ label, children }: { label: string, children: ReactNode }) {
   return (
     <div className="flex min-w-0 items-center justify-between gap-3">
       <dt className="text-muted-foreground shrink-0">{label}</dt>
-      <dd className="min-w-0 truncate text-right">{children}</dd>
+      <dd className="flex min-w-0 justify-end text-right">{children}</dd>
     </div>
   )
 }

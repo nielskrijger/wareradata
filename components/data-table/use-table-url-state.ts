@@ -14,9 +14,19 @@ const urlOpts = { shallow: true, scroll: false, history: 'replace' as const }
  */
 export const PAGE_SIZES = [25, 50, 100] as const
 
+interface Sort {
+  id: string
+  desc: boolean
+}
+
 interface Args {
-  initialSort: { id: string, desc: boolean }
+  initialSort: Sort
   defaultPageSize: number
+
+  /**
+   * Default sort per view tab, replacing `initialSort` while that tab is open.
+   */
+  viewSorts?: Partial<Record<string, Sort>>
 }
 
 interface State {
@@ -38,14 +48,15 @@ interface State {
   setPageSize: (size: number) => void
 
   /**
-   * The column view tab, '' for the table's default.
+   * The column view tab, '' for the table's default. Switching tabs drops
+   * the sort and page, so the new tab opens on its own default sort.
    */
   view: string
   setView: (view: string | null) => void
 
   /**
-   * True when the fetched rows match the page's defaults (no params in URL).
-   * The view only picks columns, so it doesn't count.
+   * True when the fetched rows match `initialSort` with no filter or paging,
+   * i.e. `initialData` is still the right page.
    */
   isAtInitialState: boolean
 }
@@ -57,17 +68,20 @@ interface State {
  * The filter is debounced so history doesn't fill with every keystroke, and
  * updates are shallow so the server doesn't re-render on each change.
  */
-export function useTableUrlState({ initialSort, defaultPageSize }: Args): State {
+export function useTableUrlState({ initialSort, defaultPageSize, viewSorts }: Args): State {
   const [q, setQ] = useQueryState('q', parseAsString.withDefault('').withOptions(urlOpts))
+  const [view, setViewParam] = useQueryState('view', parseAsString.withDefault('').withOptions(urlOpts))
+  const defaultSort = viewSorts?.[view] ?? initialSort
+
   const [sortParam, setSortParam] = useQueryState(
     'sort',
-    parseAsString.withDefault(initialSort.id).withOptions(urlOpts),
+    parseAsString.withDefault(defaultSort.id).withOptions(urlOpts),
   )
 
-  const initialDir: 'asc' | 'desc' = initialSort.desc ? 'desc' : 'asc'
+  const defaultDir: 'asc' | 'desc' = defaultSort.desc ? 'desc' : 'asc'
   const [dirParam, setDirParam] = useQueryState(
     'dir',
-    parseAsStringEnum(['asc', 'desc']).withDefault(initialDir).withOptions(urlOpts),
+    parseAsStringEnum(['asc', 'desc']).withDefault(defaultDir).withOptions(urlOpts),
   )
 
   const [pageParam, setPageParam] = useQueryState(
@@ -79,8 +93,6 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     'size',
     parseAsInteger.withDefault(defaultPageSize).withOptions(urlOpts),
   )
-
-  const [view, setView] = useQueryState('view', parseAsString.withDefault('').withOptions(urlOpts))
 
   // Hand-edited URLs can carry any size.
   const pageSize = (PAGE_SIZES as readonly number[]).includes(sizeParam) ? sizeParam : defaultPageSize
@@ -131,12 +143,12 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
   const setSorting = useCallback(
     (updater: SortingState | ((prev: SortingState) => SortingState)) => {
       const next = typeof updater === 'function' ? updater(sorting) : updater
-      const first = next[0] ?? initialSort
+      const first = next[0] ?? defaultSort
       const nextDir: 'asc' | 'desc' = first.desc ? 'desc' : 'asc'
-      setSortParam(first.id === initialSort.id ? null : first.id)
-      setDirParam(nextDir === initialDir ? null : nextDir)
+      setSortParam(first.id === defaultSort.id ? null : first.id)
+      setDirParam(nextDir === defaultDir ? null : nextDir)
     },
-    [sorting, setSortParam, setDirParam, initialSort, initialDir],
+    [sorting, setSortParam, setDirParam, defaultSort, defaultDir],
   )
 
   // Any change to sort, filter or page size snaps back to page 1 — keeps URLs
@@ -154,7 +166,7 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     = pageIndex === 0
       && q === ''
       && sortParam === initialSort.id
-      && dirParam === initialDir
+      && dirParam === (initialSort.desc ? 'desc' : 'asc')
       && pageSize === defaultPageSize
 
   return {
@@ -168,7 +180,12 @@ export function useTableUrlState({ initialSort, defaultPageSize }: Args): State 
     pageSize,
     setPageSize,
     view,
-    setView,
+    setView: (next: string | null) => {
+      setSortParam(null)
+      setDirParam(null)
+      setPageParam(null)
+      setViewParam(next)
+    },
     isAtInitialState,
   }
 }

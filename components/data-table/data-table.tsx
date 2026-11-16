@@ -22,7 +22,7 @@ import {
 import { cn } from '@/lib/utils'
 
 import { ColumnViewTabs } from './column-view-tabs'
-import { columnId, columnViewCount, columnViews, viewVisibility } from './column-views'
+import { columnId, columnViewCount, columnViews, columnViewSorts, viewVisibility } from './column-views'
 import { ColumnsMenu } from './columns-menu'
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
@@ -128,6 +128,8 @@ function DataTableInner<TData extends RowData>({
     ? allColumns.filter(c => !omitColumns.includes(columnId(c)))
     : allColumns
 
+  const views = columnViews(columns)
+
   const {
     q,
     filterInput,
@@ -141,7 +143,7 @@ function DataTableInner<TData extends RowData>({
     view: viewParam,
     setView,
     isAtInitialState,
-  } = useTableUrlState({ initialSort, defaultPageSize })
+  } = useTableUrlState({ initialSort, defaultPageSize, viewSorts: columnViewSorts(columns) })
 
   // From all columns, so stored choices for omitted ones match the full table's.
   const hiddenByDefault = allColumns
@@ -151,7 +153,6 @@ function DataTableInner<TData extends RowData>({
   const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId, hiddenByDefault)
 
   // Unknown or stale view params (from another table's URL) fall back to the first view.
-  const views = columnViews(columns)
   const view = views.find(v => v === viewParam) ?? views[0] ?? 'all'
   const shownColumns = viewVisibility(columns, view) ?? columnVisibility
   const [data, setData] = useState<PageResult<TData>>(initialData)

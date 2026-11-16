@@ -35,6 +35,18 @@ export const CATEGORIES = [
 
 export type Category = (typeof CATEGORIES)[number]
 
+interface CategoryMeta {
+  label: string
+  Icon: LucideIcon
+  color?: string
+
+  /**
+   * Column ids the category's tab sorts by when opened, first present wins;
+   * without a match the tab sorts by its first column.
+   */
+  sortBy?: string[]
+}
+
 /**
  * Label, icon and color per category.
  *
@@ -42,17 +54,27 @@ export type Category = (typeof CATEGORIES)[number]
  * its icon shows only in the Columns menu. Government and MU-specific share
  * slate because they never appear in the same table.
  */
-export const CATEGORY_META: Record<Category, { label: string, Icon: LucideIcon, color?: string }> = {
-  points: { label: 'Points', Icon: Trophy, color: 'var(--heat-teal)' },
+export const CATEGORY_META: Record<Category, CategoryMeta> = {
+  points: { label: 'Points', Icon: Trophy, color: 'var(--heat-teal)', sortBy: ['totalPoints', 'points'] },
   general: { label: 'General', Icon: LayoutGrid },
-  combat: { label: 'Combat', Icon: Swords, color: 'var(--heat-red)' },
-  government: { label: 'Government', Icon: Landmark, color: 'var(--heat-slate-text)' },
-  muSpecific: { label: 'MU-specific', Icon: Building2, color: 'var(--heat-slate-text)' },
-  wealth: { label: 'Wealth', Icon: Coins, color: 'var(--heat-gold)' },
-  factories: { label: 'Factories', Icon: Factory, color: 'var(--heat-orange)' },
-  employees: { label: 'Employees', Icon: HardHat, color: 'var(--heat-blue)' },
-  premium: { label: 'Premium', Icon: Sparkles, color: 'var(--heat-purple)' },
-  cases: { label: 'Cases', Icon: PackageOpen, color: 'var(--heat-cyan)' },
+  combat: { label: 'Combat', Icon: Swords, color: 'var(--heat-red)', sortBy: ['weeklyDamage'] },
+  government: { label: 'Government', Icon: Landmark, color: 'var(--heat-slate-text)', sortBy: ['development'] },
+  muSpecific: { label: 'MU-specific', Icon: Building2, color: 'var(--heat-slate-text)', sortBy: ['reputation'] },
+  wealth: {
+    label: 'Wealth',
+    Icon: Coins,
+    color: 'var(--heat-gold)',
+    sortBy: ['memberWealth', 'citizenWealth', 'wealthRank'],
+  },
+  factories: { label: 'Factories', Icon: Factory, color: 'var(--heat-orange)', sortBy: ['factoryNetPerDay'] },
+  employees: { label: 'Employees', Icon: HardHat, color: 'var(--heat-blue)', sortBy: ['factoryWorkers'] },
+  premium: {
+    label: 'Premium',
+    Icon: Sparkles,
+    color: 'var(--heat-purple)',
+    sortBy: ['gemsPurchasedTotal', 'gemsPurchased'],
+  },
+  cases: { label: 'Cases', Icon: PackageOpen, color: 'var(--heat-cyan)', sortBy: ['standardCasesOpened'] },
 }
 
 /**

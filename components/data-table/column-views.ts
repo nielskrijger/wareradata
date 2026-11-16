@@ -3,7 +3,7 @@ import type { ColumnVisibilityState, RowData } from '@tanstack/react-table'
 import type { Category } from './column-categories'
 import type { ColumnDef } from './features'
 
-import { CATEGORIES, columnCategory } from './column-categories'
+import { CATEGORIES, CATEGORY_META, columnCategory } from './column-categories'
 
 /**
  * A table's column views: Overview (the General columns), one per category,
@@ -85,4 +85,33 @@ export function columnViewCount<TData extends RowData>(columns: ColumnDef<TData>
   }
 
   return counts
+}
+
+export interface SortSpec {
+  id: string
+  desc: boolean
+}
+
+/**
+ * The sort each category tab opens with, so rows are ordered by a column the
+ * tab shows. Overview and All use the table's own default sort.
+ */
+export function columnViewSorts<TData extends RowData>(
+  columns: ColumnDef<TData>[],
+): Partial<Record<Category, SortSpec>> {
+  const sorts: Partial<Record<Category, SortSpec>> = {}
+  for (const category of CATEGORIES) {
+    const inCategory = columns.filter(c => columnCategory(c) === category && c.enableSorting !== false)
+    const preferred = CATEGORY_META[category].sortBy
+      ?.map(id => inCategory.find(c => columnId(c) === id))
+      .find(c => c != null)
+
+    const column = preferred ?? inCategory[0]
+    if (category !== 'general' && column) {
+      // Rank columns sort ascending first, so the best comes first either way.
+      sorts[category] = { id: columnId(column), desc: column.sortDescFirst !== false }
+    }
+  }
+
+  return sorts
 }

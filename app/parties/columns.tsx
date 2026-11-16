@@ -4,13 +4,17 @@ import type { ColumnDef } from '@/components/data-table/features'
 
 import type { PartyRow } from '@/lib/rows'
 
-import { PartyCell } from '@/components/cells/party-cell'
-import { UserNameCell } from '@/components/cells/user-name-cell'
-import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
+import { GroupCell } from '@/components/cells/group-cell'
+import { IdentityCell } from '@/components/cells/identity-cell'
 import { buildColumns } from '@/components/data-table/column-categories'
-import { countryColumn, dateColumn, localeNumberColumn } from '@/components/data-table/column-factories'
+import {
+  avgLevelColumn,
+  countryColumn,
+  dateColumn,
+  leaderColumn,
+  localeNumberColumn,
+} from '@/components/data-table/column-factories'
 import { casesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
-import { UserHoverCard } from '@/components/user-hover-card'
 
 export type { PartyRow }
 
@@ -19,47 +23,27 @@ export const partyColumns: ColumnDef<PartyRow>[] = buildColumns<PartyRow>(
     accessorKey: 'name',
     header: 'Party',
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 overflow-hidden">
-        <PartyCell
-          partyName={row.original.name}
-          partyId={row.original.id}
+      <IdentityCell kind="party" id={row.original.id}>
+        <GroupCell
+          kind="party"
+          name={row.original.name}
+          id={row.original.id}
           avatarUrl={row.original.avatarUrl}
           countryCode={row.original.countryCode}
           bold
         />
-        <WareraLinkIcon kind="party" id={row.original.id} />
-      </div>
+      </IdentityCell>
     ),
     meta: { width: 240 },
   },
   {
     points: pointsColumns<PartyRow>('members'),
     general: [
-      {
-        accessorKey: 'avgLevel',
-        header: 'Avg Level',
-        cell: ({ row }) => row.original.avgLevel ?? null,
-        sortDescFirst: true,
-        meta: { heat: 'median', align: 'right', width: 105 },
-      },
+      avgLevelColumn<PartyRow>(),
       // The flag on the avatar already shows the country.
       countryColumn<PartyRow>({ hiddenByDefault: true }),
       localeNumberColumn<PartyRow>('memberCount', 'Members', { heat: 'ramp', width: 100 }),
-      {
-        accessorKey: 'leaderName',
-        header: 'Leader',
-        cell: ({ row }) => (
-          <UserHoverCard userId={row.original.leaderId}>
-            <UserNameCell
-              userId={row.original.leaderId}
-              name={row.original.leaderName}
-              avatarUrl={row.original.leaderAvatarUrl}
-              colorScheme={row.original.leaderColorScheme}
-            />
-          </UserHoverCard>
-        ),
-        meta: { width: 220 },
-      },
+      leaderColumn<PartyRow>(),
       dateColumn<PartyRow>('createdAt', 'Founded'),
     ],
     wealth: wealthColumns<PartyRow>('memberWealth', 'members'),

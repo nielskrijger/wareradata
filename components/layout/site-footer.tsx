@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { MUCell } from '@/components/cells/mu-cell'
+import { GroupCell } from '@/components/cells/group-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
 import { ExternalLink } from '@/components/links'
 
@@ -17,7 +17,7 @@ export function SiteFooter() {
     <footer className="mt-auto flex flex-col items-center gap-1 border-t px-6 py-4 text-center sm:px-8 lg:px-12">
       <div className="text-foreground flex flex-wrap items-center justify-center gap-x-1.5 text-xs">
         <span>Brought to you by</span>
-        <MUCell muName="Regiment Huzaren" muId={HUZAREN_ID} avatarUrl={HUZAREN_AVATAR} bold />
+        <GroupCell kind="mu" name="Regiment Huzaren" id={HUZAREN_ID} avatarUrl={HUZAREN_AVATAR} bold />
         <span>and</span>
         <UserNameCell userId={FLAKY_ID} name="Flaky" avatarUrl={FLAKY_AVATAR} colorScheme="red" />
       </div>

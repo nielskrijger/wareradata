@@ -4,10 +4,11 @@ import type { ColumnDef } from '@/components/data-table/features'
 
 import type { MURow } from '@/lib/rows'
 
-import { MUCell } from '@/components/cells/mu-cell'
-import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
+import { GroupCell } from '@/components/cells/group-cell'
+import { IdentityCell } from '@/components/cells/identity-cell'
 import { buildColumns } from '@/components/data-table/column-categories'
 import {
+  avgLevelColumn,
   combatModeColumn,
   compactNumberColumn,
   countryColumn,
@@ -34,29 +35,23 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
     accessorKey: 'name',
     header: 'MU',
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 overflow-hidden">
-        <MUCell
-          muName={row.original.name}
-          muId={row.original.id}
+      <IdentityCell kind="mu" id={row.original.id}>
+        <GroupCell
+          kind="mu"
+          name={row.original.name}
+          id={row.original.id}
           avatarUrl={row.original.avatarUrl}
           countryCode={row.original.countryCode}
           bold
         />
-        <WareraLinkIcon kind="mu" id={row.original.id} />
-      </div>
+      </IdentityCell>
     ),
     meta: { width: 220 },
   },
   {
     points: pointsColumns<MURow>('members'),
     general: [
-      {
-        accessorKey: 'avgLevel',
-        header: 'Avg Level',
-        cell: ({ row }) => row.original.avgLevel ?? null,
-        sortDescFirst: true,
-        meta: { heat: 'median', align: 'right', width: 105 },
-      },
+      avgLevelColumn<MURow>(),
       // The flag on the avatar already shows the country.
       countryColumn<MURow>({ hiddenByDefault: true }),
       {

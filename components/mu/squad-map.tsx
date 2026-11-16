@@ -7,9 +7,10 @@ import Link from 'next/link'
 
 import { Avatar } from '@/components/avatar'
 import { UserNameCell } from '@/components/cells/user-name-cell'
-import { SectionHeading } from '@/components/profile/section-heading'
-import { GREEN, RED, SLATE } from '@/components/readiness-pill-colors'
+import { SectionHeading } from '@/components/detail/section-heading'
+import { READINESS_COLOR } from '@/components/readiness-pill-colors'
 import { UserHoverCard } from '@/components/user-hover-card'
+import { formatCompact } from '@/lib/format'
 
 export type SquadMember = Pick<
   UserRow,
@@ -20,8 +21,6 @@ const LABEL = [
   'bg-card/80 pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2',
   'rounded px-1 text-[11px] leading-tight whitespace-nowrap',
 ].join(' ')
-
-const READINESS_COLOR = { buff: GREEN, neither: SLATE, debuff: RED } as const
 
 /**
  * Members with this little health need food before they can fight.
@@ -51,9 +50,9 @@ export function SquadMap({ members }: { members: SquadMember[] }) {
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="font-medium">Squad map</h2>
           <span className="text-muted-foreground flex flex-wrap gap-3 text-xs">
-            <Swatch color={GREEN}>buff</Swatch>
-            <Swatch color={SLATE}>ready</Swatch>
-            <Swatch color={RED}>debuff</Swatch>
+            <Swatch color={READINESS_COLOR.buff}>buff</Swatch>
+            <Swatch color={READINESS_COLOR.neither}>ready</Swatch>
+            <Swatch color={READINESS_COLOR.debuff}>debuff</Swatch>
             <span>size = wealth</span>
           </span>
         </div>
@@ -71,7 +70,7 @@ export function SquadMap({ members }: { members: SquadMember[] }) {
           <div className="space-y-2 border-t pt-4">
             <SectionHeading title="Low damage for level" />
             {laggards.map(m => (
-              <Who key={m.id} m={m} note={`Lv ${m.level} · ${compact(m.damage ?? 0)}`} />
+              <Who key={m.id} m={m} note={`Lv ${m.level} · ${formatCompact(m.damage ?? 0)}`} />
             ))}
           </div>
         )}
@@ -113,7 +112,7 @@ function Plot({ members }: { members: (SquadMember & { level: number })[] }) {
               className="text-muted-foreground absolute -left-16 w-8 -translate-y-1/2 text-right text-[10px] tabular-nums"
               style={{ top: `${y(t)}%` }}
             >
-              {compact(t)}
+              {formatCompact(t)}
             </span>
           </div>
         ))}
@@ -204,10 +203,6 @@ function ring(m: SquadMember, width: number) {
   const color = m.readinessStatus ? READINESS_COLOR[m.readinessStatus] : 'var(--border)'
 
   return { boxShadow: `0 0 0 2px var(--card), 0 0 0 ${2 + width}px ${color}` }
-}
-
-function compact(n: number): string {
-  return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(n)
 }
 
 function mean(xs: number[]): number {

@@ -11,6 +11,12 @@
 export const GREEN = 'var(--heat-green)'
 export const SLATE = 'var(--heat-slate)'
 export const RED = 'var(--heat-red)'
+
+/**
+ * A member's own readiness status in the same colours.
+ */
+export const READINESS_COLOR = { buff: GREEN, neither: SLATE, debuff: RED } as const
+
 export const SEAM = '2px solid var(--card)'
 
 export function pct(n: number, t: number): number {

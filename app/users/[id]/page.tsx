@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import type { RankMapGroup, RankMapRow } from '@/components/profile/rank-map'
+import type { RankMapGroup } from '@/components/detail/rank-map'
 import type { UserRow } from '@/lib/rows'
 import type { CasesByType } from '@/lib/warera/api'
 
@@ -10,13 +10,14 @@ import { connection } from 'next/server'
 import { cache, Suspense } from 'react'
 
 import { CompactNumber } from '@/components/cells/compact-number'
+import { DetailLayout } from '@/components/detail/detail-sidebar'
+import { Kpi, KpiStrip } from '@/components/detail/kpi'
+import { RankMap } from '@/components/detail/rank-map'
+import { rankRow } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { FactoriesSection, FactoryKpi } from '@/components/factories/factories-section'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
-import { Kpi } from '@/components/profile/kpi'
-import { PointsSplit } from '@/components/profile/points-split'
 import { ProfileSidebar } from '@/components/profile/profile-sidebar'
-import { RankMap } from '@/components/profile/rank-map'
 import { WAR_COLOR } from '@/components/war-eco-colors'
 import { getSnapshot } from '@/lib/cache/memory'
 import { getUserEquipment } from '@/lib/cache/users'
@@ -104,65 +105,65 @@ export default async function UserDetailPage({ params }: PageProps) {
   const hasFactories = user.factoryCount != null
 
   return (
-    <main className="grid grid-cols-1 gap-4 px-6 py-8 sm:px-8 lg:px-12 xl:grid-cols-[23.5rem_minmax(0,1fr)]">
-      <ProfileSidebar
-        user={user}
-        total={total}
-        cases={cases}
-        equipment={equipment}
-        gearLookup={gearLookup}
-        refresh={<RefreshButton id={user.id} action={requestUserRefresh} lastRefreshedAt={user.lastRefreshedAt} />}
-      />
+    <DetailLayout
+      sidebar={(
+        <ProfileSidebar
+          user={user}
+          total={total}
+          cases={cases}
+          equipment={equipment}
+          gearLookup={gearLookup}
+          refresh={<RefreshButton id={user.id} action={requestUserRefresh} lastRefreshedAt={user.lastRefreshedAt} />}
+        />
+      )}
+    >
+      <KpiStrip
+        points={{
+          total: user.points,
+          level: user.levelPoints,
+          damage: user.damagePoints,
+          wealth: user.wealthPoints,
+        }}
+      >
+        <Kpi
+          label="Points"
+          icon={<Trophy />}
+          value={user.points.toLocaleString()}
+          sub={user.pointsPerDay != null ? `${user.pointsPerDay.toLocaleString()}/day` : undefined}
+        />
+        <Kpi
+          label="Damage"
+          icon={<Swords />}
+          value={<CompactNumber value={user.damage} />}
+          rank={user.damageRank}
+          total={total}
+        />
+        <Kpi
+          label="Wealth"
+          icon={<Coins />}
+          value={<CompactNumber value={user.wealth} />}
+          rank={user.wealthRank}
+          total={total}
+        />
+        {hasFactories && (
+          <Suspense fallback={<Kpi label="Factories" icon={<Factory />} value={EMPTY} sub="Loading…" />}>
+            <FactoryKpi userId={user.id} />
+          </Suspense>
+        )}
+      </KpiStrip>
 
-      <div className="flex min-w-0 flex-col gap-4">
-        <section className="bg-card grid grid-cols-2 gap-4 rounded-md border p-4 sm:p-5 xl:grid-cols-4">
-          <Kpi
-            label="Points"
-            icon={<Trophy />}
-            value={user.points.toLocaleString()}
-            sub={user.pointsPerDay != null ? `${user.pointsPerDay.toLocaleString()}/day` : undefined}
-          />
-          <Kpi
-            label="Damage"
-            icon={<Swords />}
-            value={<CompactNumber value={user.damage} />}
-            rank={user.damageRank}
-            total={total}
-          />
-          <Kpi
-            label="Wealth"
-            icon={<Coins />}
-            value={<CompactNumber value={user.wealth} />}
-            rank={user.wealthRank}
-            total={total}
-          />
-          {hasFactories && (
-            <Suspense fallback={<Kpi label="Factories" icon={<Factory />} value={EMPTY} sub="Loading…" />}>
-              <FactoryKpi userId={user.id} />
-            </Suspense>
-          )}
-          <PointsSplit
-            className="col-span-full"
-            total={user.points}
-            level={user.levelPoints}
-            damage={user.damagePoints}
-            wealth={user.wealthPoints}
-          />
-        </section>
+      <RankMap title={`Where ${user.username} ranks`} total={total} unit="players" groups={rankGroups(user)} />
 
-        <RankMap title={`Where ${user.username} ranks`} total={total} unit="players" groups={rankGroups(user)} />
-
-        <Suspense
-          fallback={(
-            <div className="bg-card text-muted-foreground rounded-md border p-4 text-sm">
-              Loading factories…
-            </div>
-          )}
-        >
-          <FactoriesSection userId={user.id} />
-        </Suspense>
-      </div>
-    </main>
+      <Suspense
+        fallback={(
+          <div className="bg-card text-muted-foreground rounded-md border p-4 text-sm">
+            Loading factories…
+          </div>
+        )}
+      >
+        <FactoriesSection userId={user.id} />
+      </Suspense>
+    </DetailLayout>
   )
 }
 
@@ -170,51 +171,43 @@ export default async function UserDetailPage({ params }: PageProps) {
  * Every ranked stat, grouped by what it says about the player.
  */
 function rankGroups(user: UserRow): RankMapGroup[] {
-  // Compact for the big, skewed stats (damage, gold), plain for small counts.
-  const row = (label: string, value: number | null, rank: number | null, compact = false): RankMapRow => ({
-    label,
-    value,
-    rank,
-    display: compact ? <CompactNumber value={value} /> : undefined,
-  })
-
   return [
     {
       title: 'Combat',
       color: WAR_COLOR,
       rows: [
-        row('Damage', user.damage, user.damageRank, true),
-        row('Weekly damage', user.weeklyDamage, user.weeklyDamageRank, true),
-        row('Military rank', user.militaryRank, user.militaryRankPos),
-        row('Terrain', user.terrain, user.terrainRank),
-        row('Gear score', user.gearScore, user.gearScoreRank),
-        row('War skills', user.warPoints, user.warPointsRank),
-        row('Bounty', user.bounty, user.bountyRank, true),
+        rankRow('Damage', user.damage, user.damageRank, true),
+        rankRow('Weekly damage', user.weeklyDamage, user.weeklyDamageRank, true),
+        rankRow('Military rank', user.militaryRank, user.militaryRankPos),
+        rankRow('Terrain', user.terrain, user.terrainRank),
+        rankRow('Gear score', user.gearScore, user.gearScoreRank),
+        rankRow('War skills', user.warPoints, user.warPointsRank),
+        rankRow('Bounty', user.bounty, user.bountyRank, true),
       ],
     },
     {
       title: 'Economy',
       color: POINTS_LEGEND.Wealth.color,
       rows: [
-        row('Wealth', user.wealth, user.wealthRank, true),
-        row('Companies', user.companiesWealth, user.companiesWealthRank, true),
-        row('Items', user.itemsWealth, user.itemsWealthRank, true),
-        row('Cash', user.cashWealth, user.cashWealthRank, true),
-        row('Equipment', user.equipmentWealth, user.equipmentWealthRank, true),
-        row('Weapons', user.weaponsWealth, user.weaponsWealthRank, true),
-        row('Eco skills', user.ecoPoints, user.ecoPointsRank),
+        rankRow('Wealth', user.wealth, user.wealthRank, true),
+        rankRow('Companies', user.companiesWealth, user.companiesWealthRank, true),
+        rankRow('Items', user.itemsWealth, user.itemsWealthRank, true),
+        rankRow('Cash', user.cashWealth, user.cashWealthRank, true),
+        rankRow('Equipment', user.equipmentWealth, user.equipmentWealthRank, true),
+        rankRow('Weapons', user.weaponsWealth, user.weaponsWealthRank, true),
+        rankRow('Eco skills', user.ecoPoints, user.ecoPointsRank),
       ],
     },
     {
       title: 'Account',
       color: POINTS_LEGEND.Level.color,
       rows: [
-        row('Level', user.level, user.levelRank),
-        row('Cases opened', user.casesOpened, user.casesOpenedRank),
-        row('Gems bought', user.gemsPurchased, user.gemsPurchasedRank, true),
-        row('Premium months', user.premiumMonths, user.premiumMonthsRank),
-        row('Gifts', user.premiumGifts, user.premiumGiftsRank),
-        row('Referrals', user.referrals, user.referralsRank),
+        rankRow('Level', user.level, user.levelRank),
+        rankRow('Cases opened', user.casesOpened, user.casesOpenedRank),
+        rankRow('Gems bought', user.gemsPurchased, user.gemsPurchasedRank, true),
+        rankRow('Premium months', user.premiumMonths, user.premiumMonthsRank),
+        rankRow('Gifts', user.premiumGifts, user.premiumGiftsRank),
+        rankRow('Referrals', user.referrals, user.referralsRank),
       ],
     },
   ]

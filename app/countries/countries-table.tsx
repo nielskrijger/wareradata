@@ -16,6 +16,7 @@ interface Props {
 export function CountriesTable({ initial }: Props) {
   return (
     <DataTable
+      tableId="countries"
       columns={countryColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}

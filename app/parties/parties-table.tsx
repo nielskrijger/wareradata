@@ -29,6 +29,7 @@ export function PartiesTable({ initial, baseFilter }: Props) {
 
   return (
     <DataTable
+      tableId="parties"
       columns={partyColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}

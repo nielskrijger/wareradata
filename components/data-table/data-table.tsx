@@ -1,6 +1,6 @@
 'use client'
 
-import type { ColumnDef, RowData, VisibilityState } from '@tanstack/react-table'
+import type { ColumnDef, RowData } from '@tanstack/react-table'
 import type { ReactNode } from 'react'
 
 import type { Category } from './column-categories'
@@ -28,6 +28,7 @@ import { ColumnsMenu } from './columns-menu'
 import { DataTableHeaderCell } from './data-table-header-cell'
 import { DataTableRow } from './data-table-row'
 import { Pagination } from './pagination'
+import { usePersistedColumnVisibility } from './use-persisted-column-visibility'
 import { useTableUrlState } from './use-table-url-state'
 
 /**
@@ -132,6 +133,12 @@ export interface PageResult<TData> {
 }
 
 interface DataTableProps<TData, TValue> {
+  /**
+   * Names the table's remembered column visibility. Tables sharing a column
+   * set share an id, so hiding a column on /users also hides it on a country's
+   * citizens tab.
+   */
+  tableId: string
   columns: ColumnDef<TData, TValue>[]
   initialData: PageResult<TData>
   initialSort: { id: string, desc: boolean }
@@ -165,6 +172,7 @@ export function DataTable<TData, TValue>(props: DataTableProps<TData, TValue>) {
 }
 
 function DataTableInner<TData, TValue>({
+  tableId,
   columns,
   initialData,
   initialSort,
@@ -186,7 +194,7 @@ function DataTableInner<TData, TValue>({
     isAtInitialState,
   } = useTableUrlState({ initialSort, defaultPageSize })
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId)
   const [data, setData] = useState<PageResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
   const [loadFailed, setLoadFailed] = useState(false)
@@ -255,7 +263,10 @@ function DataTableInner<TData, TValue>({
     columns,
     state: { sorting, columnVisibility, pagination: { pageIndex, pageSize } },
     onSortingChange: setSorting,
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: updater => setColumnVisibility(
+      updater,
+      table.getAllLeafColumns().filter(c => c.getCanHide()).map(c => c.id),
+    ),
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,

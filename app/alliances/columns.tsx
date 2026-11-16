@@ -58,7 +58,7 @@ function identityCell(a: AllianceRow) {
       {/* min-h matches a two-line flag wrap in the Members column, so every
           row sits at the same height whether or not its flags wrap. */}
       <div className="relative flex min-h-11 items-center gap-2.5 overflow-hidden">
-        <AllianceAvatar name={a.name} avatarUrl={a.avatarUrl} scheme={a.scheme} size={32} />
+        <AllianceAvatar name={a.name} avatarUrl={a.avatarUrl} scheme={a.scheme} size={26} />
         <span className="flex min-w-0 flex-1 items-center gap-2">
           <InternalLink href={`/alliances/${a.id}`} className="font-brand truncate text-base tracking-wide">
             {a.name}

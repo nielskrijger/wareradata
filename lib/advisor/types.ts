@@ -30,7 +30,7 @@ export interface CompanyRef {
   workers: number
 }
 
-export type TitlePart = string | CompanyRef | { item: string }
+export type TitlePart = string | CompanyRef | { item: string } | { from: string, to: string }
 
 /**
  * One row of the to-do list.

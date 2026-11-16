@@ -1,6 +1,6 @@
 import type { RowData } from '@tanstack/react-table'
 
-import type { ColumnDef } from './features'
+import type { ColumnDef, DataColumnMeta } from './features'
 
 import type { PointsStat } from '@/components/cells/points-breakdown-cell'
 
@@ -74,29 +74,14 @@ export function dateColumn<T extends RowData>(
 export function localeNumberColumn<T extends RowData>(
   key: Key<T>,
   header: string,
-  opts: {
-    heat?: HeatMode
-    center?: number
-    logScale?: boolean
-    width?: number
-    tooltip?: string
-    hiddenByDefault?: boolean
-  } = {},
+  opts: Pick<DataColumnMeta, 'heat' | 'heatCenter' | 'heatLogScale' | 'width' | 'tooltip' | 'hiddenByDefault'> = {},
 ): ColumnDef<T> {
   return {
     accessorKey: key,
     header,
     cell: ({ row }) => (row.original[key] as number | null)?.toLocaleString() ?? null,
     sortDescFirst: true,
-    meta: {
-      heat: opts.heat,
-      heatCenter: opts.center,
-      heatLogScale: opts.logScale,
-      align: 'right',
-      width: opts.width ?? 100,
-      tooltip: opts.tooltip,
-      hiddenByDefault: opts.hiddenByDefault,
-    },
+    meta: { align: 'right', width: 100, ...opts },
   }
 }
 

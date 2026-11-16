@@ -279,13 +279,13 @@ export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
   return [
     localeNumberColumn<T>('standardCasesOpened' as Key<T>, 'Standard Cases', {
       heat: 'ramp',
-      logScale: true,
+      heatLogScale: true,
       width: 155,
       tooltip: 'Standard cases opened.',
     }),
     localeNumberColumn<T>('mythicCasesOpened' as Key<T>, 'Mythic Cases', {
       heat: 'ramp',
-      logScale: true,
+      heatLogScale: true,
       width: 140,
       tooltip: 'Premium mythic cases opened.',
     }),
@@ -302,7 +302,7 @@ export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
 
       return localeNumberColumn<T>(`cases${label}` as Key<T>, label, {
         heat: 'ramp',
-        logScale: true,
+        heatLogScale: true,
         width: CASE_RARITY_WIDTHS[rarity],
       })
     }),

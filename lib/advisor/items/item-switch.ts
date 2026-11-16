@@ -107,7 +107,7 @@ export function itemSwitchItem(
     why: why.filter(Boolean).join(' '),
     facts,
     gainPerDay: best.gain,
-    switch: { company: companyRef(c), from: c.itemCode, to: best.code },
+    switch: { company: companyRef(c), to: best.code },
   }
 
   return { item, vpp: vppByItem.get(best.code) ?? current }

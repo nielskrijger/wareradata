@@ -13,7 +13,7 @@ export function SwitchTitle({ change }: { change: NonNullable<AdviseRow['switch'
       Switch
       <CompanyName company={change.company} icon={false} />
       <span className="inline-flex items-center gap-1">
-        <ItemIcon code={change.from} />
+        <ItemIcon code={change.company.itemCode} />
         <ArrowRight aria-label="to" className="text-muted-foreground size-3.5" />
         <ItemIcon code={change.to} />
       </span>

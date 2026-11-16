@@ -1,11 +1,11 @@
 import type { EmployeeLike } from '../model'
-import type { AdvisorInput, CompanyRef, TodoItem } from '../types'
+import type { AdvisorCompany, AdvisorInput, TodoItem } from '../types'
 
 import {
   basePerHour,
   HOURS_PER_DAY,
 } from '../model'
-import { companyRef, firstName, fmt, MIN_GAIN_PER_DAY, toolPct } from '../shared'
+import { firstName, fmt, MIN_GAIN_PER_DAY, titleAt, toolPct } from '../shared'
 
 const TOOL_RARITY = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']
 
@@ -17,8 +17,7 @@ function toolLabel(code: string): string {
 
 interface Holder {
   e: EmployeeLike
-  company: string
-  ref: CompanyRef
+  c: AdvisorCompany
   pct: number
   code: string | null
 }
@@ -36,7 +35,7 @@ export function toolItems(input: AdvisorInput, vppByItem: Map<string, number>): 
 
       const list = byItem.get(c.itemCode) ?? []
       const pct = toolPct(e)
-      list.push({ e, company: c.name, ref: companyRef(c), pct, code: pct > 0 ? e.toolItem?.code ?? null : null })
+      list.push({ e, c, pct, code: pct > 0 ? e.toolItem?.code ?? null : null })
       byItem.set(c.itemCode, list)
     }
   }
@@ -72,13 +71,10 @@ export function toolItems(input: AdvisorInput, vppByItem: Map<string, number>): 
       items.push({
         id: `tool-${from.e._id}-${to.e._id}`,
         kind: 'tool',
-        title: to.pct > 0
-          ? `Swap tools: ${firstName(from.e.name)}'s ${tool} (+${from.pct}%) to ${firstName(to.e.name)}, theirs back`
-          : `Move ${firstName(from.e.name)}'s ${tool} (+${from.pct}%) to ${firstName(to.e.name)} (${to.company})`,
-        titleParts: to.pct > 0
-          ? undefined
-          : [`Move ${fromName}'s ${tool} (+${from.pct}%) to ${toName} at `, to.ref],
-        why: `${firstName(to.e.name)} makes ${fmt(basePerHour(to.e))} base points an hour against ${fmt(basePerHour(from.e))} for ${firstName(from.e.name)}, and a tool adds a percent of base output.`,
+        ...(to.pct > 0
+          ? { title: `Swap tools: ${fromName}'s ${tool} (+${from.pct}%) to ${toName}, theirs back` }
+          : titleAt(`Move ${fromName}'s ${tool} (+${from.pct}%) to ${toName} at `, to.c)),
+        why: `${toName} makes ${toBase} base points an hour against ${fromBase} for ${fromName}, and a tool adds a percent of base output.`,
         facts: [
           {
             label: `${toName}'s base`,

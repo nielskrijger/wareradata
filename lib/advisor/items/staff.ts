@@ -4,7 +4,7 @@ import {
   employeeNetPerDay,
   HOURS_PER_DAY,
 } from '../model'
-import { companyRef, firstName, fmt, MIN_GAIN_PER_DAY } from '../shared'
+import { firstName, fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
 
 const HIRE_ENERGY = 10
 
@@ -33,8 +33,7 @@ export function fireItems(c: AdvisorCompany, vpp: number): TodoItem[] {
     items.push({
       id: `fire-${e._id}`,
       kind: 'employee',
-      title: `Fire ${firstName(e.name)} (${c.name})`,
-      titleParts: [`Fire ${firstName(e.name)} at `, companyRef(c)],
+      ...titleAt(`Fire ${firstName(e.name)} at `, c),
       why: `They make ${output} gold of output a day but cost ${wages} in wages.${linked ? ' A trait links them to coworkers, so check those first.' : ''}`,
       facts: [
         { label: 'Output', value: `${output} g/day`, brief: `makes ${output} g/day` },
@@ -57,13 +56,10 @@ export function hireItem(c: AdvisorCompany, medianNet: number | null): TodoItem 
     return null
   }
 
-  const slots = open === 1 ? 'the empty slot' : `${open} empty slots`
-
   return {
     id: `hire-${c.id}`,
     kind: 'hire',
-    title: `Hire into ${slots} at ${c.name}`,
-    titleParts: [`Hire into ${slots} at `, companyRef(c)],
+    ...titleAt(`Hire into ${open === 1 ? 'the empty slot' : `${open} empty slots`} at `, c),
     why: 'Pick the candidate with the lowest wage per Production point. Trait and potential only show after hiring; firing is free once they have worked 12 hours.',
     facts: [
       { label: 'Pick', value: 'lowest wage per Production point', brief: 'lowest wage per point' },

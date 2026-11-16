@@ -64,7 +64,7 @@ export interface TodoItem {
   /**
    * Set on an item switch, so the page can show it with item icons.
    */
-  switch?: { company: CompanyRef, from: string, to: string }
+  switch?: { company: CompanyRef, to: string }
 }
 
 /**

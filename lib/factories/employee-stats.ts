@@ -52,8 +52,11 @@ export interface EmployeeStats {
   wageExpectation: number
 }
 
-function signed(delta: number, unit: string): string {
-  return `${delta > 0 ? '+' : '−'}${Math.abs(delta)}${unit}`
+/**
+ * A delta with its sign: "+3", "−2", "+40%".
+ */
+export function signed(value: number, unit = ''): string {
+  return `${value > 0 ? '+' : value < 0 ? '−' : ''}${Math.abs(value)}${unit}`
 }
 
 /**
@@ -75,7 +78,7 @@ function traitDetail(e: Employee, code: string, arg: string | undefined, nameByI
 
   for (const c of e.happinessBreakdown?.contributions ?? []) {
     if (c.code === code) {
-      effects.push(`${signed(c.delta, '')} happiness`)
+      effects.push(`${signed(c.delta)} happiness`)
       score += c.delta
     }
   }

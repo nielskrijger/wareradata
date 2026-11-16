@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { LedgerEmployee } from '@/lib/factories/ledger'
 
-import { STAT_NAMES } from '@/lib/factories/employee-stats'
+import { signed, STAT_NAMES } from '@/lib/factories/employee-stats'
 import { cn } from '@/lib/utils'
 
 import { goldSigned, humanizeCode } from './format'
@@ -11,10 +11,6 @@ import { goldSigned, humanizeCode } from './format'
  */
 function tone(value: number): string {
   return value > 0 ? 'text-green-400' : value < 0 ? 'text-red-400' : 'text-neutral-400'
-}
-
-function signed(value: number, unit = ''): string {
-  return `${value > 0 ? '+' : value < 0 ? '−' : ''}${Math.abs(value)}${unit}`
 }
 
 function Row({ label, children, className }: { label: ReactNode, children: ReactNode, className?: string }) {

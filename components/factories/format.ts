@@ -41,50 +41,23 @@ export function netClass(value: number): string {
 }
 
 /**
- * Distinct hues for the value map; items not listed fall back to a hash so a
- * new item still gets a stable colour.
+ * Hues for the value map, assigned in the order a user's items first appear.
  */
-const ITEM_COLORS: Record<string, string> = {
-  lead: 'var(--color-sky-500)',
-  iron: 'var(--color-orange-500)',
-  oil: 'var(--color-stone-400)',
-  lightAmmo: 'var(--color-amber-400)',
-  ammo: 'var(--color-amber-600)',
-  heavyAmmo: 'var(--color-yellow-700)',
-  steel: 'var(--color-slate-400)',
-  grain: 'var(--color-lime-500)',
-  bread: 'var(--color-yellow-500)',
-  fish: 'var(--color-cyan-500)',
-  cookedFish: 'var(--color-teal-500)',
-  livestock: 'var(--color-rose-400)',
-  steak: 'var(--color-red-500)',
-  limestone: 'var(--color-zinc-300)',
-  concrete: 'var(--color-zinc-500)',
-  petroleum: 'var(--color-violet-500)',
-  coca: 'var(--color-emerald-500)',
-  cocain: 'var(--color-fuchsia-500)',
-  wood: 'var(--color-amber-700)',
-  paper: 'var(--color-indigo-400)',
-}
-
-const FALLBACK_COLORS = [
+const ITEM_PALETTE = [
+  'var(--color-sky-500)',
+  'var(--color-orange-500)',
+  'var(--color-amber-400)',
+  'var(--color-stone-400)',
+  'var(--color-violet-500)',
+  'var(--color-emerald-500)',
   'var(--color-pink-500)',
-  'var(--color-green-500)',
-  'var(--color-blue-500)',
-  'var(--color-purple-500)',
+  'var(--color-lime-500)',
 ]
 
-export function itemColor(code: string): string {
-  if (ITEM_COLORS[code]) {
-    return ITEM_COLORS[code]
-  }
+export function itemColors(codes: string[]): Map<string, string> {
+  const unique = [...new Set(codes)]
 
-  let h = 0
-  for (const ch of code) {
-    h = (h * 31 + ch.charCodeAt(0)) >>> 0
-  }
-
-  return FALLBACK_COLORS[h % FALLBACK_COLORS.length]
+  return new Map(unique.map((code, i) => [code, ITEM_PALETTE[i % ITEM_PALETTE.length]]))
 }
 
 /**

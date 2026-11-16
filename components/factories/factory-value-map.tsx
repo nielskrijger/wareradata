@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils'
 
 import { EmployeeBreakdown } from './employee-breakdown'
-import { goldSigned, humanizeItem, itemColor } from './format'
+import { goldSigned, humanizeItem, itemColors } from './format'
 
 interface Point {
   e: LedgerEmployee
@@ -16,6 +16,7 @@ interface Point {
    * Output value net of inputs, before wage.
    */
   value: number
+  color: string
 }
 
 const AXIS_TEXT = 'fill-muted-foreground text-[10px] tabular-nums'
@@ -48,7 +49,7 @@ function EmployeeDot({ p, x, y }: { p: Point, x: number, y: number }) {
             cx={x}
             cy={y}
             r={r}
-            fill={itemColor(p.factory.itemCode)}
+            fill={p.color}
             fillOpacity={0.85}
             className="stroke-card hover:stroke-foreground cursor-help stroke-[1.5]"
           />
@@ -143,7 +144,7 @@ function Scatter({ points }: { points: Point[] }) {
  * Production points per factory, stacked engine-first then each employee, with
  * Net/day at the end of the bar.
  */
-function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
+function OutputBars({ rows, colors }: { rows: FactoryLedgerRow[], colors: Map<string, string> }) {
   const BW = 380
   const rowH = 22
   const left = 40
@@ -199,7 +200,7 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
                         width={width}
                         height={rowH - 7}
                         rx={2}
-                        fill={itemColor(row.itemCode)}
+                        fill={colors.get(row.itemCode)}
                         fillOpacity={0.8}
                         className="cursor-help"
                       />
@@ -233,13 +234,13 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
  * factory's output comes from (stacked bars).
  */
 export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
+  const colors = itemColors(rows.map(r => r.itemCode))
   const points: Point[] = rows.flatMap(factory => factory.employees.map(e => ({
     e,
     factory,
     value: e.revenuePerDay - e.inputCostPerDay,
+    color: colors.get(factory.itemCode)!,
   })))
-
-  const items = [...new Set(points.map(p => p.factory.itemCode))]
 
   return (
     <div className="grid gap-4 p-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
@@ -247,9 +248,9 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <span className="text-sm font-medium">Who pays for themselves</span>
           <span className="text-muted-foreground flex flex-wrap gap-x-3 text-xs">
-            {items.map(it => (
+            {[...colors].map(([it, color]) => (
               <span key={it} className="inline-flex items-center gap-1">
-                <i className="size-2 rounded-full" style={{ background: itemColor(it) }} />
+                <i className="size-2 rounded-full" style={{ background: color }} />
                 {humanizeItem(it)}
               </span>
             ))}
@@ -262,7 +263,7 @@ export function FactoryValueMap({ rows }: { rows: FactoryLedgerRow[] }) {
       </div>
       <div className="min-w-0 space-y-2">
         <span className="text-sm font-medium">Points per day by factory</span>
-        <OutputBars rows={rows} />
+        <OutputBars rows={rows} colors={colors} />
         <p className="text-muted-foreground text-xs">
           Grey is the automated engine; each coloured segment is an employee.
         </p>

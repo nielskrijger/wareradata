@@ -27,11 +27,16 @@ interface RosterEmployee extends LedgerEmployee {
 type SortKey = 'name' | 'production' | 'luck' | 'responsibility' | 'potential' | 'happiness' | 'bonus' | 'wage' | 'net'
 
 interface Column {
-  key: SortKey
+  key: SortKey | 'traits' | 'tool'
   label: string
   tip?: string
   right?: boolean
-  value: (e: RosterEmployee) => number | string
+  className?: string
+
+  /**
+   * Sort value; columns without one don't sort.
+   */
+  value?: (e: RosterEmployee) => number | string
 }
 
 const COLUMNS: Column[] = [
@@ -60,6 +65,8 @@ const COLUMNS: Column[] = [
     right: true,
     value: e => e.bonusPct,
   },
+  { key: 'traits', label: 'Traits', className: 'hidden md:table-cell' },
+  { key: 'tool', label: 'Tool', className: 'hidden lg:table-cell' },
   { key: 'wage', label: 'Wage/day', right: true, value: e => e.wagePerDay },
   {
     key: 'net',
@@ -71,15 +78,9 @@ const COLUMNS: Column[] = [
 ]
 
 /**
- * Cells between Happy and Wage that only some screens show; kept apart from
- * COLUMNS because they don't sort.
- */
-const EXTRA_COLS = 2
-
-/**
  * Columns left of Net/day, for the group header and footer spans.
  */
-const LEAD_COLS = COLUMNS.length - 1 + EXTRA_COLS
+const LEAD_COLS = COLUMNS.length - 1
 
 /**
  * A faint green fill scaled to where `value` sits in its column, so a column
@@ -141,13 +142,17 @@ function TraitChips({ e }: { e: LedgerEmployee }) {
   )
 }
 
-function SortHeader({ col, sort, onSort }: { col: Column, sort: Sort | null, onSort: (key: SortKey) => void }) {
+function ColumnHeader({ col, sort, onSort }: { col: Column, sort: Sort | null, onSort: (key: SortKey) => void }) {
+  if (!col.value) {
+    return <TableHead className={col.className}>{col.label}</TableHead>
+  }
+
   const active = sort?.key === col.key
   const Arrow = sort?.dir === 'asc' ? ArrowUp : ArrowDown
   const label = (
     <button
       type="button"
-      onClick={() => onSort(col.key)}
+      onClick={() => onSort(col.key as SortKey)}
       className={cn(
         'inline-flex cursor-pointer items-center gap-0.5 hover:text-foreground',
         active && 'text-foreground',
@@ -161,7 +166,7 @@ function SortHeader({ col, sort, onSort }: { col: Column, sort: Sort | null, onS
 
   return (
     <TableHead
-      className={cn(col.right && 'text-right')}
+      className={cn(col.right && 'text-right', col.className)}
       aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
     >
       {col.tip
@@ -184,16 +189,14 @@ interface Sort {
 }
 
 /**
- * Header → descending → ascending → back to grouped by factory. Name starts
- * ascending, since A→Z is the natural first click.
+ * Header → descending → ascending → back to grouped by factory.
  */
 function nextSort(sort: Sort | null, key: SortKey): Sort | null {
-  const first = key === 'name' ? 'asc' : 'desc'
   if (sort?.key !== key) {
-    return { key, dir: first }
+    return { key, dir: 'desc' }
   }
 
-  return sort.dir === first ? { key, dir: first === 'asc' ? 'desc' : 'asc' } : null
+  return sort.dir === 'desc' ? { key, dir: 'asc' } : null
 }
 
 /**
@@ -230,12 +233,12 @@ export function FactoryRoster({ rows, totals }: Props) {
       return null
     }
 
-    const col = COLUMNS.find(c => c.key === sort.key)!
+    const value = COLUMNS.find(c => c.key === sort.key)!.value!
     const dir = sort.dir === 'asc' ? 1 : -1
 
     return [...employees].sort((a, b) => {
-      const va = col.value(a)
-      const vb = col.value(b)
+      const va = value(a)
+      const vb = value(b)
 
       return (typeof va === 'string' ? va.localeCompare(vb as string) : va - (vb as number)) * dir
     })
@@ -296,7 +299,9 @@ export function FactoryRoster({ rows, totals }: Props) {
               )
             : <span className="text-muted-foreground">—</span>}
         </TableCell>
-        <TableCell className="text-muted-foreground text-right tabular-nums">{goldSigned(e.wagePerDay).replace(/^\+/, '')}</TableCell>
+        <TableCell className="text-muted-foreground text-right tabular-nums">
+          {goldSigned(e.wagePerDay).replace(/^\+/, '')}
+        </TableCell>
         <TableCell className={cn('text-right tabular-nums', netClass(e.netPerDay))}>
           {goldSigned(e.netPerDay)}
         </TableCell>
@@ -349,10 +354,7 @@ export function FactoryRoster({ rows, totals }: Props) {
     <Table className="text-sm">
       <TableHeader>
         <TableRow className="hover:bg-transparent">
-          {COLUMNS.slice(0, 7).map(col => <SortHeader key={col.key} col={col} sort={sort} onSort={onSort} />)}
-          <TableHead className="hidden md:table-cell">Traits</TableHead>
-          <TableHead className="hidden lg:table-cell">Tool</TableHead>
-          {COLUMNS.slice(7).map(col => <SortHeader key={col.key} col={col} sort={sort} onSort={onSort} />)}
+          {COLUMNS.map(col => <ColumnHeader key={col.key} col={col} sort={sort} onSort={onSort} />)}
         </TableRow>
       </TableHeader>
 

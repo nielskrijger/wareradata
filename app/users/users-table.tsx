@@ -1,6 +1,6 @@
 'use client'
 
-import type { PageResult } from '@/components/data-table/data-table'
+import type { EntityTableProps } from '@/components/data-table/data-table'
 import type { UserRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
@@ -8,22 +8,7 @@ import { DataTable } from '@/components/data-table/data-table'
 
 import { userColumns } from './columns'
 
-interface Props {
-  initial: PageResult<UserRow>
-
-  /**
-   * Scopes the table to a subset of users via a structured filter that's
-   * always applied (e.g. `muId:<id>`). Combined with the user's search.
-   */
-  baseFilter?: string
-
-  /**
-   * Column ids the page's context makes redundant; see DataTable.
-   */
-  omitColumns?: string[]
-}
-
-export function UsersTable({ initial, baseFilter, omitColumns }: Props) {
+export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProps<UserRow>) {
   return (
     <DataTable
       tableId="users"

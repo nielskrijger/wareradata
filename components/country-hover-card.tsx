@@ -12,6 +12,7 @@ import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { Flag } from '@/components/flag'
 import { FillBar } from '@/components/hover-card/fill-bar'
+import { HoverCardError, HoverLabel } from '@/components/hover-card/hover-card-parts'
 import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
 import { useEntityHover } from '@/components/hover-card/use-entity-hover'
 import { EMPTY, formatNumber } from '@/lib/format'
@@ -172,10 +173,10 @@ function Tile({ icon, label, value, rank, range, display }: TileProps) {
 
   return (
     <div className="overflow-hidden rounded-md bg-white/5 px-2 py-1.5">
-      <div className="flex items-center gap-1 whitespace-nowrap text-[10px] uppercase tracking-wide text-neutral-50/50">
+      <HoverLabel className="flex items-center gap-1 whitespace-nowrap">
         {icon}
         {label}
-      </div>
+      </HoverLabel>
       <div className="mt-0.5 whitespace-nowrap text-sm font-semibold tabular-nums" style={{ color }}>
         {value == null ? <span className="text-neutral-50/40">{EMPTY}</span> : (display ?? formatNumber(value, 0))}
         {value != null && rank != null && (
@@ -193,11 +194,7 @@ function Tile({ icon, label, value, rank, range, display }: TileProps) {
  */
 function Placeholder({ status }: { status: HoverStatus }) {
   if (status === 'error') {
-    return (
-      <div className="px-3 py-2 text-[11px] text-neutral-50/70">
-        Couldn't load details.
-      </div>
-    )
+    return <HoverCardError />
   }
 
   return (

@@ -7,11 +7,10 @@ import type { UserRow } from '@/lib/rows'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { RED_BADGE } from '@/components/badges/tone'
 import { CombatModeCell } from '@/components/cells/combat-mode-cell'
+import { GroupCell } from '@/components/cells/group-cell'
+import { IdentityCell } from '@/components/cells/identity-cell'
 import { LevelCell } from '@/components/cells/level-cell'
-import { MUCell } from '@/components/cells/mu-cell'
-import { PartyCell } from '@/components/cells/party-cell'
 import { UserNameCell } from '@/components/cells/user-name-cell'
-import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { buildColumns } from '@/components/data-table/column-categories'
 import {
   compactNumberColumn,
@@ -39,7 +38,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
     accessorKey: 'username',
     header: 'User',
     cell: ({ row }) => (
-      <div className="flex min-w-0 items-center gap-2">
+      <IdentityCell kind="user" id={row.original.id}>
         <UserHoverCard userId={row.original.id}>
           <UserNameCell
             userId={row.original.id}
@@ -52,8 +51,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         {row.original.isBanned && (
           <Badge className={cn(RED_BADGE, 'shrink-0')}>banned</Badge>
         )}
-        <WareraLinkIcon kind="user" id={row.original.id} />
-      </div>
+      </IdentityCell>
     ),
     meta: { width: 250 },
   },
@@ -112,7 +110,13 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         accessorKey: 'muName',
         header: 'MU',
         cell: ({ row }) => (
-          <MUCell muName={row.original.muName} muId={row.original.muId} avatarUrl={row.original.muAvatarUrl} iconOnly />
+          <GroupCell
+            kind="mu"
+            name={row.original.muName}
+            id={row.original.muId}
+            avatarUrl={row.original.muAvatarUrl}
+            iconOnly
+          />
         ),
         meta: { width: 64 },
       },
@@ -120,9 +124,10 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         accessorKey: 'partyName',
         header: 'Party',
         cell: ({ row }) => (
-          <PartyCell
-            partyName={row.original.partyName}
-            partyId={row.original.partyId}
+          <GroupCell
+            kind="party"
+            name={row.original.partyName}
+            id={row.original.partyId}
             avatarUrl={row.original.partyAvatarUrl}
             iconOnly
           />

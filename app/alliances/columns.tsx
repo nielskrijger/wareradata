@@ -7,7 +7,6 @@ import type { AllianceRow } from '@/lib/rows'
 import Link from 'next/link'
 
 import { AllianceAvatar } from '@/components/cells/alliance-avatar'
-import { UserNameCell } from '@/components/cells/user-name-cell'
 import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { CountryHoverCard } from '@/components/country-hover-card'
 import { buildColumns } from '@/components/data-table/column-categories'
@@ -17,6 +16,7 @@ import {
   dateColumn,
   decimalColumn,
   gearColumn,
+  leaderColumn,
   localeNumberColumn,
   percentBarColumn,
   rankTooltipColumn,
@@ -33,7 +33,6 @@ import {
 } from '@/components/data-table/column-groups'
 import { Flag } from '@/components/flag'
 import { InternalLink } from '@/components/links'
-import { UserHoverCard } from '@/components/user-hover-card'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 
 export type { AllianceRow }
@@ -105,21 +104,7 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
     general: [
       membersColumn,
       localeNumberColumn<AllianceRow>('population', 'Population', { heat: 'ramp', width: 125 }),
-      {
-        accessorKey: 'leaderName',
-        header: 'Leader',
-        cell: ({ row }) => (
-          <UserHoverCard userId={row.original.leaderId}>
-            <UserNameCell
-              userId={row.original.leaderId}
-              name={row.original.leaderName}
-              avatarUrl={row.original.leaderAvatarUrl}
-              colorScheme={row.original.leaderColorScheme}
-            />
-          </UserHoverCard>
-        ),
-        meta: { width: 220 },
-      },
+      leaderColumn<AllianceRow>(),
       dateColumn<AllianceRow>('createdAt', 'Founded'),
       decimalColumn<AllianceRow>('development', 'Current Dev', {
         width: 150,

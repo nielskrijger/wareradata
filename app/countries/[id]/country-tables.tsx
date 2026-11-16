@@ -39,7 +39,7 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
   )
 
   const [, setTableState] = useQueryStates(
-    { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString },
+    { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString, view: parseAsString },
     { shallow: true, history: 'replace' },
   )
 
@@ -67,7 +67,7 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
     skipScrollRef.current = true
     // Drop the active table's paging/sort/filter so it doesn't bleed into the
     // table we're switching to.
-    setTableState({ q: null, sort: null, dir: null, page: null })
+    setTableState({ q: null, sort: null, dir: null, page: null, view: null })
     setTab(next)
   }
 

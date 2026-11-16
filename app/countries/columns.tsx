@@ -5,9 +5,10 @@ import type { ColumnDef } from '@/components/data-table/features'
 import type { CountryRow } from '@/lib/rows'
 
 import { CountryCell } from '@/components/cells/country-cell'
-import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
+import { IdentityCell } from '@/components/cells/identity-cell'
 import { buildColumns } from '@/components/data-table/column-categories'
 import {
+  avgLevelColumn,
   combatModeColumn,
   compactNumberColumn,
   decimalColumn,
@@ -38,7 +39,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
     accessorKey: 'name',
     header: 'Country',
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 overflow-hidden">
+      <IdentityCell kind="country" id={row.original.id}>
         <CountryCell
           countryCode={row.original.code}
           countryName={row.original.name}
@@ -46,21 +47,14 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
           activeBattles={row.original.activeBattles}
           activeBattlesList={row.original.activeBattlesList}
         />
-        <WareraLinkIcon kind="country" id={row.original.id} />
-      </div>
+      </IdentityCell>
     ),
     meta: { width: 210 },
   },
   {
     points: pointsColumns<CountryRow>('citizens'),
     general: [
-      {
-        accessorKey: 'avgLevel',
-        header: 'Avg Level',
-        cell: ({ row }) => row.original.avgLevel ?? null,
-        sortDescFirst: true,
-        meta: { heat: 'median', align: 'right', width: 105 },
-      },
+      avgLevelColumn<CountryRow>(),
       {
         accessorKey: 'activePopulation',
         header: 'Active pop.',

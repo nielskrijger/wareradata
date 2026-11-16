@@ -11,7 +11,7 @@ import { UsersTable } from '@/app/users/users-table'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { AllianceAvatar } from '@/components/cells/alliance-avatar'
 import { CompactNumber } from '@/components/cells/compact-number'
-import { UserNameCell } from '@/components/cells/user-name-cell'
+import { LeaderCell } from '@/components/cells/leader-cell'
 import { DetailHeader, FactRow } from '@/components/detail/detail-header'
 import { MultiStatCard } from '@/components/detail/multi-stat-card'
 import { StatCardGrid } from '@/components/detail/stat-card-grid'
@@ -120,12 +120,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
         emblem={<AllianceEmblem alliance={a} />}
       >
         <FactRow>
-          <UserNameCell
-            userId={a.leaderId}
-            name={a.leaderName}
-            avatarUrl={a.leaderAvatarUrl}
-            colorScheme={a.leaderColorScheme}
-          />
+          <LeaderCell leader={a} />
           <span className="text-muted-foreground">
             <span className="text-foreground font-medium">{a.memberCount}</span>
             {' '}

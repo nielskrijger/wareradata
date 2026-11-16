@@ -1,6 +1,4 @@
 import type { Header, RowData } from '@tanstack/react-table'
-import type { CSSProperties } from 'react'
-
 import type { DataTableFeatures } from './features'
 
 import { FlexRender } from '@tanstack/react-table'
@@ -9,28 +7,19 @@ import { TableHead } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
+import { CategoryIcon } from './category-icon'
 import { CATEGORY_META, columnCategory } from './column-categories'
 import { SortIcon } from './sort-icon'
+import { columnWidthStyle, STICKY_HEAD, STICKY_WIDTH } from './sticky-column'
 
 interface Props<TData extends RowData> {
   header: Header<DataTableFeatures, TData>
   sticky?: boolean
 }
 
-/**
- * Above the body's sticky cells (z-10) so the top-left corner stays on top.
- */
-const STICKY = 'bg-table-surface sticky left-0 z-20 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.35)]'
-
-/**
- * Narrow on mobile to leave room for the data columns. A CSS var, not an inline
- * width, so the responsive classes can still win.
- */
-const STICKY_WIDTH = 'w-[140px] sm:w-[var(--col-w)]'
-
 export function DataTableHeaderCell<TData extends RowData>({ header, sticky }: Props<TData>) {
   if (header.isPlaceholder) {
-    return <TableHead className={sticky ? STICKY : undefined} />
+    return <TableHead className={sticky ? STICKY_HEAD : undefined} />
   }
 
   const canSort = header.column.getCanSort()
@@ -39,27 +28,23 @@ export function DataTableHeaderCell<TData extends RowData>({ header, sticky }: P
   const width = header.column.columnDef.meta?.width
   const sortInvert = header.column.columnDef.meta?.sortInvert ?? false
   const iconState = sortInvert && sorted ? (sorted === 'asc' ? 'desc' : 'asc') : sorted
-  const headClass = cn(align === 'right' ? 'text-right' : undefined, sticky && STICKY, sticky && width && STICKY_WIDTH)
-  const style: CSSProperties | undefined = width
-    ? (sticky
-        ? { '--col-w': `${width}px` } as CSSProperties
-        : { width: `${width}px` })
-    : undefined
+  const headClass = cn(
+    align === 'right' ? 'text-right' : undefined,
+    sticky && STICKY_HEAD,
+    sticky && width && STICKY_WIDTH,
+  )
+
+  const style = columnWidthStyle(width, Boolean(sticky))
 
   const rendered = <FlexRender header={header} />
 
   // Prefix each column with its category's icon, the same symbol the Columns
-  // menu shows for that group (Points trophy, Combat swords, Wealth coin, …).
+  // menu shows for that group. General (the catch-all) has no color and stays
+  // iconless here; it still shows its icon in the Columns menu.
   const category = columnCategory(header.column.columnDef)
-
-  // Every category but General carries a `color`, so only General (the catch-all)
-  // stays iconless in the header; it still shows its icon in the Columns menu.
-  const meta = CATEGORY_META[category]
-  const catMeta = meta.color ? meta : null
-  const CatIcon = catMeta?.Icon
-  const label = CatIcon ? (
+  const label = CATEGORY_META[category].color ? (
     <span className="inline-flex items-center gap-1">
-      <CatIcon className="size-3.5 shrink-0" style={catMeta?.color ? { color: catMeta.color } : undefined} />
+      <CategoryIcon category={category} />
       {rendered}
     </span>
   ) : rendered

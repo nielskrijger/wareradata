@@ -5,7 +5,7 @@ import { Avatar } from '@/components/avatar'
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CountryCell } from '@/components/cells/country-cell'
-import { UserNameCell } from '@/components/cells/user-name-cell'
+import { LeaderCell } from '@/components/cells/leader-cell'
 import { LeanSplit } from '@/components/detail/combat-mode-card'
 import { DetailSidebar, Fact, SidebarSection, SidebarTitle } from '@/components/detail/detail-sidebar'
 import { SectionHeading } from '@/components/detail/section-heading'
@@ -13,7 +13,6 @@ import { VitalRows } from '@/components/detail/vitals-card'
 import { EmptyDash } from '@/components/empty-dash'
 import { ExternalLink } from '@/components/links'
 import { ReadinessRows } from '@/components/readiness-pill-card'
-import { UserHoverCard } from '@/components/user-hover-card'
 import { formatNumber } from '@/lib/format'
 import { classifyWarShare } from '@/lib/skills/classify'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -50,18 +49,7 @@ export function MUSidebar({ mu, refresh }: { mu: MURow, refresh: ReactNode }) {
           </Fact>
           <Fact label="Region">{mu.regionName ?? <EmptyDash />}</Fact>
           <Fact label="Leader">
-            {mu.leaderName
-              ? (
-                  <UserHoverCard userId={mu.leaderId}>
-                    <UserNameCell
-                      userId={mu.leaderId}
-                      name={mu.leaderName}
-                      avatarUrl={mu.leaderAvatarUrl}
-                      colorScheme={mu.leaderColorScheme}
-                    />
-                  </UserHoverCard>
-                )
-              : <EmptyDash />}
+            {mu.leaderName ? <LeaderCell leader={mu} /> : <EmptyDash />}
           </Fact>
           <Fact label="Members">{formatNumber(mu.memberCount)}</Fact>
           <Fact label="Headquarters"><Level value={mu.headquartersLevel} /></Fact>

@@ -7,6 +7,7 @@ import { buildEngineModel } from '@/lib/factories/engine'
 import { engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
 import { buildFactoryLedgerRow } from '@/lib/factories/ledger'
 import { buildFrontier, computeFactoryProfit, portfolioTotals } from '@/lib/factories/profit'
+import { EMPTY } from '@/lib/format'
 import { logger } from '@/lib/log'
 import { getItemPrices, getUserCompanies } from '@/lib/warera/api'
 
@@ -40,7 +41,7 @@ const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[]
     const model = buildEngineModel(gameConfig)
     const prices = await getItemPrices()
     const frontier = buildFrontier(prices, recipe)
-    const regionName = (id: string) => lookups.regionById.get(id)?.name ?? '—'
+    const regionName = (id: string) => lookups.regionById.get(id)?.name ?? EMPTY
     const nameById = new Map(factories.flatMap(f => f.employees.map(e => [e._id, e.name] as const)))
 
     return factories

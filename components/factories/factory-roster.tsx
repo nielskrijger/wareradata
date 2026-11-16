@@ -7,6 +7,7 @@ import type { PortfolioTotals } from '@/lib/factories/profit'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
+import { EmptyDash } from '@/components/empty-dash'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -119,7 +120,7 @@ function Pips({ value, max, scale }: { value: number, max: number, scale: number
 
 function TraitChips({ e }: { e: LedgerEmployee }) {
   if (!e.traits.length) {
-    return <span className="text-muted-foreground text-xs">—</span>
+    return <EmptyDash />
   }
 
   return (
@@ -293,7 +294,7 @@ export function FactoryRoster({ rows, totals }: Props) {
                 </span>
               </span>
             </span>
-          ) : <span className="text-muted-foreground">—</span>}
+          ) : <EmptyDash />}
         </TableCell>
         <TableCell className="text-muted-foreground text-right tabular-nums">
           {goldSigned(e.wagePerDay).replace(/^\+/, '')}

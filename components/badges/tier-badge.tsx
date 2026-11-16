@@ -1,5 +1,6 @@
 import type { RankingTier } from '@/lib/warera/api'
 
+import { EmptyDash } from '@/components/empty-dash'
 import { Badge } from '@/components/ui/badge'
 
 const tierColor: Record<RankingTier, string> = {
@@ -17,7 +18,7 @@ interface Props {
 
 export function TierBadge({ tier }: Props) {
   if (!tier) {
-    return <>—</>
+    return <EmptyDash />
   }
 
   return <Badge className={tierColor[tier]}>{tier}</Badge>

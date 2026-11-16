@@ -22,7 +22,7 @@ interface PageProps {
 }
 
 /**
- * A player's to-do list, kept narrow so rows stay readable on wide screens.
+ * A player's best next actions, kept narrower than the site so rows stay readable.
  */
 export default async function AdvisePage({ params }: PageProps) {
   await connection()
@@ -34,7 +34,10 @@ export default async function AdvisePage({ params }: PageProps) {
 
   return (
     <main className={cn('space-y-6 px-6 py-8 sm:px-8', ADVISE_WIDTH)}>
-      <AdviseList result={buildAdvice(advisorInputFromData(data, gameConfig, prices))} />
+      <AdviseList
+        result={buildAdvice(advisorInputFromData(data, gameConfig, prices))}
+        user={{ id, name: data.user.username }}
+      />
     </main>
   )
 }

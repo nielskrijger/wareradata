@@ -19,6 +19,12 @@ export interface TodoItem {
    * Energy the action takes; none when absent.
    */
   energy?: number
+
+  /**
+   * Set on actions repeated per company or worker, so the page can fold them
+   * into one row; `short` names this one inside that row.
+   */
+  group?: { key: 'manager-job' | 'tool-move', short: string }
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Avatar } from '@/components/avatar'
+import { TableAvatar } from '@/components/cells/table-avatar'
 import { EmptyDash } from '@/components/empty-dash'
 import { InternalLink } from '@/components/links'
 
@@ -56,7 +56,7 @@ export function PartyCell({ partyName, partyId, avatarUrl, bold, countryCode }: 
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Avatar src={avatarUrl} name={partyName} size={22} countryCode={countryCode} />
+      <TableAvatar src={avatarUrl} name={partyName} countryCode={countryCode} />
       {link}
     </div>
   )

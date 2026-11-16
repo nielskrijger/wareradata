@@ -1,5 +1,7 @@
 import type { FactoryLedgerRow } from '@/lib/factories/ledger'
 
+import { cache } from 'react'
+
 import { getSnapshot } from '@/lib/cache/memory'
 import { buildEngineModel } from '@/lib/factories/engine'
 import { engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
@@ -9,6 +11,7 @@ import { logger } from '@/lib/log'
 import { getItemPrices, getUserCompanies } from '@/lib/warera/api'
 
 import { FactoryOverview } from './factory-overview'
+import { FactoryStatsCard } from './factory-stats-card'
 
 const log = logger.child({ component: 'factories' })
 
@@ -22,8 +25,10 @@ const log = logger.child({ component: 'factories' })
  * Returns null when the user owns none, or when a live API call fails — the
  * section is best-effort enrichment, so a price/company outage just omits it
  * rather than failing the user page.
+ *
+ * Request-memoized so the summary card and the roster share one fetch.
  */
-async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | null> {
+const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[] | null> => {
   try {
     const factories = await getUserCompanies(userId)
     if (!factories.length) {
@@ -51,6 +56,18 @@ async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | nul
 
     return null
   }
+})
+
+/**
+ * The stat-grid summary card, from the same live rows as the roster.
+ */
+export async function FactorySummaryCard({ userId, className }: { userId: string, className?: string }) {
+  const rows = await loadFactoryRows(userId)
+  if (!rows) {
+    return null
+  }
+
+  return <FactoryStatsCard className={className} rows={rows} totals={portfolioTotals(rows)} />
 }
 
 export async function FactoriesSection({ userId }: { userId: string }) {

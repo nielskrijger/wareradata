@@ -14,7 +14,8 @@
     "lint:fix": "eslint --fix",
     "scrape-main": "tsx scripts/scrape-main.ts",
     "scrape-factories": "tsx scripts/scrape-factories.ts",
-    "record-battle-history": "tsx scripts/record-battle-history.ts"
+    "record-battle-history": "tsx scripts/record-battle-history.ts",
+    "check-advisor": "tsx --env-file-if-exists=.env.local scripts/check-advisor.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

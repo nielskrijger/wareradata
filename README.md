@@ -45,10 +45,12 @@ server, use `npm run scrape-main`.
 
 ### Environment
 
-| Var              | Default   | Purpose                                                 |
-| ---------------- | --------- | ------------------------------------------------------- |
-| `WARERA_API_KEY` | (none)    | API key; raises the rate tier, needed for factory data. |
-| `DATA_DIR`       | `./.data` | Where the snapshot and battle archive live.             |
+| Var              | Default   | Purpose                                                                  |
+| ---------------- | --------- | ------------------------------------------------------------------------ |
+| `WARERA_API_KEY` | (none)    | API key; raises the rate tier, needed for factory data.                  |
+| `DATA_DIR`       | `./.data` | Where the snapshot and battle archive live.                              |
+| `ADVISE_ENABLED` | (off)     | `1` turns on `/advise`, the key owner's private to-do list.              |
+| `ADVISE_USER_ID` | (none)    | Whose companies `/advise` reads when the key's owner has no employees.   |
 
 ## The scraper
 

@@ -11,6 +11,7 @@ import type {
   GovernmentGetByCountryIdResponse,
   InventoryFetchCurrentEquipmentResponse,
   ItemTradingGetPricesResponse,
+  Manager,
   MuListItem,
   MuMemberListItem,
   MuRankingsOptional,
@@ -18,6 +19,7 @@ import type {
   RankingValueTier,
   RegionsObjectItem,
   StrategicResourceBonuses,
+  UserGetUserByIdResponse,
   UserGetUserLiteResponse,
   UserSkills,
   UserSkillsExpiration,
@@ -720,6 +722,52 @@ export function getUserCompanies(userId: string): Promise<FactoryData[]> {
  */
 export function getUserCompaniesSlow(userId: string): Promise<FactoryData[]> {
   return fetchUserCompanies(factoryClient, userId)
+}
+
+/**
+ * Everything the Advise page reads about the API key's owner.
+ */
+export interface AdviceData {
+  user: UserGetUserByIdResponse
+  factories: FactoryData[]
+  managers: (Manager | null)[]
+  ppValue: number
+  managerMarketWage: number | null
+}
+
+/**
+ * Loads the API key owner's companies, employees, managers and bars. The owner
+ * is read from their employees, or `ADVISE_USER_ID` for an owner without any.
+ * Null when neither names one.
+ */
+export async function getAdviceData(): Promise<AdviceData | null> {
+  const mine = await urgentClient.employee.getMyEmployees()
+  const userId = mine[0]?.owner ?? process.env.ADVISE_USER_ID
+  if (!userId) {
+    return null
+  }
+
+  const [user, factories, ppValue, wageStats] = await Promise.all([
+    urgentClient.user.getUserById({ userId }),
+    fetchUserCompanies(urgentClient, userId),
+    urgentClient.gameStat.getPpMoneyValue(),
+    urgentClient.managerOffer.getWageStats({}).catch(() => null),
+  ])
+
+  const managers = await Promise.all(
+    factories.map(f => urgentClient.manager.getByCompanyId({ companyId: f.company._id }).catch(() => null)),
+  )
+
+  return { user, factories, managers, ppValue, managerMarketWage: wageStats?.allowedRange.average ?? null }
+}
+
+/**
+ * Production points per hour one more manager Management point adds to a company.
+ */
+export async function managerPointValue(companyId: string): Promise<number> {
+  const res = await urgentClient.employee.getManagerPointValue({ companyId })
+
+  return res.productionPerPoint
 }
 
 /**

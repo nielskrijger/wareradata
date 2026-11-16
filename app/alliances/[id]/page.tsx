@@ -111,7 +111,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
   const citizensBaseFilter = `(${memberCodes.map(code => `countryCode:${code}`).join(' OR ')})`
 
   return (
-    <main className="mx-auto max-w-[96rem] space-y-3 px-6 py-8 sm:px-8 lg:px-12">
+    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
       <DetailHeader
         title={a.name}
         titleSuffix={a.developmentTier ? <TierBadge tier={a.developmentTier} /> : undefined}

@@ -74,7 +74,8 @@ export default function RootLayout({ children }: Props) {
               <Suspense fallback={<SiteNavFallback />}>
                 <SiteNav />
               </Suspense>
-              {children}
+              {/* One width cap for every page, so wide screens keep a readable column. */}
+              <div className="mx-auto w-full max-w-[96rem] flex-1">{children}</div>
               <SiteFooter />
             </TooltipProvider>
           </NuqsAdapter>

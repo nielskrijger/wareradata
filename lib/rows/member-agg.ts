@@ -10,185 +10,105 @@ import type {
 
 import { luckPercent } from '@/lib/cases'
 
-export interface MemberAgg {
-  buffCount: number
+/**
+ * UserRow fields summed as-is over a group's members; a null counts as 0.
+ */
+const SUM_KEYS = [
+  'points',
+  'levelPoints',
+  'damagePoints',
+  'wealthPoints',
+  'wealth',
+  'companiesWealth',
+  'itemsWealth',
+  'cashWealth',
+  'equipmentWealth',
+  'weaponsWealth',
+  'gemsPurchased',
+  'premiumMonths',
+  'premiumGifts',
+  'casesOpened',
+  'standardCasesOpened',
+  'mythicCasesOpened',
+  'casesCommon',
+  'casesUncommon',
+  'casesRare',
+  'casesEpic',
+  'casesLegendary',
+  'casesMythic',
+  'caseLuckActual',
+  'caseLuckExpected',
+  'factoryCount',
+  'factoryPpPerDay',
+  'factoryNetPerDay',
+  'factoryEngineNetPerDay',
+  'factoryEmployeeNetPerDay',
+  'factoryWorkers',
+  'factoryTopPotential',
+  'factoryPayrollPerDay',
+  'employeeRetiringSoon',
+] as const satisfies readonly (keyof UserRow)[]
+
+/**
+ * UserRow fields averaged over the members that have a value, so a missing
+ * value doesn't drag the mean toward 0.
+ */
+const MEAN_KEYS = [
+  'level',
+  'pointsPerDay',
+  'health',
+  'hunger',
+  'gearScore',
+  'warShare',
+] as const satisfies readonly (keyof UserRow)[]
+
+type MeanKey = (typeof MEAN_KEYS)[number]
+
+export type MemberAgg = Record<(typeof SUM_KEYS)[number] | `${MeanKey}Sum` | `${MeanKey}Count`, number> & {
   count: number
-  damage: number
-  debuffCount: number
-  gearScoreCount: number
-  gearScoreSum: number
-  gemsPurchasedTotal: number
-  healthCount: number
-  healthSum: number
-  hungerCount: number
-  hungerSum: number
-  level: number
+  buffCount: number
   readyCount: number
-  levelCount: number
+  debuffCount: number
 
   /**
-   * Sum over members that have a level. Paired with `levelCount` rather than
-   * `count`, since not every user has a level value.
-   */
-  levelSum: number
-  premiumGiftsTotal: number
-  premiumMonthsTotal: number
-  total: number
-
-  /**
-   * Sums of members' per-user factory totals (production points/day, net gold/day,
-   * and Top-potential gold/day), for the entity's Factories columns. Members with
-   * no scraped factories contribute 0; efficiency = factoryNet / factoryTop.
-   */
-  factoryCount: number
-  factoryPpPerDay: number
-  factoryNetPerDay: number
-  factoryEngineNetPerDay: number
-  factoryEmployeeNetPerDay: number
-  factoryWorkers: number
-  factoryTopPotential: number
-  factoryPayrollPerDay: number
-
-  /**
-   * Weighted sums for the per-employee averages: each member's average times
-   * their headcount, over the employees it covers.
+   * Per-employee averages weighted by each member's headcount, so a big
+   * employer weighs in proportionally.
    */
   employeePpSum: number
   employeeNetSum: number
   employeeKnownCount: number
   employeeHappinessSum: number
   employeeHappinessCount: number
-  employeeRetiringSoon: number
-
-  /**
-   * Sum and count of members' warShare (war / war+eco). Counts only members
-   * with a non-null share (i.e. who've trained war or eco), so the mean is a
-   * one-member-one-vote average of leans, untrained members excluded — same
-   * null-handling as the gear/health/hunger means.
-   */
-  warShareSum: number
-  warShareCount: number
-
-  /**
-   * Sum of members' point-scored wealth (feeds each entity's wealthPoints and
-   * the points total). Equal to `wealth` today because WEALTH_DIVISOR is 1
-   * gold/point.
-   */
-  wealthPoints: number
-
-  /**
-   * Sum of members' actual wealth in gold, mirroring UserRow.wealth. Tracked
-   * apart from wealthPoints so the Member/Citizen Wealth column reflects real
-   * holdings rather than the points derivative, which would diverge if the
-   * scoring divisor ever changed.
-   */
-  wealth: number
-
-  /**
-   * Sums of members' five wealth parts (UserRow.{companies,items,cash,equipment,
-   * weapons}Wealth), for the entity's "Wealth composition" breakdown. Members
-   * missing a breakdown contribute 0.
-   */
-  companiesWealth: number
-  itemsWealth: number
-  cashWealth: number
-  equipmentWealth: number
-  weaponsWealth: number
-
-  /**
-   * Sum + count of members' points/day, for the per-member average rate. Counts
-   * only members with a non-null rate (accounts <7 days old have none).
-   */
-  pointsPerDaySum: number
-  pointsPerDayCount: number
-
-  /**
-   * Case pulls: total opens, per-rarity sums, and the pooled luck score inputs
-   * (see lib/cases.ts), so group luck judges the group's combined pulls against
-   * the official odds rather than averaging member percentages.
-   */
-  casesOpened: number
-  standardCasesOpened: number
-  mythicCasesOpened: number
-  casesCommon: number
-  casesUncommon: number
-  casesRare: number
-  casesEpic: number
-  casesLegendary: number
-  casesMythic: number
-  caseLuckActual: number
-  caseLuckExpected: number
 }
 
 function emptyAgg(): MemberAgg {
-  return {
-    buffCount: 0,
+  const agg: Record<string, number> = {
     count: 0,
-    damage: 0,
-    debuffCount: 0,
-    gearScoreCount: 0,
-    gearScoreSum: 0,
-    gemsPurchasedTotal: 0,
-    healthCount: 0,
-    healthSum: 0,
-    hungerCount: 0,
-    hungerSum: 0,
-    level: 0,
-    levelCount: 0,
-    levelSum: 0,
-    premiumGiftsTotal: 0,
-    premiumMonthsTotal: 0,
+    buffCount: 0,
     readyCount: 0,
-    total: 0,
-    factoryCount: 0,
-    factoryPpPerDay: 0,
-    factoryNetPerDay: 0,
-    factoryEngineNetPerDay: 0,
-    factoryEmployeeNetPerDay: 0,
-    factoryWorkers: 0,
-    factoryTopPotential: 0,
-    factoryPayrollPerDay: 0,
+    debuffCount: 0,
     employeePpSum: 0,
     employeeNetSum: 0,
     employeeKnownCount: 0,
     employeeHappinessSum: 0,
     employeeHappinessCount: 0,
-    employeeRetiringSoon: 0,
-    warShareSum: 0,
-    warShareCount: 0,
-    wealthPoints: 0,
-    wealth: 0,
-    companiesWealth: 0,
-    itemsWealth: 0,
-    cashWealth: 0,
-    equipmentWealth: 0,
-    weaponsWealth: 0,
-    pointsPerDaySum: 0,
-    pointsPerDayCount: 0,
-    casesOpened: 0,
-    standardCasesOpened: 0,
-    mythicCasesOpened: 0,
-    casesCommon: 0,
-    casesUncommon: 0,
-    casesRare: 0,
-    casesEpic: 0,
-    casesLegendary: 0,
-    casesMythic: 0,
-    caseLuckActual: 0,
-    caseLuckExpected: 0,
   }
+
+  for (const key of SUM_KEYS) {
+    agg[key] = 0
+  }
+
+  for (const key of MEAN_KEYS) {
+    agg[`${key}Sum`] = 0
+    agg[`${key}Count`] = 0
+  }
+
+  return agg as MemberAgg
 }
 
 /**
- * Aggregate per-user stats into buckets keyed by `keyFor(user)`. Users for
- * which `keyFor` returns null are skipped — used by MU aggregation to
- * ignore unassigned users.
- *
- * Aggregates kept in one helper so callers do a single pass: points sums
- * (level / damage / wealthPoints / total), raw member wealth (wealth),
- * member count, premium spend totals (gems / months / gifts),
- * level / health / hunger / gear sums + counts for averages, and
- * buff / ready / debuff counts for the readiness pill.
+ * Sums members' stats into one bucket per `keyFor(user)`; users it maps to
+ * null belong to no group.
  */
 export function aggregateMembers(
   userRows: UserRow[],
@@ -201,41 +121,25 @@ export function aggregateMembers(
       continue
     }
 
-    const entry = out.get(key) ?? emptyAgg()
-    entry.total += u.points
-    entry.level += u.levelPoints
-    entry.damage += u.damagePoints
-    entry.wealthPoints += u.wealthPoints
-    entry.wealth += u.wealth ?? 0
-    entry.companiesWealth += u.companiesWealth ?? 0
-    entry.itemsWealth += u.itemsWealth ?? 0
-    entry.cashWealth += u.cashWealth ?? 0
-    entry.equipmentWealth += u.equipmentWealth ?? 0
-    entry.weaponsWealth += u.weaponsWealth ?? 0
+    let entry = out.get(key)
+    if (!entry) {
+      entry = emptyAgg()
+      out.set(key, entry)
+    }
+
     entry.count += 1
-    entry.gemsPurchasedTotal += u.gemsPurchased ?? 0
-    entry.premiumMonthsTotal += u.premiumMonths ?? 0
-    entry.premiumGiftsTotal += u.premiumGifts ?? 0
-    entry.casesOpened += u.casesOpened ?? 0
-    entry.standardCasesOpened += u.standardCasesOpened ?? 0
-    entry.mythicCasesOpened += u.mythicCasesOpened ?? 0
-    entry.casesCommon += u.casesCommon ?? 0
-    entry.casesUncommon += u.casesUncommon ?? 0
-    entry.casesRare += u.casesRare ?? 0
-    entry.casesEpic += u.casesEpic ?? 0
-    entry.casesLegendary += u.casesLegendary ?? 0
-    entry.casesMythic += u.casesMythic ?? 0
-    entry.caseLuckActual += u.caseLuckActual
-    entry.caseLuckExpected += u.caseLuckExpected
-    entry.factoryCount += u.factoryCount ?? 0
-    entry.factoryPpPerDay += u.factoryPpPerDay ?? 0
-    entry.factoryNetPerDay += u.factoryNetPerDay ?? 0
-    entry.factoryEngineNetPerDay += u.factoryEngineNetPerDay ?? 0
-    entry.factoryEmployeeNetPerDay += u.factoryEmployeeNetPerDay ?? 0
-    entry.factoryWorkers += u.factoryWorkers ?? 0
-    entry.factoryTopPotential += u.factoryTopPotential ?? 0
-    entry.factoryPayrollPerDay += u.factoryPayrollPerDay ?? 0
-    entry.employeeRetiringSoon += u.employeeRetiringSoon ?? 0
+    for (const k of SUM_KEYS) {
+      entry[k] += u[k] ?? 0
+    }
+
+    for (const k of MEAN_KEYS) {
+      const v = u[k]
+      if (v !== null) {
+        entry[`${k}Sum`] += v
+        entry[`${k}Count`] += 1
+      }
+    }
+
     const workers = u.factoryWorkers ?? 0
     if (u.employeeAvgPpPerDay !== null && u.employeeAvgNetPerDay !== null) {
       entry.employeePpSum += u.employeeAvgPpPerDay * workers
@@ -248,36 +152,6 @@ export function aggregateMembers(
       entry.employeeHappinessCount += workers
     }
 
-    if (u.level !== null) {
-      entry.levelSum += u.level
-      entry.levelCount += 1
-    }
-
-    if (u.pointsPerDay !== null) {
-      entry.pointsPerDaySum += u.pointsPerDay
-      entry.pointsPerDayCount += 1
-    }
-
-    if (u.health !== null) {
-      entry.healthSum += u.health
-      entry.healthCount += 1
-    }
-
-    if (u.hunger !== null) {
-      entry.hungerSum += u.hunger
-      entry.hungerCount += 1
-    }
-
-    if (u.gearScore !== null) {
-      entry.gearScoreSum += u.gearScore
-      entry.gearScoreCount += 1
-    }
-
-    if (u.warShare !== null) {
-      entry.warShareSum += u.warShare
-      entry.warShareCount += 1
-    }
-
     if (u.readinessStatus === 'buff') {
       entry.buffCount += 1
     } else if (u.readinessStatus === 'debuff') {
@@ -285,8 +159,6 @@ export function aggregateMembers(
     } else if (u.readinessStatus === 'neither') {
       entry.readyCount += 1
     }
-
-    out.set(key, entry)
   }
 
   return out
@@ -391,13 +263,13 @@ export const WEALTH_PART_KEYS = [
  */
 export function aggPoints(agg: MemberAgg | undefined): GroupPointsStats {
   return {
-    totalPoints: agg?.total ?? 0,
+    totalPoints: agg?.points ?? 0,
     totalPointsRank: null,
-    avgPoints: aggMean(agg?.total ?? 0, agg?.count ?? 0),
+    avgPoints: aggMean(agg?.points ?? 0, agg?.count ?? 0),
     avgPointsRank: null,
     avgPointsPerDay: aggMean(agg?.pointsPerDaySum ?? 0, agg?.pointsPerDayCount ?? 0),
-    levelPoints: agg?.level ?? 0,
-    damagePoints: agg?.damage ?? 0,
+    levelPoints: agg?.levelPoints ?? 0,
+    damagePoints: agg?.damagePoints ?? 0,
     wealthPoints: agg?.wealthPoints ?? 0,
   }
 }
@@ -415,11 +287,11 @@ export const POINTS_RANK_KEYS = ['totalPoints', 'avgPoints'] as const
  */
 export function aggPremium(agg: MemberAgg | undefined): GroupPremiumStats {
   return {
-    gemsPurchasedTotal: agg?.gemsPurchasedTotal ?? 0,
+    gemsPurchasedTotal: agg?.gemsPurchased ?? 0,
     gemsPurchasedTotalRank: null,
-    premiumMonthsTotal: agg?.premiumMonthsTotal ?? 0,
+    premiumMonthsTotal: agg?.premiumMonths ?? 0,
     premiumMonthsTotalRank: null,
-    premiumGiftsTotal: agg?.premiumGiftsTotal ?? 0,
+    premiumGiftsTotal: agg?.premiumGifts ?? 0,
     premiumGiftsTotalRank: null,
   }
 }

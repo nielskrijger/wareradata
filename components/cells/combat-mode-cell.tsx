@@ -7,6 +7,7 @@ import { Coins, Swords } from 'lucide-react'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 
 interface Props {
   mode: CombatMode
@@ -24,13 +25,6 @@ interface Props {
    */
   width?: number
 }
-
-/**
- * Shared heat tokens so war/eco read as one consistent red/green across the
- * table cells and the detail-page card (which also uses --heat-red/green).
- */
-const WAR_COLOR = 'var(--heat-red)'
-const ECO_COLOR = 'var(--heat-green)'
 
 /**
  * A player's War / Eco lean as a two-tone bar (red war / green eco), sized by

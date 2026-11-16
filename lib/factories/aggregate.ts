@@ -25,19 +25,9 @@ export async function loadFactoryAggregates(
   const recipe = recipeFromGameConfig(raw.gameConfig)
   const frontier = buildFrontier(prices, recipe)
 
-  // Net gold per production point (revenue net of inputs ÷ point cost), memoized
-  // per item — many factories share an item, so this runs once per item instead
-  // of re-walking the recipe for every factory row.
-  const valuePerPpByItem = new Map<string, number>()
-  const valuePerPp = (itemCode: string): number => {
-    let v = valuePerPpByItem.get(itemCode)
-    if (v === undefined) {
-      v = (netPerUnit(itemCode, prices, recipe) ?? 0) / (recipe[itemCode]?.productionPoints ?? 1)
-      valuePerPpByItem.set(itemCode, v)
-    }
-
-    return v
-  }
+  // Net gold per production point: revenue net of inputs ÷ point cost.
+  const valuePerPp = (itemCode: string): number =>
+    (netPerUnit(itemCode, prices, recipe) ?? 0) / (recipe[itemCode]?.productionPoints ?? 1)
 
   const out = new Map<string, UserFactoryAgg>()
   await streamFactoryUsers(({ userId, rows }) => {

@@ -6,13 +6,7 @@ import { Coins, Swords } from 'lucide-react'
 
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
 import { StackedBar } from '@/components/stacked-bar'
-
-/**
- * Shared heat tokens so War/Eco read as the same red/green as the table's
- * CombatModeCell and the country/MU aggregate card.
- */
-const WAR_COLOR = 'var(--heat-red)'
-const ECO_COLOR = 'var(--heat-green)'
+import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 
 interface Props {
   mode: CombatMode

@@ -6,6 +6,7 @@ import { rankAll, toTier } from '@/lib/rows/lookups'
 import {
   aggCases,
   aggFactories,
+  aggMean,
   aggPoints,
   aggPremium,
   aggregateMembers,
@@ -53,7 +54,7 @@ export function buildCountryRows(
         alliesCount: c.allies?.length ?? 0,
         alliesCountRank: null,
         ...aggVitals(agg),
-        avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
+        avgLevel: aggMean(agg?.levelSum ?? 0, agg?.levelCount ?? 0),
         avgLevelRank: null,
         bounty: r?.countryBounty?.value ?? null,
         bountyRank: null,

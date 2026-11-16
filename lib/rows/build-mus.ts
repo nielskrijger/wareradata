@@ -6,6 +6,7 @@ import { leaderFields, rankAll, toTier } from '@/lib/rows/lookups'
 import {
   aggCases,
   aggFactories,
+  aggMean,
   aggPoints,
   aggPremium,
   aggregateMembers,
@@ -38,7 +39,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
       return {
         avatarUrl: m.avatarUrl ?? null,
         ...aggVitals(agg),
-        avgLevel: agg && agg.levelCount > 0 ? Math.round(agg.levelSum / agg.levelCount) : null,
+        avgLevel: aggMean(agg?.levelSum ?? 0, agg?.levelCount ?? 0),
         avgLevelRank: null,
         bounty: r?.muBounty?.value ?? null,
         bountyRank: null,

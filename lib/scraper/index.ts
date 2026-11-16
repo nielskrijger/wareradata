@@ -69,7 +69,7 @@ async function mainScrapeLoop(): Promise<void> {
     try {
       logMemory(log, 'cycle-start')
       log.info('main scrape starting')
-      const raw = await scrapeMain()
+      const raw = await scrapeMain(store().currentRaw)
       await publish(raw)
       log.info('main scrape published')
 
@@ -201,9 +201,9 @@ async function refreshUsersInSnapshot(
     getUsersUrgent(userIds),
     getEquipmentUrgent(userIds),
   ])
-  const fresh = freshRaw.filter(u => u !== null)
-  const equipmentIds = userIds.filter((_, i) => equipmentRaw[i] !== null)
-  const freshEquipment = equipmentRaw.filter(e => e !== null)
+  const fresh = freshRaw.filter(u => u !== undefined)
+  const equipmentIds = userIds.filter((_, i) => equipmentRaw[i] !== undefined)
+  const freshEquipment = equipmentRaw.filter(e => e !== undefined)
 
   // Append the fresh gear to the equipment file. The reader takes the last
   // line per user, so this overrides the scrape's line until the next main cycle

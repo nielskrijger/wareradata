@@ -1,4 +1,4 @@
-import type { Equipment, Government, SnapshotMeta, StrategicBonuses, User } from './api'
+import type { Government, SnapshotMeta, StrategicBonuses } from './api'
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
 import { loadEquipmentByIds, writeEquipmentNdjson } from '@/lib/cache/equipment-store'
@@ -27,8 +27,6 @@ import {
 
 const log = logger.child({ component: 'scrape' })
 
-const COUNTRY_PAGINATION_CONCURRENCY = 10
-
 interface ScrapeResult {
   scrapedAt: string
   counts: {
@@ -44,91 +42,51 @@ interface ScrapeResult {
 }
 
 /**
- * Runs the input list through `worker` with at most `limit` in flight.
- * Returns results in input order.
- */
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  worker: (item: T, index: number) => Promise<R>,
-): Promise<R[]> {
-  const results = Array.from({ length: items.length }) as R[]
-  let cursor = 0
-  async function next(): Promise<void> {
-    while (cursor < items.length) {
-      const i = cursor++
-      results[i] = await worker(items[i], i)
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => next()))
-  return results
-}
-
-/**
  * Gathers the full dataset from the WarEra API and returns it in raw form. Runs
  * on the scrape client, which has its own rate-limit budget separate from the
  * urgent on-demand client, so the two never wait on each other.
+ *
+ * Per-entity calls are all made at once: the client packs them 50 to a request
+ * and its rate limiter paces them. `previous` fills in entities whose fetch failed.
  */
-export async function scrapeMain(): Promise<RawSnapshot> {
+export async function scrapeMain(previous?: RawSnapshot | null): Promise<RawSnapshot> {
   const start = Date.now()
 
   // 1. Countries: single call.
   const countries = await getAllCountries()
   log.info({ countries: countries.length }, 'fetched countries')
 
-  // 2. Governments: one call per country (no bulk endpoint), fanned out with
-  // the same bounded concurrency as the user-id pagination. Dormant or
+  const countryIds = countries.map(c => c._id)
+
+  // 2. Governments: one call per country (no bulk endpoint). Dormant or
   // unoccupied countries have no government: the call may error or return an
   // all-empty record, and either way we drop it from the map.
-  const governmentList = await mapWithConcurrency(
-    countries.map(c => c._id),
-    COUNTRY_PAGINATION_CONCURRENCY,
-    async (countryId) => {
-      try {
-        return await getGovernmentForCountry(countryId)
-      } catch {
-        return null
-      }
-    },
-  )
+  const governmentList = await Promise.all(countryIds.map(id => getGovernmentForCountry(id).catch(() => null)))
   const governments: RawSnapshot['governments'] = {}
-  for (let i = 0; i < countries.length; i++) {
+  countryIds.forEach((id, i) => {
     const gov = governmentList[i]
     if (gov && hasGovernment(gov)) {
-      governments[countries[i]._id] = gov
+      governments[id] = gov
     }
-  }
+  })
   log.info({ governments: Object.keys(governments).length, countries: countries.length }, 'fetched governments')
 
   // 2b. Strategic resource bonuses: one call per country. Members of an
   // alliance get the alliance-wide bonus, so the alliance page reads it off any
   // member. Countries holding no resource answer null and are left out.
-  const bonusList = await mapWithConcurrency(
-    countries.map(c => c._id),
-    COUNTRY_PAGINATION_CONCURRENCY,
-    async (countryId) => {
-      try {
-        return await getStrategicBonusesForCountry(countryId)
-      } catch {
-        return null
-      }
-    },
-  )
+  const bonusList = await Promise.all(countryIds.map(id => getStrategicBonusesForCountry(id).catch(() => undefined)))
+  const bonuses = await keepPrevious('strategic bonuses', countryIds, bonusList, failed =>
+    new Map(Object.entries(previous?.strategicBonuses ?? {}).filter(([id]) => failed.has(id))))
   const strategicBonuses: Record<string, StrategicBonuses> = {}
-  for (let i = 0; i < countries.length; i++) {
-    const bonus = bonusList[i]
+  for (const [id, bonus] of bonuses) {
     if (bonus) {
-      strategicBonuses[countries[i]._id] = bonus
+      strategicBonuses[id] = bonus
     }
   }
   log.info({ countries: Object.keys(strategicBonuses).length }, 'fetched strategic resource bonuses')
 
-  // 3. User IDs: paginate per country with bounded concurrency.
-  const userIdLists = await mapWithConcurrency(
-    countries.map(c => c._id),
-    COUNTRY_PAGINATION_CONCURRENCY,
-    countryId => getUserIdsForCountry(countryId),
-  )
+  // 3. User IDs, paginated per country.
+  const userIdLists = await Promise.all(countryIds.map(id => getUserIdsForCountry(id)))
   const userIds = userIdLists.flat()
   log.info({ userIds: userIds.length, countries: countries.length }, 'collected user ids')
 
@@ -141,17 +99,9 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   // Failed fetches keep their previous line so a hiccup doesn't drop users.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
-  const failedUsers = failedIds(userIds, usersRaw)
-  const previousUsers = await loadUsersByIds(failedUsers)
-  const users: User[] = []
-  usersRaw.forEach((u, i) => {
-    const user = u ? { ...u, lastRefreshedAt: usersCapturedAt } : previousUsers.get(userIds[i])
-    if (user) {
-      users.push(user)
-    }
-  })
+  const stamped = usersRaw.map(u => u && { ...u, lastRefreshedAt: usersCapturedAt })
+  const users = [...(await keepPrevious('users', userIds, stamped, loadUsersByIds)).values()]
   await writeUsersNdjson(users)
-  logFailures('users', failedUsers.size, previousUsers.size)
   log.info({ users: users.length }, 'hydrated users')
 
   // 5. Per-user equipment, streamed to equipment.ndjson to keep ~14 MB off the
@@ -161,21 +111,9 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   // equipped" from "not captured".
   //
   // Failed fetches keep their previous line so a hiccup doesn't drop users.
-  const equipmentRaw = await getEquipment(userIds)
-  const failedEquipment = failedIds(userIds, equipmentRaw)
-  const previousEquipment = await loadEquipmentByIds(failedEquipment)
-  const equipmentIds: string[] = []
-  const equipmentList: Equipment[] = []
-  equipmentRaw.forEach((e, i) => {
-    const equipment = e ?? previousEquipment.get(userIds[i])
-    if (equipment) {
-      equipmentIds.push(userIds[i])
-      equipmentList.push(equipment)
-    }
-  })
-  await writeEquipmentNdjson(equipmentIds, equipmentList)
-  logFailures('equipment', failedEquipment.size, previousEquipment.size)
-  log.info({ users: equipmentList.length }, 'wrote equipment file')
+  const equipment = await keepPrevious('equipment', userIds, await getEquipment(userIds), loadEquipmentByIds)
+  await writeEquipmentNdjson([...equipment.keys()], [...equipment.values()])
+  log.info({ users: equipment.size }, 'wrote equipment file')
 
   // 6. MUs: single cursor-paginated stream. Stamp each with the capture time so
   // the MU page can show data freshness; an on-demand refresh bumps it later.
@@ -255,19 +193,29 @@ export async function scrapeMain(): Promise<RawSnapshot> {
 }
 
 /**
- * The ids whose result is null.
+ * Fills failed (undefined) results from the previous capture, so a hiccup
+ * doesn't drop entities from the snapshot. Returns results keyed by id, in order.
  */
-function failedIds(ids: string[], results: unknown[]): Set<string> {
-  return new Set(ids.filter((_, i) => results[i] === null))
-}
-
-/**
- * Logs a phase's failed fetches, if any.
- */
-function logFailures(phase: string, failed: number, keptPrevious: number): void {
-  if (failed) {
-    log.warn({ phase, failed, keptPrevious }, 'fetches failed after retries')
+async function keepPrevious<T>(
+  phase: string,
+  ids: string[],
+  results: (T | undefined)[],
+  loadPrevious: (failed: Set<string>) => Map<string, T> | Promise<Map<string, T>>,
+): Promise<Map<string, T>> {
+  const failed = new Set(ids.filter((_, i) => results[i] === undefined))
+  const previous = failed.size ? await loadPrevious(failed) : new Map<string, T>()
+  if (failed.size) {
+    log.warn({ phase, failed: failed.size, keptPrevious: previous.size }, 'fetches failed after retries')
   }
+
+  const out = new Map<string, T>()
+  ids.forEach((id, i) => {
+    const value = results[i] !== undefined ? results[i] : previous.get(id)
+    if (value !== undefined) {
+      out.set(id, value)
+    }
+  })
+  return out
 }
 
 /**

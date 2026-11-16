@@ -282,27 +282,27 @@ export async function getUserIdsForCountry(countryId: string): Promise<string[]>
 }
 
 /**
- * Null for a failed fetch, so one bad batch doesn't fail thousands of good ones.
+ * Undefined for a failed fetch, so one bad batch doesn't fail thousands of good ones.
  * getUserById's response type is looser than User, but every field we read is
  * present at runtime, so we narrow it here.
  */
-function hydrateUsers(client: Client, userIds: string[]): Promise<(User | null)[]> {
+function hydrateUsers(client: Client, userIds: string[]): Promise<(User | undefined)[]> {
   return Promise.all(userIds.map(userId =>
-    (client.user.getUserById({ userId }) as Promise<unknown> as Promise<User>).catch(() => null),
+    (client.user.getUserById({ userId }) as Promise<unknown> as Promise<User>).catch(() => undefined),
   ))
 }
 
 /**
  * Hydrates users via the scrape client, for the main-scrape user phase.
  */
-export function getUsers(userIds: string[]): Promise<(User | null)[]> {
+export function getUsers(userIds: string[]): Promise<(User | undefined)[]> {
   return hydrateUsers(scrapeClient, userIds)
 }
 
 /**
  * Hydrates users via the urgent client, for on-demand piecemeal refreshes.
  */
-export function getUsersUrgent(userIds: string[]): Promise<(User | null)[]> {
+export function getUsersUrgent(userIds: string[]): Promise<(User | undefined)[]> {
   return hydrateUsers(urgentClient, userIds)
 }
 
@@ -416,25 +416,25 @@ export async function getUserCasesByType(userId: string): Promise<CasesByType | 
   }
 }
 
-function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<(Equipment | null)[]> {
-  return Promise.all(userIds.map(userId => client.inventory.fetchCurrentEquipment({ userId }).catch(() => null)))
+function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<(Equipment | undefined)[]> {
+  return Promise.all(userIds.map(userId => client.inventory.fetchCurrentEquipment({ userId }).catch(() => undefined)))
 }
 
 /**
- * Null for a failed fetch, so one bad batch doesn't fail thousands of good ones.
+ * Undefined for a failed fetch, so one bad batch doesn't fail thousands of good ones.
  *
  * Equipment is the most volatile field on a user (durability ticks down per
  * hit, items get swapped between battles), so the per-cycle freshness is only
  * a rough snapshot of what someone happened to be wearing at scrape time.
  */
-export function getEquipment(userIds: string[]): Promise<(Equipment | null)[]> {
+export function getEquipment(userIds: string[]): Promise<(Equipment | undefined)[]> {
   return fetchEquipmentBatch(scrapeClient, userIds)
 }
 
 /**
  * Urgent variant for piecemeal on-demand refreshes (mirrors getUsersUrgent).
  */
-export function getEquipmentUrgent(userIds: string[]): Promise<(Equipment | null)[]> {
+export function getEquipmentUrgent(userIds: string[]): Promise<(Equipment | undefined)[]> {
   return fetchEquipmentBatch(urgentClient, userIds)
 }
 

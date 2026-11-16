@@ -49,13 +49,11 @@ function regionCell(row: BattleRow) {
     return null
   }
 
-  return regionId
-    ? (
-        <InternalLink href={`/regions?q=${encodeURIComponent(regionName)}`} className="truncate">
-          {regionName}
-        </InternalLink>
-      )
-    : <span className="truncate">{regionName}</span>
+  return regionId ? (
+    <InternalLink href={`/regions?q=${encodeURIComponent(regionName)}`} className="truncate">
+      {regionName}
+    </InternalLink>
+  ) : <span className="truncate">{regionName}</span>
 }
 
 const matchupColumn: ColumnDef<BattleRow> = {

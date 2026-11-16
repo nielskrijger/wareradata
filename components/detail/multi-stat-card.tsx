@@ -55,19 +55,17 @@ export function MultiStatCard({ label, rows, hero, total }: Props) {
       {hero && (
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-2xl tabular-nums">
-            {hero.value == null
-              ? <EmptyDash />
-              : (
-                  <HeatCell
-                    value={hero.value}
-                    range={hero.range}
-                    mode={hero.heat}
-                    center={hero.center}
-                    logScale={hero.logScale}
-                  >
-                    {hero.display ?? hero.value.toLocaleString()}
-                  </HeatCell>
-                )}
+            {hero.value == null ? <EmptyDash /> : (
+              <HeatCell
+                value={hero.value}
+                range={hero.range}
+                mode={hero.heat}
+                center={hero.center}
+                logScale={hero.logScale}
+              >
+                {hero.display ?? hero.value.toLocaleString()}
+              </HeatCell>
+            )}
           </span>
           {hero.rank != null && hero.value != null && total != null && (
             <span className="text-muted-foreground/60 text-xs tabular-nums">
@@ -92,13 +90,11 @@ function StatRow({ label, value, display, range, heat, center, logScale, rank }:
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="flex items-baseline gap-2 tabular-nums">
         <span>
-          {value == null
-            ? <EmptyDash />
-            : (
-                <HeatCell value={value} range={range} mode={heat} center={center} logScale={logScale}>
-                  {display ?? value.toLocaleString()}
-                </HeatCell>
-              )}
+          {value == null ? <EmptyDash /> : (
+            <HeatCell value={value} range={range} mode={heat} center={center} logScale={logScale}>
+              {display ?? value.toLocaleString()}
+            </HeatCell>
+          )}
         </span>
         {rank != null && value != null && (
           <span className="text-muted-foreground/60 w-14 text-right text-xs">

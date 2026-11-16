@@ -211,14 +211,12 @@ export function GovernmentSection({ government }: Props) {
                 style={{ backgroundColor: `rgba(${bench.color}, 0.08)`, borderLeft: `3px solid rgb(${bench.color})` }}
               >
                 <div className="flex items-center gap-2 sm:w-48 sm:shrink-0">
-                  {bench.avatarUrl
-                    ? <Avatar src={bench.avatarUrl} name={bench.name} size={20} />
-                    : (
-                        <span
-                          className="size-3 shrink-0 rounded-full"
-                          style={{ backgroundColor: `rgb(${bench.color})` }}
-                        />
-                      )}
+                  {bench.avatarUrl ? <Avatar src={bench.avatarUrl} name={bench.name} size={20} /> : (
+                    <span
+                      className="size-3 shrink-0 rounded-full"
+                      style={{ backgroundColor: `rgb(${bench.color})` }}
+                    />
+                  )}
                   {bench.id === INDEPENDENT_KEY
                     ? <span className="truncate text-xs font-medium" title={bench.name}>{bench.name}</span>
                     : (

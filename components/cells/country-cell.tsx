@@ -43,15 +43,13 @@ export function CountryCell({ countryCode, countryName, countryId, activeBattles
       <CountryHoverCard countryId={countryId} triggerClassName="block min-w-0 flex-1">
         <span className="flex min-w-0 items-center gap-2">
           <Flag code={countryCode} />
-          {countryId
-            ? (
-                <InternalLink href={`/countries/${countryId}`} title={label} className="truncate">
-                  {label}
-                </InternalLink>
-              )
-            : (
-                <span className="truncate">{label}</span>
-              )}
+          {countryId ? (
+            <InternalLink href={`/countries/${countryId}`} title={label} className="truncate">
+              {label}
+            </InternalLink>
+          ) : (
+            <span className="truncate">{label}</span>
+          )}
         </span>
       </CountryHoverCard>
       {activeBattles != null && (

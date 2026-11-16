@@ -33,9 +33,7 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
 
       // MUs are headquartered in a region; the region's *initial* country is
       // the MU's spiritual home (current owner can change as territory shifts).
-      const country = region?.initialCountry
-        ? lookups.countryById.get(region.initialCountry)
-        : undefined
+      const country = region?.initialCountry ? lookups.countryById.get(region.initialCountry) : undefined
 
       return {
         avatarUrl: m.avatarUrl ?? null,

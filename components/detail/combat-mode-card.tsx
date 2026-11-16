@@ -31,29 +31,27 @@ export function CombatModeCard({ avgWarShare, rank, total }: Props) {
         <span className="text-xs font-medium">War / Eco lean</span>
         <CombatModeBadge mode={mode} />
       </div>
-      {warPct === null
-        ? <span className="text-muted-foreground text-sm">No members trained</span>
-        : (
-            <>
-              <StackedBar
-                className="h-2 bg-muted"
-                segments={[
-                  { key: 'war', value: warPct, color: 'var(--heat-red)' },
-                  { key: 'eco', value: 100 - warPct, color: 'var(--heat-green)' },
-                ]}
-              />
-              <div className="text-muted-foreground flex justify-between text-xs tabular-nums">
-                <span>
-                  {warPct}
-                  % war
-                </span>
-                <span>
-                  {100 - warPct}
-                  % eco
-                </span>
-              </div>
-            </>
-          )}
+      {warPct === null ? <span className="text-muted-foreground text-sm">No members trained</span> : (
+        <>
+          <StackedBar
+            className="h-2 bg-muted"
+            segments={[
+              { key: 'war', value: warPct, color: 'var(--heat-red)' },
+              { key: 'eco', value: 100 - warPct, color: 'var(--heat-green)' },
+            ]}
+          />
+          <div className="text-muted-foreground flex justify-between text-xs tabular-nums">
+            <span>
+              {warPct}
+              % war
+            </span>
+            <span>
+              {100 - warPct}
+              % eco
+            </span>
+          </div>
+        </>
+      )}
       {rank != null && total != null && (
         <span className="text-muted-foreground/60 text-xs">
           #

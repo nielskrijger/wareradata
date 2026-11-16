@@ -33,7 +33,9 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
         const width = meta?.width
         const sticky = index === 0 ? STICKY : undefined
         const style: CSSProperties | undefined = width
-          ? (sticky ? { '--col-w': `${width}px` } as CSSProperties : { width: `${width}px` })
+          ? (sticky
+              ? { '--col-w': `${width}px` } as CSSProperties
+              : { width: `${width}px` })
           : undefined
 
         // Cells with no value render the muted EmptyDash, so every column that
@@ -61,19 +63,17 @@ export function DataTableRow<TData>({ row }: Props<TData>) {
         }
 
         const heat = meta?.heat
-        const wrapped = heat
-          ? (
-              <HeatCell
-                value={cell.getValue() as number | null | undefined}
-                range={cell.getContext().table.options.meta?.ranges?.[cell.column.id]}
-                mode={heat}
-                center={meta?.heatCenter}
-                logScale={meta?.heatLogScale}
-              >
-                {rendered}
-              </HeatCell>
-            )
-          : rendered
+        const wrapped = heat ? (
+          <HeatCell
+            value={cell.getValue() as number | null | undefined}
+            range={cell.getContext().table.options.meta?.ranges?.[cell.column.id]}
+            mode={heat}
+            center={meta?.heatCenter}
+            logScale={meta?.heatLogScale}
+          >
+            {rendered}
+          </HeatCell>
+        ) : rendered
 
         return (
           <TableCell

@@ -73,20 +73,18 @@ function BattleSideEmblem({ side, won }: { side: BattleSide, won: boolean }) {
   const label = side.name ?? side.code ?? '?'
   const href = side.id ? (side.kind === 'mu' ? `/mus/${side.id}` : `/countries/${side.id}`) : null
 
-  const emblem = side.kind === 'mu'
-    ? <Avatar src={side.avatarUrl} name={label} size={96} />
-    : (
-        <Flag
-          code={side.code}
-          style={{
-            width: 96,
-            height: 72,
-            backgroundSize: 'cover',
-            borderRadius: 8,
-            boxShadow: '0 0 0 1px var(--border)',
-          }}
-        />
-      )
+  const emblem = side.kind === 'mu' ? <Avatar src={side.avatarUrl} name={label} size={96} /> : (
+    <Flag
+      code={side.code}
+      style={{
+        width: 96,
+        height: 72,
+        backgroundSize: 'cover',
+        borderRadius: 8,
+        boxShadow: '0 0 0 1px var(--border)',
+      }}
+    />
+  )
 
   const inner = (
     <>
@@ -97,13 +95,11 @@ function BattleSideEmblem({ side, won }: { side: BattleSide, won: boolean }) {
 
   return (
     <div className="flex min-w-0 flex-col items-center gap-2 text-center">
-      {href
-        ? (
-            <Link href={href} className="flex min-w-0 flex-col items-center gap-2 hover:opacity-80">
-              {inner}
-            </Link>
-          )
-        : inner}
+      {href ? (
+        <Link href={href} className="flex min-w-0 flex-col items-center gap-2 hover:opacity-80">
+          {inner}
+        </Link>
+      ) : inner}
       {won && <Badge variant="default">winner</Badge>}
     </div>
   )

@@ -6,7 +6,7 @@ import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { levelTooltipLines } from '@/lib/level-tooltip'
 
-type Props = Pick<UserRow, 'level' | 'levelRank' | 'prestige' | 'prestigePoints' | 'totalXp' | 'colorScheme'>
+type Props = Pick<UserRow, 'level' | 'levelRank' | 'prestige' | 'prestigePoints' | 'totalXp'>
 
 /**
  * A player's level with the prestige skull after it, and rank, prestige and
@@ -23,7 +23,7 @@ export function LevelCell(props: Props) {
         render={<span className="hover:text-foreground inline-flex cursor-default items-center gap-1.5" />}
       >
         {props.level}
-        <PrestigeSkull prestige={props.prestige} colorScheme={props.colorScheme} />
+        <PrestigeSkull prestige={props.prestige} />
       </TooltipTrigger>
       <TooltipContent side="top">
         {levelTooltipLines(props).map(line => <div key={line}>{line}</div>)}

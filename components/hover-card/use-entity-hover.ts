@@ -5,10 +5,8 @@ import { useState } from 'react'
 export type HoverStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 /**
- * Memoizes in-flight and resolved fetches across the page, keyed by the full
- * URL, so two cells for the same entity share one network request and
- * re-hovers are instant. Shared by every hover card (users, countries, …); the
- * URL already namespaces by entity, so there's no cross-type collision.
+ * Fetches shared across every hover card for the session, keyed by URL, so two
+ * cells for one entity make one request and re-hovers are instant.
  */
 const cache = new Map<string, Promise<unknown>>()
 
@@ -45,11 +43,7 @@ interface EntityHover<T> {
 }
 
 /**
- * The shared fetch-on-first-hover state machine behind the entity hover cards.
- * Pass the endpoint URL (or null when there's no entity to look up); on the
- * first tooltip open it fetches, caches, and exposes `{ status, data }` for the
- * card to render. Caching lives at module scope, so it persists for the session
- * and is shared across cards.
+ * Fetches an entity's details on the first open of its hover card.
  */
 export function useEntityHover<T>(url: string | null): EntityHover<T> {
   const [status, setStatus] = useState<HoverStatus>('idle')

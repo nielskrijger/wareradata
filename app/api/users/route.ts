@@ -37,17 +37,11 @@ const userSortValue = makeSortValue<UserRow>({
 })
 
 /**
- * Comparable for the Buff column. Orders by the buff/debuff end time so that
- * (sorted descending) the longest-remaining buff is on top, "ready" (no effect)
- * sits in the middle, and the longest-remaining debuff is at the bottom. Buffs
- * sort positive, debuffs negative, ready at zero.
+ * Buff column order: buffs positive, ready 0, debuffs negative, each scaled by
+ * its end time so the longest-running effect sits at the extreme.
  *
- * Every row is compared against the same instant, so the absolute end timestamp
- * orders identically to the actual time remaining — and using it means the
- * comparator never reads the clock, so the order stays stable across the many
- * comparisons in one sort. A buff/debuff without a known end time falls just off
- * the "ready" midpoint, keeping it on the correct side. A null status returns
- * null, which the shared sorter always pushes last.
+ * The absolute end time orders the same as time remaining, and keeps the
+ * comparator off the clock so one sort stays consistent.
  */
 function readinessSortValue(row: UserRow): number | null {
   if (row.readinessStatus == null) {
@@ -64,11 +58,6 @@ function readinessSortValue(row: UserRow): number | null {
   return row.readinessStatus === 'buff' ? magnitude : -magnitude
 }
 
-/**
- * Driven by the client DataTable on /users. Reads from the in-process snapshot
- * cache (warm worker = sub-ms) and applies pagination, sorting, and filtering
- * in memory. Returns `{rows, total}`.
- */
 export const GET = createTableRoute<UserRow>(
   async () => (await getSnapshot()).users,
   userSortValue,

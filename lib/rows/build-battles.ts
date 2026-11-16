@@ -3,10 +3,8 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Battle, TournamentSnapshot } from '@/lib/warera/api'
 
 /**
- * Resolves one side of a battle to a {@link BattleSide}. Country wars carry a
- * `country` id (→ flag + /countries link); tournament battles carry a
- * `tournamentTeam` id whose roster MU we link to (→ avatar + /mus link), with a
- * "Team #N" fallback when the team or its MU isn't in the snapshot.
+ * Country wars resolve to the country; tournament battles to the team's MU,
+ * falling back to "Team #N" when it's not in the snapshot.
  */
 function resolveSide(
   side: { country?: string, tournamentTeam?: string },

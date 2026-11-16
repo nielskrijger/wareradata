@@ -216,11 +216,8 @@ export function aggMeanRaw(sum: number, count: number): number | null {
 }
 
 /**
- * A group row's wealth-component fields ({@link GroupWealthParts}), assembled
- * from the aggregate. One spread per builder keeps the field set next to the
- * aggregation that produces it; ranks are filled later by rankAll (the value
- * keys are {@link WEALTH_PART_KEYS}). The alliance builder sums member
- * country rows instead, so it sets these itself.
+ * The alliance builder sums its member countries instead, so it sets these
+ * itself.
  */
 export function aggWealthParts(agg: MemberAgg | undefined): GroupWealthParts {
   return {
@@ -243,8 +240,7 @@ export function aggWealthParts(agg: MemberAgg | undefined): GroupWealthParts {
 }
 
 /**
- * The five wealth-component field keys, ranked by the builders (via rankAll)
- * and reused as the sort/filter passthrough in the API routes.
+ * The wealth-part keys the builders rank.
  */
 export const WEALTH_PART_KEYS = [
   'companiesWealth',
@@ -256,10 +252,7 @@ export const WEALTH_PART_KEYS = [
 ] as const
 
 /**
- * A group row's aggregate points fields ({@link GroupPointsStats}): the
- * member-summed totals plus the two per-member averages, all derived from the
- * one-pass aggregate. Ranks are filled later by rankAll (the value keys are
- * {@link POINTS_RANK_KEYS}).
+ * Member-summed points plus per-member averages.
  */
 export function aggPoints(agg: MemberAgg | undefined): GroupPointsStats {
   return {
@@ -280,10 +273,7 @@ export function aggPoints(agg: MemberAgg | undefined): GroupPointsStats {
 export const POINTS_RANK_KEYS = ['totalPoints', 'avgPoints'] as const
 
 /**
- * A group row's premium-spend fields ({@link GroupPremiumStats}): members' gems
- * bought, premium months, and premium gifts, summed. Ranks are filled later by
- * rankAll (the value keys are {@link PREMIUM_KEYS}). Alliances carry no
- * premium aggregate, so only the country / MU / party builders spread this.
+ * Member-summed premium spend; alliances have none.
  */
 export function aggPremium(agg: MemberAgg | undefined): GroupPremiumStats {
   return {
@@ -297,8 +287,7 @@ export function aggPremium(agg: MemberAgg | undefined): GroupPremiumStats {
 }
 
 /**
- * The premium-spend field keys, ranked by the builders (via rankAll) and reused
- * as the sort/filter passthrough in the country / MU / party API routes.
+ * The premium-spend keys the builders rank.
  */
 export const PREMIUM_KEYS = ['gemsPurchasedTotal', 'premiumMonthsTotal', 'premiumGiftsTotal'] as const
 
@@ -316,11 +305,7 @@ export function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, re
 }
 
 /**
- * A group row's factory fields ({@link GroupFactoryStats}): member-summed net
- * gold/day (split into engine vs employees), payroll, NPC employee stats, production
- * points/day, plus efficiency (Σ net ÷ Σ Top-potential, capped at 100, null when
- * nothing's produced). Ranks filled later by rankAll (value keys are
- * {@link FACTORY_RANK_KEYS}). Empty until the factory scrape has run.
+ * Member-summed factory economics; efficiency is null when nothing's produced.
  */
 export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
   const ppPerDay = agg?.factoryPpPerDay ?? 0
@@ -374,10 +359,7 @@ export const FACTORY_RANK_KEYS = [
 ] as const
 
 /**
- * A group row's member-averaged combat/condition stats ({@link GroupVitals}):
- * average gear score, war-share, health and hunger across the citizens, plus
- * the readiness mix. Ranks are filled later by rankAll. Shared by the country /
- * MU / alliance builders.
+ * Member averages and the readiness mix.
  */
 export function aggVitals(agg: MemberAgg | undefined): GroupVitals {
   return {

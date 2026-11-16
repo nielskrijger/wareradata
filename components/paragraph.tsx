@@ -8,10 +8,7 @@ interface Props {
 }
 
 /**
- * Muted body paragraph for long-form prose. Slightly lifted in dark mode
- * (`dark:text-foreground/70`) so multi-sentence copy stays comfortably
- * readable rather than dropping to the dimmer muted-foreground used for
- * one-line labels and captions.
+ * Muted prose, lifted a little in dark mode so long copy stays readable.
  */
 export function Paragraph({ children, className }: Props) {
   return (

@@ -3,14 +3,10 @@ import type { RowData } from '@tanstack/react-table'
 import type { PageRequest, PageResult } from './data-table'
 
 /**
- * Client-side fetcher for any paginated `/api/*` endpoint that follows the
- * DataTable wire contract (`page` / `pageSize` / `sort` / `dir` / `filter`
- * query string, `{ rows, total, ranges? }` response).
+ * Fetches one page from a DataTable `/api/*` route.
  *
- * The optional `baseFilter` (e.g. `muId:<id>` on a detail page's member list) is
- * sent as its own param, separate from the user's `filter`, so the server can
- * apply it as a locked-in scope the user's input can narrow but never widen
- * past, and a malformed filter can't break out of it.
+ * `baseFilter` travels as its own param so the server applies it as a scope
+ * the user's filter can narrow but never widen.
  */
 export async function fetchPaginated<T extends RowData>(
   endpoint: string,

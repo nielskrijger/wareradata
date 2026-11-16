@@ -29,18 +29,14 @@ const log = logger.child({ component: 'file-store' })
  */
 export interface RawSnapshot {
   /**
-   * The raw user array lives in a separate users.ndjson file, and currently-
-   * equipped gear in equipment.ndjson — neither is held here, so the persisted
-   * snapshot is small (~5 MB) and the build streams those files into the rows
-   * (see lib/cache/users-store and lib/cache/equipment-store).
+   * Users and equipment live in their own NDJSON files, which keeps this file
+   * small (~5 MB).
    */
   countries: Country[]
 
   /**
-   * Each occupied country's elected officials (president, ministers, congress),
-   * keyed by country id, all as user ids. Captured once per scrape via the
-   * per-country government endpoint. Dormant countries with no government are
-   * simply absent from the map.
+   * Elected officials as user ids, by country id; countries with no
+   * government are absent.
    */
   governments: Record<string, Government>
 
@@ -69,19 +65,16 @@ export interface RawSnapshot {
   gameConfig: GameConfig
 
   /**
-   * Market context for the factory profit model, captured each cycle (one extra
-   * request): current item prices. Kept here so the row builders can value
-   * factories at build time without any network. Empty on a legacy/cold snapshot.
+   * Item prices, so the build can value factories without the network. Empty
+   * on a cold volume.
    */
   prices: MarketPrices
   meta: SnapshotMeta
 }
 
 /**
- * The runtime data volume: `DATA_DIR` when set, else `.data` in the working dir.
- * The ignore comment on the explicit `process.cwd()` base tells Turbopack's
- * output file tracing this is a runtime path, so it doesn't trace the whole
- * project into the build output.
+ * `DATA_DIR`, else `.data`. The turbopackIgnore marks this as a runtime path so
+ * the build doesn't trace the whole project.
  */
 export function dataDir(): string {
   return path.resolve(/* turbopackIgnore: true */ process.cwd(), process.env.DATA_DIR ?? '.data')
@@ -166,10 +159,8 @@ export function emptyRawSnapshot(): RawSnapshot {
 }
 
 /**
- * Reads the persisted snapshot, or null when the file doesn't exist yet (a cold
- * volume). Callers substitute {@link emptyRawSnapshot} so pages render the empty
- * state. Any other error rethrows: a corrupt or unreadable file should surface,
- * not silently degrade to empty.
+ * Null on a cold volume; any other error rethrows, since a corrupt file should
+ * surface rather than silently become empty.
  */
 export async function readRawSnapshot(): Promise<RawSnapshot | null> {
   const path = snapshotPath()
@@ -217,12 +208,10 @@ function* serializeSnapshot(snapshot: RawSnapshot): Generator<string> {
 }
 
 /**
- * Removes orphaned temp files left in the data dir and the battle archive by a
- * write that died before its rename (a SIGKILL, OOM, or deploy mid-write skips
- * the writers' own cleanup). Only files whose writer process is gone are
- * removed, so a write still in flight in this or another process (the factory
- * scrape runs for a long time, and the CLI scripts can run beside the server)
- * is never touched. Best-effort: never throws.
+ * Removes temp files left by writes that died before their rename.
+ *
+ * Only files whose writer process is gone, so a long write in flight (the
+ * factory scrape, a CLI beside the server) is never touched. Never throws.
  */
 export async function sweepStaleTempFiles(): Promise<void> {
   for (const dir of [dataDir(), archiveDir()]) {
@@ -247,13 +236,8 @@ export async function sweepStaleTempFiles(): Promise<void> {
 }
 
 /**
- * Persists the snapshot atomically: stream it to a unique temp file in the same
- * directory, then rename over the live file. A same-filesystem rename is atomic
- * on POSIX, so a concurrent reader sees either the old or the fully-written new
- * file, never a half-written one. Streaming keeps peak memory flat instead of
- * holding the whole serialized blob plus its write buffer. On failure the
- * partial temp file is removed; on success any stale temp files from earlier
- * crashed writes are swept.
+ * Writes to a temp file and renames over the live one, so readers never see a
+ * half-written file.
  */
 export async function writeRawSnapshot(snapshot: RawSnapshot): Promise<void> {
   const dir = dataDir()

@@ -5,16 +5,10 @@ interface Props {
 }
 
 /**
- * The Warera Data logo: tank silhouette with a chart line running off the
- * barrel ("war + data" mark). An orange base with a single bright band sweeps
- * left → right across the tank, sharing colour, band, speed and direction with
- * the WARERA DATA wordmark (see `.logo-fire-text` in globals.css) so the tank
- * and text read as one continuous effect. Falls back to a static gradient under
- * prefers-reduced-motion.
+ * The tank-and-chart logo.
  *
- * The band is a horizontal gradient whose stop offsets animate (see
- * `.logo-stop` / `logo-fire` in globals.css). The five stops mirror the text's
- * gradient: orange, orange, bright, orange, orange.
+ * Its gradient stops animate in step with the wordmark (`.logo-stop` and
+ * `.logo-fire-text` in globals.css), so tank and text read as one effect.
  */
 export function Logo({ className }: Props) {
   return (

@@ -128,10 +128,8 @@ function DataTableInner<TData extends RowData>({
   // Lets Retry re-run the fetch effect with unchanged params.
   const [retryCount, setRetryCount] = useState(0)
 
-  // Adopt a fresh `initialData` prop (e.g. after revalidatePath) only while the
-  // user hasn't sorted/filtered/paged. This is React's "adjusting state when a
-  // prop changes" pattern:
-  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  // Adopt a fresh `initialData` (after revalidatePath) only while the user
+  // hasn't sorted, filtered or paged; React's adjust-state-on-prop-change pattern.
   const [prevInitialData, setPrevInitialData] = useState(initialData)
   if (initialData !== prevInitialData) {
     setPrevInitialData(initialData)
@@ -244,10 +242,8 @@ function DataTableInner<TData extends RowData>({
       )}
 
       <div className={cn(
-        // Full-bleed on mobile: a -mx-6 cancels the px-6 page padding so the
-        // (horizontally scrolling) table uses the whole screen width. Side
-        // borders + rounding are dropped while it touches the edges, and
-        // everything is restored from sm up where the page has room.
+        // Full-bleed on mobile so the scrolling table gets the whole width; the
+        // side borders and rounding come back from sm up.
         'border-input bg-card overflow-hidden border dark:bg-input/50',
         '-mx-6 rounded-none border-x-0 sm:mx-0 sm:rounded-md sm:border-x',
         isPending && 'opacity-60',

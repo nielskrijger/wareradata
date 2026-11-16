@@ -44,9 +44,7 @@ const countrySortValue = makeSortValue<CountryRow>({
 })
 
 /**
- * Driven by the client DataTable on /countries. Reads from the in-process
- * snapshot cache and stamps on live active-battle counts before filtering,
- * sorting, and paginating in memory. Returns `{rows, total}`.
+ * Stamps on the live battle counts behind the name cell's ⚔ pill.
  */
 export const GET = createTableRoute<CountryRow>(
   async () => withActiveBattleCounts((await getSnapshot()).countries),

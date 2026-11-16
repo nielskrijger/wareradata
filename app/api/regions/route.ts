@@ -24,11 +24,6 @@ const regionFieldAliases: FieldAliases = {
 
 const regionSortValue = makeSortValue<RegionRow>()
 
-/**
- * Driven by the client DataTable on /regions. Reads from the in-process snapshot
- * cache (warm worker = sub-ms) and applies pagination, sorting, and filtering
- * in memory. Returns `{rows, total}`.
- */
 export const GET = createTableRoute<RegionRow>(
   async () => (await getSnapshot()).regions,
   regionSortValue,

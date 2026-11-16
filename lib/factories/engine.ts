@@ -1,15 +1,11 @@
 import type { GameConfig } from '@/lib/warera/api'
 
 /**
- * Automated-engine production model. A factory produces from two sources: its
- * automated engine and its NPC employees. The employees' output and wages come
- * straight from the API (`employee.getCompanyEstimate`, which already
- * folds in every employee's production bonus), but that estimate leaves the
- * engine out, so the engine's share is derived here from the static game config.
+ * The automated engine's production, from the game config.
  *
- * Self-work (the owner's own clicks) is NOT modelled: the owner spreads a finite
- * energy budget by hand across all their factories, so it can't be pinned to any
- * one.
+ * The API's employee estimate already covers the NPC employees but leaves the
+ * engine out. Self-work isn't modelled: owners spread it by hand, so it can't
+ * be pinned to one factory.
  */
 export interface EngineModel {
   /**

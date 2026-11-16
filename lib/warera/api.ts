@@ -28,10 +28,7 @@ import type {
 import { createAPIClient } from '@wareraprojects/api'
 
 /**
- * The package's generated types are narrower than what the live API returns
- * (the OpenAPI spec doesn't document every field). We re-widen here so our
- * code can keep reading fields that exist at runtime but are missing from
- * MuListItem / CountryListItem.
+ * The generated types miss fields the live API returns, so these widen them.
  */
 export type Country = CountryListItem
 export type MU = Omit<MuListItem, 'rankings'> & {
@@ -54,10 +51,7 @@ export type Region = RegionsObjectItem
 export type { Alliance } from '@wareraprojects/api'
 
 /**
- * The live API returns more on a battle than the generated BattleListItem: the
- * finished-battle outcome (`wonBy`, `endedAt`) and per-side `moneyPool` /
- * `bountyEffectiveAt` are present at runtime but missing from the spec. We
- * re-widen here, same as MU / Country above.
+ * Adds the runtime fields the spec misses: the outcome and per-side money pool.
  */
 export type Battle = BattleListItem & {
   endedAt?: string
@@ -84,12 +78,8 @@ export interface CaseStat {
 }
 
 /**
- * The components that sum to a user's total wealth (all in gold), from the
- * getUserById `stats.wealth` payload: companies owned, items in storage, cash on
- * hand, equipped gear, and weapons. `total` is their sum (≈ the userWealth
- * ranking value, modulo capture timing). Every field is optional (absent on the
- * lite payload and on the small fraction of users a fresh scrape hasn't
- * reached), so readers default to null.
+ * Wealth's parts in gold, from getUserById `stats.wealth`. All optional: users
+ * the scrape hasn't reached lack them.
  */
 export interface WealthBreakdown {
   companies?: number
@@ -101,11 +91,8 @@ export interface WealthBreakdown {
 }
 
 /**
- * Users are hydrated via getUserById, whose payload is a superset of the lite
- * endpoint's. We base this type on the generated lite-response type only because
- * it types the fields we read (rankings, …) precisely, whereas the getUserById
- * response type is looser (Record-typed); both describe the same runtime object.
- * The extra getUserById fields we consume are surfaced below. See hydrateUsers.
+ * Based on the lite response type because it types the rankings precisely;
+ * getUserById returns a superset, whose extra fields are added below.
  */
 export type User = UserGetUserLiteResponse & {
   /**
@@ -125,10 +112,8 @@ export type User = UserGetUserLiteResponse & {
   lastRefreshedAt?: string
 
   /**
-   * Active drug effect (cocaine: +60% attack for 8h, then -60% for 16h). Present
-   * in the getUserById payload but absent from the SDK types, so we widen it
-   * here. Only the buff* or the debuff* pair is set at a time; the whole object
-   * is absent when no effect is active.
+   * The active drug effect, missing from the SDK types. Only the buff or the
+   * debuff pair is set; absent when nothing is active.
    */
   buffs?: {
     buffCodes?: string[]
@@ -165,14 +150,10 @@ export interface GovernmentMinister {
 }
 
 /**
- * A country's elected officials, all as user ids: the president, vice
- * president, the appointed ministers and the congress roster. Dormant or
- * unoccupied countries may have empty-string offices and an empty congress.
+ * A country's officials as user ids.
  *
- * The SDK types three per-title seat fields while the live API sends a
- * `ministers` array, so both shapes are optional here and the row builder
- * reads either. `congressSeats` is not part of the response: the scrape merges
- * in `government.getCongressSeats`, which gives each seat's party list.
+ * The SDK types per-title seats but the API sends a `ministers` array, so both
+ * are optional. `congressSeats` comes from a second call, merged in by the scrape.
  */
 export type Government = Omit<
   GovernmentGetByCountryIdResponse,
@@ -211,22 +192,11 @@ export interface SnapshotMeta {
 }
 
 /**
- * Three independent clients, each with its own rate-limit budget (the limit is
- * enforced per client at the fetch level). Splitting by purpose means urgent,
- * on-demand work never waits behind the long continuous scrape, and vice versa.
+ * One client per purpose, each with its own budget, so urgent page traffic
+ * never waits behind the scrape. The three sum to the API's 500/min per key.
  *
- *  - scrapeClient:  the background main-scrape loop. Steady share so the
- *    leaderboard data stays fresh.
- *  - urgentClient:  latency-sensitive on-demand traffic (MU refreshes, live
- *    battles, the user-page factory fetch). Needs real headroom: its queue is
- *    shared by every visitor-triggered fetch, and the limiter spaces requests
- *    at 60s/limit, so a small budget serializes page loads behind each other.
- *  - factoryClient: the all-users factory scrape. Bulk work with no latency
- *    requirement; it just takes proportionally longer on a smaller share.
- *
- * The three sum to 500, the API's authenticated cap (per minute, per key), so all
- * three together stay within budget. Tune them here; rebalancing is a code
- * change, not config.
+ * Urgent needs real headroom: every visitor shares its queue, and the limiter
+ * spaces requests at 60s/limit.
  */
 const SCRAPE_RATE_LIMIT = 150
 const URGENT_RATE_LIMIT = 100
@@ -285,13 +255,8 @@ export function getAllCountries(): Promise<Country[]> {
 }
 
 /**
- * Fetches one country's government (president, vice president, ministers, and
- * the congress roster, all as user ids) together with its congress seats, so
- * each congress member carries the party list they were elected on. There's no
- * bulk endpoint, so the scrape fans this out per country with bounded
- * concurrency; the two calls go out in the same tick and share one batch.
- * Dormant countries may have no government; the caller treats an error or
- * empty result as "none". A failed seats call only loses the party mapping.
+ * A country's government plus its congress seats (the party list each member
+ * was elected on). A failed seats call loses only that mapping.
  */
 export async function getGovernmentForCountry(countryId: string): Promise<Government> {
   const [gov, seats] = await Promise.all([
@@ -511,12 +476,8 @@ export async function getAllMUs(): Promise<MU[]> {
 }
 
 /**
- * Fetches the current member roster of a single MU. Each item carries the
- * member's `user` id plus their MU contribution counts, not the full user
- * payload, so a piecemeal MU refresh follows this with {@link getUsersUrgent}
- * over the returned user ids. Returns the authoritative live roster, which
- * catches joins and leaves the stored member list may have missed. On the
- * urgent client so it never waits behind the scrape.
+ * The live roster as user ids, which catches joins and leaves the stored list
+ * missed.
  */
 export function getMuMembers(muId: string): Promise<MuMemberListItem[]> {
   return urgentClient.muMember.getByMu({ muId })
@@ -549,11 +510,7 @@ const FINISHED_BATTLES_LIMIT = 100
 const BATTLES_PAGE_SIZE = 50
 
 /**
- * Walks `battle.getBattles` for the given activity flag. It's cursor-paginated
- * (not autoPaginate), newest first, so we follow `nextCursor` until `max` items
- * are collected or the cursor runs out. Pass `Infinity` for `max` to pull every
- * page (the active list is small and always fetched whole). `client` picks the
- * rate-limit budget.
+ * Follows the cursor (newest first) until `max` battles or the end.
  */
 async function pageBattles(client: Client, isActive: boolean, max: number): Promise<Battle[]> {
   const out: Battle[] = []
@@ -584,22 +541,16 @@ export async function getAllBattles(): Promise<Battle[]> {
 }
 
 /**
- * Fetches all active battles (cursor-paginated, ~15 at a time). The list
- * endpoint is the only one that expands `currentRound` with per-side damages
- * and `lastHits`, which the live /battles views need for the round bar and Top
- * Damage Dealers. Used by the on-demand live cache, not the hourly scrape.
+ * Only the list endpoint expands `currentRound` with per-side damage and
+ * `lastHits`, which the live views need.
  */
 export function getActiveBattles(): Promise<Battle[]> {
   return pageBattles(urgentClient, true, Infinity)
 }
 
 /**
- * Fetches finished battles for the history archive, paging deeper than
- * {@link getAllBattles}. The live API serves a rolling window (~2 weeks /
- * ~1000 battles, newest first); we walk it until `maxBattles` or the cursor
- * runs out. The daily archive job dedupes these by `_id`, so over-fetching is
- * harmless — it only widens the safety margin against battles aging out before
- * we capture them.
+ * Pages deeper than {@link getAllBattles} for the archive, which dedupes, so
+ * over-fetching only widens the margin before battles age out.
  */
 export function getFinishedBattles(maxBattles = 1000): Promise<Battle[]> {
   return pageBattles(scrapeClient, false, maxBattles)
@@ -661,20 +612,16 @@ export async function getTournamentInfo(): Promise<TournamentInfo> {
 export type Factory = CompanyGetByIdResponse
 
 /**
- * A company's hourly economics, the `hourly` block of `employee.getCompanyRoster`:
- * the employees' summed production points and wages, the manager's wage, and the
- * employee slots. Engine output is NOT included; it comes
- * from the engine level (see lib/factories/engine). Needs an API key.
+ * A company's hourly employee production and wages; engine output isn't
+ * included (see lib/factories/engine).
  */
 export type CompanyHourly = EmployeeCompanyHourly
 // One NPC employee, as `employee.getCompanyRoster` returns it.
 export type { Employee }
 
 /**
- * What getUserCompanies returns per factory: the company (identity, item, region,
- * engine level in `activeUpgradeLevels`), its hourly employee/manager figures and
- * its NPC employee roster. `hourly` is null and `employees` empty when the roster
- * call failed (e.g. no API key).
+ * A factory with its hourly figures and roster; `hourly` is null and
+ * `employees` empty when the roster call failed.
  */
 export interface FactoryData {
   company: Factory
@@ -683,11 +630,8 @@ export interface FactoryData {
 }
 
 /**
- * Fetches a user's factories with everything the profit model needs, in two
- * HTTP round-trips: one to list the company ids, then one batched request that
- * hydrates each (getById + employee roster). Returns [] for a user with no
- * factories. A roster that fails leaves that factory engine-only rather than
- * failing the whole user. `client` picks the rate-limit budget.
+ * Two round trips: the ids, then one batch with each company and roster. A
+ * failed roster leaves that factory engine-only.
  */
 async function fetchUserCompanies(client: Client, userId: string): Promise<FactoryData[]> {
   const list = await client.company.getCompanies({ userId, perPage: 100 })

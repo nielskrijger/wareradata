@@ -19,21 +19,14 @@ export interface DataColumnMeta {
   width?: number
 
   /**
-   * Heat-tint the cell text by the column's value relative to the dataset
-   * range (see HeatCell). `'ramp'` = green-only full gradient (min neutral →
-   * max full green); `'median'` = diverging green→red centered on the
-   * median, higher is better; `'invert'` = diverging the other way (lower is
-   * better) centered on the midpoint, for ranks/taxes; `'invertMedian'` =
-   * lower is better but centered on the median, for skewed columns like wars.
-   * The accessorKey must match a key present in the response `ranges`.
+   * Heat-tint the cell by its value within the response `ranges` (see
+   * HeatCell); the accessorKey must be a key in `ranges`.
    */
   heat?: 'ramp' | 'median' | 'invert' | 'invertMedian'
 
   /**
-   * For diverging columns (`'median'` / `'invert'`), the value that reads
-   * neutral (no tint). Defaults to the median (`'median'`) or dataset
-   * midpoint (`'invert'`); set it for scales with a meaningful baseline,
-   * e.g. `10` so a 10% tax is neutral, lower greens, higher reds.
+   * For diverging modes, the value that reads neutral, e.g. `10` so a 10% tax
+   * is untinted.
    */
   heatCenter?: number
 
@@ -45,19 +38,13 @@ export interface DataColumnMeta {
   heatLogScale?: boolean
 
   /**
-   * Flip the sort-direction indicator. For rank columns sorted ascending
-   * (rank #1 first), the up-arrow reads as "smallest first" → confusing
-   * since "smallest" is actually the best. Setting this true shows the
-   * down-arrow on asc and up-arrow on desc so the icon points toward the
-   * "less good" end of the column.
+   * Flip the sort arrow, for rank columns where ascending puts the best first
+   * and an up arrow would read as "smallest first".
    */
   sortInvert?: boolean
 
   /**
-   * The column's category, driving the Columns-menu grouping, the header icon,
-   * and column ordering. Set by buildColumns from the group the column was
-   * declared in (see column-categories.ts); columns left unstamped fall back to
-   * General. Authoring it by hand is unnecessary in a buildColumns table.
+   * Set by buildColumns from the group the column is declared in.
    */
   category?: Category
 
@@ -68,11 +55,9 @@ export interface DataColumnMeta {
   tooltip?: string
 
   /**
-   * Extra classes for the body TableCell, e.g. `relative` so the cell
-   * renderer can paint a full-bleed background layer (`absolute inset-0`)
-   * that tracks the row height. A negative-margin wrapper can't: its height
-   * stays that of its own content, so it falls short when another cell makes
-   * the row taller.
+   * Classes for the body cell, e.g. `relative` so a cell can paint an
+   * `absolute inset-0` layer that tracks the row height when another cell
+   * makes the row taller.
    */
   cellClassName?: string
 }

@@ -241,10 +241,7 @@ function hasGovernment(g: Government): boolean {
 }
 
 /**
- * One-shot main scrape for the CLI (`npm run scrape-main`): gathers the dataset and
- * writes it to the snapshot file, then returns counts. The in-server scraper
- * uses {@link scrapeMain} directly so it can also swap the in-memory
- * snapshot and loop.
+ * The CLI's one-shot scrape (`npm run scrape-main`).
  */
 export async function runMainScrape(): Promise<ScrapeResult> {
   const raw = await scrapeMain()

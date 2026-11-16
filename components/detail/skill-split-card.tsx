@@ -21,10 +21,8 @@ interface Props {
 }
 
 /**
- * A player's War / Eco skill split as a detail-page card: the mode badge, a
- * two-tone bar weighted by points invested, the raw points + share per side,
- * and the leading discipline's leaderboard rank. The always-visible counterpart
- * to the table's CombatModeCell tooltip; matches the StatCard frame.
+ * A player's war/eco split as a card: badge, bar, points and share per side,
+ * and the leading side's rank.
  */
 export function SkillSplitCard({ mode, warPoints, ecoPoints, warPointsRank, ecoPointsRank }: Props) {
   const total = warPoints + ecoPoints

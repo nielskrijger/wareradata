@@ -10,9 +10,8 @@ export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  // `resolvedTheme` is only known on the client; flip `mounted` once after
-  // hydration so the icon reflects the real theme without a mismatch. The
-  // single intentional re-render is the standard next-themes pattern.
+  // `resolvedTheme` is only known on the client; this one re-render avoids a
+  // hydration mismatch (the standard next-themes pattern).
   // eslint-disable-next-line react/set-state-in-effect
   useEffect(() => setMounted(true), [])
 

@@ -23,10 +23,8 @@ interface Props<TData extends RowData> {
 const STICKY = 'bg-table-surface sticky left-0 z-20 shadow-[4px_0_6px_-2px_rgba(0,0,0,0.35)]'
 
 /**
- * The pinned first column is capped narrow on mobile (names ellipsize) to leave
- * more room for the scrolling data columns, then takes its real width from sm
- * up. Width comes from a CSS var so the mobile-first w-* classes win — an inline
- * `width` would always override them.
+ * Narrow on mobile to leave room for the data columns. A CSS var, not an inline
+ * width, so the responsive classes can still win.
  */
 const STICKY_WIDTH = 'w-[140px] sm:w-[var(--col-w)]'
 

@@ -14,21 +14,13 @@ import 'server-only'
 const log = logger.child({ component: 'live-battles' })
 
 /**
- * Live active battles as enriched {@link BattleRow}s, cached via Cache
- * Components. Backs both the /battles active tab and the active-battle
- * detail page, so a click-through stays consistent within the cache window.
+ * Live active battles, cached for a minute.
  *
- * Stale-while-revalidate: past `revalidate` the cached rows are served as-is
- * and refreshed in the background, so a slow WarEra fetch (rate-limiter queue,
- * API under load) delays freshness instead of blocking every render. Only
- * after a full hour without a successful refresh does a request block on the
- * fetch (`expire`).
+ * Stale-while-revalidate, so a slow WarEra fetch delays freshness instead of
+ * blocking renders.
  *
- * The live layer is an enhancement, not load-bearing: if the WarEra API is
- * down (it 503s under load), we degrade to an empty list rather than crashing
- * every page that shows the ⚔ pill. The empty list itself gets cached for the
- * full revalidate window — acceptable trade for letting the framework own the
- * TTL.
+ * A failed fetch serves an empty list: the live layer is an extra, and the API
+ * 503s under load.
  */
 export async function getLiveActiveBattles(): Promise<BattleRow[]> {
   'use cache'
@@ -48,11 +40,8 @@ export async function getLiveActiveBattles(): Promise<BattleRow[]> {
 }
 
 /**
- * Per-country active battles, derived from the same cached live set (no extra
- * API call). A battle is listed under both its attacker and defender country,
- * each from that country's own point of view (opponent = the other side).
- * Tournament battles have MU sides, so their ids never match a country and are
- * naturally excluded. Keyed by country id.
+ * Live battles by country id, each from that country's side. Tournament sides
+ * are MUs, so they never match a country.
  */
 export async function getActiveBattlesByCountry(): Promise<Map<string, ActiveBattleSummary[]>> {
   const battles = await getLiveActiveBattles()
@@ -82,10 +71,8 @@ export async function getActiveBattlesByCountry(): Promise<Map<string, ActiveBat
 }
 
 /**
- * Stamps the live active-battle count and matchup list onto country rows, so
- * the ⚔ pill (and its hover tooltip) show site-wide without a client fetch.
- * Returns new rows (doesn't mutate the cached snapshot rows). Call on any path
- * that serves CountryRows for display.
+ * Stamps live battle counts onto copies of the rows, so the ⚔ pill needs no
+ * client fetch.
  */
 export async function withActiveBattleCounts(rows: CountryRow[]): Promise<CountryRow[]> {
   const byCountry = await getActiveBattlesByCountry()

@@ -27,11 +27,8 @@ interface Props {
 }
 
 /**
- * A player's War / Eco lean as a two-tone bar (red war / green eco), sized by
- * their war share of war+eco skill points. A bar rather than a badge so it reads
- * consistently with the MU / country aggregate cells and shows the exact split
- * at a glance. The hover card breaks it into actual points, share, and the
- * player's rank in the leading discipline. Empty-dash when nothing's trained.
+ * A player's war/eco split of skill points as a two-tone bar, with points and
+ * rank on hover. A bar, not a badge, to match the group cells.
  */
 export function CombatModeCell({ mode, warPoints, ecoPoints, warPointsRank, ecoPointsRank, width = 84 }: Props) {
   const total = warPoints + ecoPoints

@@ -40,11 +40,6 @@ const muSortValue = makeSortValue<MURow>({
   readinessScore: row => readinessScore(row.readinessPill),
 })
 
-/**
- * Driven by the client DataTable on /mus. Reads from the in-process snapshot
- * cache (warm worker = sub-ms) and applies pagination, sorting, and filtering
- * in memory. Returns `{rows, total}`.
- */
 export const GET = createTableRoute<MURow>(
   async () => (await getSnapshot()).mus,
   muSortValue,

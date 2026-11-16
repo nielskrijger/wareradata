@@ -36,10 +36,7 @@ function BreakdownRow({ label, n, total, color }: { label: string, n: number, to
 }
 
 /**
- * Compact stacked bar of an entity's members by readiness status (buff / ready
- * / debuff), with a hover tooltip breaking the mix down by named status.
- * Segments are split by a hairline seam so the green/slate boundary stays legible.
- * Renders an em-dash when no member has a known status.
+ * Members by readiness as a stacked bar, broken down on hover.
  */
 export function ReadinessPillBar({ mix, width = 96 }: Props) {
   const total = mix.buff + mix.ready + mix.debuff

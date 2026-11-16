@@ -14,10 +14,8 @@ interface Props {
   segments: BarSegment[]
 
   /**
-   * Denominator for each segment's width. Defaults to the sum of the segment
-   * values, so the segments fill the whole track. Pass a larger total (an
-   * overall total, or a row max) to get a single-fill bar whose unfilled
-   * remainder shows the track background.
+   * Denominator for segment widths; defaults to their sum. A larger total
+   * leaves the remainder as empty track.
    */
   total?: number
 
@@ -29,11 +27,9 @@ interface Props {
 }
 
 /**
- * Horizontal bar of proportional colored segments in a rounded track, with a
- * hairline {@link SEAM} between adjacent segments so neighboring colors stay
- * legible. Backs the readiness and war/eco bars (several segments) and the
- * points bars (a single segment below `total`, leaving the track background as
- * the remainder). Zero-value segments are skipped, so no stray seam appears.
+ * Proportional colored segments in a rounded track, with a hairline seam so
+ * neighboring colors stay legible. Zero segments are skipped so no stray seam
+ * appears.
  */
 export function StackedBar({ segments, total, className }: Props) {
   const visible = segments.filter(seg => seg.value > 0)

@@ -139,10 +139,8 @@ export interface UserRow {
   wealth: number | null
 
   /**
-   * The five parts that make up wealth (gold), from the getUserById
-   * `stats.wealth` payload. Null when a scrape hasn't captured the breakdown for
-   * this user yet (a small fraction). Surfaced as the "Wealth composition" card
-   * and the per-component table columns.
+   * Wealth's five parts in gold; null when the scrape hasn't captured the
+   * breakdown yet.
    */
   companiesWealth: number | null
   companiesWealthRank: number | null
@@ -165,10 +163,8 @@ export interface UserRow {
   weeklyDamageRank: number | null
 
   /**
-   * Per-user factory totals from the factory scrape. PpPerDay / netPerDay /
-   * count are shown in the user table's Factories group; topPotential backs the
-   * per-user efficiency and is summed by member-agg into the entity Factories
-   * columns. Null when the scrape hasn't captured this user.
+   * The user's factory totals; null when the factory scrape hasn't reached
+   * them. topPotential feeds efficiency.
    */
   factoryCount: number | null
   factoryPpPerDay: number | null
@@ -235,10 +231,8 @@ export interface ReadinessPill {
 }
 
 /**
- * Mean readiness of an entity's classified members on a buff +1 / ready 0 /
- * debuff -1 scale, so the value ranges -1 (all debuffed) to +1 (all buffed) and
- * is comparable across entities of different sizes. Null when no member has a
- * known status. The sort key for the readiness column.
+ * Mean readiness on a buff +1 / ready 0 / debuff -1 scale, so groups of any
+ * size compare. Null when no member's status is known.
  */
 export function readinessScore(mix: ReadinessPill): number | null {
   const total = mix.buff + mix.ready + mix.debuff
@@ -266,11 +260,8 @@ export interface GroupCaseStats {
 }
 
 /**
- * Member-summed wealth components shared by every group row: each is the sum of
- * the members'/citizens' `stats.wealth.*` parts (companies, items, cash,
- * equipment, weapons), with a snapshot rank. The wealth Total is named per
- * entity (memberWealth / citizenWealth), so it stays on each row. UserRow keeps
- * its own nullable versions (one player can lack the breakdown).
+ * Member-summed wealth parts with ranks; the total keeps a per-entity name
+ * (memberWealth / citizenWealth).
  */
 export interface GroupWealthParts {
   companiesWealth: number
@@ -293,12 +284,8 @@ export interface GroupWealthParts {
 }
 
 /**
- * Member-summed factory economics shared by the country / MU / alliance rows:
- * net gold/day (split into engine vs employees), NPC employee headcount,
- * production points/day, and efficiency (Σ net ÷ Σ Top-potential, capped at 100).
- * Each ranked value carries a snapshot rank. Sourced from the slow factory scrape,
- * so all fields read 0 / null until it (and a main scrape carrying market data)
- * have run.
+ * Member-summed factory economics with ranks; efficiency is Σ net ÷ Σ potential,
+ * capped at 100. Zero until the factory scrape has run.
  */
 export interface GroupFactoryStats {
   /**
@@ -371,11 +358,7 @@ export interface GroupPremiumStats {
 }
 
 /**
- * Member-averaged combat/condition stats produced from a group's pooled
- * citizens: average gear score, war-share, health and hunger, plus the
- * buff/ready/debuff readiness split. Shared by CountryRow, MURow and
- * AllianceRow (filled via {@link aggVitals}); UserRow keeps the raw per-person
- * fields instead. Ranks are assigned by rankAll.
+ * Member averages of gear, war share, health and hunger, plus the readiness mix.
  */
 export interface GroupVitals {
   avgGearScore: number | null
@@ -390,10 +373,7 @@ export interface GroupVitals {
 }
 
 /**
- * Damage rankings shared by the country / MU / alliance rows: total damage
- * (value + rank + tier) and weekly damage, all from the upstream API rankings
- * per entity (no agg spread — the builders assign them directly).
- * weeklyDamagePerCitizen stays per-row (countries + alliances only).
+ * Damage stats straight from the API rankings.
  */
 export interface GroupDamageStats {
   damage: number | null
@@ -404,11 +384,8 @@ export interface GroupDamageStats {
 }
 
 /**
- * Leader identity fields shared by the MU / party / alliance rows: the leader's
- * id plus the bits to render their avatar + linked name (and the hover card).
- * All null when the entity has no leader, or the leader isn't in the snapshot.
- * Resolved by {@link leaderFields}. Countries elect a government instead (see
- * {@link GovernmentRow}), so they don't carry this.
+ * The leader's identity for avatar and link; null when there's none or they're
+ * not in the snapshot.
  */
 export interface LeaderFields {
   leaderId: string | null
@@ -520,10 +497,7 @@ export interface GovernmentOfficial {
 }
 
 /**
- * A country's elected officials, resolved from {@link RawSnapshot.governments}
- * user ids to renderable {@link GovernmentOfficial}s. Executive seats are null
- * when vacant (or the holder isn't in the snapshot); congress is the resolved
- * roster, which may be empty. Built per country, read only by the country page.
+ * A country's officials; executive seats are null when vacant.
  */
 export interface GovernmentRow {
   president: GovernmentOfficial | null
@@ -659,10 +633,7 @@ export interface RegionRow {
 }
 
 /**
- * One side of a battle's matchup. Country wars resolve to a country (flag +
- * link to /countries); tournament battles resolve to the team's MU (avatar +
- * link to /mus), falling back to "Team #N" when the MU isn't in the snapshot.
- * The cell branches on `kind` to pick flag vs. avatar and the link target.
+ * One side of a matchup: a country, or for tournaments the team's MU.
  */
 export interface BattleSide {
   kind: 'country' | 'mu'
@@ -689,15 +660,10 @@ export interface BattleSide {
 }
 
 /**
- * Projected battle row used by /battles and /api/battles. Battles are events,
- * not entities ranked against each other, so there are no rank fields (cf.
- * RegionRow). `attackerDamage` / `defenderDamage` are cumulative across the
- * whole battle; `roundAttackerDamage` / `roundDefenderDamage` are the current
- * (or final) round only, which drives the live-progress bar.
+ * Battles are events, not ranked entities, so there are no rank fields.
  *
- * `attackerName` / `defenderName` / `attackerCode` / `defenderCode` are kept
- * flat (mirroring the structured sides) purely so the liqe text filter can
- * match on them; the cells render from `attacker` / `defender`.
+ * The flat attacker/defender name and code fields exist for the text filter;
+ * cells render from `attacker` / `defender`.
  */
 export interface BattleRow {
   attacker: BattleSide
@@ -782,10 +748,8 @@ export interface AllianceMemberRow {
 }
 
 /**
- * Projected alliance (multi-country bloc) row used by /alliances and
- * /api/alliances. Values and ranks come from the live alliance rankings (the
- * API ranks all alliances, so its ranks are authoritative); members are
- * resolved and sorted by development contribution at build time.
+ * Values and ranks come from the API's alliance rankings, which cover every
+ * alliance.
  */
 export interface AllianceRow extends
   GroupCaseStats,

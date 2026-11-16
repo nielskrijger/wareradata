@@ -64,10 +64,10 @@ function battleVerb(b: { isTournament: boolean, isResistance: boolean }): string
 }
 
 /**
- * One side of the battle header: a large emblem (MU avatar or country flag),
- * the linked name beneath, and a winner badge when this side won. Country flags
- * need an explicit size via inline style — the `flag-icons` `.fi` base rule
- * (width: 1.333em, background-size: contain) otherwise wins on specificity.
+ * One side of the battle header.
+ *
+ * Flags get an explicit inline size because the `flag-icons` `.fi` rule
+ * otherwise wins on specificity.
  */
 function BattleSideEmblem({ side, won }: { side: BattleSide, won: boolean }) {
   const label = side.name ?? side.code ?? '?'

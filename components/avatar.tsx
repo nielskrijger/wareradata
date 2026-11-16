@@ -26,13 +26,8 @@ interface Props {
 }
 
 /**
- * Round avatar for any entity that has one (users, MUs). Draws a thin ring in
- * the color scheme when given, otherwise none. Falls back to the name's first
- * initial on a muted disc when no image is set. Uses next/image; the host is
- * allowlisted in next.config.
- *
- * Callers that need a different ring (e.g. the detail header's thicker
- * card+scheme double ring) can override `boxShadow` via `style`.
+ * Round avatar with an optional color-scheme ring, falling back to the name's
+ * initial when there is no image.
  */
 export function Avatar({ src, name, size, colorScheme, className, style }: Props) {
   const base = cn('shrink-0 rounded-full object-cover', className)

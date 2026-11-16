@@ -20,11 +20,7 @@ export interface CountryDetails {
 }
 
 /**
- * One country plus the leaderboard ranges needed to heat-tint its stats. Backs
- * the `/api/countries/[id]` route (the country hover-card tooltip's data
- * source), the country-level sibling of `getUserById`. Ranges are computed over
- * the country set (~180 rows), so this is effectively O(n) on the find plus the
- * range pass.
+ * One country plus the ranges that heat-tint it, for its hover card.
  */
 export async function getCountryById(id: string): Promise<CountryDetails | null> {
   const { countries } = await getSnapshot()

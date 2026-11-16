@@ -1,15 +1,8 @@
 /**
- * War / Eco / Hybrid classification from a user's trained skills.
+ * War / Eco / Hybrid from a user's trained skills.
  *
- * Players spend skill points specializing toward combat ("War"), economy
- * ("Eco"), or a mix ("Hybrid"). Each skill has a trained `level`
- * (0-10); the cost to reach a level is identical across every skill, verified
- * against `gameConfig.getGameConfig` — so summing the per-level cost over a set
- * of skills gives comparable "points invested" in that discipline.
- *
- * Mirrors the shape of `lib/gear/score.ts`: the cost curve and skill sets come
- * from the live game config plus small pure functions, no dependency on the API
- * package's exact types.
+ * Every skill shares one level cost curve, so summing costs over a set of
+ * skills gives comparable points invested per discipline.
  */
 
 import type { GameConfig } from '@/lib/warera/api'
@@ -44,10 +37,7 @@ function pointsForLevel(level: number | undefined, costs: readonly number[]): nu
 }
 
 /**
- * Builds the per-level cumulative cost curve from the live gameConfig. Reads any
- * trainable skill's track (they all share one curve). The scrape always captures
- * the config, so this is the single source of the cost curve — it self-corrects
- * if the devs retune skill costs.
+ * The cumulative cost curve from the live config, so it follows any retune.
  */
 export function deriveSkillPointCost(config: GameConfig): readonly number[] {
   const levels = (config.skills as unknown as { attack?: {
@@ -68,13 +58,10 @@ export function deriveSkillPointCost(config: GameConfig): readonly number[] {
 }
 
 /**
- * Total points invested across the named skills, by summing each skill's
- * trained-level cost. Unknown or untrained skills contribute 0.
+ * Points invested across the named skills.
  *
- * Takes the skills bag as `unknown` and narrows internally so callers can pass
- * the API package's `UserSkills` (a fixed-key interface) without a cast — we
- * only ever index it by name and read `.level`. `costs` come from
- * {@link deriveSkillPointCost} (the live config's cost curve).
+ * `skills` is `unknown` so callers can pass the API's fixed-key `UserSkills`
+ * without a cast.
  */
 export function skillPoints(skills: unknown, names: readonly string[], costs: readonly number[]): number {
   if (!skills || typeof skills !== 'object') {
@@ -91,10 +78,7 @@ export function skillPoints(skills: unknown, names: readonly string[], costs: re
 }
 
 /**
- * Classify from a war share (war / (war + eco)) already computed — used for both
- * a single player and an aggregated mean across an entity's members. Null share
- * (no investment / no trained members) is 'untrained'; otherwise >= 0.6 → 'war',
- * <= 0.4 → 'eco', else 'hybrid'.
+ * Null share is 'untrained'; ≥ 0.6 'war', ≤ 0.4 'eco', else 'hybrid'.
  */
 export function classifyWarShare(warShare: number | null): CombatMode {
   if (warShare === null) {

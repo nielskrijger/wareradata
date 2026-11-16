@@ -17,12 +17,10 @@ export interface EquipmentUserLine {
 }
 
 /**
- * The equipment file: newline-delimited JSON, one {@link EquipmentUserLine}
- * per line (~14 MB), kept apart from `snapshot.json`. Each snapshot build streams
- * it once for gear scoring and keeps each loadout as JSON text on the Snapshot
- * for single-user lookups. Last line wins per user id, so an on-demand refresh
- * can append a fresher line without rewriting the whole file; the next main
- * scrape rewrites it clean.
+ * One {@link EquipmentUserLine} per line, apart from `snapshot.json`.
+ *
+ * The last line per user wins, so a refresh can append instead of rewriting;
+ * each main scrape rewrites the file clean.
  */
 export function equipmentNdjsonPath(): string {
   return path.join(dataDir(), 'equipment.ndjson')
@@ -36,10 +34,7 @@ export function streamEquipmentUsers(onUser: (line: EquipmentUserLine) => void):
 }
 
 /**
- * Streams the equipment file into a per-user lookup for the snapshot build. Last
- * line wins per user id (an on-demand refresh appends a fresher line). Feeds
- * gear scoring in `buildUserRows` and the Snapshot's per-user equipment JSON.
- * Empty when the file doesn't exist yet.
+ * Each user's gear for the snapshot build; empty when there's no file yet.
  */
 export async function loadEquipmentByUser(): Promise<Record<string, Equipment>> {
   const out: Record<string, Equipment> = {}
@@ -67,10 +62,8 @@ export async function loadEquipmentByIds(ids: ReadonlySet<string>): Promise<Map<
 }
 
 /**
- * Atomically (re)writes the equipment file from the freshly scraped lists
- * (parallel arrays: `equipmentList[i]` is `userIds[i]`'s gear). A line is written
- * for every user (including `{}`), preserving the captured-but-empty vs
- * not-captured split.
+ * Writes a line for every user, `{}` included, so "captured, nothing equipped"
+ * stays distinct from "not captured".
  */
 export function writeEquipmentNdjson(userIds: string[], equipmentList: Equipment[]): Promise<void> {
   return writeNdjson(equipmentNdjsonPath(), equipmentLines(userIds, equipmentList))
@@ -83,10 +76,8 @@ function* equipmentLines(userIds: string[], equipmentList: Equipment[]): Generat
 }
 
 /**
- * Appends fresh equipment lines for on-demand-refreshed users. The reader takes
- * the last line per user, so these override the scrape's lines until the next
- * main cycle rewrites the file. Cheap (one line per user), and the file
- * self-cleans each cycle, so the duplicates never accumulate past one pass.
+ * Appends refreshed users' gear; the next main scrape rewrites the file, so
+ * the duplicates never pile up.
  */
 export async function appendEquipmentLines(userIds: string[], equipmentList: Equipment[]): Promise<void> {
   let buf = ''

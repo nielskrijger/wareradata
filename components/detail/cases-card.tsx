@@ -58,11 +58,8 @@ function mergeRarities(a: CaseRarityCounts | null, b: CaseRarityCounts | null): 
 }
 
 /**
- * Cases opened, with an All / Standard / Mythic toggle. Each segment shows that
- * case type's opened count and a per-rarity breakdown of the loot pulled
- * (common…mythic); All merges both case types. Standard is the daily case
- * (case1), Mythic the premium case (case2). Mirrors MultiStatCard's hero + rows
- * layout so it sits flush with the other detail cards.
+ * Cases opened, with an All / Standard / Mythic toggle and the loot per
+ * rarity. Standard is the daily case (case1), Mythic the premium one (case2).
  */
 export function CasesCard({
   combinedOpened,

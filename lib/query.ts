@@ -33,9 +33,7 @@ export function parseQuery(searchParams: URLSearchParams): QueryParams {
   const sort = searchParams.get('sort')
   const dir = searchParams.get('dir') === 'desc' ? 'desc' : 'asc'
 
-  // Note: not lowercasing — applyQuery's substring path lowercases its own
-  // haystack, and applyStructuredQuery hands the raw text to liqe (which
-  // is case-insensitive on values by default).
+  // Not lowercased: liqe matches values case-insensitively.
   const filter = (searchParams.get('filter') ?? '').trim()
   const baseFilter = (searchParams.get('baseFilter') ?? '').trim()
 
@@ -61,10 +59,8 @@ export interface PagedResult<T> {
 }
 
 /**
- * Computes [min, max, median] for every numeric field across `rows`, ignoring
- * null/undefined/non-finite values. The set of fields is discovered from the
- * rows themselves (any key that is numeric on at least one row), so callers
- * don't have to enumerate columns — the client picks whichever it heat-tints.
+ * [min, max, median] for every numeric field, so the client can tint any
+ * column without the server listing them.
  */
 export function computeRanges<T extends object>(rows: T[]): Record<string, Range> {
   if (!rows.length) {
@@ -96,10 +92,7 @@ export function computeRanges<T extends object>(rows: T[]): Record<string, Range
 }
 
 /**
- * Shared tail of {@link applyQuery} / {@link applyStructuredQuery}: heat ranges
- * over the already-filtered rows, then sort by the requested column (nulls
- * always last, regardless of direction), then paginate. The two public entry
- * points differ only in how they produce `filtered` (substring vs liqe).
+ * Ranges over the filtered rows, then sort (nulls last either way) and page.
  */
 function sortAndPaginate<T extends object>(
   filtered: T[],
@@ -189,20 +182,16 @@ function rewriteAliases(node: unknown, aliases: FieldAliases): void {
 }
 
 /**
- * Lets users write `field=value` as a synonym for liqe's `field:value`. Only an
- * `=` directly after a bare field token (at the start of the string, or after
- * whitespace or `(`) is rewritten, so liqe's `>=` / `<=` operators and any `=`
- * sitting inside a quoted value are left untouched.
+ * Accepts `field=value` for liqe's `field:value`. Only an `=` right after a bare
+ * field token is rewritten, so `>=`, `<=` and quoted values are untouched.
  */
 function normalizeEquals(filter: string): string {
   return filter.replace(/(^|[\s(])([\w.]+)=/g, '$1$2:')
 }
 
 /**
- * Filters `rows` by a single liqe expression. An empty expression is a no-op;
- * an *unparseable* one is also a no-op (the rows pass through unchanged) so a
- * typo narrows nothing rather than throwing — and, applied after the base
- * scope, can never widen back past it.
+ * An unparseable expression passes the rows through, so a typo narrows
+ * nothing instead of throwing.
  */
 function runLiqeFilter<T extends object>(rows: T[], expr: string, aliases: FieldAliases): T[] {
   if (!expr) {
@@ -220,11 +209,8 @@ function runLiqeFilter<T extends object>(rows: T[], expr: string, aliases: Field
 }
 
 /**
- * Variant of {@link applyQuery} that runs the filter through liqe, supporting
- * structured queries like `country:net -mu:"Bla bla" rank:[1 TO 100]` as well as
- * plain free-text (liqe falls back to a whole-row substring search). `aliases`
- * maps friendly field names to row keys (e.g. `country` → `countryCode`);
- * underlying names work too.
+ * Filters with liqe (`country:nl -mu:"Bla" rank:[1 TO 100]`, or plain text),
+ * then sorts and pages. `aliases` maps friendly field names to row keys.
  */
 export function applyStructuredQuery<T extends object>(
   rows: T[],
@@ -232,12 +218,9 @@ export function applyStructuredQuery<T extends object>(
   sortValue: (row: T, sort: string) => number | string | null,
   aliases: FieldAliases = {},
 ): PagedResult<T> {
-  // The detail-page scope (`baseFilter`, e.g. `muId:<id>`) and the user's typed
-  // `filter` are applied in sequence: the trusted base first, then the user's
-  // filter over the already-scoped subset. That equals `base AND (user)` but
-  // with two safety properties — an unparseable user filter is dropped without
-  // widening past the base scope, and the user's own OR/NOT can only ever match
-  // within the scoped rows, never pull in others.
+  // Base scope first, then the user's filter over the scoped rows: the same as
+  // `base AND (user)`, but a broken or OR-ed user filter can never reach rows
+  // outside the scope.
   const scoped = runLiqeFilter(rows, query.baseFilter ?? '', aliases)
   const filtered = runLiqeFilter(scoped, normalizeEquals(query.filter), aliases)
 
@@ -273,10 +256,7 @@ export function makeSortValue<T>(
 }
 
 /**
- * Builds the GET handler shared by every `/api/<entity>` table route: parse the
- * query, load the rows (`loadRows` is route-specific — usually a snapshot slice,
- * sometimes enriched/merged), then filter / sort / paginate via
- * {@link applyStructuredQuery}.
+ * The GET handler shared by every `/api/<entity>` table route.
  */
 export function createTableRoute<T extends object>(
   loadRows: () => Promise<T[]>,

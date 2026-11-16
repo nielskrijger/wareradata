@@ -52,16 +52,11 @@ interface ExternalLinkProps {
 }
 
 /**
- * Anchor that opens in a new tab and appends a small external-link icon as a
- * visual cue. For links to app.warera.io, build the href with `wareraUrl()`
- * from `lib/warera/urls.ts`.
+ * Opens in a new tab with an external-link icon. Build app.warera.io hrefs
+ * with `wareraUrl()`.
  *
- * Two modes:
- * - With `children`: text + icon styled like {@link InternalLink} (blue,
- *   hover-underline).
- * - Without `children` (pass `label` instead): icon-only, muted — for when
- *   the surrounding text is a separate in-app link and the icon is just the
- *   "open externally" affordance.
+ * Without `children` it renders the icon alone, muted, for when the text
+ * beside it is a separate in-app link.
  */
 export function ExternalLink({ href, children, label }: ExternalLinkProps) {
   if (children === undefined) {

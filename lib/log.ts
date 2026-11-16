@@ -5,11 +5,8 @@ import { getHeapStatistics } from 'node:v8'
 import pino from 'pino'
 
 /**
- * App-wide structured logger. Emits one JSON object per line to stdout, which
- * Railway parses into level + message + queryable attributes (filter with
- * `@field:value`). Use a child logger per area and pass fields as the first
- * arg: `const log = logger.child({ component: 'scraper' })` then
- * `log.info({ users: n }, 'hydrated users')`.
+ * One JSON object per line, which Railway parses into queryable fields. Use a
+ * child logger per area: `logger.child({ component: 'scraper' })`.
  */
 export const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',

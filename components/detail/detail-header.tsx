@@ -55,27 +55,21 @@ interface Props {
   children: ReactNode
 
   /**
-   * Optional full-width band below the fact rows, separated by a border that
-   * spans the whole card edge to edge (the user page's equipped-gear strip).
-   * Unlike {@link children}, it sits outside the padded content column so its
-   * top divider reaches both side borders; it supplies its own padding.
+   * A full-width band below the facts, outside the padded column so its top
+   * divider reaches both edges.
    */
   footer?: ReactNode
 
   /**
-   * Optional control floated at the top-right of the header, detached from the
-   * fact rows and the normal flow (e.g. an MU's "last refreshed / refresh"
-   * action). It overlays the content rather than reserving space, so it never
-   * shifts the layout; callers must keep it narrow enough to clear the title.
+   * A control pinned top-right that overlays the content, so it never shifts
+   * the layout; keep it narrow enough to clear the title.
    */
   aside?: ReactNode
 }
 
 /**
- * Shared header for the user/MU/country detail pages: a thin banner strip with
- * an emblem overlapping it, the brand-styled name, and caller-supplied fact
- * rows. The emblem and banner differ per entity (avatar+scheme vs flag+neutral)
- * so both are passed in.
+ * Header for the detail pages: a banner strip with the emblem overlapping it,
+ * the name, and the caller's fact rows.
  */
 export function DetailHeader({ emblem, title, titleSuffix, bannerStyle, children, footer, aside }: Props) {
   return (

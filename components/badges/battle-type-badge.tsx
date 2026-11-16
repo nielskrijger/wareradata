@@ -8,13 +8,8 @@ interface Props {
 }
 
 /**
- * The colored badge(s) identifying a battle's kind, shared by the /battles
- * table and the battle detail header so both read identically.
- *
- * War (red) and Resistance (amber) are single tinted badges, following the
- * codebase's badge convention (cf. TierBadge/ScaleBadge). A tournament renders
- * a sky "name" badge plus a fire `R#` round chip (the fire accent matches the
- * active-nav treatment), so the three types are distinguishable at a glance.
+ * A battle's kind: War (red), Resistance (amber), or a tournament name plus a
+ * round chip. Shared by the battles table and the battle header.
  */
 export function BattleTypeBadge({ isTournament, isResistance, tournamentName, tournamentRound }: Props) {
   if (isTournament) {

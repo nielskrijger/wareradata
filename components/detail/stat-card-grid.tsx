@@ -5,14 +5,10 @@ interface Props {
 }
 
 /**
- * Responsive grid for the detail pages' StatCards. Steps from a single column
- * on phones to 2 from `sm` up, then on to 6 on very wide screens (fewer per
- * row = wider cards). The single mobile column keeps each card full width so
- * the detail pages read as a clean vertical stack on small screens.
+ * Responsive grid for the detail StatCards.
  *
- * Dense flow so a later single-width card backfills any hole left when two
- * `sm:col-span-2` headline cards (points + readiness) can't share a row at the
- * 3-column breakpoint. Only kicks in where a gap would otherwise appear.
+ * Dense flow so a single-width card backfills the hole left when two
+ * `sm:col-span-2` cards can't share a row.
  */
 export function StatCardGrid({ children }: Props) {
   return (

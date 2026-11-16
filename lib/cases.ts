@@ -3,12 +3,11 @@ import type { CaseRarity, CaseStat } from '@/lib/warera/api'
 import { CASE_RARITIES } from '@/lib/warera/api'
 
 /**
- * Official per-rarity drop rates (percent) per case type, as shown on the
- * in-game case screens (not exposed by the game config API). Validated against
- * the population's ~10M recorded pulls: the empirical byRarity distribution
- * over categorized pulls reproduces these within noise. Each case type has its
- * own table — the premium case2 never drops common and is ~50x richer at the
- * top end, so luck must be judged per case type.
+ * Official drop rates (percent) per case type, from the in-game case screens;
+ * the config API doesn't expose them. ~10M recorded pulls match them within noise.
+ *
+ * Luck is judged per case type because case2 never drops common and is far
+ * richer at the top.
  */
 const CASE_DROP_RATES: Record<'case1' | 'case2', Record<CaseRarity, number>> = {
   case1: { common: 62, uncommon: 30, rare: 7.1, epic: 0.85, legendary: 0.04, mythic: 0.01 },

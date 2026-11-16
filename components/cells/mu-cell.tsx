@@ -26,12 +26,8 @@ interface Props {
 }
 
 /**
- * MU cell shared by /mus, /users, and the user detail header.
- *
- * The name links to the MU detail page when an id is present; otherwise it
- * links to /users prefiltered to that MU (`?q=mu:"<name>"` — quoted because
- * MU names contain spaces). For the warera.io link, use the dedicated
- * trailing "WarEra" column on /mus.
+ * Links to the MU page when there's an id, else to /users filtered to the MU
+ * (quoted, since MU names contain spaces).
  */
 export function MUCell({ muName, muId, avatarUrl, bold }: Props) {
   if (!muName) {

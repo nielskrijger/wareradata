@@ -33,7 +33,7 @@ Prereqs:
 
 ```bash
 cp .env.example .env.local
-# fill in WARERA_API_KEY (DATA_DIR and the rate limits have defaults)
+# fill in WARERA_API_KEY (DATA_DIR has a default)
 npm install
 npm run dev          # next dev on port 3100
 ```
@@ -49,6 +49,7 @@ server, use `npm run scrape-main`.
 | ---------------- | --------- | ------------------------------------------------------- |
 | `WARERA_API_KEY` | (none)    | API key; raises the rate tier, needed for factory data. |
 | `DATA_DIR`       | `./.data` | Where the snapshot and battle archive live.             |
+| `LOG_LEVEL`      | `info`    | Pino log level.                                         |
 
 ## The scraper
 
@@ -70,8 +71,9 @@ clients, each with its own rate-limit budget so none waits behind another:
 
 The client handles tRPC batching (up to 50 calls per request) and retries, and
 enforces the rate limit at the HTTP-request level. So the user phase below is
-hundreds of requests, not ~16k, and a full cycle is a few minutes; tune
-`SCRAPE_RATE_LIMIT` if needed.
+hundreds of requests, not ~16k, and a full cycle is a few minutes. The three
+budgets are constants in [lib/warera/api.ts](lib/warera/api.ts) and sum to the
+API's 500 requests per minute per key.
 
 ### Cycle phases
 
@@ -127,15 +129,15 @@ the overlay.
 
 Everything lives under `DATA_DIR` (the mounted volume in production):
 
-| Path                              | Shape                                                                                                                                  |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `snapshot.json`                   | `{ countries, governments, mus, regions, parties, alliances, battles, tournament, gameConfig, prices, itemBestRegions, meta }` (~5 MB) |
-| `users.ndjson`                    | one `User` per line — the raw user array (~84 MB), split out of the snapshot                                                           |
-| `equipment.ndjson`                | one `{ userId, equipment }` per line — currently-equipped gear                                                                         |
-| `factories.ndjson`                | one `{ userId, rows }` per line — the slow all-users factory scrape's output                                                           |
-| `archive/battles-YYYY-MM-DD.json` | `Battle[]` finished that UTC day                                                                                                       |
-| `archive/seen.json`               | `string[]` archived battle ids (dedupe)                                                                                                |
-| `archive/index.json`              | `string[]` days available                                                                                                              |
+| Path                              | Shape                                                                                                                                   |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `snapshot.json`                   | `{ countries, governments, strategicBonuses, mus, regions, parties, alliances, battles, tournament, gameConfig, prices, meta }` (~5 MB) |
+| `users.ndjson`                    | one `User` per line — the raw user array (~84 MB), split out of the snapshot                                                            |
+| `equipment.ndjson`                | one `{ userId, equipment }` per line — currently-equipped gear                                                                          |
+| `factories.ndjson`                | one `{ userId, rows }` per line — the slow all-users factory scrape's output                                                            |
+| `archive/battles-YYYY-MM-DD.json` | `Battle[]` finished that UTC day                                                                                                        |
+| `archive/seen.json`               | `string[]` archived battle ids (dedupe)                                                                                                 |
+| `archive/index.json`              | `string[]` days available                                                                                                               |
 
 Writes are atomic (stream to a temp file, then rename), so a request landing
 mid-scrape sees the old or new file, never a torn one. The three big per-user

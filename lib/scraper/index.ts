@@ -15,22 +15,17 @@ import { scrapeMain } from '@/lib/warera/scrape-main'
 import 'server-only'
 
 /**
- * The most recent raw snapshot (small, since users and equipment live in their
- * own files), the user-refresh overlay, and in-flight on-demand refresh promises
- * keyed by `<kind>:<id>` (mu / user). Kept on globalThis for the same reason as
- * the built snapshot (see memory.ts): Next loads server modules in several graphs
- * within one process, so a module-level `let` would give the scrape loop and a
- * Server Action separate copies, and an on-demand patch in one wouldn't build on
- * the other's base. The global store makes them process-wide.
+ * The latest raw snapshot, the refresh overlay and in-flight refreshes.
+ *
+ * On globalThis for the same reason as the built snapshot (see memory.ts), so
+ * the scrape loop and a Server Action share one copy.
  */
 interface ScraperStore {
   currentRaw: RawSnapshot | null
 
   /**
-   * Fresh user profiles from on-demand refreshes, keyed by user id. The build
-   * merges these over users.ndjson (last-wins) so a refreshed user's rows are
-   * current without rewriting the 84 MB file; each main cycle rewrites the file
-   * whole and clears this.
+   * Refreshed profiles the build merges over users.ndjson, so a refresh needn't
+   * rewrite the 84 MB file. Each main cycle clears it.
    */
   userOverlay: Map<string, User>
   inFlightRefreshes: Map<string, Promise<void>>
@@ -65,10 +60,8 @@ async function publish(raw: RawSnapshot): Promise<void> {
 }
 
 /**
- * The continuous main-scrape loop. Runs on the scrape client (its own rate-limit
- * budget), so it never competes with urgent on-demand traffic. Each cycle
- * publishes the snapshot, folds finished battles into the archive, then starts
- * the next cycle. Errors are logged and the loop continues after a short pause.
+ * Runs back to back on its own rate-limit budget, so it never competes with
+ * on-demand traffic. A failed cycle pauses briefly and retries.
  */
 async function mainScrapeLoop(): Promise<void> {
   for (;;) {
@@ -97,15 +90,10 @@ async function mainScrapeLoop(): Promise<void> {
 }
 
 /**
- * The continuous all-users factory scrape loop, back-to-back like the main
- * scrape. Runs on the factory client (its own small rate-limit budget),
- * independent of the main scrape and urgent traffic. Each pass only rewrites
- * `factories.ndjson` (streamed, no accumulator); the main loop reapplies it on
- * its next cycle, so we deliberately do NOT rebuild the snapshot here. Memory is
- * logged at pass start/end (with heap-vs-limit %), and `scrapeFactories`
- * logs it mid-pass, so an OOM is attributable to this loop rather than guessed.
- * Streams users.ndjson for the company-owner list; waits for it before the first
- * pass.
+ * Runs back to back on its own small budget and only rewrites factories.ndjson;
+ * the next main cycle picks it up, so no rebuild here.
+ *
+ * Memory is logged around each pass so an OOM can be pinned on this loop.
  */
 async function factoryScrapeLoop(): Promise<void> {
   for (;;) {
@@ -130,10 +118,8 @@ async function factoryScrapeLoop(): Promise<void> {
 }
 
 /**
- * Refreshes one MU's members on demand and resolves when the in-memory snapshot
- * has been updated, so a caller (the page's refresh action) can await it and
- * then re-render with fresh data. Runs on the urgent client, separate from the
- * scrape budget. Concurrent requests for the same MU share one fetch.
+ * Resolves once the snapshot holds the fresh members, so the page action can
+ * await it and re-render. Concurrent requests for one MU share a fetch.
  */
 export function refreshMuMembers(muId: string): Promise<void> {
   return dedupe(`mu:${muId}`, () => doRefreshMuMembers(muId))
@@ -177,20 +163,12 @@ async function doRefreshUser(userId: string): Promise<void> {
 }
 
 /**
- * Shared core of the on-demand refreshes. Re-fetches the given users' lite
- * profiles + equipment via the urgent client, stamps each profile with the
- * refresh time (so their pages show fresh data), stashes the profiles in the
- * user overlay and appends the fresh gear to the equipment file, applies an
- * optional entity-specific patch (e.g. an MU's member list and its own
- * timestamp), then rebuilds and swaps the served snapshot.
+ * Re-fetches users on the urgent client, applies an optional raw patch, and
+ * rebuilds the snapshot.
  *
- * Does NOT rewrite the big files: it patches in-memory `currentRaw`, merges the
- * overlay over users.ndjson at build, and only appends to the equipment file
- * (both subsumed when the next main cycle rewrites them clean). The scrape loop
- * alone owns the persisted snapshot, so a manual refresh is a transient overlay
- * the next full cycle subsumes. Rebuilding the whole snapshot keeps every
- * aggregate and rank globally consistent. No-ops if no base snapshot exists yet,
- * or `userIds` is empty.
+ * Nothing big is rewritten: profiles go to the overlay and gear is appended;
+ * the next main cycle subsumes both. A full rebuild keeps every aggregate and
+ * rank consistent.
  */
 async function refreshUsersInSnapshot(
   userIds: string[],
@@ -214,10 +192,8 @@ async function refreshUsersInSnapshot(
   const equipmentIds = userIds.filter((_, i) => equipmentRaw[i] !== undefined)
   const freshEquipment = equipmentRaw.filter(e => e !== undefined)
 
-  // Append the fresh gear to the equipment file. The reader takes the last
-  // line per user, so this overrides the scrape's line until the next main cycle
-  // rewrites the file; the rebuild below streams it back for gear scoring and
-  // the user page / hover-card lookups.
+  // The reader takes the last line per user, so this overrides the scrape's
+  // line until the next main cycle.
   await appendEquipmentLines(equipmentIds, freshEquipment)
 
   // Stash the fresh profiles in the overlay (keyed by id) so the rebuild below
@@ -236,10 +212,8 @@ async function refreshUsersInSnapshot(
 }
 
 /**
- * Starts the continuous scraper. Called once from the instrumentation hook
- * after the boot snapshot is loaded. Seeds `currentRaw` from the persisted file
- * (so piecemeal works before the first cycle) then runs the loop. Do not await:
- * the loop never ends.
+ * Starts the loops; don't await, they never end. Seeds `currentRaw` first so a
+ * refresh works before the first cycle.
  */
 export function startScraper(): void {
   if (started) {

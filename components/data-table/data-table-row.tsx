@@ -40,11 +40,9 @@ export function DataTableRow<TData extends RowData>({ row }: Props<TData>) {
               : { width: `${width}px` })
           : undefined
 
-        // Cells with no value render the muted EmptyDash, so every column that
-        // returns null for a missing value reads grey without per-column
-        // styling. flexRender wraps the cell fn in createElement, so we invoke
-        // the renderer directly (these cells are pure formatters with no hooks)
-        // to see the raw null before it's wrapped.
+        // Call the cell renderer directly to see a raw null (flexRender would
+        // wrap it), so any empty cell gets the muted dash. Cells are pure
+        // formatters, so calling them outside React is safe.
         const cellDef = cell.column.columnDef.cell
         const rendered = typeof cellDef === 'function' ? cellDef(cell.getContext()) : cellDef
         if (rendered == null) {

@@ -6,16 +6,11 @@ import { dataDir } from './file-store'
 import { streamNdjson, writeNdjson } from './ndjson'
 
 /**
- * The user file: newline-delimited JSON, one full {@link User} per line. Kept
- * apart from `snapshot.json` because the raw user array is by far the largest
- * collection (~84 MB / ~17k users). The snapshot build streams it into the
- * derived `UserRow[]` (and the user lookup maps) rather than holding the raw
- * array, so the big array never resides in memory alongside the built rows.
+ * One {@link User} per line, apart from `snapshot.json` because it's by far the
+ * largest collection (~84 MB).
  *
- * Unlike the equipment file, this is never appended to: on-demand refreshes are
- * applied through an in-memory overlay the build merges on top (see the scraper),
- * so the file always has exactly one line per user and the next main cycle
- * rewrites it whole.
+ * Never appended to: refreshes go through an in-memory overlay, so each main
+ * scrape rewrites it whole.
  */
 export function usersNdjsonPath(): string {
   return path.join(dataDir(), 'users.ndjson')
@@ -52,10 +47,7 @@ export async function loadUsersByIds(ids: ReadonlySet<string>): Promise<Map<stri
 }
 
 /**
- * Streams the user file once and returns the ids of users who own company wealth:
- * the only users the factory scrape enumerates, skipping the ~98% with none.
- * Streams rather than loading the array so the slow pass and its CLI don't pull
- * the whole user set into memory just to filter it.
+ * Users with company wealth, the only ones the factory scrape visits (~2%).
  */
 export async function loadFactoryOwnerIds(): Promise<string[]> {
   const ownerIds: string[] = []

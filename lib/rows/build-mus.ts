@@ -81,11 +81,8 @@ export function buildMURows(mus: MU[], userRows: UserRow[], lookups: Lookups): M
     })
     .sort((a, b) => (b.totalPoints - a.totalPoints))
 
-  // Rank MUs against each other (not as a sum of members) on every numeric
-  // stat. Standard competition rank, computed over our snapshot — so each
-  // "#X of N" line on the detail page shares the same N. We recompute the
-  // damage/wealth ranks the API also provides, trading its global denominator
-  // for one consistent with the rest of the card grid.
+  // Damage and wealth are re-ranked here instead of using the API's global
+  // ranks, so every "#X of N" on the detail page shares one N.
   rankAll(rows, [
     'caseLuck',
     ...POINTS_RANK_KEYS,

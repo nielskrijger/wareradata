@@ -17,15 +17,10 @@ import { FactoryStatsCard } from './factory-stats-card'
 const log = logger.child({ component: 'factories' })
 
 /**
- * Fetches and computes a user's factory ledger rows: daily profit from the
- * automated engine plus the NPC employees, the Top potential (the same output on
- * the most profitable item), and per-employee money and stats. Fetches
- * live on the urgent client (companies and their rosters; prices are cached and
- * shared across users). Net excludes self-work.
+ * A user's factory ledger, fetched live on the urgent client.
  *
- * Returns null when the user owns none, or when a live API call fails — the
- * section is best-effort enrichment, so a price/company outage just omits it
- * rather than failing the user page.
+ * Returns null when they own none or a call fails: the section is optional, so
+ * an API outage shouldn't fail the user page.
  *
  * Request-memoized so the summary card and the roster share one fetch.
  */

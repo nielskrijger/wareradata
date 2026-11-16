@@ -98,11 +98,8 @@ export function buildCountryRows(
     })
     .sort((a, b) => b.totalPoints - a.totalPoints)
 
-  // Rank countries against each other on every numeric stat (standard
-  // competition rank over the snapshot). Recomputing damage/wealth too so each
-  // "#X of N" on the detail page shares one denominator. Taxes and unrest are
-  // policy settings (lower isn't "better" in a leaderboard sense), so they get
-  // no rank.
+  // Damage and wealth are re-ranked here so every "#X of N" on the detail page
+  // shares one N. Taxes and unrest are policy, not a leaderboard, so no rank.
   rankAll(rows, [
     'caseLuck',
     ...POINTS_RANK_KEYS,

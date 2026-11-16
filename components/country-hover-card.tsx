@@ -60,14 +60,8 @@ function pctInRange(value: number, range: Range | undefined): number {
 }
 
 /**
- * Wraps a country-name-shaped trigger with a hover tooltip showing the
- * country's leaderboard stats as a tile dashboard (population, weekly damage,
- * wealth, gear, MUs, war mode) over health/hunger bars, each heat-tinted
- * against the dataset ranges. Data is fetched from `/api/countries/[id]` on
- * first open and cached in-process for the rest of the session.
- *
- * When `countryId` is null/undefined the children render bare — there's no
- * entity to look up, so no tooltip is shown.
+ * A tooltip of the country's stats, heat-tinted against all countries. Fetched
+ * on first open; with no `countryId` the children render bare.
  */
 export function CountryHoverCard({ countryId, children, triggerClassName = 'block min-w-0' }: Props) {
   const {

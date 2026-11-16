@@ -1,17 +1,9 @@
 /**
- * Pure daily-profit model for a user's factories (companies).
+ * Daily profit model for a user's factories. Pure: callers fetch and pass in
+ * the data.
  *
- * Inputs come from WarEra: `company.getById` (identity + item + region + engine
- * level), `employee.getCompanyEstimate` (the NPC employees' hourly production
- * points and wages, plus the manager's wage), and `itemTrading.getPrices` +
- * `gameConfig.items` (sell prices and recipes). Nothing here calls the API; the
- * callers fetch and feed plain data in.
- *
- * Key unit fact: production is in POINTS per day (engine + employees), not item
- * units. Units = points / productionPoints[item]. Employee points already include
- * each employee's production bonus (management, manager, tool, specialization,
- * happiness, …); the engine has no bonus. A factory's region doesn't affect its
- * output.
+ * Production is in points per day; units = points / productionPoints[item].
+ * Employee points already include every production bonus; the engine has none.
  */
 
 /**
@@ -45,10 +37,7 @@ export interface Frontier {
 }
 
 /**
- * The per-factory data the model needs, all per day. `enginePointsPerDay` and
- * `employeePointsPerDay` are production points from the engine and the NPC
- * employees; `wagePerDay` is the employees' wages and `managerPerDay` the
- * manager's, both paid by the owner.
+ * One factory's per-day production points and wages.
  */
 export interface FactoryInput {
   id: string

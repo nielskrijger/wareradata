@@ -29,11 +29,6 @@ const partyFieldAliases: FieldAliases = {
 
 const partySortValue = makeSortValue<PartyRow>()
 
-/**
- * Driven by the client DataTable on /parties. Reads from the in-process snapshot
- * cache (warm worker = sub-ms) and applies pagination, sorting, and filtering
- * in memory. Returns `{rows, total}`.
- */
 export const GET = createTableRoute<PartyRow>(
   async () => (await getSnapshot()).parties,
   partySortValue,

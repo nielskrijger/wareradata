@@ -1,9 +1,6 @@
 /**
- * WarEra's user-selectable profile color schemes, as exact RGB values pulled
- * from the in-game color picker. The API returns the scheme name in camelCase
- * (e.g. `deepOrange`, `lightBlue`) on `user.infos.colorScheme`; keys here match
- * that form. The palette is intentionally desaturated, so even a full-strength
- * band reads as tasteful rather than garish.
+ * WarEra's profile color schemes as RGB from the in-game picker, keyed by the
+ * camelCase name the API returns.
  */
 const SCHEME_RGB: Record<string, string> = {
   red: '184, 50, 52',

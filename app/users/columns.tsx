@@ -144,10 +144,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         meta: { width: 100 },
       },
       {
-        // Sorts on warShare (the war/eco distribution), not the combatMode label:
-        // first click puts the most war-leaning players on top, pure-eco last,
-        // untrained (null share) trailing. Point totals scale with level, so the
-        // ratio is what's meaningful here.
+        // Sorts on war share, not points: point totals scale with level.
         accessorKey: 'warShare',
         header: 'Skills',
         cell: ({ row }) => (

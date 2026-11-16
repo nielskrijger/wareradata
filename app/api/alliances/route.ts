@@ -13,10 +13,8 @@ import {
 import { TIER_INDEX } from '@/lib/warera/api'
 
 /**
- * Friendly field names for the advanced filter. Keep in sync with the
- * popover cheatsheet in `alliances-table.tsx`. `country` matches against the
- * concatenated member names + codes, so `country:netherlands` (or `country:nl`)
- * finds the alliances a country belongs to.
+ * Friendly filter names; keep in sync with the cheatsheet in `alliances-table.tsx`.
+ * `country` matches the member names and codes, so `country:nl` finds its alliance.
  */
 const allianceFieldAliases: FieldAliases = {
   ...CASE_FIELD_ALIASES,
@@ -43,10 +41,6 @@ const allianceSortValue = makeSortValue<AllianceRow>({
   readinessScore: row => readinessScore(row.readinessPill),
 })
 
-/**
- * Driven by the client DataTable on /alliances. Reads from the in-process
- * snapshot cache, then filters, sorts, and paginates in memory.
- */
 export const GET = createTableRoute<AllianceRow>(
   async () => (await getSnapshot()).alliances,
   allianceSortValue,

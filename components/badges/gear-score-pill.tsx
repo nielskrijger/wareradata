@@ -17,11 +17,7 @@ interface Props {
 }
 
 /**
- * Rarity-tinted pill showing the 0-100 gear score and its rarity tier.
- * Bucketed into one of 6 tiers (common → mythic); background, ring, and
- * text color all derive from that tier so the pill reads as "this player's
- * loadout sits at the {epic} tier". Used in the user hover-card and as the
- * Gear column cell on the users table.
+ * The 0-100 gear score, tinted by its rarity tier.
  */
 export function GearScorePill({ score, tier }: Props) {
   if (score == null) {

@@ -59,8 +59,22 @@ export function ReadinessRows({ mix }: { mix: ReadinessPill }) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <CardRow icon={<ArrowUp className="size-3.5" />} label="Buff" n={mix.buff} total={total} color={GREEN} textColor={GREEN_TEXT} />
-      <CardRow icon={<Minus className="size-3.5" />} label="Ready" n={mix.ready} total={total} color={SLATE} textColor={SLATE_TEXT} />
+      <CardRow
+        icon={<ArrowUp className="size-3.5" />}
+        label="Buff"
+        n={mix.buff}
+        total={total}
+        color={GREEN}
+        textColor={GREEN_TEXT}
+      />
+      <CardRow
+        icon={<Minus className="size-3.5" />}
+        label="Ready"
+        n={mix.ready}
+        total={total}
+        color={SLATE}
+        textColor={SLATE_TEXT}
+      />
       <CardRow icon={<ArrowDown className="size-3.5" />} label="Debuff" n={mix.debuff} total={total} color={RED} />
     </div>
   )

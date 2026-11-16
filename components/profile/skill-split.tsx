@@ -8,6 +8,7 @@ import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
 import { SectionHeading } from '@/components/detail/section-heading'
 import { StackedBar } from '@/components/stacked-bar'
 import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
+import { formatNumber } from '@/lib/format'
 
 interface Props {
   mode: CombatMode
@@ -72,7 +73,7 @@ function SplitRow({ label, points, total, icon }: SplitRowProps) {
       {icon}
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="ml-auto flex items-baseline gap-2 tabular-nums">
-        <span>{points.toLocaleString()}</span>
+        <span>{formatNumber(points)}</span>
         <span className="text-muted-foreground/60 w-9 text-right text-xs">
           {pct}
           %

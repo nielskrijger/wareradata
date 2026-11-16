@@ -2,6 +2,7 @@ import type { UserRow } from '@/lib/rows'
 
 import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { TooltipHeading, TooltipRow } from '@/components/cells/tooltip-ledger'
+import { formatNumber } from '@/lib/format'
 
 type Props = Pick<UserRow, 'level' | 'levelRank' | 'prestige' | 'prestigePoints' | 'totalXp'> & {
   /**
@@ -22,9 +23,9 @@ export function LevelTooltipContent({ level, levelRank, prestige, prestigePoints
           ? <span className="font-normal text-neutral-400">Unranked</span>
           : (
               <>
-                #{levelRank.toLocaleString()}
+                #{formatNumber(levelRank)}
                 {rankedTotal != null && (
-                  <span className="font-normal text-neutral-400"> of {rankedTotal.toLocaleString()}</span>
+                  <span className="font-normal text-neutral-400"> of {formatNumber(rankedTotal)}</span>
                 )}
               </>
             )}
@@ -36,7 +37,7 @@ export function LevelTooltipContent({ level, levelRank, prestige, prestigePoints
           </TooltipRow>
         )}
         {!!prestigePoints && <TooltipRow label="Unspent points">{prestigePoints}</TooltipRow>}
-        {totalXp != null && <TooltipRow label="Lifetime XP">{totalXp.toLocaleString()}</TooltipRow>}
+        {totalXp != null && <TooltipRow label="Lifetime XP">{formatNumber(totalXp)}</TooltipRow>}
       </div>
     </div>
   )

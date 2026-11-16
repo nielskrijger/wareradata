@@ -17,6 +17,7 @@ import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
 import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
+import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { wareraUrl } from '@/lib/warera/urls'
@@ -87,7 +88,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
         <FactRow>
           <CountryCell countryCode={p.countryCode} countryName={p.countryName} countryId={p.countryId} />
           <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{p.memberCount.toLocaleString()}</span>
+            <span className="text-foreground font-medium">{formatNumber(p.memberCount)}</span>
             {' '}
             members
           </span>

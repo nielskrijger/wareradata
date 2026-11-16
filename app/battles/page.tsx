@@ -7,9 +7,10 @@ import { NoDataPage } from '@/components/layout/no-data-page'
 import { PageShell } from '@/components/layout/page-shell'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
+import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-import { firstPage } from '@/lib/query'
 
+import { firstPage } from '@/lib/query'
 import { BattleTabs } from './battle-tabs'
 
 export const metadata: Metadata = pageMetadata({
@@ -36,7 +37,7 @@ export default async function BattlesPage() {
       title="Battles"
       subtitle={(
         <>
-          {`${active.total.toLocaleString()} active, ${finished.total.toLocaleString()} recent. `}
+          {`${formatNumber(active.total)} active, ${formatNumber(finished.total)} recent. `}
           <span className="font-medium">Active battles are live; finished are from the latest snapshot.</span>
         </>
       )}

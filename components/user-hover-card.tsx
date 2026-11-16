@@ -21,7 +21,7 @@ import { FillBar } from '@/components/hover-card/fill-bar'
 import { HoverCardError, HoverLabel } from '@/components/hover-card/hover-card-parts'
 import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
 import { useEntityHover } from '@/components/hover-card/use-entity-hover'
-import { EMPTY, formatRelativeTime } from '@/lib/format'
+import { EMPTY, formatNumber, formatRelativeTime } from '@/lib/format'
 import { computeGearTier } from '@/lib/gear/score'
 
 interface Props {
@@ -44,8 +44,6 @@ interface FetchedData {
   equipment: Equipment
   gearLookup: GearLookup
 }
-
-const intFull = new Intl.NumberFormat('en', { maximumFractionDigits: 0 })
 
 /**
  * A tooltip of the user's stats, heat-tinted against all users. Fetched on
@@ -161,7 +159,7 @@ function StatRow({ icon, label, value, range }: {
       <span className="tabular-nums">
         {value == null ? <span className="text-neutral-50/40">{EMPTY}</span> : (
           <HeatCell value={value} range={range} mode="median">
-            {intFull.format(value)}
+            {formatNumber(value, 0)}
           </HeatCell>
         )}
       </span>

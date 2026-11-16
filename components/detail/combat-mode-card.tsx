@@ -1,6 +1,7 @@
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
 import { StackedBar } from '@/components/stacked-bar'
 import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
+import { formatNumber } from '@/lib/format'
 import { classifyWarShare } from '@/lib/skills/classify'
 
 interface Props {
@@ -35,9 +36,9 @@ export function CombatModeCard({ avgWarShare, rank, total }: Props) {
       {rank != null && total != null && (
         <span className="text-muted-foreground/60 text-xs">
           #
-          {rank.toLocaleString()}
+          {formatNumber(rank)}
           {' of '}
-          {total.toLocaleString()}
+          {formatNumber(total)}
         </span>
       )}
     </div>

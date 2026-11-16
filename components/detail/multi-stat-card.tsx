@@ -4,6 +4,7 @@ import type { Range } from '@/lib/query'
 
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { EmptyDash } from '@/components/empty-dash'
+import { formatNumber } from '@/lib/format'
 
 type HeatMode = 'ramp' | 'median' | 'invert' | 'invertMedian'
 
@@ -61,16 +62,16 @@ export function MultiStatCard({ label, rows, hero, total }: Props) {
                 center={hero.center}
                 logScale={hero.logScale}
               >
-                {hero.display ?? hero.value.toLocaleString()}
+                {hero.display ?? formatNumber(hero.value)}
               </HeatCell>
             )}
           </span>
           {hero.rank != null && hero.value != null && total != null && (
             <span className="text-muted-foreground/60 text-xs tabular-nums">
               #
-              {hero.rank.toLocaleString()}
+              {formatNumber(hero.rank)}
               {' of '}
-              {total.toLocaleString()}
+              {formatNumber(total)}
             </span>
           )}
         </div>
@@ -90,14 +91,14 @@ function StatRow({ label, value, display, range, heat, center, logScale, rank }:
         <span>
           {value == null ? <EmptyDash /> : (
             <HeatCell value={value} range={range} mode={heat} center={center} logScale={logScale}>
-              {display ?? value.toLocaleString()}
+              {display ?? formatNumber(value)}
             </HeatCell>
           )}
         </span>
         {rank != null && value != null && (
           <span className="text-muted-foreground/60 w-14 text-right text-xs">
             #
-            {rank.toLocaleString()}
+            {formatNumber(rank)}
           </span>
         )}
       </dd>

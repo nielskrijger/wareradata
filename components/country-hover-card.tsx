@@ -15,7 +15,7 @@ import { FillBar } from '@/components/hover-card/fill-bar'
 import { HoverCardError, HoverLabel } from '@/components/hover-card/hover-card-parts'
 import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
 import { useEntityHover } from '@/components/hover-card/use-entity-hover'
-import { EMPTY } from '@/lib/format'
+import { EMPTY, formatNumber } from '@/lib/format'
 import { heatColor } from '@/lib/utils'
 
 interface Props {
@@ -38,8 +38,6 @@ interface Props {
    */
   triggerClassName?: string
 }
-
-const intFull = new Intl.NumberFormat('en', { maximumFractionDigits: 0 })
 
 const ICON = 'size-3 text-neutral-50/70'
 
@@ -180,7 +178,7 @@ function Tile({ icon, label, value, rank, range, display }: TileProps) {
         {label}
       </HoverLabel>
       <div className="mt-0.5 whitespace-nowrap text-sm font-semibold tabular-nums" style={{ color }}>
-        {value == null ? <span className="text-neutral-50/40">{EMPTY}</span> : (display ?? intFull.format(value))}
+        {value == null ? <span className="text-neutral-50/40">{EMPTY}</span> : (display ?? formatNumber(value, 0))}
         {value != null && rank != null && (
           <span className="ml-1 text-[10px] font-normal text-neutral-50/40">{`#${rank}`}</span>
         )}

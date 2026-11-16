@@ -22,11 +22,12 @@ import { ExternalLink, InternalLink } from '@/components/links'
 import { ReadinessPillCard } from '@/components/readiness-pill-card'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
+import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { formatGovType } from '@/lib/warera/gov-type'
-import { wareraUrl } from '@/lib/warera/urls'
 
+import { wareraUrl } from '@/lib/warera/urls'
 import { CountryTables } from './country-tables'
 
 interface PageProps {
@@ -138,17 +139,17 @@ export default async function CountryDetailPage({ params }: PageProps) {
       >
         <FactRow>
           <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{citizenPage.total.toLocaleString()}</span>
+            <span className="text-foreground font-medium">{formatNumber(citizenPage.total)}</span>
             {' '}
             citizens
           </span>
           <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{c.musCount.toLocaleString()}</span>
+            <span className="text-foreground font-medium">{formatNumber(c.musCount)}</span>
             {' '}
             MUs
           </span>
           <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{c.partyCount.toLocaleString()}</span>
+            <span className="text-foreground font-medium">{formatNumber(c.partyCount)}</span>
             {' '}
             parties
           </span>

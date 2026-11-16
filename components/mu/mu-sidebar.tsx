@@ -14,6 +14,7 @@ import { EmptyDash } from '@/components/empty-dash'
 import { ExternalLink } from '@/components/links'
 import { ReadinessRows } from '@/components/readiness-pill-card'
 import { UserHoverCard } from '@/components/user-hover-card'
+import { formatNumber } from '@/lib/format'
 import { classifyWarShare } from '@/lib/skills/classify'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -62,7 +63,7 @@ export function MUSidebar({ mu, refresh }: { mu: MURow, refresh: ReactNode }) {
                 )
               : <EmptyDash />}
           </Fact>
-          <Fact label="Members">{mu.memberCount.toLocaleString()}</Fact>
+          <Fact label="Members">{formatNumber(mu.memberCount)}</Fact>
           <Fact label="Headquarters"><Level value={mu.headquartersLevel} /></Fact>
           <Fact label="Dormitories"><Level value={mu.dormitoriesLevel} /></Fact>
         </dl>

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Flag } from '@/components/flag'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { formatNumber } from '@/lib/format'
 
 interface Props {
   count: number
@@ -52,7 +53,7 @@ export function BattleCountBadge({ count, countryId, battles }: Props) {
         title={summary}
       >
         <Swords className="size-3" />
-        {count.toLocaleString()}
+        {formatNumber(count)}
       </Badge>
     )
   }
@@ -65,7 +66,7 @@ export function BattleCountBadge({ count, countryId, battles }: Props) {
     >
       <Badge className="bg-red-500/15 text-red-800 gap-0.5 hover:bg-red-500/25 dark:text-red-300">
         <Swords className="size-3" />
-        {count.toLocaleString()}
+        {formatNumber(count)}
       </Badge>
     </Link>
   )

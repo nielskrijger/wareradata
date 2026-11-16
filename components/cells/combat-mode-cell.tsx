@@ -9,6 +9,7 @@ import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
+import { formatNumber } from '@/lib/format'
 
 interface Props {
   mode: CombatMode
@@ -122,9 +123,9 @@ function Footer({ mode, warPointsRank, ecoPointsRank }: {
 }) {
   let line: string | null = null
   if (mode === 'war' && warPointsRank != null) {
-    line = `#${warPointsRank.toLocaleString()} most-invested fighter`
+    line = `#${formatNumber(warPointsRank)} most-invested fighter`
   } else if (mode === 'eco' && ecoPointsRank != null) {
-    line = `#${ecoPointsRank.toLocaleString()} most-invested economist`
+    line = `#${formatNumber(ecoPointsRank)} most-invested economist`
   }
 
   if (!line) {

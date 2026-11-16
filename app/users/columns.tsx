@@ -28,6 +28,7 @@ import { InfoTooltip } from '@/components/info-tooltip'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { UserHoverCard } from '@/components/user-hover-card'
+import { formatNumber } from '@/lib/format'
 
 export type { UserRow }
 
@@ -67,7 +68,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         cell: ({ row }) => {
           const ppd = row.original.pointsPerDay
           if (ppd !== null) {
-            return ppd.toLocaleString()
+            return formatNumber(ppd)
           }
 
           const created = row.original.createdAt

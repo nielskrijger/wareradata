@@ -7,6 +7,7 @@ import { parseAsString, parseAsStringEnum, useQueryState, useQueryStates } from 
 
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 
+import { formatNumber } from '@/lib/format'
 import { BattlesTable } from './battles-table'
 import { activeBattleColumns, finishedBattleColumns } from './columns'
 
@@ -43,7 +44,7 @@ export function BattleTabs({ active, finished }: Props) {
   return (
     <Tabs value={tab} onValueChange={value => selectTab(value as Tab)}>
       <TabsList>
-        <TabsTab value="active">{`Active (${active.total.toLocaleString()})`}</TabsTab>
+        <TabsTab value="active">{`Active (${formatNumber(active.total)})`}</TabsTab>
         <TabsTab value="finished">Finished</TabsTab>
       </TabsList>
 

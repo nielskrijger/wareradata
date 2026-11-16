@@ -18,11 +18,12 @@ import { StatCardGrid } from '@/components/detail/stat-card-grid'
 import { StrategicBonusCard } from '@/components/detail/strategic-bonus-card'
 import { ExternalLink } from '@/components/links'
 import { getSnapshot } from '@/lib/cache/memory'
+import { formatDecimal, formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { schemeRgb } from '@/lib/warera/color-schemes'
-import { wareraUrl } from '@/lib/warera/urls'
 
+import { wareraUrl } from '@/lib/warera/urls'
 import { MembersTable } from './members-table'
 
 interface PageProps {
@@ -131,7 +132,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
             countries
           </span>
           <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{citizenPage.total.toLocaleString()}</span>
+            <span className="text-foreground font-medium">{formatNumber(citizenPage.total)}</span>
             {' '}
             citizens
           </span>
@@ -154,7 +155,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
             {
               label: 'Current',
               value: a.development,
-              display: a.development !== null ? a.development.toFixed(1) : undefined,
+              display: formatDecimal(a.development),
               range: ranges.development,
               heat: 'median',
               rank: a.developmentRank,
@@ -162,7 +163,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
             {
               label: 'Core',
               value: a.coreDevelopment,
-              display: a.coreDevelopment !== null ? a.coreDevelopment.toFixed(1) : undefined,
+              display: formatDecimal(a.coreDevelopment),
               range: ranges.coreDevelopment,
               heat: 'median',
               rank: a.coreDevelopmentRank,
@@ -170,7 +171,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
             {
               label: 'Average',
               value: a.averageDevelopment,
-              display: a.averageDevelopment !== null ? a.averageDevelopment.toFixed(1) : undefined,
+              display: formatDecimal(a.averageDevelopment),
               range: ranges.averageDevelopment,
               heat: 'median',
               rank: a.averageDevelopmentRank,

@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { EMPTY } from '@/lib/format'
+import { EMPTY, formatDecimal, formatNumber } from '@/lib/format'
 import { computeRanges } from '@/lib/query'
 
 interface Props {
@@ -78,7 +78,7 @@ export function MembersTable({ alliance: a }: Props) {
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   <HeatCell value={m.coreDevelopment} range={ranges.coreDevelopment} mode="median">
-                    {m.coreDevelopment.toFixed(1)}
+                    {formatDecimal(m.coreDevelopment)}
                   </HeatCell>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-right text-xs tabular-nums">
@@ -86,13 +86,13 @@ export function MembersTable({ alliance: a }: Props) {
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   <HeatCell value={m.averageDevelopment} range={ranges.averageDevelopment} mode="median">
-                    {m.averageDevelopment.toFixed(1)}
+                    {formatDecimal(m.averageDevelopment)}
                   </HeatCell>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {m.activePopulation === null ? <EmptyDash /> : (
                     <HeatCell value={m.activePopulation} range={ranges.activePopulation} mode="ramp">
-                      {m.activePopulation.toLocaleString()}
+                      {formatNumber(m.activePopulation)}
                     </HeatCell>
                   )}
                 </TableCell>

@@ -21,9 +21,10 @@ import { SquadMap } from '@/components/mu/squad-map'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { WAR_COLOR } from '@/components/war-eco-colors'
 import { getSnapshot } from '@/lib/cache/memory'
+import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-import { firstPage } from '@/lib/query'
 
+import { firstPage } from '@/lib/query'
 import { requestMuRefresh } from './actions'
 
 interface PageProps {
@@ -111,7 +112,7 @@ export default async function MUDetailPage({ params }: PageProps) {
         <Kpi
           label="Points"
           icon={<Trophy />}
-          value={mu.totalPoints.toLocaleString()}
+          value={formatNumber(mu.totalPoints)}
           rank={mu.totalPointsRank}
           total={total}
         />
@@ -132,8 +133,8 @@ export default async function MUDetailPage({ params }: PageProps) {
         <Kpi
           label="Members"
           icon={<Users />}
-          value={mu.memberCount.toLocaleString()}
-          sub={mu.avgPoints != null ? `${mu.avgPoints.toLocaleString()} pts each` : undefined}
+          value={formatNumber(mu.memberCount)}
+          sub={mu.avgPoints != null ? `${formatNumber(mu.avgPoints)} pts each` : undefined}
           rank={mu.memberCountRank}
           total={total}
         />

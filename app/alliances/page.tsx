@@ -6,9 +6,10 @@ import { NoDataPage } from '@/components/layout/no-data-page'
 
 import { PageShell } from '@/components/layout/page-shell'
 import { getSnapshot } from '@/lib/cache/memory'
+import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-import { firstPage } from '@/lib/query'
 
+import { firstPage } from '@/lib/query'
 import { AlliancesTable } from './alliances-table'
 
 export const metadata: Metadata = pageMetadata({
@@ -30,7 +31,7 @@ export default async function AlliancesPage() {
   return (
     <PageShell
       title="Alliances"
-      subtitle={`All ${initial.total.toLocaleString()} alliances in Warera.`}
+      subtitle={`All ${formatNumber(initial.total)} alliances in Warera.`}
     >
       <AlliancesTable initial={initial} />
     </PageShell>

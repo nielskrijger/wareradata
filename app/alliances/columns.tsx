@@ -15,6 +15,7 @@ import {
   combatModeColumn,
   compactNumberColumn,
   dateColumn,
+  decimalColumn,
   gearColumn,
   localeNumberColumn,
   percentBarColumn,
@@ -120,40 +121,18 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
         meta: { width: 220 },
       },
       dateColumn<AllianceRow>('createdAt', 'Founded'),
-      {
-        accessorKey: 'development',
-        header: 'Current Dev',
-        cell: ({ row }) =>
-          row.original.development !== null ? row.original.development.toFixed(1) : null,
-        sortDescFirst: true,
-        meta: {
-          heat: 'median',
-          align: 'right',
-          width: 150,
-          tooltip: 'Combined development of the regions the members currently hold; drives the tier.',
-        },
-      },
-      {
-        accessorKey: 'coreDevelopment',
-        header: 'Core Dev',
-        cell: ({ row }) =>
-          row.original.coreDevelopment !== null ? row.original.coreDevelopment.toFixed(1) : null,
-        sortDescFirst: true,
-        meta: {
-          heat: 'median',
-          align: 'right',
-          width: 115,
-          tooltip: 'Combined development of the members’ core (original) regions.',
-        },
-      },
-      {
-        accessorKey: 'averageDevelopment',
-        header: 'Avg Dev',
-        cell: ({ row }) =>
-          row.original.averageDevelopment !== null ? row.original.averageDevelopment.toFixed(1) : null,
-        sortDescFirst: true,
-        meta: { heat: 'median', align: 'right', width: 110, tooltip: '(core + current development) / 2' },
-      },
+      decimalColumn<AllianceRow>('development', 'Current Dev', {
+        width: 150,
+        tooltip: 'Combined development of the regions the members currently hold; drives the tier.',
+      }),
+      decimalColumn<AllianceRow>('coreDevelopment', 'Core Dev', {
+        width: 115,
+        tooltip: 'Combined development of the members’ core (original) regions.',
+      }),
+      decimalColumn<AllianceRow>('averageDevelopment', 'Avg Dev', {
+        width: 110,
+        tooltip: '(core + current development) / 2',
+      }),
       tierColumn<AllianceRow>('developmentTier'),
     ],
     combat: [

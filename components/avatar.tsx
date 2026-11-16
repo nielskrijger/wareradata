@@ -41,8 +41,10 @@ export function Avatar({ countryCode, ...props }: Props) {
     return <AvatarImage {...props} />
   }
 
-  // Half the avatar's width, at the flag's 4:3 ratio.
-  const flagWidth = Math.round(props.size / 2)
+  // Just over half the avatar's width, at the flag's 4:3 ratio.
+  const flagWidth = Math.round(props.size * 0.54)
+  const flagHeight = Math.round(flagWidth * 0.75)
+  const flagLeft = -Math.round(props.size / 5)
 
   return (
     <span className="relative inline-flex shrink-0">
@@ -52,7 +54,7 @@ export function Avatar({ countryCode, ...props }: Props) {
         className="rounded-[1px] shadow-[0_0_0_1px_var(--card)]"
         // Inline because flag-icons' unlayered `.fi { position: relative }`
         // beats Tailwind's layered utilities.
-        style={{ position: 'absolute', left: -4, bottom: -1, width: flagWidth, height: Math.round(flagWidth * 0.75) }}
+        style={{ position: 'absolute', left: flagLeft, bottom: -1, width: flagWidth, height: flagHeight }}
       />
     </span>
   )

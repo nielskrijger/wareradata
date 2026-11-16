@@ -1,4 +1,4 @@
-import { Avatar } from '@/components/avatar'
+import { TableAvatar } from '@/components/cells/table-avatar'
 import { EmptyDash } from '@/components/empty-dash'
 import { InternalLink } from '@/components/links'
 
@@ -53,7 +53,7 @@ export function MUCell({ muName, muId, avatarUrl, bold, countryCode }: Props) {
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Avatar src={avatarUrl} name={muName} size={22} countryCode={countryCode} />
+      <TableAvatar src={avatarUrl} name={muName} countryCode={countryCode} />
       {link}
     </div>
   )

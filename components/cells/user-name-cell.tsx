@@ -1,4 +1,4 @@
-import { Avatar } from '@/components/avatar'
+import { TableAvatar } from '@/components/cells/table-avatar'
 import { InternalLink } from '@/components/links'
 
 interface Props {
@@ -27,7 +27,7 @@ export function UserNameCell({ userId, name, avatarUrl, colorScheme, countryCode
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Avatar src={avatarUrl} name={name} size={22} colorScheme={colorScheme} countryCode={countryCode} />
+      <TableAvatar src={avatarUrl} name={name} colorScheme={colorScheme} countryCode={countryCode} />
       {userId ? (
         <InternalLink href={`/users/${userId}`} bold className="truncate">
           {name}

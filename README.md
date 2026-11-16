@@ -128,7 +128,8 @@ bundle. It loads the snapshot, then starts two loops without awaiting them:
   baseline. On error it logs and retries after a short pause.
 - **Factory loop** ([lib/warera/scrape-factories.ts](lib/warera/scrape-factories.ts)):
   walks every factory owner's companies and employees on its own budget and
-  writes `factories.ndjson`.
+  writes `factories.ndjson`. A pass takes hours, so it saves its progress and a
+  restart resumes it rather than starting over.
 
 ### Refresh buttons
 
@@ -148,6 +149,8 @@ Everything lives under `DATA_DIR`, which is a mounted volume in production.
 | `users.ndjson`                    | One `User` per line (~84 MB).                                                                                                       |
 | `equipment.ndjson`                | One `{ userId, equipment }` per line.                                                                                               |
 | `factories.ndjson`                | One `{ userId, rows }` per line, from the factory loop.                                                                             |
+| `factories.partial.ndjson`        | The factory pass in progress, renamed over `factories.ndjson` when it completes.                                                    |
+| `factories.cursor`                | The last owner id the pass in progress has written.                                                                                 |
 | `archive/battles-YYYY-MM-DD.json` | Battles that finished on that UTC day.                                                                                              |
 | `archive/seen.json`               | Archived battle ids, for deduplication.                                                                                             |
 | `archive/index.json`              | Days available in the archive.                                                                                                      |

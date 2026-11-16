@@ -65,6 +65,20 @@ export function factoriesNdjsonPath(): string {
 }
 
 /**
+ * The pass in progress, renamed over {@link factoriesNdjsonPath} when it completes.
+ */
+export function factoriesPartialPath(): string {
+  return path.join(dataDir(), 'factories.partial.ndjson')
+}
+
+/**
+ * The last owner id the pass in progress has written, so a restart resumes after it.
+ */
+export function factoriesCursorPath(): string {
+  return path.join(dataDir(), 'factories.cursor')
+}
+
+/**
  * Streams the factory file line by line, invoking `onUser` per record.
  */
 export function streamFactoryUsers(onUser: (line: FactoryUserLine) => void): Promise<void> {

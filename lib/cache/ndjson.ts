@@ -38,14 +38,10 @@ export async function streamNdjson<T>(filePath: string, onRecord: (record: T) =>
 }
 
 /**
- * Streams into a temp file and renames it over `filePath`, so a crashed write
- * leaves the previous file intact. `produce` gets a backpressure-aware `write`,
- * for producers that can't expose a plain iterable (the factory scrape).
+ * Writes one JSON line per record to a temp file and renames it over
+ * `filePath`, so a crashed write leaves the previous file intact.
  */
-export async function writeFileAtomic(
-  filePath: string,
-  produce: (write: (chunk: string) => Promise<void>) => Promise<void>,
-): Promise<void> {
+export async function writeNdjson<T>(filePath: string, records: Iterable<T>): Promise<void> {
   // The main scrape writes these before snapshot.json, so on a cold volume the
   // data dir may not exist yet.
   await mkdir(path.dirname(filePath), { recursive: true })
@@ -53,14 +49,13 @@ export async function writeFileAtomic(
   const tmpPath = `${filePath}.tmp.${process.pid}.${Date.now()}`
   const out = createWriteStream(tmpPath, { encoding: 'utf8' })
 
-  async function write(chunk: string): Promise<void> {
-    if (!out.write(chunk)) {
-      await once(out, 'drain')
-    }
-  }
-
   try {
-    await produce(write)
+    for (const record of records) {
+      if (!out.write(`${JSON.stringify(record)}\n`)) {
+        await once(out, 'drain')
+      }
+    }
+
     out.end()
     await once(out, 'finish')
     await rename(tmpPath, filePath)
@@ -69,15 +64,4 @@ export async function writeFileAtomic(
     await unlink(tmpPath).catch(() => undefined)
     throw err
   }
-}
-
-/**
- * Writes one JSON line per record, atomically.
- */
-export function writeNdjson<T>(filePath: string, records: Iterable<T>): Promise<void> {
-  return writeFileAtomic(filePath, async (write) => {
-    for (const record of records) {
-      await write(`${JSON.stringify(record)}\n`)
-    }
-  })
 }

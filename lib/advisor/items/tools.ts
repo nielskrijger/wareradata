@@ -1,18 +1,18 @@
 import type { EmployeeLike } from '../model'
 import type { AdvisorCompany, AdvisorInput, TodoItem } from '../types'
 
+import { rarityLabel } from '@/lib/gear/rarity'
 import {
   basePerHour,
   HOURS_PER_DAY,
 } from '../model'
-import { firstName, fmt, MIN_GAIN_PER_DAY, titleAt, toolPct } from '../shared'
 
-const TOOL_RARITY = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']
+import { firstName, fmt, MIN_GAIN_PER_DAY, titleAt, toolPct } from '../shared'
 
 function toolLabel(code: string): string {
   const m = /^([a-z]+)(\d)$/i.exec(code)
 
-  return m ? `${TOOL_RARITY[Number(m[2]) - 1] ?? ''} ${m[1]}`.trim() : code
+  return m ? `${rarityLabel(Number(m[2])).toLowerCase()} ${m[1]}` : code
 }
 
 interface Holder {

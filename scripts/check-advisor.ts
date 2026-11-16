@@ -47,7 +47,7 @@ async function main() {
   const result = buildAdvice(advisorInputFromData(data, gameConfig, prices))
   for (const item of result.items) {
     const gain = (item.gainPerDay?.toFixed(2) ?? '-').padStart(7)
-    console.info(`${gain}  ${String(item.energy).padStart(3)}e  ${item.title}\n          ${item.why}`)
+    console.info(`${gain}  ${String(item.energy ?? '-').padStart(3)}e  ${item.title}\n          ${item.why}`)
   }
 
   for (const s of result.skipped) {

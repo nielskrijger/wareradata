@@ -314,7 +314,7 @@ function RefreshButton() {
       disabled={pending}
       onClick={() => startTransition(() => router.refresh())}
     >
-      <RefreshCw aria-hidden className={cn(pending && 'animate-spin')} />
+      <RefreshCw aria-hidden className={cn('size-3.5', pending && 'animate-spin')} />
       {pending ? 'Refreshing' : 'Refresh'}
     </Button>
   )

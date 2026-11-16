@@ -20,6 +20,7 @@ import {
 } from '@/components/data-table/column-factories'
 import {
   casesColumns,
+  employeesColumns,
   factoriesColumns,
   pointsColumns,
   premiumColumns,
@@ -158,6 +159,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
       }),
     ],
     factories: factoriesColumns<CountryRow>('citizens'),
+    employees: employeesColumns<CountryRow>('citizens'),
     premium: premiumColumns<CountryRow>(),
     cases: casesColumns<CountryRow>(),
   },

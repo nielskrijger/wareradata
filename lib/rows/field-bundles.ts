@@ -82,6 +82,11 @@ export const FACTORY_FIELD_ALIASES: FieldAliases = {
   workers: 'factoryWorkers',
   employees: 'factoryWorkers',
   efficiency: 'factoryEfficiencyPct',
+  payroll: 'factoryPayrollPerDay',
+  avgPp: 'employeeAvgPpPerDay',
+  avgNet: 'employeeAvgNetPerDay',
+  happiness: 'employeeAvgHappiness',
+  retiring: 'employeeRetiringSoon',
 }
 
 /**

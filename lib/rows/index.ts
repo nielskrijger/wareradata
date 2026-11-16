@@ -323,6 +323,21 @@ export interface GroupFactoryStats {
   factoryWorkersRank: number | null
   factoryEfficiencyPct: number | null
   factoryEfficiencyRank: number | null
+  factoryPayrollPerDay: number
+  factoryPayrollPerDayRank: number | null
+
+  /**
+   * Per-employee averages pooled over every employee of members whose roster is
+   * known, so a big employer weighs in proportionally. Null when none is.
+   */
+  employeeAvgPpPerDay: number | null
+  employeeAvgPpPerDayRank: number | null
+  employeeAvgNetPerDay: number | null
+  employeeAvgNetPerDayRank: number | null
+  employeeAvgHappiness: number | null
+  employeeAvgHappinessRank: number | null
+  employeeRetiringSoon: number
+  employeeRetiringSoonRank: number | null
 }
 
 /**

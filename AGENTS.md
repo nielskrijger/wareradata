@@ -9,3 +9,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## Comments describe the present
 
 Code comments and docs in the repo describe what the code does now. Don't reference past state, earlier choices or decisions ("used to", "was switched from", "instead of the old", "since X changed"). That history belongs in commit messages and PRs.
+
+## Keep comments short
+
+Say what the code does in as few words as possible, usually one line. Leave out measurements, background and anything the code already makes obvious.

@@ -20,6 +20,8 @@
   --color-heat-green-text: var(--heat-green-text);
   --color-heat-slate: var(--heat-slate);
   --color-heat-slate-text: var(--heat-slate-text);
+  --color-heat-red: var(--heat-red);
+  --color-engine: var(--engine);
   --color-table-surface: var(--table-surface);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -83,6 +85,9 @@
      darker for text. */
   --heat-slate: #a3a3a3;
   --heat-slate-text: #737373;
+  /* Factory engine slate-blue, apart from the employee greens; mid-tone so
+     one value works in both themes. */
+  --engine: oklch(0.55 0.06 250);
   /* How much heatTextColor darkens the green end of the vitals ramp. */
   --heat-text-dim: 0.14;
   /* Gear rarity, common → mythic. Legendary keeps the lighter wealth gold. */

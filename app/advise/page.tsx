@@ -8,7 +8,10 @@ import { Paragraph } from '@/components/paragraph'
 import { buildAdvice } from '@/lib/advisor/build'
 import { advisorInputFromData } from '@/lib/advisor/input'
 import { getSnapshot } from '@/lib/cache/memory'
+import { cn } from '@/lib/utils'
 import { getAdviceData, getItemPrices } from '@/lib/warera/api'
+
+import { ADVISE_WIDTH } from './width'
 
 export const metadata: Metadata = {
   title: 'Advise',
@@ -29,7 +32,7 @@ export default async function AdvisePage() {
   const result = await loadAdvice()
 
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8 sm:px-8">
+    <main className={cn('space-y-6 px-6 py-8 sm:px-8', ADVISE_WIDTH)}>
       {result
         ? <AdviseTodo result={result} />
         : (

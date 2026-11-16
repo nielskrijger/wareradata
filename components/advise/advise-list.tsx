@@ -7,6 +7,7 @@ import { Panel } from '@/components/panel'
 import { AdviseTable } from './advise-table'
 import { AllSet, MoneyCard } from './cards'
 import { sum } from './format'
+import { Gain } from './gain'
 import { RefreshButton } from './refresh-button'
 import { splitBySize } from './rows'
 import { ShareBar } from './share-bar'
@@ -17,13 +18,14 @@ interface Props {
 }
 
 /**
- * The advice, most profitable first: a bar of where the gain comes from, then
- * a table of the big wins with the small stuff folded away below.
+ * The advice, most profitable first: the total, a bar of where it comes from,
+ * then a table of the big wins with the small stuff folded away below.
  */
 export function AdviseList({ result, user }: Props) {
   const money = result.items.find(i => i.kind === 'money')
   const { big, small } = splitBySize(result.items.filter(i => i.kind !== 'money'))
   const total = sum(big, 'gainPerDay') + sum(small, 'gainPerDay')
+  const count = big.length + small.length
 
   return (
     <div className="flex flex-col gap-5">
@@ -31,10 +33,11 @@ export function AdviseList({ result, user }: Props) {
         <div className="flex flex-col gap-1">
           <h1 className="font-brand text-4xl leading-none tracking-wide">Advise</h1>
           <p className="text-muted-foreground text-sm">
-            Best next actions for
-            {' '}
+            {total > 0 ? `${count} ${count === 1 ? 'action' : 'actions'} for ` : 'Best next actions for '}
             <Link href={`/users/${user.id}`} className="text-fire hover:underline">{user.name}</Link>
-            , priced at today&apos;s market.
+            {total > 0
+              ? <>, together worth <Gain value={total} perDay /> at today&apos;s market.</>
+              : <>, priced at today&apos;s market.</>}
           </p>
         </div>
         <RefreshButton />
@@ -46,7 +49,7 @@ export function AdviseList({ result, user }: Props) {
 
       {money && <MoneyCard item={money} />}
 
-      {(big.length > 0 || small.length > 0) && (
+      {count > 0 && (
         <AdviseTable big={big} small={small} total={total} energy={result.energy} />
       )}
 

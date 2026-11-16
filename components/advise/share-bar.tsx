@@ -3,7 +3,8 @@ import type { AdviseRow } from './rows'
 import { Panel } from '@/components/panel'
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { GAIN, gain, KIND, pct, sum, things } from './format'
+import { gain, KIND, pct, sum, things } from './format'
+import { Gain } from './gain'
 import { SMALL_GAIN_PER_DAY } from './rows'
 
 /**
@@ -19,17 +20,7 @@ export function ShareBar({ big, small, total }: { big: AdviseRow[], small: Advis
   return (
     <Panel as="section" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold">
-          Where the
-          {' '}
-          <span className="font-mono" style={{ color: GAIN }}>
-            {gain(total)}
-            {' '}
-            g/day
-          </span>
-          {' '}
-          comes from
-        </h2>
+        <h2 className="text-muted-foreground text-sm font-medium">By action</h2>
         <p className="text-muted-foreground text-sm">
           {topText}
           {small.length > 0 && ` The striped end is ${things(small.length)}.`}
@@ -107,7 +98,7 @@ function Slice({ title, gainPerDay, share, background, label }: {
       </PopoverTrigger>
       <PopoverContent side="top" sideOffset={6} className="w-auto max-w-64 px-3 py-2 text-xs">
         <span className="block font-semibold">{title}</span>
-        <span className="font-mono" style={{ color: GAIN }}>{`${gain(gainPerDay)} g/day`}</span>
+        <Gain value={gainPerDay} perDay />
         {` · ${pct(share)} of the total`}
       </PopoverContent>
     </Popover>

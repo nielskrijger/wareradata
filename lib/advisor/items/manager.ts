@@ -65,5 +65,6 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
     title: `Post a manager job at ${c.name}`,
     why: `A manager with ${pct / RULES.managementPctPerPoint} Management adds +${pct}% here. At the market's ${fmt(input.managerMarketWage, 3)} an hour that nets this much a day.`,
     gainPerDay: net,
+    group: { key: 'manager-job', short: c.name },
   }]
 }

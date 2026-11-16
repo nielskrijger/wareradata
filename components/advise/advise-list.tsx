@@ -1,126 +1,118 @@
 'use client'
 
-import type { LucideIcon } from 'lucide-react'
+import type { AdviseRow } from './rows'
 import type { AdvisorResult, TodoItem } from '@/lib/advisor/types'
-import {
-  ArrowLeftRight,
-  GraduationCap,
-  Hammer,
-  RefreshCw,
-  TriangleAlert,
-  UserCog,
-  UserMinus,
-  UserPlus,
-  Wrench,
-} from 'lucide-react'
+import { Check, ChevronRight, RefreshCw, TriangleAlert } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 
-import { goldSigned } from '@/components/factories/format'
 import { ProgressRing } from '@/components/progress-ring'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+import { SMALL_GAIN_PER_DAY, splitBySize } from './rows'
+
 interface Props {
   result: AdvisorResult
+  user: { id: string, name: string }
 }
 
-const KIND: Record<TodoItem['kind'], { label: string, color: string, icon: LucideIcon }> = {
-  money: { label: 'Money', color: 'var(--heat-red)', icon: TriangleAlert },
-  item: { label: 'Production', color: 'var(--heat-gold)', icon: ArrowLeftRight },
-  manager: { label: 'Manager', color: 'var(--heat-purple)', icon: UserCog },
-  train: { label: 'Training', color: 'var(--fire)', icon: GraduationCap },
-  tool: { label: 'Tools', color: 'var(--heat-teal)', icon: Wrench },
-  employee: { label: 'Staff', color: 'var(--heat-blue)', icon: UserMinus },
-  hire: { label: 'Hiring', color: 'var(--heat-green)', icon: UserPlus },
-  work: { label: 'Work', color: 'var(--heat-slate)', icon: Hammer },
+const KIND: Record<TodoItem['kind'], { label: string, color: string }> = {
+  money: { label: 'Money', color: 'var(--heat-red)' },
+  item: { label: 'Production', color: 'var(--heat-gold)' },
+  manager: { label: 'Manager', color: 'var(--heat-purple)' },
+  train: { label: 'Training', color: 'var(--fire)' },
+  tool: { label: 'Tools', color: 'var(--heat-teal)' },
+  employee: { label: 'Staff', color: 'var(--heat-blue)' },
+  hire: { label: 'Hiring', color: 'var(--heat-green)' },
+  work: { label: 'Work', color: 'var(--heat-slate)' },
 }
 
 const GAIN = 'var(--heat-green)'
 
-function tint(color: string, pct: number): string {
-  return `color-mix(in oklch, ${color} ${pct}%, transparent)`
+/**
+ * Shared by the header and every row, so the columns line up.
+ */
+const COLUMNS = 'md:grid-cols-[28px_minmax(0,1fr)_110px_70px_140px]'
+
+function gain(value: number): string {
+  return `+${value.toFixed(2)}`
 }
 
-function perDay(value: number): string {
-  return `${goldSigned(value, 2)}/day`
+function pct(value: number): string {
+  return `${Math.round(value * 100)}%`
 }
 
-function hours(value: number): string {
-  return Number.isFinite(value) ? `${value.toFixed(1)} h` : 'never'
+function sum(rows: AdviseRow[], key: 'gainPerDay' | 'energy'): number {
+  return rows.reduce((s, r) => s + r[key], 0)
 }
 
 /**
- * The ranked advice. Each row's green bar is its gain next to the best one.
+ * The advice, most profitable first: a bar of where the gain comes from, then
+ * a table of the big wins with the small stuff folded away below.
  */
-export function AdviseList({ result }: Props) {
-  const { energy } = result
+export function AdviseList({ result, user }: Props) {
   const money = result.items.find(i => i.kind === 'money')
-  const items = result.items.filter(i => i.kind !== 'money')
-  const total = items.reduce((s, i) => s + (i.gainPerDay ?? 0), 0)
-  const best = Math.max(0, ...items.map(i => i.gainPerDay ?? 0))
-  const needed = items.reduce((s, i) => s + (i.energy ?? 0), 0)
-  const short = Math.max(0, needed - energy.current)
+  const { big, small } = splitBySize(result.items.filter(i => i.kind !== 'money'))
+  const total = sum(big, 'gainPerDay') + sum(small, 'gainPerDay')
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div
-          className="flex flex-col justify-center gap-2 rounded-xl border p-5"
-          style={{
-            background: `linear-gradient(135deg, ${tint('var(--fire)', 22)}, var(--card) 70%)`,
-            borderColor: tint('var(--fire)', 40),
-          }}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="font-brand text-5xl leading-none tracking-wide">What to do next</h1>
-            <RefreshButton />
-          </div>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="font-brand text-4xl leading-none tracking-wide">Advise</h1>
           <p className="text-muted-foreground text-sm">
-            Do all of it and you earn
+            Best next actions for
             {' '}
-            <strong className="font-mono" style={{ color: GAIN }}>{perDay(total)}</strong>
-            {' '}
-            more, priced at today&apos;s market. Refresh after you act to see what&apos;s next.
+            <Link href={`/users/${user.id}`} className="text-fire hover:underline">{user.name}</Link>
+            , priced at today&apos;s market.
           </p>
         </div>
-        <RingCard
-          label="Energy"
-          value={`${energy.current.toFixed(0)} of ${energy.cap}`}
-          sub={short > 0
-            ? `The list needs ${needed}, ${short} more than you have`
-            : `+${energy.regenPerHour}/h · full in ${hours(energy.hoursToFull)}`}
-          center={energy.current.toFixed(0)}
-          fraction={energy.cap > 0 ? energy.current / energy.cap : 0}
-          color="var(--fire)"
-        />
+        <RefreshButton />
       </header>
 
-      {money && <MoneyBanner item={money} />}
+      {total > 0
+        ? <ShareBar big={big} small={small} total={total} />
+        : <AllSet />}
 
-      {items.length === 0
-        ? (
-            <p className="text-muted-foreground bg-card rounded-xl border px-4 py-6 text-sm">
-              Nothing worth doing right now.
-            </p>
-          )
-        : (
-            <ol className="flex flex-col gap-2">
-              {items.map((item, i) => (
-                <Row
-                  key={item.id}
-                  item={item}
-                  rank={i + 1}
-                  share={best > 0 ? (item.gainPerDay ?? 0) / best : 0}
-                />
-              ))}
-            </ol>
+      <div className="grid gap-3 md:grid-cols-2">
+        <EnergyCard energy={result.energy} needed={sum(big, 'energy')} />
+        {money && <MoneyCard item={money} />}
+      </div>
+
+      {(big.length > 0 || small.length > 0) && (
+        <div className="bg-card overflow-hidden rounded-xl border text-sm">
+          <div className={cn(
+            'text-muted-foreground bg-muted/40 hidden items-center gap-3 px-4 py-2 text-xs font-medium md:grid',
+            COLUMNS,
           )}
+          >
+            <span>#</span>
+            <span>Action</span>
+            <span>Kind</span>
+            <span className="text-right">Energy</span>
+            <span className="text-right">Gain/day · running</span>
+          </div>
+          <ol>
+            {big.map((row, i) => (
+              <Row
+                key={row.id}
+                row={row}
+                rank={i + 1}
+                running={sum(big.slice(0, i + 1), 'gainPerDay') / total}
+              />
+            ))}
+          </ol>
+          {small.length > 0 && (
+            <SmallStuff rows={small} start={big.length + 1} open={big.length === 0} />
+          )}
+        </div>
+      )}
 
       {result.skipped.length > 0 && (
         <aside className="bg-card flex flex-col gap-2 rounded-xl border p-4">
-          <h2 className="text-sm font-semibold">Not worth it today</h2>
+          <h2 className="text-sm font-semibold">Checked and skipped</h2>
           <ul className="text-muted-foreground flex flex-col gap-1.5 text-sm">
             {result.skipped.map(s => (
               <li key={s.title}>
@@ -136,47 +128,156 @@ export function AdviseList({ result }: Props) {
   )
 }
 
-function Row({ item, rank, share }: { item: TodoItem, rank: number, share: number }) {
-  const kind = KIND[item.kind]
-  const Icon = kind.icon
+/**
+ * Each big win as a slice of the total, small stuff as one striped slice.
+ */
+function ShareBar({ big, small, total }: { big: AdviseRow[], small: AdviseRow[], total: number }) {
+  const smallGain = sum(small, 'gainPerDay')
+  const top = big.slice(0, 2)
+  const things = (n: number) => `${n} small ${n === 1 ? 'thing' : 'things'}`
+  const topText = top.length > 0
+    ? `The first ${top.length === 1 ? 'action is' : '2 are'} ${pct(sum(top, 'gainPerDay') / total)} of it.`
+    : ''
 
   return (
-    <li className="bg-card relative overflow-hidden rounded-xl border">
-      <div
-        aria-hidden
-        className="absolute inset-y-0 left-0"
-        style={{
-          width: `${Math.round(share * 100)}%`,
-          background: `linear-gradient(90deg, ${tint(GAIN, 20)}, ${tint(GAIN, 4)})`,
-        }}
-      />
-      <div className="relative grid grid-cols-[32px_minmax(0,1fr)] items-center gap-3 px-4 py-3
-        sm:grid-cols-[40px_minmax(0,1fr)_auto]"
-      >
-        <span className="font-brand text-center text-3xl leading-none" style={{ color: 'var(--fire)' }}>{rank}</span>
-        <span className="flex min-w-0 flex-col gap-1">
-          <span className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" style={{ color: kind.color, borderColor: kind.color }}>
-              <Icon aria-hidden />
-              {kind.label}
-            </Badge>
-            <span className="text-sm font-semibold">{item.title}</span>
+    <section className="bg-card flex flex-col gap-3 rounded-xl border p-4 sm:p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-lg font-semibold">
+          Where the
+          {' '}
+          <span className="font-mono" style={{ color: GAIN }}>
+            {gain(total)}
+            {' '}
+            g/day
           </span>
-          <span className="text-muted-foreground text-xs">{item.why}</span>
-        </span>
-        <span className="col-start-2 flex items-baseline gap-3 sm:col-start-auto sm:flex-col sm:items-end sm:gap-0.5">
-          <span className="font-mono text-base tabular-nums sm:text-lg" style={{ color: GAIN }}>
-            {item.gainPerDay != null ? perDay(item.gainPerDay) : 'unpriced'}
-          </span>
-          <span
-            className={cn('text-xs whitespace-nowrap', !item.energy && 'text-muted-foreground')}
-            style={(item.energy ?? 0) > 0 ? { color: 'var(--fire)' } : undefined}
-          >
-            {(item.energy ?? 0) > 0 ? `${item.energy} energy` : 'no energy'}
-          </span>
-        </span>
+          {' '}
+          comes from
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          {topText}
+          {small.length > 0 && ` The striped end is ${things(small.length)}.`}
+        </p>
       </div>
+      <div className="flex h-8 gap-0.5 overflow-hidden rounded-lg">
+        {big.map(row => (
+          <span
+            key={row.id}
+            title={`${row.title}: ${gain(row.gainPerDay)}/day`}
+            className="flex min-w-0 items-center"
+            style={{ flex: row.gainPerDay, background: KIND[row.kind].color }}
+          >
+            {row.gainPerDay / total >= 0.12 && (
+              <span className="truncate px-2 text-xs font-semibold text-black">
+                {row.title}
+                {' · '}
+                {gain(row.gainPerDay)}
+              </span>
+            )}
+          </span>
+        ))}
+        {smallGain > 0 && (
+          <span
+            title={`Small stuff: ${gain(smallGain)}/day`}
+            style={{
+              flex: smallGain,
+              background: 'repeating-linear-gradient(45deg, var(--muted-foreground) 0 2px, transparent 2px 7px)',
+              opacity: 0.45,
+            }}
+          />
+        )}
+      </div>
+    </section>
+  )
+}
+
+function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, running?: number, small?: boolean }) {
+  const kind = KIND[row.kind]
+
+  return (
+    <li className={cn(
+      'grid grid-cols-[28px_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 border-t px-4 py-2.5 first:border-t-0 md:items-center',
+      COLUMNS,
+      small && 'bg-muted/20',
+    )}
+    >
+      <span className="text-muted-foreground font-mono text-xs">{rank}</span>
+      <span className="flex min-w-0 flex-col gap-1">
+        <span className={cn(small ? 'font-medium' : 'font-semibold')}>{row.title}</span>
+        {row.parts.length > 0 && (
+          <span className="flex flex-wrap gap-1.5">
+            {row.parts.map(p => (
+              <span key={p.short} className="bg-muted/60 rounded-md px-1.5 py-0.5 text-xs">
+                {p.short}
+                {' '}
+                <span className="font-mono" style={{ color: GAIN }}>{gain(p.gainPerDay)}</span>
+              </span>
+            ))}
+          </span>
+        )}
+        <span className="text-muted-foreground max-w-[70ch] text-xs">{row.why}</span>
+      </span>
+      <span className="col-start-2 flex items-center gap-1.5 text-xs md:col-start-auto">
+        <span className="size-2 shrink-0 rounded-full" style={{ background: kind.color }} />
+        {kind.label}
+        {row.energy > 0 && (
+          <span className="md:hidden" style={{ color: 'var(--fire)' }}>{` · ${row.energy} energy`}</span>
+        )}
+      </span>
+      <span className="hidden text-right text-xs md:block" style={{ color: 'var(--fire)' }}>
+        {row.energy > 0 ? row.energy : ''}
+      </span>
+      <span className="col-start-2 flex items-baseline gap-3 md:col-start-auto md:justify-end">
+        <span className={cn('font-mono tabular-nums', small ? 'text-sm' : 'text-base')} style={{ color: GAIN }}>
+          {gain(row.gainPerDay)}
+        </span>
+        {running != null && (
+          <span className="text-muted-foreground w-9 text-right font-mono text-xs tabular-nums">{pct(running)}</span>
+        )}
+      </span>
     </li>
+  )
+}
+
+function SmallStuff({ rows, start, open }: { rows: AdviseRow[], start: number, open: boolean }) {
+  return (
+    <details open={open} className="group border-t">
+      <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center
+        justify-between gap-3 px-4 py-3 text-sm [&::-webkit-details-marker]:hidden"
+      >
+        <span className="flex items-center gap-1.5">
+          <ChevronRight aria-hidden className="size-4 transition-transform group-open:rotate-90" />
+          {`${rows.length} small ${rows.length === 1 ? 'thing' : 'things'}, each under ${SMALL_GAIN_PER_DAY} g/day`}
+        </span>
+        <span className="font-mono" style={{ color: GAIN }}>
+          {gain(sum(rows, 'gainPerDay'))}
+          {' '}
+          together
+        </span>
+      </summary>
+      <ol className="border-t">
+        {rows.map((row, i) => <Row key={row.id} row={row} rank={start + i} small />)}
+      </ol>
+    </details>
+  )
+}
+
+function AllSet() {
+  return (
+    <section
+      className="flex flex-col items-center gap-2 rounded-xl border px-6 py-8 text-center"
+      style={{ background: `color-mix(in oklch, ${GAIN} 8%, var(--card))` }}
+    >
+      <span
+        className="flex size-11 items-center justify-center rounded-full"
+        style={{ background: `color-mix(in oklch, ${GAIN} 18%, transparent)`, color: GAIN }}
+      >
+        <Check aria-hidden className="size-5" />
+      </span>
+      <h2 className="text-lg font-semibold">You&apos;re all set</h2>
+      <p className="text-muted-foreground max-w-md text-sm">
+        Nothing pays off right now. Check back after your energy refills or prices move.
+      </p>
+    </section>
   )
 }
 
@@ -200,48 +301,49 @@ function RefreshButton() {
   )
 }
 
-function MoneyBanner({ item }: { item: TodoItem }) {
+function EnergyCard({ energy, needed }: { energy: AdvisorResult['energy'], needed: number }) {
+  const short = Math.max(0, needed - energy.current)
+  const refill = energy.hoursToFull <= 0
+    ? 'full'
+    : Number.isFinite(energy.hoursToFull) ? `full in ${energy.hoursToFull.toFixed(1)} h` : 'not refilling'
+
+  return (
+    <div className="bg-card flex items-center gap-4 rounded-xl border p-4">
+      <ProgressRing fraction={energy.cap > 0 ? energy.current / energy.cap : 0} color="var(--fire)">
+        {energy.current.toFixed(0)}
+      </ProgressRing>
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-muted-foreground text-xs">Energy</span>
+        <span className="text-lg font-semibold tabular-nums">{`${energy.current.toFixed(0)} of ${energy.cap}`}</span>
+        <span className="text-muted-foreground text-xs">
+          {short > 0
+            ? `The big wins need ${needed}, ${short} more than you have · ${refill}`
+            : `+${energy.regenPerHour}/h · ${refill}`}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function MoneyCard({ item }: { item: TodoItem }) {
   const color = KIND.money.color
 
   return (
     <div
       role="alert"
-      className="flex items-center gap-3 rounded-xl border px-4 py-3"
-      style={{ background: tint(color, 12), borderColor: color }}
+      className="flex items-center gap-4 rounded-xl border p-4"
+      style={{ background: `color-mix(in oklch, ${color} 10%, var(--card))`, borderColor: color }}
     >
       <span
-        className="flex size-8 shrink-0 items-center justify-center rounded-full text-black"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full text-black"
         style={{ background: color }}
       >
-        <TriangleAlert aria-hidden className="size-4" />
+        <TriangleAlert aria-hidden className="size-5" />
       </span>
-      <span className="flex flex-col gap-0.5">
+      <span className="flex min-w-0 flex-col gap-0.5">
         <strong className="text-sm font-semibold">{item.title}</strong>
         <span className="text-muted-foreground text-xs">{item.why}</span>
       </span>
-    </div>
-  )
-}
-
-function RingCard({ label, value, valueColor, sub, center, fraction, color }: {
-  label: string
-  value: string
-  valueColor?: string
-  sub: string
-  center: string
-  fraction: number
-  color: string
-}) {
-  return (
-    <div className="bg-card flex items-center gap-4 rounded-xl border p-4">
-      <ProgressRing fraction={fraction} color={color}>{center}</ProgressRing>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <span className="text-muted-foreground text-xs">{label}</span>
-        <span className="text-lg font-semibold tabular-nums" style={valueColor ? { color: valueColor } : undefined}>
-          {value}
-        </span>
-        <span className="text-muted-foreground text-xs">{sub}</span>
-      </div>
     </div>
   )
 }

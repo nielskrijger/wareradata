@@ -1,8 +1,9 @@
 'use client'
 
-import type { Column, Table } from '@tanstack/react-table'
+import type { Column, RowData, Table } from '@tanstack/react-table'
 
 import type { Category } from './column-categories'
+import type { DataTableFeatures } from './features'
 import { Check, ChevronDown, ChevronRight, Minus } from 'lucide-react'
 
 import { useState } from 'react'
@@ -15,7 +16,7 @@ import { CATEGORIES, CATEGORY_META, columnCategory } from './column-categories'
 
 type TriState = 'all' | 'some' | 'none'
 
-function labelOf<TData>(column: Column<TData>): string {
+function labelOf<TData extends RowData>(column: Column<DataTableFeatures, TData>): string {
   const header = column.columnDef.header
 
   return typeof header === 'string' ? header : column.id
@@ -28,7 +29,7 @@ function labelOf<TData>(column: Column<TData>): string {
  * group. Plain "Show all / Hide all" sit on top. The grouping keeps a long
  * column list manageable.
  */
-export function ColumnsMenu<TData>({ table }: { table: Table<TData> }) {
+export function ColumnsMenu<TData extends RowData>({ table }: { table: Table<DataTableFeatures, TData> }) {
   const [open, setOpen] = useState<Set<Category>>(() => new Set())
   const toggleOpen = (category: Category) =>
     setOpen((current) => {
@@ -47,7 +48,7 @@ export function ColumnsMenu<TData>({ table }: { table: Table<TData> }) {
   // toggle rather than being buried in the General group.
   const primary = allColumns[0]?.getCanHide() ? allColumns[0] : null
   const hideable = allColumns.filter(c => c.getCanHide() && c !== primary)
-  const byCategory = new Map<Category, Column<TData>[]>()
+  const byCategory = new Map<Category, Column<DataTableFeatures, TData>[]>()
   for (const column of hideable) {
     const category = columnCategory(column.columnDef)
     const list = byCategory.get(category)

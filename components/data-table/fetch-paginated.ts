@@ -1,3 +1,5 @@
+import type { RowData } from '@tanstack/react-table'
+
 import type { PageRequest, PageResult } from './data-table'
 
 /**
@@ -10,7 +12,7 @@ import type { PageRequest, PageResult } from './data-table'
  * apply it as a locked-in scope the user's input can narrow but never widen
  * past, and a malformed filter can't break out of it.
  */
-export async function fetchPaginated<T>(
+export async function fetchPaginated<T extends RowData>(
   endpoint: string,
   req: PageRequest,
   baseFilter?: string,

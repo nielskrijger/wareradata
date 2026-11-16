@@ -1,6 +1,6 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
+import type { ColumnDef } from '@/components/data-table/features'
 
 import type { UserRow } from '@/lib/rows'
 

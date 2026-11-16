@@ -1,8 +1,8 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
-
 import type { PageRequest, PageResult } from '@/components/data-table/data-table'
+
+import type { ColumnDef } from '@/components/data-table/features'
 import type { BattleRow } from '@/lib/rows'
 
 import { useCallback } from 'react'

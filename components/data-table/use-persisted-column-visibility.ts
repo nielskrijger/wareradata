@@ -1,6 +1,6 @@
 'use client'
 
-import type { Updater, VisibilityState } from '@tanstack/react-table'
+import type { ColumnVisibilityState, Updater } from '@tanstack/react-table'
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
 
@@ -72,17 +72,17 @@ function parseHidden(raw: string | null): string[] {
  */
 export function usePersistedColumnVisibility(
   tableId: string,
-): [VisibilityState, (updater: Updater<VisibilityState>, knownIds: string[]) => void] {
+): [ColumnVisibilityState, (updater: Updater<ColumnVisibilityState>, knownIds: string[]) => void] {
   const key = KEY_PREFIX + tableId
   const raw = useSyncExternalStore(subscribe, () => readRaw(key), () => null)
 
-  const visibility = useMemo<VisibilityState>(
+  const visibility = useMemo<ColumnVisibilityState>(
     () => Object.fromEntries(parseHidden(raw).map(id => [id, false])),
     [raw],
   )
 
-  const setVisibility = useCallback((updater: Updater<VisibilityState>, knownIds: string[]) => {
-    const current: VisibilityState = Object.fromEntries(parseHidden(readRaw(key)).map(id => [id, false]))
+  const setVisibility = useCallback((updater: Updater<ColumnVisibilityState>, knownIds: string[]) => {
+    const current: ColumnVisibilityState = Object.fromEntries(parseHidden(readRaw(key)).map(id => [id, false]))
     const next = typeof updater === 'function' ? updater(current) : updater
     const known = new Set(knownIds)
     writeRaw(key, Object.keys(next).filter(id => next[id] === false && known.has(id)))

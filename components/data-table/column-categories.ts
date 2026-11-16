@@ -1,6 +1,7 @@
-import type { ColumnDef } from '@tanstack/react-table'
+import type { RowData } from '@tanstack/react-table'
 import type { LucideIcon } from 'lucide-react'
 
+import type { ColumnDef, DataColumnMeta } from './features'
 import {
   Building2,
   Coins,
@@ -74,7 +75,7 @@ export const CATEGORY_META: Record<Category, { label: string, Icon: LucideIcon, 
  * unstamped fall back to General. Read by the Columns menu, the header icon, and
  * the column order.
  */
-export function columnCategory<TData, TValue>(column: ColumnDef<TData, TValue>): Category {
+export function columnCategory(column: { meta?: DataColumnMeta }): Category {
   return column.meta?.category ?? 'general'
 }
 
@@ -86,7 +87,7 @@ export function columnCategory<TData, TValue>(column: ColumnDef<TData, TValue>):
  * column is stamped with its `meta.category`, the single source of truth that
  * the menu grouping and header icon read back.
  */
-export function buildColumns<TData>(
+export function buildColumns<TData extends RowData>(
   identity: ColumnDef<TData>,
   groups: Partial<Record<Category, ColumnDef<TData>[]>>,
   link?: ColumnDef<TData>,

@@ -1,13 +1,15 @@
-import type { Row } from '@tanstack/react-table'
+import type { Row, RowData } from '@tanstack/react-table'
 import type { CSSProperties } from 'react'
+
+import type { DataTableFeatures } from './features'
 
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { EmptyDash } from '@/components/empty-dash'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
-interface Props<TData> {
-  row: Row<TData>
+interface Props<TData extends RowData> {
+  row: Row<DataTableFeatures, TData>
 }
 
 /**
@@ -24,7 +26,7 @@ const STICKY = 'bg-table-surface sticky left-0 z-10 shadow-[4px_0_6px_-2px_rgba(
  */
 const STICKY_WIDTH = 'w-[140px] sm:w-[var(--col-w)]'
 
-export function DataTableRow<TData>({ row }: Props<TData>) {
+export function DataTableRow<TData extends RowData>({ row }: Props<TData>) {
   return (
     <TableRow>
       {row.getVisibleCells().map((cell, index) => {

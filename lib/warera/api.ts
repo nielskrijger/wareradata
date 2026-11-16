@@ -185,9 +185,7 @@ const URGENT_RATE_LIMIT = 100
 export const FACTORY_RATE_LIMIT = 250
 
 /**
- * Retries per client since the last {@link takeRetryStats} call: every retried
- * HTTP request, and how many of those the server answered with 429. The loops
- * log these at the end of each cycle or pass, so throttling shows up in the logs.
+ * Retried requests per client, and how many of those were 429s.
  */
 type ClientName = 'scrape' | 'urgent' | 'factory'
 interface RetryStats { retries: number, rateLimited: number }
@@ -206,7 +204,7 @@ export function takeRetryStats(name: ClientName): RetryStats {
   return stats
 }
 
-// A request whose response headers take longer than this is aborted and retried.
+// Requests slower than this are aborted and retried.
 const REQUEST_TIMEOUT_MS = 60_000
 
 function createClient(name: ClientName, rateLimit: number) {
@@ -284,14 +282,9 @@ export async function getUserIdsForCountry(countryId: string): Promise<string[]>
 }
 
 /**
- * Fetches each user's full profile, in input order. A call that still fails after
- * the client's retries yields null for that user instead of failing the rest, so
- * one bad batch doesn't throw away thousands of good results.
- *
- * getUserById returns a superset of the lite endpoint (same rankings, skills,
- * infos and dates, plus richer stats such as the per-rarity case breakdown). Its
- * response type is looser than User (partial rankings, opaque skills), but every
- * field we read is present at runtime, so we narrow it here.
+ * Fetches each user's full profile, in input order; null for a failed fetch.
+ * getUserById's response type is looser than User, but every field we read is
+ * present at runtime, so we narrow it here.
  */
 function hydrateUsers(client: Client, userIds: string[]): Promise<(User | null)[]> {
   return Promise.all(userIds.map(userId =>
@@ -428,10 +421,8 @@ function fetchEquipmentBatch(client: Client, userIds: string[]): Promise<(Equipm
 }
 
 /**
- * Fetches each user's currently-equipped gear, in input order. Same per-user
- * fan-out shape as {@link getUsers}: one call per id, batched by the tRPC client
- * up to 50 calls per request and paced by the rate limiter. A call that still
- * fails after retries yields null for that user.
+ * Fetches each user's currently-equipped gear, in input order; null for a
+ * failed fetch.
  *
  * Equipment is the most volatile field on a user (durability ticks down per
  * hit, items get swapped between battles), so the per-cycle freshness is only

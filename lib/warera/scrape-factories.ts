@@ -10,11 +10,7 @@ import { FACTORY_RATE_LIMIT, getUserCompaniesSlow } from './api'
 
 const log = logger.child({ component: 'factory-scrape' })
 
-// Owners fetched together. Their getCompanies calls go out in one tick, and so
-// do the hydration calls that follow, so the tRPC client packs a chunk into a
-// handful of batched requests (measured: 40 owners in 4 requests). The factory
-// client's rate limit is the real throttle. Kept at one batch's worth so the
-// in-flight payloads stay small on a memory-tight box.
+// Owners fetched at once, so their calls share batched requests.
 const CHUNK_SIZE = 50
 
 // How often to emit a progress line (every N users scanned). A full pass is

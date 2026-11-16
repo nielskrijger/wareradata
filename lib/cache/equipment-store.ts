@@ -50,9 +50,7 @@ export async function loadEquipmentByUser(): Promise<Record<string, Equipment>> 
 }
 
 /**
- * Streams the equipment file once and returns the stored gear of the given ids
- * (last line wins). Lets a scrape keep a user's previous capture when their
- * fetch failed.
+ * The stored gear of the given users (last line wins).
  */
 export async function loadEquipmentByIds(ids: ReadonlySet<string>): Promise<Map<string, Equipment>> {
   const out = new Map<string, Equipment>()

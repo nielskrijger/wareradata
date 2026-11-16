@@ -137,8 +137,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   // Streamed straight to users.ndjson (not held in the RawSnapshot) — the raw
   // user array is the biggest collection (~84 MB), so keeping it off the
   // persisted snapshot and the scraper's resident heap is the main memory win;
-  // the build streams it back into the rows. A user whose fetch failed keeps
-  // their previous line, with its older timestamp.
+  // the build streams it back into the rows. Failed fetches keep their previous line.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
   const failedUsers = failedIds(userIds, usersRaw)
@@ -160,7 +159,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   // scraper's resident heap; the build streams it back for gear scoring.
   // Many entries come back `{}` (player stripped gear between battles); a line
   // is written for each so readers can tell "captured, none equipped" from "not
-  // captured". A failed fetch keeps the user's previous line, or writes none.
+  // captured". Failed fetches keep their previous line.
   const equipmentRaw = await getEquipment(userIds)
   const failedEquipment = failedIds(userIds, equipmentRaw)
   const previousEquipment = await loadEquipmentByIds(failedEquipment)
@@ -255,15 +254,14 @@ export async function scrapeMain(): Promise<RawSnapshot> {
 }
 
 /**
- * The ids whose fetch failed (a null result at the same index).
+ * The ids whose result is null.
  */
 function failedIds(ids: string[], results: unknown[]): Set<string> {
   return new Set(ids.filter((_, i) => results[i] === null))
 }
 
 /**
- * Logs a phase's failed fetches, if any, and how many of those kept their
- * previous capture.
+ * Logs a phase's failed fetches, if any.
  */
 function logFailures(phase: string, failed: number, keptPrevious: number): void {
   if (failed) {

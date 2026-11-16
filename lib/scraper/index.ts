@@ -208,8 +208,7 @@ async function refreshUsersInSnapshot(
   // Append the fresh gear to the equipment file. The reader takes the last
   // line per user, so this overrides the scrape's line until the next main cycle
   // rewrites the file; the rebuild below streams it back for gear scoring and
-  // the user page / hover-card lookups. Users whose fetch failed keep what the
-  // snapshot already has.
+  // the user page / hover-card lookups.
   await appendEquipmentLines(equipmentIds, freshEquipment)
 
   // Stash the fresh profiles in the overlay (keyed by id) so the rebuild below

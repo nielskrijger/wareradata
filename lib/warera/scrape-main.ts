@@ -1,9 +1,9 @@
 import type { Government, SnapshotMeta, StrategicBonuses } from './api'
 import type { RawSnapshot } from '@/lib/cache/file-store'
 
-import { writeEquipmentNdjson } from '@/lib/cache/equipment-store'
+import { loadEquipmentByIds, writeEquipmentNdjson } from '@/lib/cache/equipment-store'
 import { writeRawSnapshot } from '@/lib/cache/file-store'
-import { writeUsersNdjson } from '@/lib/cache/users-store'
+import { loadUsersByIds, writeUsersNdjson } from '@/lib/cache/users-store'
 
 import { logger } from '@/lib/log'
 
@@ -22,11 +22,10 @@ import {
   getUserIdsForCountry,
   getUsers,
   scrapeItemPrices,
+  takeRetryStats,
 } from './api'
 
 const log = logger.child({ component: 'scrape' })
-
-const COUNTRY_PAGINATION_CONCURRENCY = 10
 
 interface ScrapeResult {
   scrapedAt: string
@@ -43,116 +42,78 @@ interface ScrapeResult {
 }
 
 /**
- * Runs the input list through `worker` with at most `limit` in flight.
- * Returns results in input order.
- */
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  worker: (item: T, index: number) => Promise<R>,
-): Promise<R[]> {
-  const results = Array.from({ length: items.length }) as R[]
-  let cursor = 0
-  async function next(): Promise<void> {
-    while (cursor < items.length) {
-      const i = cursor++
-      results[i] = await worker(items[i], i)
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => next()))
-  return results
-}
-
-/**
  * Gathers the full dataset from the WarEra API and returns it in raw form. Runs
  * on the scrape client, which has its own rate-limit budget separate from the
  * urgent on-demand client, so the two never wait on each other.
+ *
+ * Per-entity calls are all made at once: the client packs them 50 to a request
+ * and its rate limiter paces them. `previous` fills in entities whose fetch failed.
  */
-export async function scrapeMain(): Promise<RawSnapshot> {
+export async function scrapeMain(previous?: RawSnapshot | null): Promise<RawSnapshot> {
   const start = Date.now()
 
   // 1. Countries: single call.
   const countries = await getAllCountries()
   log.info({ countries: countries.length }, 'fetched countries')
 
-  // 2. Governments: one call per country (no bulk endpoint), fanned out with
-  // the same bounded concurrency as the user-id pagination. Dormant or
+  const countryIds = countries.map(c => c._id)
+
+  // 2. Governments: one call per country (no bulk endpoint). Dormant or
   // unoccupied countries have no government: the call may error or return an
   // all-empty record, and either way we drop it from the map.
-  const governmentList = await mapWithConcurrency(
-    countries.map(c => c._id),
-    COUNTRY_PAGINATION_CONCURRENCY,
-    async (countryId) => {
-      try {
-        return await getGovernmentForCountry(countryId)
-      } catch {
-        return null
-      }
-    },
-  )
+  const governmentList = await Promise.all(countryIds.map(id => getGovernmentForCountry(id).catch(() => null)))
   const governments: RawSnapshot['governments'] = {}
-  for (let i = 0; i < countries.length; i++) {
+  countryIds.forEach((id, i) => {
     const gov = governmentList[i]
     if (gov && hasGovernment(gov)) {
-      governments[countries[i]._id] = gov
+      governments[id] = gov
     }
-  }
+  })
   log.info({ governments: Object.keys(governments).length, countries: countries.length }, 'fetched governments')
 
   // 2b. Strategic resource bonuses: one call per country. Members of an
   // alliance get the alliance-wide bonus, so the alliance page reads it off any
   // member. Countries holding no resource answer null and are left out.
-  const bonusList = await mapWithConcurrency(
-    countries.map(c => c._id),
-    COUNTRY_PAGINATION_CONCURRENCY,
-    async (countryId) => {
-      try {
-        return await getStrategicBonusesForCountry(countryId)
-      } catch {
-        return null
-      }
-    },
-  )
+  const bonusList = await Promise.all(countryIds.map(id => getStrategicBonusesForCountry(id).catch(() => undefined)))
+  const bonuses = await keepPrevious('strategic bonuses', countryIds, bonusList, failed =>
+    new Map(Object.entries(previous?.strategicBonuses ?? {}).filter(([id]) => failed.has(id))))
   const strategicBonuses: Record<string, StrategicBonuses> = {}
-  for (let i = 0; i < countries.length; i++) {
-    const bonus = bonusList[i]
+  for (const [id, bonus] of bonuses) {
     if (bonus) {
-      strategicBonuses[countries[i]._id] = bonus
+      strategicBonuses[id] = bonus
     }
   }
   log.info({ countries: Object.keys(strategicBonuses).length }, 'fetched strategic resource bonuses')
 
-  // 3. User IDs: paginate per country with bounded concurrency.
-  const userIdLists = await mapWithConcurrency(
-    countries.map(c => c._id),
-    COUNTRY_PAGINATION_CONCURRENCY,
-    countryId => getUserIdsForCountry(countryId),
-  )
+  // 3. User IDs, paginated per country.
+  const userIdLists = await Promise.all(countryIds.map(id => getUserIdsForCountry(id)))
   const userIds = userIdLists.flat()
   log.info({ userIds: userIds.length, countries: countries.length }, 'collected user ids')
 
-  // 4. Hydrate users. Stamp each with the capture time (like MUs below) so the
-  // user page can show data freshness; an on-demand refresh bumps it later.
-  // Streamed straight to users.ndjson (not held in the RawSnapshot) — the raw
-  // user array is the biggest collection (~84 MB), so keeping it off the
-  // persisted snapshot and the scraper's resident heap is the main memory win;
-  // the build streams it back into the rows.
+  // 4. Hydrate users, stamped with the capture time so the user page can show
+  // data freshness.
+  //
+  // Streamed to users.ndjson rather than kept in the RawSnapshot: it's the
+  // biggest collection (~84 MB), so keeping it off the heap is the main memory win.
+  //
+  // Failed fetches keep their previous line so a hiccup doesn't drop users.
   const usersRaw = await getUsers(userIds)
   const usersCapturedAt = new Date().toISOString()
-  const users = usersRaw.map(u => ({ ...u, lastRefreshedAt: usersCapturedAt }))
+  const stamped = usersRaw.map(u => u && { ...u, lastRefreshedAt: usersCapturedAt })
+  const users = [...(await keepPrevious('users', userIds, stamped, loadUsersByIds)).values()]
   await writeUsersNdjson(users)
   log.info({ users: users.length }, 'hydrated users')
 
-  // 5. Per-user equipment. One HTTP call per user, batched by the tRPC client
-  // up to 50 ops. Streamed straight to a separate equipment.ndjson file (not held
-  // in the RawSnapshot), keeping ~14 MB out of snapshot.json and off the
-  // scraper's resident heap; the build streams it back for gear scoring. Many
-  // entries come back `{}` (player stripped gear between battles); a line is
-  // written for each so readers can tell "captured, none equipped" from "not
-  // captured".
-  const equipmentList = await getEquipment(userIds)
-  await writeEquipmentNdjson(userIds, equipmentList)
-  log.info({ users: equipmentList.length }, 'wrote equipment file')
+  // 5. Per-user equipment, streamed to equipment.ndjson to keep ~14 MB off the
+  // snapshot and the heap.
+  //
+  // Users wearing nothing still get a `{}` line, so readers can tell "none
+  // equipped" from "not captured".
+  //
+  // Failed fetches keep their previous line so a hiccup doesn't drop users.
+  const equipment = await keepPrevious('equipment', userIds, await getEquipment(userIds), loadEquipmentByIds)
+  await writeEquipmentNdjson([...equipment.keys()], [...equipment.values()])
+  log.info({ users: equipment.size }, 'wrote equipment file')
 
   // 6. MUs: single cursor-paginated stream. Stamp each with the capture time so
   // the MU page can show data freshness; an on-demand refresh bumps it later.
@@ -200,6 +161,7 @@ export async function scrapeMain(): Promise<RawSnapshot> {
   log.info({ items: Object.keys(prices).length }, 'fetched prices')
 
   const durationMs = Date.now() - start
+  log.info({ durationMs, ...takeRetryStats('scrape') }, 'scrape client retries this cycle')
   const meta: SnapshotMeta = {
     scrapedAt: new Date().toISOString(),
     entityCounts: {
@@ -228,6 +190,32 @@ export async function scrapeMain(): Promise<RawSnapshot> {
     prices,
     meta,
   }
+}
+
+/**
+ * Fills failed (undefined) results from the previous capture, so a hiccup
+ * doesn't drop entities from the snapshot. Returns results keyed by id, in order.
+ */
+async function keepPrevious<T>(
+  phase: string,
+  ids: string[],
+  results: (T | undefined)[],
+  loadPrevious: (failed: Set<string>) => Map<string, T> | Promise<Map<string, T>>,
+): Promise<Map<string, T>> {
+  const failed = new Set(ids.filter((_, i) => results[i] === undefined))
+  const previous = failed.size ? await loadPrevious(failed) : new Map<string, T>()
+  if (failed.size) {
+    log.warn({ phase, failed: failed.size, keptPrevious: previous.size }, 'fetches failed after retries')
+  }
+
+  const out = new Map<string, T>()
+  ids.forEach((id, i) => {
+    const value = results[i] !== undefined ? results[i] : previous.get(id)
+    if (value !== undefined) {
+      out.set(id, value)
+    }
+  })
+  return out
 }
 
 /**

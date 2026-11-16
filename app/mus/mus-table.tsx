@@ -29,6 +29,7 @@ export function MUsTable({ initial, baseFilter }: Props) {
 
   return (
     <DataTable
+      tableId="mus"
       columns={muColumns}
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}

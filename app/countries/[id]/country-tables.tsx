@@ -95,6 +95,7 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
       </TabsPanel>
       <TabsPanel value="battles" className="pt-4">
         <BattlesTable
+          tableId="battles-active"
           initial={battles}
           columns={activeBattleColumns}
           baseFilter={`isActive:true AND (attackerCode:${code} OR defenderCode:${code})`}

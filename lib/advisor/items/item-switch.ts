@@ -5,6 +5,7 @@ import { humanizeCode, humanizeItem } from '@/components/factories/format'
 import {
   basePerHour,
   HOURS_PER_DAY,
+  payingDays,
   RULES,
   toolFits,
 } from '../model'
@@ -21,6 +22,7 @@ const ITEM_PAYBACK_DAYS = 3
 interface Candidate {
   code: string
   gain: number
+  days: number
   specFrom: number
   specTo: number
   toolFrom: number
@@ -30,6 +32,9 @@ interface Candidate {
 /**
  * The best item to switch to, net of lost specialization and tool bonus, when it
  * repays the switch cost in time. Also returns the new item's value so staff are judged on it.
+ *
+ * Specialization grows a point a day on either path, so the gain is the average
+ * over the horizon and the payback comes from the running total.
  */
 export function itemSwitchItem(
   input: AdvisorInput,
@@ -41,9 +46,10 @@ export function itemSwitchItem(
     return null
   }
 
+  // Without a concrete price the cost is unknown, so no switch is suggested.
+  const cost = input.changeItemConcrete * (input.prices.concrete ?? Number.POSITIVE_INFINITY)
   const working = c.employees.filter(e => !e.companyDisabled)
-  const employeePoints = working.reduce((s, e) => s + HOURS_PER_DAY * (e.estimate?.production ?? 0), 0)
-  const pointsNow = c.enginePointsPerDay + employeePoints
+  const cap = RULES.specializationCapPct
 
   let best: Candidate | null = null
   for (const [code, vpp] of vppByItem) {
@@ -51,39 +57,61 @@ export function itemSwitchItem(
       continue
     }
 
-    let bonusLoss = 0
-    let specFrom = 0
-    let specTo = 0
-    let toolFrom = 0
-    let toolTo = 0
-    for (const e of working) {
-      const spec = specializationPct(e)
-      const specNext = Math.min(e.specializations?.[code] ?? 0, RULES.specializationCapPct)
+    const staff = working.map((e) => {
       const tool = toolPct(e)
-      const toolNext = e.toolItem && toolFits(e.toolItem.code, code) ? tool : 0
-      bonusLoss += HOURS_PER_DAY * basePerHour(e) * (spec - specNext + tool - toolNext) / 100
-      specFrom += spec
-      specTo += specNext
-      toolFrom += tool
-      toolTo += toolNext
+
+      return {
+        days: payingDays(e),
+        basePerDay: HOURS_PER_DAY * basePerHour(e),
+        pointsPerDay: HOURS_PER_DAY * (e.estimate?.production ?? 0),
+        spec: specializationPct(e),
+        specNext: Math.min(e.specializations?.[code] ?? 0, cap),
+        tool,
+        toolNext: e.toolItem && toolFits(e.toolItem.code, code) ? tool : 0,
+      }
+    })
+
+    let total = 0
+    let days = Number.POSITIVE_INFINITY
+    for (let d = 0; d < RULES.horizonDays; d++) {
+      let gain = c.enginePointsPerDay * (vpp - current)
+      for (const s of staff.filter(s => d < s.days)) {
+        const stayPct = Math.min(cap, s.spec + d) - s.spec
+        const switchPct = Math.min(cap, s.specNext + d) - s.spec + s.toolNext - s.tool
+        gain += (s.pointsPerDay + s.basePerDay * switchPct / 100) * vpp
+          - (s.pointsPerDay + s.basePerDay * stayPct / 100) * current
+      }
+
+      total += gain
+      if (days === Number.POSITIVE_INFINITY && total >= cost) {
+        days = d + 1
+      }
     }
 
-    const gain = (pointsNow - bonusLoss) * vpp - pointsNow * current
-    if (!best || gain > best.gain) {
-      best = { code, gain, specFrom, specTo, toolFrom, toolTo }
+    const sum = (pick: (s: typeof staff[number]) => number) => staff.reduce((t, s) => t + pick(s), 0)
+    const candidate = {
+      code,
+      gain: total / RULES.horizonDays,
+      days,
+      specFrom: sum(s => s.spec),
+      specTo: sum(s => s.specNext),
+      toolFrom: sum(s => s.tool),
+      toolTo: sum(s => s.toolNext),
+    }
+
+    if (candidate.days <= ITEM_PAYBACK_DAYS && (!best || candidate.gain > best.gain)) {
+      best = candidate
     }
   }
 
-  // Without a concrete price the cost is unknown, so no switch is suggested.
-  const cost = input.changeItemConcrete * (input.prices.concrete ?? Number.POSITIVE_INFINITY)
-  if (!best || best.gain * ITEM_PAYBACK_DAYS <= cost) {
+  if (!best) {
     return null
   }
 
   const n = working.length || 1
   const next = vppByItem.get(best.code) ?? 0
   const morePct = Math.round((next / current - 1) * 100)
-  const days = Math.ceil(cost / best.gain)
+  const days = best.days
   const facts: Fact[] = [
     current > 0
       ? { label: 'Value per point', value: `+${morePct}%`, brief: `+${morePct}% per point` }
@@ -106,16 +134,16 @@ export function itemSwitchItem(
 
   // Bonuses lost on the new item, averaged over the staff.
   const drops = [
-    { label: 'Specialization', short: 'spec', from: best.specFrom, to: best.specTo },
-    { label: 'Tool bonus', short: 'tools', from: best.toolFrom, to: best.toolTo },
+    { label: 'Specialization', short: 'spec', from: best.specFrom, to: best.specTo, note: 'regrows 1% a day' },
+    { label: 'Tool bonus', short: 'tools', from: best.toolFrom, to: best.toolTo, note: 'counted' },
   ]
 
   for (const d of drops) {
     const [from, to] = [Math.round(d.from / n), Math.round(d.to / n)]
     if (to < from) {
       const drop = `${from}% → ${to}%`
-      facts.push({ label: d.label, value: `${drop}, counted`, brief: `${d.short} ${drop}` })
-      why.push(`${d.label} drops from ${from}% to ${to}%, already counted.`)
+      facts.push({ label: d.label, value: `${drop}, ${d.note}`, brief: `${d.short} ${drop}` })
+      why.push(`${d.label} drops from ${from}% to ${to}%, ${d.note}.`)
     }
   }
 

@@ -61,7 +61,7 @@ export interface TodoItem {
    * Set on actions repeated per company or worker, so the page can fold them
    * into one row; `short` names this one inside that row.
    */
-  group?: { key: 'manager-job' | 'tool-move', short: string, company?: CompanyRef, detail?: string }
+  group?: { key: 'tool-move', short: string }
 
 }
 

@@ -1,4 +1,4 @@
-import type { CompanyRef, Fact, TodoItem } from '@/lib/advisor/types'
+import type { Fact, TodoItem } from '@/lib/advisor/types'
 
 /**
  * Actions earning less than this a day each count as small stuff and fold away.
@@ -17,16 +17,12 @@ export interface AdviseRow {
   gainPerDay: number
   energy: number
   titleParts?: TodoItem['titleParts']
-  parts: { short: string, company?: CompanyRef, detail?: string, gainPerDay: number }[]
+  parts: { short: string, gainPerDay: number }[]
 }
 
 type GroupKey = NonNullable<TodoItem['group']>['key']
 
 const GROUP: Record<GroupKey, { title: (n: number) => string, why: string }> = {
-  'manager-job': {
-    title: n => `Post manager jobs at ${n} companies`,
-    why: 'Each chip shows the most a Management point is worth there, per hour. Any offer below it earns more than it costs.',
-  },
   'tool-move': {
     title: n => `Make ${n} tool moves`,
     why: 'A tool adds a percent of base output, so it earns most where that output is worth the most gold.',

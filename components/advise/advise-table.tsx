@@ -2,7 +2,7 @@ import type { AdviseRow } from './rows'
 import type { AdvisorResult } from '@/lib/advisor/types'
 import { ChevronRight } from 'lucide-react'
 
-import { CompanyName, TitleParts } from '@/components/company-name'
+import { TitleParts } from '@/components/company-name'
 
 import { Panel } from '@/components/panel'
 import { cn } from '@/lib/utils'
@@ -87,11 +87,10 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
           <span className="flex flex-wrap gap-1.5">
             {row.parts.map(p => (
               <span
-                key={p.company?.id ?? p.short}
+                key={p.short}
                 className="bg-muted/60 inline-flex min-w-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs"
               >
-                {p.company ? <CompanyName company={p.company} /> : p.short}
-                {p.detail && <span className="text-muted-foreground font-mono">{p.detail}</span>}
+                {p.short}
                 {' '}
                 <Gain value={p.gainPerDay} />
               </span>

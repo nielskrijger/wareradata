@@ -7,7 +7,7 @@ import {
   managerNetPerDay,
   RULES,
 } from '../model'
-import { companyRef, fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
+import { fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
 
 /**
  * Fire a manager whose bonus is worth less than their wage, or post a job where a
@@ -79,6 +79,5 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
       { label: 'Points that count', value: `${points}`, brief: `${points} points` },
     ],
     gainPerDay: net,
-    group: { key: 'manager-job', short: c.name, company: companyRef(c), detail: `≤ ${most}/pt` },
   }]
 }

@@ -40,9 +40,7 @@ export function advisorInputFromData(
         employeeCap: f.hourly?.cap ?? 0,
         enginePointsPerDay: enginePointsPerDay(engineLevelOf(f), model, f.hourly?.engineMultiplier ?? 1),
         employees: f.employees,
-        manager: m
-          ? { hourlyWage: m.hourlyWage, productionBonusPercent: m.productionBonusPercent }
-          : null,
+        manager: m ? { hourlyWage: m.hourlyWage, productionBonusPercent: m.productionBonusPercent } : null,
       }
     }),
     ppValue: data.ppValue,

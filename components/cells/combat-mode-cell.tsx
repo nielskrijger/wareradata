@@ -4,6 +4,7 @@ import type { CombatMode } from '@/lib/skills/classify'
 
 import { Coins, Swords } from 'lucide-react'
 
+import { TooltipHeading } from '@/components/cells/tooltip-ledger'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -54,10 +55,7 @@ export function CombatModeCell({ mode, warPoints, ecoPoints, warPointsRank, ecoP
         )}
       />
       <TooltipContent align="end" side="top" className="w-56 px-3 py-2">
-        <div className="mb-2 flex items-baseline justify-between">
-          <span className="font-medium">Skill investment</span>
-          <span className="text-neutral-50/60 text-[11px] tabular-nums">{total} pts</span>
-        </div>
+        <TooltipHeading label="Skill investment">{total} pts</TooltipHeading>
         <dl className="space-y-2">
           <BreakdownRow
             label="War"

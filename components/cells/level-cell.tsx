@@ -2,9 +2,9 @@
 
 import type { UserRow } from '@/lib/rows'
 
+import { LevelTooltipContent } from '@/components/cells/level-tooltip-content'
 import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { levelTooltipLines } from '@/lib/level-tooltip'
 
 type Props = Pick<UserRow, 'level' | 'levelRank' | 'prestige' | 'prestigePoints' | 'totalXp'>
 
@@ -26,7 +26,7 @@ export function LevelCell(props: Props) {
         <PrestigeSkull prestige={props.prestige} />
       </TooltipTrigger>
       <TooltipContent side="top">
-        {levelTooltipLines(props).map(line => <div key={line}>{line}</div>)}
+        <LevelTooltipContent {...props} />
       </TooltipContent>
     </Tooltip>
   )

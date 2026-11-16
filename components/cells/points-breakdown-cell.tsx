@@ -1,6 +1,7 @@
 'use client'
 
 import type { PointsCategory } from '@/components/points-breakdown-legend'
+import { TooltipHeading, TooltipRow } from '@/components/cells/tooltip-ledger'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -39,19 +40,11 @@ export function PointsBreakdownCell({ total, level, damage, wealth, stats = [] }
         {total.toLocaleString()}
       </TooltipTrigger>
       <TooltipContent align="end" side="top" className="w-60 px-3 py-2">
-        <div className="mb-2 flex items-baseline justify-between">
-          <span className="font-medium">Points</span>
-          <span className="font-medium tabular-nums">{total.toLocaleString()}</span>
-        </div>
+        <TooltipHeading label="Points">{total.toLocaleString()}</TooltipHeading>
         {shownStats.length > 0 && (
-          <dl className="mb-2 space-y-1 border-b border-white/10 pb-2 tabular-nums">
-            {shownStats.map(s => (
-              <div key={s.label} className="flex justify-between gap-3">
-                <dt className="opacity-70">{s.label}</dt>
-                <dd>{s.value.toLocaleString()}</dd>
-              </div>
-            ))}
-          </dl>
+          <div className="mb-2 space-y-1 border-b border-white/10 pb-2">
+            {shownStats.map(s => <TooltipRow key={s.label} label={s.label}>{s.value.toLocaleString()}</TooltipRow>)}
+          </div>
         )}
         <dl className="space-y-1.5">
           {slices.map(s => (

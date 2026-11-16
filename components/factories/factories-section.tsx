@@ -3,7 +3,7 @@ import type { FactoryLedgerRow } from '@/lib/factories/ledger'
 import { Factory } from 'lucide-react'
 import { cache } from 'react'
 
-import { Kpi } from '@/components/profile/kpi'
+import { Kpi } from '@/components/detail/kpi'
 import { getSnapshot } from '@/lib/cache/memory'
 import { buildEngineModel } from '@/lib/factories/engine'
 import { engineLevelOf, factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'

@@ -295,6 +295,7 @@ export function casesColumns<T extends CasesRow>(): ColumnDef<T>[] {
       decimals: 1,
       width: 95,
       rankKey: 'caseLuckRank' as Key<T>,
+      rankLabel: 'Case luck',
       tooltip: `100% = exactly the published odds, higher = lucky. Premium cases count against premium odds. Hidden under ${MIN_LUCK_PULLS} pulls.`,
     }),
     ...CASE_RARITIES.map((rarity) => {

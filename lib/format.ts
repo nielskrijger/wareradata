@@ -17,6 +17,16 @@ export function isOlderThan(iso: string | null, ms: number): boolean {
   return !Number.isNaN(then) && Date.now() - then > ms
 }
 
+const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
+
+/**
+ * Short plain-text number ("1.2K", "40M"), for labels where <CompactNumber>'s
+ * aligned markup doesn't fit.
+ */
+export function formatCompact(n: number | null | undefined): string {
+  return n == null ? EMPTY : compact.format(n)
+}
+
 const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'narrow' })
 
 /**

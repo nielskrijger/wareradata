@@ -169,7 +169,7 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
       readinessColumn<AllianceRow>(),
       combatModeColumn<AllianceRow>(),
       tierColumn<AllianceRow>('damageTier'),
-      rankTooltipColumn<AllianceRow>('damage', 'damageRank', 'Total', { width: 140 }),
+      rankTooltipColumn<AllianceRow>('damage', 'damageRank', 'Total', { width: 140, rankLabel: 'Total damage' }),
       compactNumberColumn<AllianceRow>('weeklyDamage', 'Weekly', { heat: 'median', width: 110 }),
       compactNumberColumn<AllianceRow>('weeklyDamagePerCitizen', 'Weekly / Citizen', { heat: 'median', width: 170 }),
     ],

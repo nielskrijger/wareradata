@@ -3,26 +3,25 @@ import type { GearLookup } from '@/lib/gear/score'
 import type { UserRow } from '@/lib/rows'
 import type { CasesByType, Equipment } from '@/lib/warera/api'
 
-import { Drumstick, Heart } from 'lucide-react'
-
 import { Avatar } from '@/components/avatar'
 import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CountryCell } from '@/components/cells/country-cell'
+import { LevelTooltipContent } from '@/components/cells/level-tooltip-content'
 import { MUCell } from '@/components/cells/mu-cell'
 import { PartyCell } from '@/components/cells/party-cell'
 import { PrestigeSkull } from '@/components/cells/prestige-skull'
+import { DetailSidebar, Fact, SidebarSection, SidebarTitle } from '@/components/detail/detail-sidebar'
 import { GearBand } from '@/components/detail/gear-band'
-import { VitalRow } from '@/components/detail/vitals-card'
+import { SectionHeading } from '@/components/detail/section-heading'
+import { VitalRows } from '@/components/detail/vitals-card'
 import { EmptyDash } from '@/components/empty-dash'
 import { ExternalLink } from '@/components/links'
 import { CasesSummary } from '@/components/profile/cases-summary'
-import { SectionHeading } from '@/components/profile/section-heading'
 import { SkillSplit } from '@/components/profile/skill-split'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { levelTooltipLines } from '@/lib/level-tooltip'
 import { schemeRgb } from '@/lib/warera/color-schemes'
 import { wareraUrl } from '@/lib/warera/urls'
 
@@ -55,30 +54,27 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
   const rgb = schemeRgb(user.colorScheme)
 
   return (
-    <aside
-      className="bg-card flex flex-col gap-4 self-start rounded-md border p-5"
+    <DetailSidebar
       // The player's own colour scheme, faded out behind the avatar.
-      style={{ backgroundImage: `linear-gradient(180deg, rgba(${rgb}, 0.22), transparent 9rem)` }}
-    >
-      <div className="flex items-start justify-between gap-2">
+      wash={`rgba(${rgb}, 0.22)`}
+      avatar={(
         <Avatar
           src={user.avatarUrl}
           name={user.username}
           size={88}
           style={{ boxShadow: `0 0 0 3px var(--card), 0 0 0 4px rgb(${rgb})` }}
         />
-        {refresh}
-      </div>
-
+      )}
+      refresh={refresh}
+    >
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-brand text-[32px] leading-none tracking-wide break-all">{user.username}</h1>
+        <SidebarTitle name={user.username}>
           {user.levelTier && <TierBadge tier={user.levelTier} />}
           {user.readinessStatus != null && (
             <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} />
           )}
           {user.isBanned && <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
-        </div>
+        </SidebarTitle>
 
         <dl className="space-y-1 text-sm">
           <Fact label="Country">
@@ -92,7 +88,7 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
                   {user.level}
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  {levelTooltipLines(user, total).map(line => <div key={line}>{line}</div>)}
+                  <LevelTooltipContent {...user} rankedTotal={total} />
                 </TooltipContent>
               </Tooltip>
             )}
@@ -117,40 +113,26 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
       {/* A score of 0 still shows the gear so empty slots read as "nothing
           equipped"; null means the gear was never captured. */}
       {user.gearScore != null && (
-        <Section>
+        <SidebarSection>
           <SectionHeading title="Gear" />
           <GearBand score={user.gearScore} equipment={equipment} gearLookup={gearLookup} />
-        </Section>
+        </SidebarSection>
       )}
 
       {(user.health != null || user.hunger != null) && (
-        <Section>
+        <SidebarSection>
           <SectionHeading title="Vitals" />
-          <VitalRow label="Health" icon={<Heart className="size-4" />} value={user.health} />
-          <VitalRow label="Hunger" icon={<Drumstick className="size-4" />} value={user.hunger} />
-        </Section>
+          <VitalRows health={user.health} hunger={user.hunger} />
+        </SidebarSection>
       )}
 
-      <Section>
+      <SidebarSection>
         <SkillSplit mode={user.combatMode} warPoints={user.warPoints} ecoPoints={user.ecoPoints} />
-      </Section>
+      </SidebarSection>
 
-      <Section>
+      <SidebarSection>
         <CasesSummary combinedOpened={user.casesOpened} rank={user.casesOpenedRank} rankOf={total} {...cases} />
-      </Section>
-    </aside>
-  )
-}
-
-function Section({ children }: { children: ReactNode }) {
-  return <div className="flex flex-col gap-2 border-t pt-4">{children}</div>
-}
-
-function Fact({ label, children }: { label: string, children: ReactNode }) {
-  return (
-    <div className="flex min-w-0 items-center justify-between gap-3">
-      <dt className="text-muted-foreground shrink-0">{label}</dt>
-      <dd className="flex min-w-0 justify-end text-right">{children}</dd>
-    </div>
+      </SidebarSection>
+    </DetailSidebar>
   )
 }

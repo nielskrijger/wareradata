@@ -4,8 +4,8 @@ import type { CaseRarity, CaseRarityCounts, CasesByType } from '@/lib/warera/api
 
 import { useState } from 'react'
 
+import { SectionHeading } from '@/components/detail/section-heading'
 import { EmptyDash } from '@/components/empty-dash'
-import { SectionHeading } from '@/components/profile/section-heading'
 import { StackedBar } from '@/components/stacked-bar'
 import { cn } from '@/lib/utils'
 import { CASE_RARITIES } from '@/lib/warera/api'

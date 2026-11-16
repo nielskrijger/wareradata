@@ -1,31 +1,28 @@
 import type { Metadata } from 'next'
 
-import { notFound } from 'next/navigation'
+import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { SquadMember } from '@/components/mu/squad-map'
+import type { MURow } from '@/lib/rows'
 
+import { Coins, Swords, Trophy, Users } from 'lucide-react'
+import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
-import { UsersTable } from '@/app/users/users-table'
 
-import { Avatar } from '@/components/avatar'
-import { TierBadge } from '@/components/badges/tier-badge'
+import { UsersTable } from '@/app/users/users-table'
 import { CompactNumber } from '@/components/cells/compact-number'
-import { CountryCell } from '@/components/cells/country-cell'
-import { UserNameCell } from '@/components/cells/user-name-cell'
-import { CombatModeCard } from '@/components/detail/combat-mode-card'
-import { DetailHeader, FactRow } from '@/components/detail/detail-header'
-import { MultiStatCard } from '@/components/detail/multi-stat-card'
-import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
+import { DetailLayout } from '@/components/detail/detail-sidebar'
+import { Kpi, KpiStrip } from '@/components/detail/kpi'
+import { RankMap } from '@/components/detail/rank-map'
+import { rankRow } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
-import { StatCardGrid } from '@/components/detail/stat-card-grid'
-import { VitalsCard } from '@/components/detail/vitals-card'
-import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
-import { ExternalLink } from '@/components/links'
-import { ReadinessPillCard } from '@/components/readiness-pill-card'
-import { UserHoverCard } from '@/components/user-hover-card'
+import { MUSidebar } from '@/components/mu/mu-sidebar'
+import { SquadMap } from '@/components/mu/squad-map'
+import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
+import { WAR_COLOR } from '@/components/war-eco-colors'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
-import { computeRanges, firstPage } from '@/lib/query'
-import { wareraUrl } from '@/lib/warera/urls'
+import { firstPage } from '@/lib/query'
 
 import { requestMuRefresh } from './actions'
 
@@ -44,9 +41,6 @@ const getMU = cache(async (id: string) => {
     return null
   }
 
-  // Ranges over the full set, same as the /mus table, so each stat can show
-  // where this MU sits.
-  const ranges = computeRanges(mus)
   const total = mus.length
 
   // First page of this MU's members, sorted like /users (points desc). The
@@ -54,8 +48,19 @@ const getMU = cache(async (id: string) => {
   // muId scope applied as a base filter.
   const members = users.filter(u => u.muId === id)
   const memberPage = firstPage(members, 'points')
+  const squad: SquadMember[] = members.map(u => ({
+    id: u.id,
+    username: u.username,
+    avatarUrl: u.avatarUrl,
+    colorScheme: u.colorScheme,
+    level: u.level,
+    damage: u.damage,
+    wealth: u.wealth,
+    health: u.health,
+    readinessStatus: u.readinessStatus,
+  }))
 
-  return { mu, ranges, total, memberPage }
+  return { mu, total, memberPage, squad }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -84,231 +89,117 @@ export default async function MUDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { mu, ranges, total, memberPage } = result
+  const { mu, total, memberPage, squad } = result
 
   return (
-    <main className="space-y-3 px-6 py-8 sm:px-8 lg:px-12">
-      <DetailHeader
-        title={mu.name}
-        titleSuffix={mu.damageTier ? <TierBadge tier={mu.damageTier} /> : undefined}
-        emblem={(
-          <Avatar
-            src={mu.avatarUrl}
-            name={mu.name}
-            size={64}
-            className="-mt-9"
-            style={{ boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)' }}
-          />
-        )}
-        aside={<RefreshButton id={mu.id} action={requestMuRefresh} lastRefreshedAt={mu.lastRefreshedAt} />}
+    <DetailLayout
+      sidebar={(
+        <MUSidebar
+          mu={mu}
+          refresh={<RefreshButton id={mu.id} action={requestMuRefresh} lastRefreshedAt={mu.lastRefreshedAt} />}
+        />
+      )}
+    >
+      <KpiStrip
+        points={{
+          total: mu.totalPoints,
+          level: mu.levelPoints,
+          damage: mu.damagePoints,
+          wealth: mu.wealthPoints,
+        }}
       >
-        <FactRow>
-          <CountryCell countryCode={mu.countryCode} countryName={mu.countryName} countryId={mu.countryId} />
-          {mu.regionName && <span className="text-muted-foreground">{mu.regionName}</span>}
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{mu.memberCount.toLocaleString()}</span>
-            {' '}
-            members
-          </span>
-        </FactRow>
-        <FactRow muted>
-          {mu.leaderName && (
-            <span className="inline-flex items-center gap-2">
-              Leader
-              <UserHoverCard userId={mu.leaderId}>
-                <UserNameCell
-                  userId={mu.leaderId}
-                  name={mu.leaderName}
-                  avatarUrl={mu.leaderAvatarUrl}
-                  colorScheme={mu.leaderColorScheme}
-                />
-              </UserHoverCard>
-            </span>
-          )}
-          <ExternalLink href={wareraUrl('mu', mu.id)}>WarEra.io</ExternalLink>
-        </FactRow>
-      </DetailHeader>
-
-      <StatCardGrid>
-        <PointsBreakdownPanel
-          className="sm:col-span-2"
-          total={mu.totalPoints}
-          level={mu.levelPoints}
-          damage={mu.damagePoints}
-          wealth={mu.wealthPoints}
-          caption={{ value: mu.avgPoints, unit: 'points/member' }}
-        />
-        <ReadinessPillCard mix={mu.readinessPill} />
-        <CombatModeCard avgWarShare={mu.avgWarShare} rank={mu.avgWarShareRank} total={total} />
-        <VitalsCard average health={mu.avgHealth} hunger={mu.avgHunger} />
-        <MultiStatCard
-          label="Damage"
+        <Kpi
+          label="Points"
+          icon={<Trophy />}
+          value={mu.totalPoints.toLocaleString()}
+          rank={mu.totalPointsRank}
           total={total}
-          hero={{
-            label: 'Total',
-            value: mu.damage,
-            display: <CompactNumber value={mu.damage} />,
-            range: ranges.damage,
-            heat: 'median',
-            rank: mu.damageRank,
-          }}
-          rows={[
-            {
-              label: 'Weekly',
-              value: mu.weeklyDamage,
-              display: <CompactNumber value={mu.weeklyDamage} />,
-              range: ranges.weeklyDamage,
-              heat: 'median',
-              rank: mu.weeklyDamageRank,
-            },
-            {
-              label: 'Avg gear',
-              value: mu.avgGearScore,
-              range: ranges.avgGearScore,
-              heat: 'median',
-              rank: mu.avgGearScoreRank,
-            },
-            { label: 'Terrain', value: mu.terrain, range: ranges.terrain, heat: 'median', rank: mu.terrainRank },
-          ]}
         />
-        <MultiStatCard
-          label="Economy"
-          rows={[
-            {
-              label: 'MU Wealth',
-              value: mu.wealth,
-              display: <CompactNumber value={mu.wealth} />,
-              range: ranges.wealth,
-              heat: 'median',
-              rank: mu.wealthRank,
-            },
-            {
-              label: 'Member Wealth',
-              value: mu.memberWealth,
-              display: <CompactNumber value={mu.memberWealth} />,
-              range: ranges.memberWealth,
-              heat: 'median',
-              rank: mu.memberWealthRank,
-            },
-            {
-              label: 'Bounty',
-              value: mu.bounty,
-              display: <CompactNumber value={mu.bounty} />,
-              range: ranges.bounty,
-              heat: 'median',
-              rank: mu.bountyRank,
-            },
-            {
-              label: 'Invested',
-              value: mu.investedMoney,
-              display: <CompactNumber value={mu.investedMoney} />,
-              range: ranges.investedMoney,
-              heat: 'ramp',
-              rank: mu.investedMoneyRank,
-            },
-          ]}
+        <Kpi
+          label="Damage"
+          icon={<Swords />}
+          value={<CompactNumber value={mu.damage} />}
+          rank={mu.damageRank}
+          total={total}
         />
-        <WealthCompositionCard
-          perCapita={{ count: mu.memberCount, unit: 'member' }}
-          parts={[
-            {
-              label: 'Companies',
-              value: mu.companiesWealth,
-              range: ranges.companiesWealth,
-              rank: mu.companiesWealthRank,
-            },
-            { label: 'Items', value: mu.itemsWealth, range: ranges.itemsWealth, rank: mu.itemsWealthRank },
-            { label: 'Cash', value: mu.cashWealth, range: ranges.cashWealth, rank: mu.cashWealthRank },
-            {
-              label: 'Equipment',
-              value: mu.equipmentWealth,
-              range: ranges.equipmentWealth,
-              rank: mu.equipmentWealthRank,
-            },
-            { label: 'Weapons', value: mu.weaponsWealth, range: ranges.weaponsWealth, rank: mu.weaponsWealthRank },
-          ]}
+        <Kpi
+          label="Wealth"
+          icon={<Coins />}
+          value={<CompactNumber value={mu.wealth} />}
+          rank={mu.wealthRank}
+          total={total}
         />
-        <MultiStatCard
-          label="Society"
-          rows={[
-            {
-              label: 'Members',
-              value: mu.memberCount,
-              range: ranges.memberCount,
-              heat: 'ramp',
-              rank: mu.memberCountRank,
-            },
-            { label: 'Avg level', value: mu.avgLevel, range: ranges.avgLevel, heat: 'median', rank: mu.avgLevelRank },
-            {
-              label: 'Avg points',
-              value: mu.avgPoints,
-              range: ranges.avgPoints,
-              heat: 'median',
-              rank: mu.avgPointsRank,
-            },
-            {
-              label: 'Reputation',
-              value: mu.reputation,
-              range: ranges.reputation,
-              heat: 'median',
-              center: 0,
-              rank: mu.reputationRank,
-            },
-          ]}
+        <Kpi
+          label="Members"
+          icon={<Users />}
+          value={mu.memberCount.toLocaleString()}
+          sub={mu.avgPoints != null ? `${mu.avgPoints.toLocaleString()} pts each` : undefined}
+          rank={mu.memberCountRank}
+          total={total}
         />
-        <MultiStatCard
-          label="Facilities"
-          rows={[
-            {
-              label: 'Dorms',
-              value: mu.dormitoriesLevel,
-              range: ranges.dormitoriesLevel,
-              heat: 'median',
-              rank: mu.dormitoriesLevelRank,
-            },
-            {
-              label: 'HQ',
-              value: mu.headquartersLevel,
-              range: ranges.headquartersLevel,
-              heat: 'median',
-              center: 2.5,
-              rank: mu.headquartersLevelRank,
-            },
-          ]}
-        />
-        <MultiStatCard
-          label="Premium"
-          rows={[
-            {
-              label: 'Gems bought',
-              value: mu.gemsPurchasedTotal,
-              display: <CompactNumber value={mu.gemsPurchasedTotal} />,
-              range: ranges.gemsPurchasedTotal,
-              heat: 'ramp',
-              rank: mu.gemsPurchasedTotalRank,
-            },
-            {
-              label: 'Months',
-              value: mu.premiumMonthsTotal,
-              range: ranges.premiumMonthsTotal,
-              heat: 'ramp',
-              rank: mu.premiumMonthsTotalRank,
-            },
-            {
-              label: 'Gifts',
-              value: mu.premiumGiftsTotal,
-              range: ranges.premiumGiftsTotal,
-              heat: 'ramp',
-              rank: mu.premiumGiftsTotalRank,
-            },
-          ]}
-        />
-      </StatCardGrid>
+      </KpiStrip>
 
-      <section className="space-y-3">
+      <RankMap title={`Where ${mu.name} ranks`} total={total} unit="MUs" groups={rankGroups(mu)} />
+
+      <section className="min-w-0 space-y-3">
         <h2 className="font-brand text-lg tracking-wide">Members</h2>
+        <SquadMap members={squad} />
         <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} omitColumns={['muName']} />
       </section>
-    </main>
+    </DetailLayout>
   )
+}
+
+/**
+ * Every ranked stat, grouped by what it says about the MU.
+ */
+function rankGroups(mu: MURow): RankMapGroup[] {
+  return [
+    {
+      title: 'Combat',
+      color: WAR_COLOR,
+      rows: [
+        rankRow('Damage', mu.damage, mu.damageRank, true),
+        rankRow('Weekly damage', mu.weeklyDamage, mu.weeklyDamageRank, true),
+        rankRow('Avg gear', mu.avgGearScore, mu.avgGearScoreRank),
+        rankRow('Terrain', mu.terrain, mu.terrainRank),
+        rankRow('Bounty', mu.bounty, mu.bountyRank, true),
+      ],
+    },
+    {
+      title: 'Economy',
+      color: POINTS_LEGEND.Wealth.color,
+      rows: [
+        rankRow('MU wealth', mu.wealth, mu.wealthRank, true),
+        rankRow('Member wealth', mu.memberWealth, mu.memberWealthRank, true),
+        rankRow('Companies', mu.companiesWealth, mu.companiesWealthRank, true),
+        rankRow('Items', mu.itemsWealth, mu.itemsWealthRank, true),
+        rankRow('Cash', mu.cashWealth, mu.cashWealthRank, true),
+        rankRow('Equipment', mu.equipmentWealth, mu.equipmentWealthRank, true),
+        rankRow('Weapons', mu.weaponsWealth, mu.weaponsWealthRank, true),
+        rankRow('Invested', mu.investedMoney, mu.investedMoneyRank, true),
+      ],
+    },
+    {
+      title: 'Society',
+      color: 'var(--heat-blue)',
+      rows: [
+        rankRow('Members', mu.memberCount, mu.memberCountRank),
+        rankRow('Avg level', mu.avgLevel, mu.avgLevelRank),
+        rankRow('Avg points', mu.avgPoints, mu.avgPointsRank, true),
+        rankRow('Reputation', mu.reputation, mu.reputationRank),
+        rankRow('Headquarters', mu.headquartersLevel, mu.headquartersLevelRank),
+        rankRow('Dormitories', mu.dormitoriesLevel, mu.dormitoriesLevelRank),
+      ],
+    },
+    {
+      title: 'Premium',
+      color: POINTS_LEGEND.Level.color,
+      rows: [
+        rankRow('Gems bought', mu.gemsPurchasedTotal, mu.gemsPurchasedTotalRank, true),
+        rankRow('Premium months', mu.premiumMonthsTotal, mu.premiumMonthsTotalRank),
+        rankRow('Gifts', mu.premiumGiftsTotal, mu.premiumGiftsTotalRank),
+      ],
+    },
+  ]
 }

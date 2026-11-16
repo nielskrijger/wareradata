@@ -4,7 +4,7 @@ import type { ReadinessPill } from '@/lib/rows'
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
-import { GREEN, GREEN_TEXT, pct, RED, SLATE } from '@/components/readiness-pill-colors'
+import { GREEN, GREEN_TEXT, pct, RED, SLATE, SLATE_TEXT } from '@/components/readiness-pill-colors'
 
 function CardRow({ icon, label, n, total, color, textColor = color }: {
   icon: ReactNode
@@ -52,7 +52,14 @@ export function ReadinessPillCard({ mix }: { mix: ReadinessPill }) {
           color={GREEN}
           textColor={GREEN_TEXT}
         />
-        <CardRow icon={<Minus className="size-3.5" />} label="Ready" n={mix.ready} total={total} color={SLATE} />
+        <CardRow
+          icon={<Minus className="size-3.5" />}
+          label="Ready"
+          n={mix.ready}
+          total={total}
+          color={SLATE}
+          textColor={SLATE_TEXT}
+        />
         <CardRow icon={<ArrowDown className="size-3.5" />} label="Debuff" n={mix.debuff} total={total} color={RED} />
       </div>
     </div>

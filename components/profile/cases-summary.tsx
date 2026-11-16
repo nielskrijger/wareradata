@@ -12,10 +12,10 @@ import { CASE_RARITIES } from '@/lib/warera/api'
 
 /**
  * Rarity accents reuse the shared heat tokens so the dots match the rest of the
- * app's palette; common stays muted since it's the floor.
+ * app's palette; common is the neutral grey since it's the floor.
  */
 const RARITY_COLOR: Record<CaseRarity, string> = {
-  common: 'var(--muted-foreground)',
+  common: 'var(--heat-slate)',
   uncommon: 'var(--heat-green)',
   rare: 'var(--heat-blue)',
   epic: 'var(--heat-purple)',

@@ -1,7 +1,7 @@
 import { buildAdvice } from '@/lib/advisor/build'
 import { advisorInputFromData } from '@/lib/advisor/input'
 import { basePerHour, outputPerHour, RULES, wagePerHour } from '@/lib/advisor/model'
-import { getAdviceData, getGameConfig, getItemPrices, managerPointValue } from '@/lib/warera/api'
+import { getAdviceData, getGameConfig, getItemPrices, getKeyOwnerId, managerPointValue } from '@/lib/warera/api'
 
 /**
  * Re-checks the advisor's formulas against the game's own per-employee
@@ -9,9 +9,15 @@ import { getAdviceData, getGameConfig, getItemPrices, managerPointValue } from '
  * (`npm run check-advisor`). A failed check means a patch changed a rule.
  */
 async function main() {
-  const [data, gameConfig, prices] = await Promise.all([getAdviceData(), getGameConfig(), getItemPrices()])
+  const userId = process.argv[2] ?? await getKeyOwnerId()
+  const [data, gameConfig, prices] = await Promise.all([
+    userId ? getAdviceData(userId) : null,
+    getGameConfig(),
+    getItemPrices(),
+  ])
+
   if (!data) {
-    console.error('the API key owner has no employees')
+    console.error('no user: pass a user id, or give the API key owner employees')
     process.exit(1)
   }
 

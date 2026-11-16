@@ -736,22 +736,28 @@ export interface AdviceData {
 }
 
 /**
- * Loads the API key owner's companies, employees, managers and bars. The owner
- * is read from their employees, so this is null when they have none.
+ * The API key owner's user id, read from their employees; null when they have none.
  */
-export async function getAdviceData(): Promise<AdviceData | null> {
+export async function getKeyOwnerId(): Promise<string | null> {
   const mine = await urgentClient.employee.getMyEmployees()
-  const userId = mine[0]?.owner
-  if (!userId) {
-    return null
-  }
 
+  return mine[0]?.owner ?? null
+}
+
+/**
+ * Loads a user's companies, employees, managers and bars; null for an unknown user.
+ */
+export async function getAdviceData(userId: string): Promise<AdviceData | null> {
   const [user, factories, ppValue, wageStats] = await Promise.all([
-    urgentClient.user.getUserById({ userId }),
+    urgentClient.user.getUserById({ userId }).catch(() => null),
     fetchUserCompanies(urgentClient, userId),
     urgentClient.gameStat.getPpMoneyValue(),
     urgentClient.managerOffer.getWageStats({}).catch(() => null),
   ])
+
+  if (!user) {
+    return null
+  }
 
   const managers = await Promise.all(
     factories.map(f => urgentClient.manager.getByCompanyId({ companyId: f.company._id }).catch(() => null)),

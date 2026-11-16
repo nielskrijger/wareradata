@@ -90,7 +90,7 @@ function Slice({ title, gainPerDay, share, background, label }: {
     <Popover>
       <PopoverTrigger
         openOnHover
-        delay={80}
+        delay={0}
         aria-label={`${title}: ${gain(gainPerDay)} g/day, ${pct(share)}`}
         className="flex min-w-0 cursor-default items-center outline-none hover:brightness-110
           focus-visible:ring-2 focus-visible:ring-white/60"

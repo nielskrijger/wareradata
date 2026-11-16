@@ -7,6 +7,7 @@ import type { PortfolioTotals } from '@/lib/factories/profit'
 import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
+import { GREEN_BADGE, RED_BADGE } from '@/components/badges/tone'
 import { CompanyName } from '@/components/company-name'
 import { EmptyDash } from '@/components/empty-dash'
 import { ItemIcon } from '@/components/item-icon'
@@ -18,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils'
 import { EmployeeBreakdown } from './employee-breakdown'
 
-import { ENGINE_FILL, goldSigned, humanizeCode, humanizeItem, netClass } from './format'
+import { ENGINE_FILL, goldSigned, humanizeCode, humanizeItem, netClass, STAFF_FILL } from './format'
 import { TraitIcon } from './trait-icon'
 import { hasTraitIcon } from './trait-icons'
 
@@ -118,8 +119,8 @@ function Pips({ value, max, scale }: { value: number, max: number, scale: number
             key={i}
             className={cn(
               'h-2.5 w-1 rounded-[1px]',
-              i < value && 'bg-heat-green dark:bg-green-400',
-              i >= value && i < max && 'bg-heat-green/30 dark:bg-green-400/30',
+              i < value && 'bg-heat-green',
+              i >= value && i < max && 'bg-heat-green/30',
               i >= max && 'bg-muted',
             )}
           />
@@ -158,8 +159,8 @@ function TraitChips({ e }: { e: LedgerEmployee }) {
           title={t.effects.join(', ') || 'No visible effect'}
           className={cn(
             'font-normal',
-            t.tone > 0 && 'bg-heat-green/15 text-heat-green-text dark:text-green-300',
-            t.tone < 0 && 'bg-red-500/15 text-red-800 dark:text-red-300',
+            t.tone > 0 && GREEN_BADGE,
+            t.tone < 0 && RED_BADGE,
             t.tone === 0 && 'bg-muted text-muted-foreground',
           )}
         >
@@ -302,8 +303,8 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
         <TableCell
           className={cn(
             'text-right tabular-nums',
-            e.happiness >= 65 && 'text-heat-green-text dark:text-green-400',
-            e.happiness < 50 && 'text-red-700 dark:text-red-400',
+            e.happiness >= 65 && 'text-heat-green-text',
+            e.happiness < 50 && 'text-heat-red',
           )}
         >
           {e.happiness}
@@ -372,7 +373,7 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
             {row.bestOpportunityPerDay >= 1 && (
               <Tooltip>
                 <TooltipTrigger render={<span className="shrink-0 cursor-help" />}>
-                  <Badge className="bg-heat-green/15 text-heat-green-text dark:text-green-300">
+                  <Badge className={GREEN_BADGE}>
                     <ItemIcon code={row.bestProductCode} small />
                     {goldSigned(row.bestOpportunityPerDay)}
                   </Badge>
@@ -392,7 +393,7 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
                     total={maxNet}
                     segments={[
                       { key: 'engine', value: engine, color: ENGINE_FILL },
-                      { key: 'employees', value: row.netPerDay - engine, color: 'var(--heat-green)' },
+                      { key: 'employees', value: row.netPerDay - engine, color: STAFF_FILL },
                     ]}
                   />
                 </TooltipTrigger>

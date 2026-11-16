@@ -5,6 +5,7 @@ import type { CombatMode } from '@/lib/skills/classify'
 import { Coins, Swords } from 'lucide-react'
 
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
+import { SectionHeading } from '@/components/profile/section-heading'
 import { StackedBar } from '@/components/stacked-bar'
 import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 
@@ -21,18 +22,15 @@ interface Props {
 }
 
 /**
- * A player's war/eco split as a card: badge, bar, points and share per side,
- * and the leading side's rank.
+ * A player's war/eco split for the profile sidebar: badge, bar, points and
+ * share per side, and the leading side's rank.
  */
-export function SkillSplitCard({ mode, warPoints, ecoPoints, warPointsRank, ecoPointsRank }: Props) {
+export function SkillSplit({ mode, warPoints, ecoPoints, warPointsRank, ecoPointsRank }: Props) {
   const total = warPoints + ecoPoints
 
   return (
-    <div className="bg-card flex flex-col gap-2 rounded-md border p-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">War / Eco skills</span>
-        <CombatModeBadge mode={mode} />
-      </div>
+    <div className="flex flex-col gap-2">
+      <SectionHeading title="Skills" aside={<CombatModeBadge mode={mode} />} />
       {total === 0 ? <span className="text-muted-foreground text-sm">No skills trained</span> : (
         <>
           <StackedBar
@@ -92,7 +90,7 @@ function SplitRow({ label, points, total, icon }: SplitRowProps) {
 }
 
 /**
- * Closing line: the leading discipline's leaderboard position, so the card
+ * Closing line: the leading discipline's leaderboard position, so it
  * answers "how invested is this player, really?". Hybrid/untrained omit it.
  */
 function Footer({ mode, warPointsRank, ecoPointsRank }: {

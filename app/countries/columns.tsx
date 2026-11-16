@@ -11,6 +11,7 @@ import {
   avgLevelColumn,
   combatModeColumn,
   compactNumberColumn,
+  decimalColumn,
   gearColumn,
   localeNumberColumn,
   percentBarColumn,
@@ -28,6 +29,7 @@ import {
   wealthColumns,
 } from '@/components/data-table/column-groups'
 import { InternalLink } from '@/components/links'
+import { formatNumber } from '@/lib/format'
 import { formatGovType } from '@/lib/warera/gov-type'
 
 export type { CountryRow }
@@ -59,7 +61,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
         cell: ({ row }) =>
           row.original.activePopulation === null ? null : (
             <InternalLink href={`/users?q=${encodeURIComponent(`country:${row.original.code}`)}`}>
-              {row.original.activePopulation.toLocaleString()}
+              {formatNumber(row.original.activePopulation)}
             </InternalLink>
           ),
         sortDescFirst: true,
@@ -70,7 +72,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
         header: 'MUs',
         cell: ({ row }) => (
           <InternalLink href={`/mus?q=${encodeURIComponent(`country:${row.original.code}`)}`}>
-            {row.original.musCount.toLocaleString()}
+            {formatNumber(row.original.musCount)}
           </InternalLink>
         ),
         sortDescFirst: true,
@@ -81,7 +83,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
         header: 'Parties',
         cell: ({ row }) => (
           <InternalLink href={`/parties?q=${encodeURIComponent(`country:${row.original.code}`)}`}>
-            {row.original.partyCount.toLocaleString()}
+            {formatNumber(row.original.partyCount)}
           </InternalLink>
         ),
         sortDescFirst: true,
@@ -106,14 +108,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
       compactNumberColumn<CountryRow>('weeklyDamagePerCitizen', 'Weekly / Citizen', { heat: 'median', width: 170 }),
     ],
     government: [
-      {
-        accessorKey: 'development',
-        header: 'Development',
-        cell: ({ row }) =>
-          row.original.development !== null ? row.original.development.toFixed(1) : null,
-        sortDescFirst: true,
-        meta: { heat: 'median', align: 'right', width: 150 },
-      },
+      decimalColumn<CountryRow>('development', 'Development', { width: 150 }),
       {
         accessorKey: 'govType',
         header: 'Government',

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
+import { formatNumber } from '@/lib/format'
 import { PAGE_SIZES } from './use-table-url-state'
 
 interface Props {
@@ -57,7 +58,7 @@ export function Pagination({
     <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
       <div className="flex items-center gap-3">
         <span>
-          {total.toLocaleString()}
+          {formatNumber(total)}
           {' '}
           rows
         </span>
@@ -112,7 +113,7 @@ export function Pagination({
           <span>
             of
             {' '}
-            {pageCount.toLocaleString()}
+            {formatNumber(pageCount)}
           </span>
         </label>
         <Button

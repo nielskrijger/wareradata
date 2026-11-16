@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { PointsSplit } from '@/components/detail/points-split'
 import { Panel } from '@/components/panel'
-import { topPercent } from '@/lib/format'
+import { formatNumber, topPercent } from '@/lib/format'
 
 interface Props {
   label: string
@@ -36,7 +36,7 @@ export function Kpi({ label, icon, value, sub, rank, total }: Props) {
         <span className="text-muted-foreground text-xs tabular-nums">
           {sub}
           {sub && rank != null && ' · '}
-          {rank != null && `#${rank.toLocaleString()}`}
+          {rank != null && `#${formatNumber(rank)}`}
           {rank != null && total != null && (
             <span className="text-muted-foreground/60">{` (${topPercent(rank, total)})`}</span>
           )}

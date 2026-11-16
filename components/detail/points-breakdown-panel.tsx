@@ -2,6 +2,7 @@ import { Trophy } from 'lucide-react'
 
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
+import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -51,10 +52,10 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, caption, cl
           <Trophy className="size-3.5" />
           Total points
         </div>
-        <div className="text-2xl leading-tight tabular-nums">{total.toLocaleString()}</div>
+        <div className="text-2xl leading-tight tabular-nums">{formatNumber(total)}</div>
         {caption?.value != null && (
           <div className="text-muted-foreground text-xs">
-            {caption.value.toLocaleString()}
+            {formatNumber(caption.value)}
             {' '}
             {caption.unit}
           </div>
@@ -73,7 +74,7 @@ export function PointsBreakdownPanel({ total, level, damage, wealth, caption, cl
                   {s.label}
                 </dt>
                 <dd className="tabular-nums">
-                  {s.value.toLocaleString()}
+                  {formatNumber(s.value)}
                   {' '}
                   <span className="text-muted-foreground text-xs">
                     (

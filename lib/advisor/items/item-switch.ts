@@ -14,6 +14,10 @@ import { fmt, specializationPct, toolPct } from '../shared'
  */
 const ITEM_PAYBACK_DAYS = 3
 
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 /**
  * The best item to switch to, net of lost specialization, when it repays the switch
  * cost in time. Also returns the new item's value so staff are judged on it.
@@ -68,7 +72,7 @@ export function itemSwitchItem(
     id: `item-${c.id}`,
     kind: 'item',
     title: `Switch ${c.name} from ${humanizeItem(c.itemCode)} to ${humanizeItem(best.code)}`,
-    why: `${humanizeItem(best.code)} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemConcrete} concrete (${fmt(cost)} gold).${hasTools ? ' Check the tools fit the new item.' : ''}`,
+    why: `${capitalize(humanizeItem(best.code))} nets ${fmt(vppByItem.get(best.code) ?? 0, 3)} a point against ${fmt(current, 3)}. Specialization goes from ${fmt(best.specFrom / n, 0)}% to ${fmt(best.specTo / n, 0)}% on average; costs ${input.changeItemConcrete} concrete (${fmt(cost)} gold).${hasTools ? ' Check the tools fit the new item.' : ''}`,
     gainPerDay: best.gain,
     energy: 0,
   }

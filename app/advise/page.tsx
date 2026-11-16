@@ -22,22 +22,22 @@ async function loadAdvice() {
 }
 
 /**
- * The API key owner's to-do list.
+ * The API key owner's to-do list, kept narrow so rows stay readable on wide screens.
  */
 export default async function AdvisePage() {
   await connection()
   const result = await loadAdvice()
 
   return (
-    <main className="space-y-6 px-6 py-8 sm:px-8 lg:px-12">
-      <header className="space-y-2">
-        <PageTitle>Today&apos;s to-do</PageTitle>
-        <Paragraph className="max-w-2xl">
-          What to do next in your companies, best first, priced at today&apos;s market. Tick items off to see what
-          your energy is going to.
-        </Paragraph>
-      </header>
-      {result ? <AdviseTodo result={result} /> : <Paragraph>The API key's owner has no employees yet.</Paragraph>}
+    <main className="mx-auto w-full max-w-5xl space-y-6 px-6 py-8 sm:px-8">
+      {result
+        ? <AdviseTodo result={result} />
+        : (
+            <>
+              <PageTitle>Today&apos;s to-do</PageTitle>
+              <Paragraph>The API key&apos;s owner has no employees yet.</Paragraph>
+            </>
+          )}
     </main>
   )
 }

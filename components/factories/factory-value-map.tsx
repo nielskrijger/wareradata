@@ -168,10 +168,6 @@ function Scatter({ points }: { points: Point[] }) {
 }
 
 /**
- * Production points per factory, stacked engine-first then each employee, with
- * Net/day at the end of the bar.
- */
-/**
  * Green deepening with net/day relative to the best earner, red when an
  * employee loses money.
  */
@@ -185,6 +181,10 @@ function netFill(net: number, best: number): string {
   return `oklch(${0.45 + t * 0.35} ${0.08 + t * 0.12} 150)`
 }
 
+/**
+ * Production points per factory, stacked engine-first then each employee, with
+ * Net/day at the end of the bar.
+ */
 function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
   const best = Math.max(0, ...rows.flatMap(r => r.employees.map(e => e.netPerDay)))
   const [ref, BW] = useWidth<HTMLDivElement>(380)

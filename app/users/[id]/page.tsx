@@ -13,13 +13,11 @@ import { CompactNumber } from '@/components/cells/compact-number'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { Kpi, KpiStrip } from '@/components/detail/kpi'
 import { RankMap } from '@/components/detail/rank-map'
-import { rankRow } from '@/components/detail/rank-row'
+import { GROUP_COLOR, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { FactoriesSection, FactoryKpi } from '@/components/factories/factories-section'
 import { Panel } from '@/components/panel'
-import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { ProfileSidebar } from '@/components/profile/profile-sidebar'
-import { WAR_COLOR } from '@/components/war-eco-colors'
 import { getSnapshot } from '@/lib/cache/memory'
 import { getUserEquipment } from '@/lib/cache/users'
 import { EMPTY, formatNumber } from '@/lib/format'
@@ -173,7 +171,7 @@ function rankGroups(user: UserRow): RankMapGroup[] {
   return [
     {
       title: 'Combat',
-      color: WAR_COLOR,
+      color: GROUP_COLOR.combat,
       rows: [
         rankRow('Damage', user.damage, user.damageRank, true),
         rankRow('Weekly damage', user.weeklyDamage, user.weeklyDamageRank, true),
@@ -186,20 +184,16 @@ function rankGroups(user: UserRow): RankMapGroup[] {
     },
     {
       title: 'Economy',
-      color: POINTS_LEGEND.Wealth.color,
+      color: GROUP_COLOR.economy,
       rows: [
         rankRow('Wealth', user.wealth, user.wealthRank, true),
-        rankRow('Companies', user.companiesWealth, user.companiesWealthRank, true),
-        rankRow('Items', user.itemsWealth, user.itemsWealthRank, true),
-        rankRow('Cash', user.cashWealth, user.cashWealthRank, true),
-        rankRow('Equipment', user.equipmentWealth, user.equipmentWealthRank, true),
-        rankRow('Weapons', user.weaponsWealth, user.weaponsWealthRank, true),
+        ...wealthPartRows(user),
         rankRow('Eco skills', user.ecoPoints, user.ecoPointsRank),
       ],
     },
     {
       title: 'Account',
-      color: POINTS_LEGEND.Level.color,
+      color: GROUP_COLOR.premium,
       rows: [
         rankRow('Level', user.level, user.levelRank),
         rankRow('Cases opened', user.casesOpened, user.casesOpenedRank),

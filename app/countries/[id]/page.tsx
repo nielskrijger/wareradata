@@ -1,34 +1,26 @@
 import type { Metadata } from 'next'
 
-import { notFound } from 'next/navigation'
+import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { CountryRow } from '@/lib/rows'
 
+import { Coins, Swords, Trophy, Users } from 'lucide-react'
+import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
-import { BattleCountBadge } from '@/components/badges/battle-count-badge'
 
-import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
-import { CombatModeCard } from '@/components/detail/combat-mode-card'
-import { DetailHeader, FactRow } from '@/components/detail/detail-header'
+import { CountrySidebar } from '@/components/country/country-sidebar'
+import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { GovernmentSection } from '@/components/detail/government-section'
-import { MultiStatCard } from '@/components/detail/multi-stat-card'
-import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
-import { StatCardGrid } from '@/components/detail/stat-card-grid'
-import { StrategicBonusCard } from '@/components/detail/strategic-bonus-card'
-import { VitalsCard } from '@/components/detail/vitals-card'
-import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
-import { Flag } from '@/components/flag'
-import { PageMain } from '@/components/layout/page-main'
-import { ExternalLink, InternalLink } from '@/components/links'
-import { ReadinessPillCard } from '@/components/readiness-pill-card'
+import { Kpi, KpiStrip } from '@/components/detail/kpi'
+import { RankMap } from '@/components/detail/rank-map'
+import { decimalRankRow, GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
-import { formatGovType } from '@/lib/warera/gov-type'
 
-import { wareraUrl } from '@/lib/warera/urls'
 import { CountryTables } from './country-tables'
 
 interface PageProps {
@@ -121,262 +113,50 @@ export default async function CountryDetailPage({ params }: PageProps) {
   } = result
 
   return (
-    <PageMain className="space-y-3">
-      <DetailHeader
-        title={c.name}
-        titleSuffix={c.damageTier ? <TierBadge tier={c.damageTier} /> : undefined}
-        emblem={(
-          <Flag
-            code={c.code}
-            className="-mt-9 rounded-md"
-            style={{
-              width: 64,
-              height: 48,
-              backgroundSize: 'cover',
-              boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)',
-            }}
-          />
-        )}
-      >
-        <FactRow>
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{formatNumber(citizenPage.total)}</span>
-            {' '}
-            citizens
-          </span>
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{formatNumber(c.musCount)}</span>
-            {' '}
-            MUs
-          </span>
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{formatNumber(c.partyCount)}</span>
-            {' '}
-            parties
-          </span>
-          {c.govType && (
-            <span className="text-muted-foreground">
-              <span className="text-foreground font-medium">{formatGovType(c.govType)}</span>
-            </span>
-          )}
-          {c.allianceId && c.allianceName && (
-            <span className="text-muted-foreground">
-              alliance
-              {' '}
-              <InternalLink href={`/alliances/${c.allianceId}`}>{c.allianceName}</InternalLink>
-            </span>
-          )}
-          <BattleCountBadge count={battlePage.total} countryId={c.id} battles={activeBattlesList} />
-          <ExternalLink href={wareraUrl('country', c.id)}>WarEra.io</ExternalLink>
-        </FactRow>
-      </DetailHeader>
-
-      <StatCardGrid>
-        <PointsBreakdownPanel
-          className="sm:col-span-2"
-          total={c.totalPoints}
-          level={c.levelPoints}
-          damage={c.damagePoints}
-          wealth={c.wealthPoints}
-          caption={{ value: c.avgPoints, unit: 'points/citizen' }}
+    <DetailLayout
+      sidebar={(
+        <CountrySidebar
+          country={c}
+          citizenCount={citizenPage.total}
+          ranges={ranges}
+          activeBattles={{ count: battlePage.total, list: activeBattlesList }}
+          strategicBonus={strategicBonus}
         />
-        <ReadinessPillCard mix={c.readinessPill} />
-        <CombatModeCard avgWarShare={c.avgWarShare} rank={c.avgWarShareRank} total={total} />
-        <VitalsCard average health={c.avgHealth} hunger={c.avgHunger} />
-        <MultiStatCard
-          label="Damage"
+      )}
+    >
+      <KpiStrip points={{ total: c.totalPoints, level: c.levelPoints, damage: c.damagePoints, wealth: c.wealthPoints }}>
+        <Kpi
+          label="Points"
+          icon={<Trophy />}
+          value={formatNumber(c.totalPoints)}
+          rank={c.totalPointsRank}
           total={total}
-          hero={{
-            label: 'Total',
-            value: c.damage,
-            display: <CompactNumber value={c.damage} />,
-            range: ranges.damage,
-            heat: 'median',
-            rank: c.damageRank,
-          }}
-          rows={[
-            {
-              label: 'Weekly',
-              value: c.weeklyDamage,
-              display: <CompactNumber value={c.weeklyDamage} />,
-              range: ranges.weeklyDamage,
-              heat: 'median',
-              rank: c.weeklyDamageRank,
-            },
-            {
-              label: 'Per citizen',
-              value: c.weeklyDamagePerCitizen,
-              display: <CompactNumber value={c.weeklyDamagePerCitizen} />,
-              range: ranges.weeklyDamagePerCitizen,
-              heat: 'median',
-              rank: c.weeklyDamagePerCitizenRank,
-            },
-            {
-              label: 'Avg gear',
-              value: c.avgGearScore,
-              range: ranges.avgGearScore,
-              heat: 'median',
-              rank: c.avgGearScoreRank,
-            },
-          ]}
         />
-        <MultiStatCard
-          label="Economy"
-          rows={[
-            {
-              label: 'Treasury',
-              value: c.money,
-              display: <CompactNumber value={c.money} />,
-              range: ranges.money,
-              heat: 'median',
-              rank: c.moneyRank,
-            },
-            {
-              label: 'Country Wealth',
-              value: c.wealth,
-              display: <CompactNumber value={c.wealth} />,
-              range: ranges.wealth,
-              heat: 'median',
-              rank: c.wealthRank,
-            },
-            {
-              label: 'Citizen Wealth',
-              value: c.citizenWealth,
-              display: <CompactNumber value={c.citizenWealth} />,
-              range: ranges.citizenWealth,
-              heat: 'median',
-              rank: c.citizenWealthRank,
-            },
-            {
-              label: 'Daily income',
-              value: c.dailyIncome,
-              display: <CompactNumber value={c.dailyIncome} />,
-              range: ranges.dailyIncome,
-              heat: 'median',
-              rank: c.dailyIncomeRank,
-            },
-            {
-              label: 'Bounty',
-              value: c.bounty,
-              display: <CompactNumber value={c.bounty} />,
-              range: ranges.bounty,
-              heat: 'ramp',
-              rank: c.bountyRank,
-            },
-            {
-              label: 'Development',
-              value: c.development,
-              range: ranges.development,
-              heat: 'median',
-              rank: c.developmentRank,
-            },
-          ]}
+        <Kpi
+          label="Damage"
+          icon={<Swords />}
+          value={<CompactNumber value={c.damage} />}
+          rank={c.damageRank}
+          total={total}
         />
-        <WealthCompositionCard
-          perCapita={{ count: citizenPage.total, unit: 'citizen' }}
-          parts={[
-            {
-              label: 'Companies',
-              value: c.companiesWealth,
-              range: ranges.companiesWealth,
-              rank: c.companiesWealthRank,
-            },
-            { label: 'Items', value: c.itemsWealth, range: ranges.itemsWealth, rank: c.itemsWealthRank },
-            { label: 'Cash', value: c.cashWealth, range: ranges.cashWealth, rank: c.cashWealthRank },
-            {
-              label: 'Equipment',
-              value: c.equipmentWealth,
-              range: ranges.equipmentWealth,
-              rank: c.equipmentWealthRank,
-            },
-            { label: 'Weapons', value: c.weaponsWealth, range: ranges.weaponsWealth, rank: c.weaponsWealthRank },
-          ]}
+        <Kpi
+          label="Wealth"
+          icon={<Coins />}
+          value={<CompactNumber value={c.wealth} />}
+          rank={c.wealthRank}
+          total={total}
         />
-        <MultiStatCard
-          label="Society"
-          rows={[
-            {
-              label: 'Active pop.',
-              value: c.activePopulation,
-              range: ranges.activePopulation,
-              heat: 'ramp',
-              rank: c.activePopulationRank,
-            },
-            { label: 'Avg level', value: c.avgLevel, range: ranges.avgLevel, heat: 'median', rank: c.avgLevelRank },
-            { label: 'MUs', value: c.musCount, range: ranges.musCount, heat: 'ramp', rank: c.musCountRank },
-            { label: 'Parties', value: c.partyCount, range: ranges.partyCount, heat: 'ramp', rank: c.partyCountRank },
-          ]}
+        <Kpi
+          label="Active citizens"
+          icon={<Users />}
+          value={formatNumber(c.activePopulation)}
+          sub={c.avgPoints != null ? `${formatNumber(c.avgPoints)} pts each` : undefined}
+          rank={c.activePopulationRank}
+          total={total}
         />
-        <MultiStatCard
-          label="Relations"
-          rows={[
-            { label: 'Allies', value: c.alliesCount, range: ranges.alliesCount, heat: 'ramp', rank: c.alliesCountRank },
-            { label: 'Wars', value: c.warsCount, range: ranges.warsCount, heat: 'invertMedian', rank: c.warsCountRank },
-          ]}
-        />
-        <MultiStatCard
-          label="Policies"
-          rows={[
-            {
-              label: 'Income tax',
-              value: c.taxIncome,
-              display: c.taxIncome != null ? `${c.taxIncome}%` : undefined,
-              range: ranges.taxIncome,
-              heat: 'invert',
-              center: 10,
-            },
-            {
-              label: 'Market tax',
-              value: c.taxMarket,
-              display: c.taxMarket != null ? `${c.taxMarket}%` : undefined,
-              range: ranges.taxMarket,
-              heat: 'invert',
-            },
-            {
-              label: 'Manager tax',
-              value: c.taxManager,
-              display: c.taxManager != null ? `${c.taxManager}%` : undefined,
-              range: ranges.taxManager,
-              heat: 'invert',
-            },
-            {
-              label: 'Unrest',
-              value: c.unrestPercent,
-              display: c.unrestPercent != null ? `${c.unrestPercent.toFixed(1)}%` : undefined,
-              range: ranges.unrestPercent,
-              heat: 'invert',
-            },
-          ]}
-        />
-        <StrategicBonusCard bonus={strategicBonus} scope="country" />
-        <MultiStatCard
-          label="Premium"
-          rows={[
-            {
-              label: 'Gems bought',
-              value: c.gemsPurchasedTotal,
-              display: <CompactNumber value={c.gemsPurchasedTotal} />,
-              range: ranges.gemsPurchasedTotal,
-              heat: 'ramp',
-              rank: c.gemsPurchasedTotalRank,
-            },
-            {
-              label: 'Months',
-              value: c.premiumMonthsTotal,
-              range: ranges.premiumMonthsTotal,
-              heat: 'ramp',
-              rank: c.premiumMonthsTotalRank,
-            },
-            {
-              label: 'Gifts',
-              value: c.premiumGiftsTotal,
-              range: ranges.premiumGiftsTotal,
-              heat: 'ramp',
-              rank: c.premiumGiftsTotalRank,
-            },
-          ]}
-        />
-      </StatCardGrid>
+      </KpiStrip>
+
+      <RankMap title={`Where ${c.name} ranks`} total={total} unit="countries" groups={rankGroups(c)} />
 
       <GovernmentSection government={government} />
 
@@ -387,6 +167,51 @@ export default async function CountryDetailPage({ params }: PageProps) {
         parties={partyPage}
         battles={battlePage}
       />
-    </PageMain>
+    </DetailLayout>
   )
+}
+
+/**
+ * Every ranked stat, grouped by what it says about the country.
+ */
+function rankGroups(c: CountryRow): RankMapGroup[] {
+  return [
+    {
+      title: 'Combat',
+      color: GROUP_COLOR.combat,
+      rows: [
+        rankRow('Damage', c.damage, c.damageRank, true),
+        rankRow('Weekly damage', c.weeklyDamage, c.weeklyDamageRank, true),
+        rankRow('Per citizen', c.weeklyDamagePerCitizen, c.weeklyDamagePerCitizenRank, true),
+        rankRow('Avg gear', c.avgGearScore, c.avgGearScoreRank),
+        rankRow('Bounty', c.bounty, c.bountyRank, true),
+      ],
+    },
+    {
+      title: 'Economy',
+      color: GROUP_COLOR.economy,
+      rows: [
+        rankRow('Treasury', c.money, c.moneyRank, true),
+        rankRow('Country wealth', c.wealth, c.wealthRank, true),
+        rankRow('Citizen wealth', c.citizenWealth, c.citizenWealthRank, true),
+        rankRow('Daily income', c.dailyIncome, c.dailyIncomeRank, true),
+        decimalRankRow('Development', c.development, c.developmentRank),
+        ...wealthPartRows(c),
+      ],
+    },
+    {
+      title: 'Society',
+      color: GROUP_COLOR.society,
+      rows: [
+        rankRow('Active pop.', c.activePopulation, c.activePopulationRank),
+        rankRow('Avg level', c.avgLevel, c.avgLevelRank),
+        rankRow('Avg points', c.avgPoints, c.avgPointsRank, true),
+        rankRow('MUs', c.musCount, c.musCountRank),
+        rankRow('Parties', c.partyCount, c.partyCountRank),
+        rankRow('Allies', c.alliesCount, c.alliesCountRank),
+        rankRow('Wars', c.warsCount, c.warsCountRank),
+      ],
+    },
+    premiumGroup(c),
+  ]
 }

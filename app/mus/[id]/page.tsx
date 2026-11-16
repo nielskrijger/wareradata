@@ -14,13 +14,11 @@ import { CompactNumber } from '@/components/cells/compact-number'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { Kpi, KpiStrip } from '@/components/detail/kpi'
 import { RankMap } from '@/components/detail/rank-map'
-import { rankRow } from '@/components/detail/rank-row'
+import { GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { PageSection } from '@/components/layout/page-section'
 import { MUSidebar } from '@/components/mu/mu-sidebar'
 import { SquadMap } from '@/components/mu/squad-map'
-import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
-import { WAR_COLOR } from '@/components/war-eco-colors'
 import { getSnapshot } from '@/lib/cache/memory'
 import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
@@ -158,7 +156,7 @@ function rankGroups(mu: MURow): RankMapGroup[] {
   return [
     {
       title: 'Combat',
-      color: WAR_COLOR,
+      color: GROUP_COLOR.combat,
       rows: [
         rankRow('Damage', mu.damage, mu.damageRank, true),
         rankRow('Weekly damage', mu.weeklyDamage, mu.weeklyDamageRank, true),
@@ -169,21 +167,17 @@ function rankGroups(mu: MURow): RankMapGroup[] {
     },
     {
       title: 'Economy',
-      color: POINTS_LEGEND.Wealth.color,
+      color: GROUP_COLOR.economy,
       rows: [
         rankRow('MU wealth', mu.wealth, mu.wealthRank, true),
         rankRow('Member wealth', mu.memberWealth, mu.memberWealthRank, true),
-        rankRow('Companies', mu.companiesWealth, mu.companiesWealthRank, true),
-        rankRow('Items', mu.itemsWealth, mu.itemsWealthRank, true),
-        rankRow('Cash', mu.cashWealth, mu.cashWealthRank, true),
-        rankRow('Equipment', mu.equipmentWealth, mu.equipmentWealthRank, true),
-        rankRow('Weapons', mu.weaponsWealth, mu.weaponsWealthRank, true),
+        ...wealthPartRows(mu),
         rankRow('Invested', mu.investedMoney, mu.investedMoneyRank, true),
       ],
     },
     {
       title: 'Society',
-      color: 'var(--heat-blue)',
+      color: GROUP_COLOR.society,
       rows: [
         rankRow('Members', mu.memberCount, mu.memberCountRank),
         rankRow('Avg level', mu.avgLevel, mu.avgLevelRank),
@@ -193,14 +187,6 @@ function rankGroups(mu: MURow): RankMapGroup[] {
         rankRow('Dormitories', mu.dormitoriesLevel, mu.dormitoriesLevelRank),
       ],
     },
-    {
-      title: 'Premium',
-      color: POINTS_LEGEND.Level.color,
-      rows: [
-        rankRow('Gems bought', mu.gemsPurchasedTotal, mu.gemsPurchasedTotalRank, true),
-        rankRow('Premium months', mu.premiumMonthsTotal, mu.premiumMonthsTotalRank),
-        rankRow('Gifts', mu.premiumGiftsTotal, mu.premiumGiftsTotalRank),
-      ],
-    },
+    premiumGroup(mu),
   ]
 }

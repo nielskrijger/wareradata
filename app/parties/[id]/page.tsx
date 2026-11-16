@@ -1,28 +1,25 @@
 import type { Metadata } from 'next'
 
-import { notFound } from 'next/navigation'
+import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { PartyRow } from '@/lib/rows'
 
+import { Coins, TrendingUp, Trophy, Users } from 'lucide-react'
+import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
-import { UsersTable } from '@/app/users/users-table'
 
-import { Avatar } from '@/components/avatar'
+import { UsersTable } from '@/app/users/users-table'
 import { CompactNumber } from '@/components/cells/compact-number'
-import { CountryCell } from '@/components/cells/country-cell'
-import { LeaderCell } from '@/components/cells/leader-cell'
-import { DetailHeader, FactRow } from '@/components/detail/detail-header'
-import { MultiStatCard } from '@/components/detail/multi-stat-card'
-import { PointsBreakdownPanel } from '@/components/detail/points-breakdown-panel'
-import { StatCardGrid } from '@/components/detail/stat-card-grid'
-import { WealthCompositionCard } from '@/components/detail/wealth-composition-card'
-import { PageMain } from '@/components/layout/page-main'
+import { DetailLayout } from '@/components/detail/detail-sidebar'
+import { Kpi, KpiStrip } from '@/components/detail/kpi'
+import { RankMap } from '@/components/detail/rank-map'
+import { GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { PageSection } from '@/components/layout/page-section'
-import { ExternalLink } from '@/components/links'
+import { PartySidebar } from '@/components/party/party-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
 import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
-import { computeRanges, firstPage } from '@/lib/query'
-import { wareraUrl } from '@/lib/warera/urls'
+import { firstPage } from '@/lib/query'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -39,13 +36,10 @@ const getParty = cache(async (id: string) => {
     return null
   }
 
-  // Ranges over the full set, same as the /parties table, so each stat can
-  // show where this party sits.
-  const ranges = computeRanges(parties)
-
+  const total = parties.length
   const memberPage = firstPage(users.filter(u => u.partyId === id), 'points')
 
-  return { party, ranges, memberPage }
+  return { party, total, memberPage }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -71,121 +65,75 @@ export default async function PartyDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { party: p, ranges, memberPage } = result
+  const { party: p, total, memberPage } = result
 
   return (
-    <PageMain className="space-y-3">
-      <DetailHeader
-        title={p.name}
-        emblem={(
-          <Avatar
-            src={p.avatarUrl}
-            name={p.name}
-            size={64}
-            className="-mt-9"
-            style={{ boxShadow: '0 0 0 4px var(--card), 0 0 0 5px var(--border)' }}
-          />
-        )}
-      >
-        <FactRow>
-          <CountryCell countryCode={p.countryCode} countryName={p.countryName} countryId={p.countryId} />
-          <span className="text-muted-foreground">
-            <span className="text-foreground font-medium">{formatNumber(p.memberCount)}</span>
-            {' '}
-            members
-          </span>
-          {p.createdAt && <span className="text-muted-foreground">Founded {p.createdAt.slice(0, 10)}</span>}
-          <ExternalLink href={wareraUrl('party', p.id)}>WarEra.io</ExternalLink>
-        </FactRow>
-        <FactRow muted>
-          {p.leaderName && (
-            <span className="inline-flex items-center gap-2">
-              Leader
-              <LeaderCell leader={p} />
-            </span>
-          )}
-        </FactRow>
-      </DetailHeader>
+    <DetailLayout sidebar={<PartySidebar party={p} />}>
+      <KpiStrip points={{ total: p.totalPoints, level: p.levelPoints, damage: p.damagePoints, wealth: p.wealthPoints }}>
+        <Kpi
+          label="Points"
+          icon={<Trophy />}
+          value={formatNumber(p.totalPoints)}
+          rank={p.totalPointsRank}
+          total={total}
+        />
+        <Kpi
+          label="Members"
+          icon={<Users />}
+          value={formatNumber(p.memberCount)}
+          sub={p.avgPoints != null ? `${formatNumber(p.avgPoints)} pts each` : undefined}
+          rank={p.memberCountRank}
+          total={total}
+        />
+        <Kpi
+          label="Avg
+          level"
+          icon={<TrendingUp />}
+          value={formatNumber(p.avgLevel)}
+          rank={p.avgLevelRank}
+          total={total}
+        />
+        <Kpi
+          label="Member wealth"
+          icon={<Coins />}
+          value={<CompactNumber value={p.memberWealth} />}
+        />
+      </KpiStrip>
 
-      <StatCardGrid>
-        <PointsBreakdownPanel
-          className="sm:col-span-2"
-          total={p.totalPoints}
-          level={p.levelPoints}
-          damage={p.damagePoints}
-          wealth={p.wealthPoints}
-          caption={{ value: p.avgPoints, unit: 'points/member' }}
-        />
-        <MultiStatCard
-          label="Society"
-          rows={[
-            {
-              label: 'Members',
-              value: p.memberCount,
-              range: ranges.memberCount,
-              heat: 'ramp',
-              rank: p.memberCountRank,
-            },
-            { label: 'Avg level', value: p.avgLevel, range: ranges.avgLevel, heat: 'median', rank: p.avgLevelRank },
-          ]}
-        />
-        <WealthCompositionCard
-          perCapita={{ count: p.memberCount, unit: 'member' }}
-          parts={[
-            {
-              label: 'Companies',
-              value: p.companiesWealth,
-              range: ranges.companiesWealth,
-              rank: p.companiesWealthRank,
-            },
-            { label: 'Items', value: p.itemsWealth, range: ranges.itemsWealth, rank: p.itemsWealthRank },
-            { label: 'Cash', value: p.cashWealth, range: ranges.cashWealth, rank: p.cashWealthRank },
-            {
-              label: 'Equipment',
-              value: p.equipmentWealth,
-              range: ranges.equipmentWealth,
-              rank: p.equipmentWealthRank,
-            },
-            { label: 'Weapons', value: p.weaponsWealth, range: ranges.weaponsWealth, rank: p.weaponsWealthRank },
-          ]}
-        />
-        <MultiStatCard
-          label="Premium"
-          rows={[
-            {
-              label: 'Gems bought',
-              value: p.gemsPurchasedTotal,
-              display: <CompactNumber value={p.gemsPurchasedTotal} />,
-              range: ranges.gemsPurchasedTotal,
-              heat: 'ramp',
-              rank: p.gemsPurchasedTotalRank,
-            },
-            {
-              label: 'Months',
-              value: p.premiumMonthsTotal,
-              range: ranges.premiumMonthsTotal,
-              heat: 'ramp',
-              rank: p.premiumMonthsTotalRank,
-            },
-            {
-              label: 'Gifts',
-              value: p.premiumGiftsTotal,
-              range: ranges.premiumGiftsTotal,
-              heat: 'ramp',
-              rank: p.premiumGiftsTotalRank,
-            },
-          ]}
-        />
-      </StatCardGrid>
+      <RankMap title={`Where ${p.name} ranks`} total={total} unit="parties" groups={rankGroups(p)} />
 
+      {/* Party members are citizens of the party's country. */}
       <PageSection title="Members">
-        {/* Party members are citizens of the party's country. */}
         <UsersTable
           initial={memberPage}
           baseFilter={`partyId:${p.id}`}
           omitColumns={['partyName', 'countryCode']}
         />
       </PageSection>
-    </PageMain>
+    </DetailLayout>
   )
+}
+
+/**
+ * Every ranked stat, grouped by what it says about the party.
+ */
+function rankGroups(p: PartyRow): RankMapGroup[] {
+  return [
+    {
+      title: 'Society',
+      color: GROUP_COLOR.society,
+      rows: [
+        rankRow('Points', p.totalPoints, p.totalPointsRank, true),
+        rankRow('Avg points', p.avgPoints, p.avgPointsRank, true),
+        rankRow('Members', p.memberCount, p.memberCountRank),
+        rankRow('Avg level', p.avgLevel, p.avgLevelRank),
+      ],
+    },
+    {
+      title: 'Economy',
+      color: GROUP_COLOR.economy,
+      rows: wealthPartRows(p),
+    },
+    premiumGroup(p),
+  ]
 }

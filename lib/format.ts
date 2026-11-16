@@ -26,6 +26,13 @@ export function formatNumber(n: number | null | undefined, maximumFractionDigits
 }
 
 /**
+ * The calendar date of an ISO timestamp ("2025-03-14").
+ */
+export function formatDate(iso: string | null | undefined): string {
+  return iso ? iso.slice(0, 10) : EMPTY
+}
+
+/**
  * Number with a fixed count of decimals ("12.3"), for scores like development.
  */
 export function formatDecimal(n: number | null | undefined, digits = 1): string {

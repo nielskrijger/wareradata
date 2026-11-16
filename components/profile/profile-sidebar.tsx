@@ -10,19 +10,19 @@ import { CountryCell } from '@/components/cells/country-cell'
 import { GroupCell } from '@/components/cells/group-cell'
 import { LevelTooltipContent } from '@/components/cells/level-tooltip-content'
 import { PrestigeSkull } from '@/components/cells/prestige-skull'
-import { DetailSidebar, Fact, SidebarSection, SidebarTitle } from '@/components/detail/detail-sidebar'
+import { DetailSidebar, Fact, SidebarIdentity, SidebarSection } from '@/components/detail/detail-sidebar'
+import { emblemRing } from '@/components/detail/emblem-ring'
 import { GearBand } from '@/components/detail/gear-band'
 import { SectionHeading } from '@/components/detail/section-heading'
-import { VitalRows } from '@/components/detail/vitals-card'
+import { VitalRows } from '@/components/detail/vital-rows'
 import { EmptyDash } from '@/components/empty-dash'
-import { ExternalLink } from '@/components/links'
 import { CasesSummary } from '@/components/profile/cases-summary'
 import { SkillSplit } from '@/components/profile/skill-split'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { formatDate } from '@/lib/format'
 import { schemeRgb } from '@/lib/warera/color-schemes'
-import { wareraUrl } from '@/lib/warera/urls'
 
 interface Props {
   user: UserRow
@@ -61,53 +61,54 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
           src={user.avatarUrl}
           name={user.username}
           size={88}
-          style={{ boxShadow: `0 0 0 3px var(--card), 0 0 0 4px rgb(${rgb})` }}
+          style={{ boxShadow: emblemRing(`rgb(${rgb})`) }}
         />
       )}
       refresh={refresh}
     >
-      <div className="space-y-3">
-        <SidebarTitle name={user.username}>
-          {user.levelTier && <TierBadge tier={user.levelTier} />}
-          {user.readinessStatus != null && (
-            <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} />
-          )}
-          {user.isBanned && <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
-        </SidebarTitle>
-
-        <dl className="space-y-1 text-sm">
-          <Fact label="Country">
-            <CountryCell countryCode={user.countryCode} countryName={user.countryName} countryId={user.countryId} />
-          </Fact>
-          <Fact label="Level">
-            {user.level == null ? <EmptyDash /> : (
-              <Tooltip>
-                <TooltipTrigger render={<span className="inline-flex cursor-default items-center gap-1 font-medium" />}>
-                  <PrestigeSkull prestige={user.prestige} />
-                  {user.level}
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <LevelTooltipContent {...user} rankedTotal={total} />
-                </TooltipContent>
-              </Tooltip>
+      <SidebarIdentity
+        name={user.username}
+        kind="user"
+        id={user.id}
+        badges={(
+          <>
+            {user.levelTier && <TierBadge tier={user.levelTier} />}
+            {user.readinessStatus != null && (
+              <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} />
             )}
-          </Fact>
-          <Fact label="MU">
-            {user.muName
-              ? <GroupCell kind="mu" name={user.muName} id={user.muId} avatarUrl={user.muAvatarUrl} />
-              : <EmptyDash />}
-          </Fact>
-          <Fact label="Party">
-            {user.partyName
-              ? <GroupCell kind="party" name={user.partyName} id={user.partyId} avatarUrl={user.partyAvatarUrl} />
-              : <EmptyDash />}
-          </Fact>
-          <Fact label="Joined">{user.createdAt?.slice(0, 10) ?? <EmptyDash />}</Fact>
-          <Fact label="Last seen"><RelativeTime iso={user.lastConnectionAt} /></Fact>
-        </dl>
-
-        <ExternalLink href={wareraUrl('user', user.id)}>WarEra.io</ExternalLink>
-      </div>
+            {user.isBanned && <Badge className="bg-red-500/15 text-red-900 dark:text-red-300">banned</Badge>}
+          </>
+        )}
+      >
+        <Fact label="Country">
+          <CountryCell countryCode={user.countryCode} countryName={user.countryName} countryId={user.countryId} />
+        </Fact>
+        <Fact label="Level">
+          {user.level == null ? <EmptyDash /> : (
+            <Tooltip>
+              <TooltipTrigger render={<span className="inline-flex cursor-default items-center gap-1 font-medium" />}>
+                <PrestigeSkull prestige={user.prestige} />
+                {user.level}
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <LevelTooltipContent {...user} rankedTotal={total} />
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </Fact>
+        <Fact label="MU">
+          {user.muName
+            ? <GroupCell kind="mu" name={user.muName} id={user.muId} avatarUrl={user.muAvatarUrl} />
+            : <EmptyDash />}
+        </Fact>
+        <Fact label="Party">
+          {user.partyName
+            ? <GroupCell kind="party" name={user.partyName} id={user.partyId} avatarUrl={user.partyAvatarUrl} />
+            : <EmptyDash />}
+        </Fact>
+        <Fact label="Joined">{user.createdAt ? formatDate(user.createdAt) : <EmptyDash />}</Fact>
+        <Fact label="Last seen"><RelativeTime iso={user.lastConnectionAt} /></Fact>
+      </SidebarIdentity>
 
       {/* A score of 0 still shows the gear so empty slots read as "nothing
           equipped"; null means the gear was never captured. */}

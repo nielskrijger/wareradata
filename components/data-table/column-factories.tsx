@@ -17,7 +17,7 @@ import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
 import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
-import { formatDecimal, formatNumber } from '@/lib/format'
+import { formatDate, formatDecimal, formatNumber } from '@/lib/format'
 import { readinessScore } from '@/lib/rows'
 
 /**
@@ -63,7 +63,7 @@ export function dateColumn<T extends RowData>(
   return {
     accessorKey: key,
     header,
-    cell: ({ row }) => (row.original[key] as string | null)?.slice(0, 10) ?? null,
+    cell: ({ row }) => formatDate(row.original[key] as string | null),
     sortDescFirst: true,
     meta: { width: opts.width ?? 110, hiddenByDefault: opts.hiddenByDefault },
   }

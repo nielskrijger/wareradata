@@ -14,8 +14,7 @@ import { FactoryValueMap } from './factory-value-map'
  * in one card, then the value map cards when there are employees to plot.
  */
 export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], totals: PortfolioTotals }) {
-  // The top earner starts open, so the roster shows what's inside each row.
-  const [open, setOpen] = useState(() => new Set(rows.slice(0, 1).map(r => r.id)))
+  const [open, setOpen] = useState(() => new Set<string>())
   const employeeCount = rows.reduce((n, r) => n + r.employees.length, 0)
   const allOpen = open.size === rows.length
 

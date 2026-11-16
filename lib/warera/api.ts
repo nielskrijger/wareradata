@@ -1,7 +1,10 @@
 import type {
   Alliance,
   BattleGetBattlesResponse,
+  BattleGetByIdResponse,
   BattleListItem,
+  BattleOrderItem,
+  BattleRankingItem,
   CompanyGetByIdResponse,
   CongressSeat,
   CountryListItem,
@@ -12,12 +15,14 @@ import type {
   InventoryFetchCurrentEquipmentResponse,
   ItemTradingGetPricesResponse,
   Manager,
+  MercenaryContractAuctionListItem,
   MuListItem,
   MuMemberListItem,
   MuRankingsOptional,
   PartyGetManyPaginatedResponse,
   RankingValueTier,
   RegionsObjectItem,
+  RoundGetByIdResponse,
   StrategicResourceBonuses,
   UserGetUserByIdResponse,
   UserGetUserLiteResponse,
@@ -554,6 +559,68 @@ export function getActiveBattles(): Promise<Battle[]> {
  */
 export function getFinishedBattles(maxBattles = 1000): Promise<Battle[]> {
   return pageBattles(scrapeClient, false, maxBattles)
+}
+
+export type BattleRanking = BattleRankingItem
+export type BattleRound = RoundGetByIdResponse
+export type BattleOrder = BattleOrderItem
+export type MercenaryContract = MercenaryContractAuctionListItem
+
+type Side = 'attacker' | 'defender'
+
+/**
+ * Everything the battle page shows beyond the list row, keyed by side where
+ * the API splits it.
+ */
+export interface BattleExtras {
+  battle: BattleGetByIdResponse
+  rounds: BattleRound[]
+  players: Record<Side, BattleRanking[]>
+  playersCount: Record<Side, number>
+  earners: Record<Side, BattleRanking[]>
+  mus: Record<Side, BattleRanking[]>
+  countries: Record<Side, BattleRanking[]>
+  orders: BattleOrder[]
+  contracts: MercenaryContract[]
+}
+
+const BATTLE_RANKING_LIMIT = 10
+
+/**
+ * Calls made in the same tick share one HTTP request (and one rate-limit
+ * slot), so this fires everything in two waves: what the battle id alone
+ * keys, then its rounds.
+ */
+export async function getBattleExtras(battleId: string): Promise<BattleExtras> {
+  const rank = (side: Side, type: 'user' | 'mu' | 'country', dataType: 'damage' | 'money' = 'damage') =>
+    urgentClient.battleRanking.getRanking({ battleId, side, type, dataType, limit: BATTLE_RANKING_LIMIT })
+
+  const bySide = <T>(fetch: (side: Side) => Promise<T>) =>
+    Promise.all([fetch('attacker'), fetch('defender')]).then(([attacker, defender]) => ({ attacker, defender }))
+
+  const [battle, players, earners, mus, countries, orders, contracts] = await Promise.all([
+    urgentClient.battle.getById({ battleId }),
+    bySide(side => rank(side, 'user')),
+    bySide(side => rank(side, 'user', 'money')),
+    bySide(side => rank(side, 'mu')),
+    bySide(side => rank(side, 'country')),
+    bySide(side => urgentClient.battleOrder.getByBattle({ battleId, side })),
+    urgentClient.mercenaryContractAuction.getPaginatedAuctions({ battleId, limit: 20 }),
+  ])
+
+  const rounds = await Promise.all(battle.rounds.map(roundId => urgentClient.round.getById({ roundId })))
+
+  return {
+    battle,
+    rounds: rounds.sort((a, b) => a.number - b.number),
+    players: { attacker: players.attacker.items, defender: players.defender.items },
+    playersCount: { attacker: players.attacker.itemCount, defender: players.defender.itemCount },
+    earners: { attacker: earners.attacker.items, defender: earners.defender.items },
+    mus: { attacker: mus.attacker.items, defender: mus.defender.items },
+    countries: { attacker: countries.attacker.items, defender: countries.defender.items },
+    orders: [...orders.attacker, ...orders.defender],
+    contracts: contracts.items,
+  }
 }
 
 /**

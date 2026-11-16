@@ -633,31 +633,38 @@ export interface RegionRow {
 }
 
 /**
- * One side of a matchup: a country, or for tournaments the team's MU.
+ * A user, MU or country, resolved to what a cell needs to show and link it.
  */
-export interface BattleSide {
-  kind: 'country' | 'mu'
+export interface EntityRef {
+  kind: 'user' | 'mu' | 'country'
 
   /**
-   * Country or MU id, for the detail-page link. Null if unresolved.
+   * For the detail-page link. Null if unresolved.
    */
   id: string | null
-
-  /**
-   * Country name, MU name, or "Team #N" fallback.
-   */
   name: string | null
 
   /**
-   * ISO-3166 code for the flag (country sides only).
+   * ISO-3166 code for the flag: the country's own, or a user's citizenship.
    */
   code: string | null
 
   /**
-   * MU avatar url (mu sides only).
+   * User or MU avatar url.
    */
   avatarUrl: string | null
+
+  /**
+   * A user's profile colour scheme.
+   */
+  colorScheme: string | null
 }
+
+/**
+ * One side of a matchup: a country, or for tournaments the team's MU, whose
+ * name falls back to "Team #N".
+ */
+export type BattleSide = EntityRef & { kind: 'country' | 'mu' }
 
 /**
  * Battles are events, not ranked entities, so there are no rank fields.
@@ -692,6 +699,85 @@ export interface BattleRow {
   tournamentName: string | null
   tournamentRound: number | null
   wonBy: 'attacker' | 'defender' | null
+}
+
+export type BattleSideKey = 'attacker' | 'defender'
+
+/**
+ * One entry of a battle leaderboard with its damage or money.
+ */
+export type BattleFighter = EntityRef & { value: number }
+
+export interface BattleRoundRow {
+  number: number
+  attackerDamage: number
+  defenderDamage: number
+  attackerPoints: number
+  defenderPoints: number
+  wonBy: BattleSideKey | null
+  isActive: boolean
+}
+
+export interface BattleHit {
+  id: string
+  side: BattleSideKey
+  user: EntityRef
+  damage: number
+  isCritical: boolean
+  isMissed: boolean
+  weaponCode: string | null
+  hitAt: string
+}
+
+export interface BattleOrderRow {
+  side: BattleSideKey
+
+  /**
+   * The country or MU that set the order.
+   */
+  by: EntityRef
+  priority: string
+}
+
+export interface BattleContractRow {
+  id: string
+  side: BattleSideKey
+  mu: EntityRef
+  budget: number
+  perK: number
+  status: string
+}
+
+export interface BattleSideStats {
+  damage: number
+  hits: number
+  moneyPool: number
+  moneyPer1k: number | null
+
+  /**
+   * Distinct players who dealt damage, from the ranking's entry count.
+   */
+  fighters: number
+}
+
+/**
+ * What the battle page adds to its {@link BattleRow}, fetched live per battle.
+ */
+export interface BattleDetail {
+  startedAt: string
+  sides: Record<BattleSideKey, BattleSideStats>
+  rounds: BattleRoundRow[]
+  players: Record<BattleSideKey, BattleFighter[]>
+  earners: Record<BattleSideKey, BattleFighter[]>
+  mus: Record<BattleSideKey, BattleFighter[]>
+  countries: Record<BattleSideKey, BattleFighter[]>
+
+  /**
+   * The live round's latest hits, newest first; empty once the battle ends.
+   */
+  hits: BattleHit[]
+  orders: BattleOrderRow[]
+  contracts: BattleContractRow[]
 }
 
 /**

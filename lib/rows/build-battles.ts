@@ -2,6 +2,8 @@ import type { BattleRow, BattleSide } from '@/lib/rows'
 import type { Lookups } from '@/lib/rows/lookups'
 import type { Battle, TournamentSnapshot } from '@/lib/warera/api'
 
+import { entityRef } from '@/lib/rows/lookups'
+
 /**
  * Country wars resolve to the country; tournament battles to the team's MU,
  * falling back to "Team #N" when it's not in the snapshot.
@@ -11,29 +13,14 @@ function resolveSide(
   lookups: Lookups,
   tournament: TournamentSnapshot,
 ): BattleSide {
-  if (side.tournamentTeam) {
-    const team = tournament.teams[side.tournamentTeam]
-    const muId = team?.muId ?? null
-    const muName = muId ? lookups.muNameById.get(muId) ?? null : null
-
-    return {
-      kind: 'mu',
-      id: muId,
-      name: muName ?? (team ? `Team #${team.number}` : null),
-      code: null,
-      avatarUrl: muId ? lookups.muAvatarById.get(muId) ?? null : null,
-    }
+  if (!side.tournamentTeam) {
+    return { ...entityRef('country', side.country, lookups), kind: 'country' }
   }
 
-  const country = side.country ? lookups.countryById.get(side.country) : undefined
+  const team = tournament.teams[side.tournamentTeam]
+  const mu = entityRef('mu', team?.muId, lookups)
 
-  return {
-    kind: 'country',
-    id: side.country ?? null,
-    name: country?.name ?? null,
-    code: country?.code ?? null,
-    avatarUrl: null,
-  }
+  return { ...mu, kind: 'mu', name: mu.name ?? (team ? `Team #${team.number}` : null) }
 }
 
 export function buildBattleRows(

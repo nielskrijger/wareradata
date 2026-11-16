@@ -1,33 +1,28 @@
 import type { Metadata } from 'next'
 
-import type { BattleSide } from '@/lib/rows'
-
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-
 import { connection } from 'next/server'
 import { cache } from 'react'
-import { Avatar } from '@/components/avatar'
 
-import { BattleTypeBadge } from '@/components/badges/battle-type-badge'
-import { CompactNumber } from '@/components/cells/compact-number'
-import { Flag } from '@/components/flag'
-import { PageMain } from '@/components/layout/page-main'
-import { ExternalLink, InternalLink } from '@/components/links'
-import { RelativeTime } from '@/components/relative-time'
-import { Badge } from '@/components/ui/badge'
+import { BattleLeaderboards } from '@/components/battle/battle-leaderboards'
+import { BattleSidebar } from '@/components/battle/battle-sidebar'
+import { LastHits } from '@/components/battle/last-hits'
+import { RoundChart } from '@/components/battle/round-chart'
+import { DetailLayout } from '@/components/detail/detail-sidebar'
+import { SectionHeading } from '@/components/detail/section-heading'
+import { Panel } from '@/components/panel'
+import { getBattleDetail } from '@/lib/cache/battle-detail'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
-import { cn } from '@/lib/utils'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
 /**
- * Loads the battle and everything its page renders. Wrapped in React `cache` so
- * `generateMetadata` and the page share one load per request.
+ * Loads the battle's row. Wrapped in React `cache` so `generateMetadata` and
+ * the page share one load per request.
  */
 const getBattle = cache(async (id: string) => {
   // Prefer the live active list (fresh score / round / top dealers). If the
@@ -56,136 +51,41 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   })
 }
 
-function battleVerb(b: { isTournament: boolean, isResistance: boolean }): string {
-  if (b.isTournament) {
-    return 'VS'
-  }
-
-  return b.isResistance ? 'RESISTING' : 'INVADING'
-}
-
-/**
- * One side of the battle header.
- *
- * Flags get an explicit inline size because the `flag-icons` `.fi` rule
- * otherwise wins on specificity.
- */
-function BattleSideEmblem({ side, won }: { side: BattleSide, won: boolean }) {
-  const label = side.name ?? side.code ?? '?'
-  const href = side.id ? (side.kind === 'mu' ? `/mus/${side.id}` : `/countries/${side.id}`) : null
-
-  const emblem = side.kind === 'mu' ? <Avatar src={side.avatarUrl} name={label} size={96} /> : (
-    <Flag
-      code={side.code}
-      style={{
-        width: 96,
-        height: 72,
-        backgroundSize: 'cover',
-        borderRadius: 8,
-        boxShadow: '0 0 0 1px var(--border)',
-      }}
-    />
-  )
-
-  const inner = (
-    <>
-      {emblem}
-      <span className="font-brand truncate text-base font-medium tracking-wide">{label}</span>
-    </>
-  )
-
-  return (
-    <div className="flex min-w-0 flex-col items-center gap-2 text-center">
-      {href ? (
-        <Link href={href} className="flex min-w-0 flex-col items-center gap-2 hover:opacity-80">
-          {inner}
-        </Link>
-      ) : inner}
-      {won && <Badge variant="default">winner</Badge>}
-    </div>
-  )
-}
-
 export default async function BattleDetailPage({ params }: PageProps) {
   await connection()
   const { id } = await params
-  const b = await getBattle(id)
-  if (!b) {
+  const [battle, detail] = await Promise.all([getBattle(id), getBattleDetail(id)])
+  if (!battle) {
     notFound()
   }
 
-  const attackerShare = b.totalDamage > 0 ? Math.round((b.attackerDamage / b.totalDamage) * 100) : 50
-  const defenderShare = 100 - attackerShare
-
   return (
-    <PageMain className="space-y-6">
-      <div className="flex flex-col items-center gap-4 py-4">
-        <div className="flex items-center justify-center gap-8">
-          <BattleSideEmblem side={b.attacker} won={b.wonBy === 'attacker'} />
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-muted-foreground/40 font-brand text-4xl tracking-wide">{battleVerb(b)}</span>
-            <BattleTypeBadge
-              isTournament={b.isTournament}
-              isResistance={b.isResistance}
-              tournamentName={b.tournamentName}
-              tournamentRound={b.tournamentRound}
-            />
-          </div>
-          <BattleSideEmblem side={b.defender} won={b.wonBy === 'defender'} />
-        </div>
-      </div>
-
-      <section className="flex flex-col items-center gap-3">
-        <div className="flex items-baseline gap-4 tabular-nums">
-          <span
-            className={cn(
-              'font-brand text-5xl',
-              b.attackerWonRounds >= b.defenderWonRounds ? 'text-foreground' : 'text-muted-foreground',
+    <DetailLayout sidebar={<BattleSidebar battle={battle} detail={detail} />}>
+      {!detail && (
+        <Panel className="text-muted-foreground text-sm">Round and fighter details are unavailable right now.</Panel>
+      )}
+      {!!detail?.rounds.length && (
+        <Panel as="section" className="space-y-3">
+          <SectionHeading
+            title="Damage per round"
+            aside={(
+              <span className="text-muted-foreground text-xs">
+                {`${battle.attacker.name ?? '?'} up · ${battle.defender.name ?? '?'} down`}
+              </span>
             )}
-          >
-            {b.attackerWonRounds}
-          </span>
-          <span className="text-muted-foreground text-2xl">–</span>
-          <span
-            className={cn(
-              'font-brand text-5xl',
-              b.defenderWonRounds >= b.attackerWonRounds ? 'text-foreground' : 'text-muted-foreground',
-            )}
-          >
-            {b.defenderWonRounds}
-          </span>
-        </div>
-        <span className="text-muted-foreground text-xs uppercase tracking-widest">
-          rounds won · first to {b.roundsToWin}
-        </span>
-
-        <div className="w-full max-w-md">
-          <div className="flex h-2.5 overflow-hidden rounded-full">
-            <div className="h-full bg-[var(--heat-red)]" style={{ width: `${attackerShare}%` }} />
-            <div className="h-full bg-[var(--heat-blue)]" style={{ width: `${defenderShare}%` }} />
-          </div>
-          <div className="text-muted-foreground mt-1 flex items-center justify-between text-xs tabular-nums">
-            <span><CompactNumber value={b.attackerDamage} /> ({attackerShare}%)</span>
-            <span>({defenderShare}%) <CompactNumber value={b.defenderDamage} /></span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm">
-          {b.isActive
-            ? <Badge variant="ghost" className="text-fire">Active</Badge>
-            : <span className="text-muted-foreground">Ended <RelativeTime iso={b.endedAt} /></span>}
-          {b.regionName && (
-            <span className="text-muted-foreground">
-              Region
-              {' '}
-              {b.regionId
-                ? <InternalLink href={`/regions?q=${encodeURIComponent(b.regionName)}`}>{b.regionName}</InternalLink>
-                : <span className="text-foreground">{b.regionName}</span>}
-            </span>
-          )}
-          <ExternalLink href={`https://app.warera.io/battle/${b.id}`}>WarEra.io</ExternalLink>
-        </div>
-      </section>
-    </PageMain>
+          />
+          <RoundChart rounds={detail.rounds} />
+        </Panel>
+      )}
+      {detail && (
+        <Panel as="section"><BattleLeaderboards battle={battle} detail={detail} /></Panel>
+      )}
+      {!!detail?.hits.length && (
+        <Panel as="section" className="space-y-2">
+          <SectionHeading title="Last hits" />
+          <LastHits hits={detail.hits} />
+        </Panel>
+      )}
+    </DetailLayout>
   )
 }

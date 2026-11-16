@@ -16,6 +16,7 @@ export interface AdviseRow {
   gainPerDay: number
   energy: number
   parts: { short: string, gainPerDay: number }[]
+  switch?: TodoItem['switch']
 }
 
 type GroupKey = NonNullable<TodoItem['group']>['key']
@@ -38,6 +39,7 @@ function single(item: TodoItem): AdviseRow {
     gainPerDay: item.gainPerDay ?? 0,
     energy: item.energy ?? 0,
     parts: [],
+    switch: item.switch,
   }
 }
 

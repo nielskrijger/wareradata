@@ -25,6 +25,11 @@ export interface TodoItem {
    * into one row; `short` names this one inside that row.
    */
   group?: { key: 'manager-job' | 'tool-move', short: string }
+
+  /**
+   * Set on an item switch, so the page can show it with item icons.
+   */
+  switch?: { company: string, from: string, to: string }
 }
 
 /**
@@ -47,6 +52,11 @@ export interface Bar {
 export interface AdvisorCompany {
   id: string
   name: string
+
+  /**
+   * The name as the player typed it, often just a number.
+   */
+  ownName: string
   itemCode: string
   employeeCap: number
   enginePointsPerDay: number

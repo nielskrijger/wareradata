@@ -82,6 +82,7 @@ export function itemSwitchItem(
     title: `Switch ${c.name} to ${humanizeItem(best.code)}`,
     why: why.filter(Boolean).join(' '),
     gainPerDay: best.gain,
+    switch: { company: c.ownName, from: c.itemCode, to: best.code },
   }
 
   return { item, vpp: vppByItem.get(best.code) ?? current }

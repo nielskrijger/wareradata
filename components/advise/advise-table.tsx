@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 
 import { COLUMNS, GAIN, gain, KIND, pct, sum, things } from './format'
 import { SMALL_GAIN_PER_DAY } from './rows'
+import { SwitchTitle } from './switch-title'
 
 /**
  * The big wins with a running share, then the small stuff folded away.
@@ -53,7 +54,9 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
     >
       <span className="text-muted-foreground pt-0.5 font-mono text-xs md:pt-0">{rank}</span>
       <span className="flex min-w-0 flex-col gap-1">
-        <span className={cn(small ? 'font-medium' : 'font-semibold')}>{row.title}</span>
+        <span className={cn(small ? 'font-medium' : 'font-semibold')}>
+          {row.switch ? <SwitchTitle change={row.switch} /> : row.title}
+        </span>
         {row.parts.length > 0 && (
           <span className="flex flex-wrap gap-1.5">
             {row.parts.map(p => (

@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { rarityColor } from '@/lib/gear/rarity'
 import { tierOfCode } from '@/lib/gear/score'
 import { cn } from '@/lib/utils'
+import { itemIconUrl } from '@/lib/warera/urls'
 
 /**
  * Slot order mirrors the in-game UI (weapon, ammo, head, chest, gloves,
@@ -53,7 +54,7 @@ function iconUrl(slot: Slot, code: string): string {
     ? slot
     : code
 
-  return `https://media.warera.io/images/itemsv2/${filename}.webp?v=2`
+  return itemIconUrl(filename)
 }
 
 /**

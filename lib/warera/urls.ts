@@ -4,6 +4,13 @@
  */
 const BASE = 'https://app.warera.io'
 
+/**
+ * The game's own icon for an item code.
+ */
+export function itemIconUrl(code: string): string {
+  return `https://media.warera.io/images/itemsv2/${code}.webp?v=2`
+}
+
 export type WareraEntityKind = 'user' | 'country' | 'mu' | 'party' | 'alliance'
 
 export function wareraUrl(kind: WareraEntityKind, id: string): string {

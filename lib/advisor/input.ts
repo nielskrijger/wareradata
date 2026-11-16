@@ -36,6 +36,7 @@ export function advisorInputFromData(
         id: f.company._id,
         // Players often name companies with just a number.
         name: `${humanizeCode(f.company.itemCode)} ${f.company.name}`,
+        ownName: f.company.name,
         itemCode: f.company.itemCode,
         employeeCap: f.hourly?.cap ?? 0,
         enginePointsPerDay: enginePointsPerDay(engineLevelOf(f), model, f.hourly?.engineMultiplier ?? 1),

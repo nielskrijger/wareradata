@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
 import { PageMain } from '@/components/layout/page-main'
-
 import { PageTitle } from '@/components/layout/page-title'
 import { ExternalLink } from '@/components/links'
 import { Paragraph } from '@/components/paragraph'
@@ -15,10 +14,10 @@ export const metadata: Metadata = pageMetadata({
 
 export default function AboutPage() {
   return (
-    <PageMain className="space-y-6">
+    <PageMain width="text" className="space-y-6">
       <header className="space-y-2">
         <PageTitle>About</PageTitle>
-        <Paragraph className="max-w-2xl">
+        <Paragraph>
           Warera Data is an unofficial stats site for the game
           {' '}
           <ExternalLink href="https://app.warera.io/">WarEra</ExternalLink>
@@ -26,7 +25,7 @@ export default function AboutPage() {
         </Paragraph>
       </header>
 
-      <section className="max-w-2xl space-y-2">
+      <section className="space-y-2">
         <h2 className="font-brand text-xl tracking-wide">How the points score works</h2>
         <Paragraph>
           Each player earns a single
@@ -105,7 +104,7 @@ export default function AboutPage() {
         </Paragraph>
       </section>
 
-      <section className="max-w-2xl space-y-2">
+      <section className="space-y-2">
         <h2 className="font-brand text-xl tracking-wide">Where the data comes from</h2>
         <Paragraph>
           Data is scraped continuously from the
@@ -127,7 +126,7 @@ export default function AboutPage() {
         </Paragraph>
       </section>
 
-      <section className="max-w-2xl space-y-2">
+      <section className="space-y-2">
         <h2 className="font-brand text-xl tracking-wide">Open source</h2>
         <Paragraph>
           Warera Data is open source on

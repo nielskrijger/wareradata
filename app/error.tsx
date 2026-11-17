@@ -21,8 +21,8 @@ export default function ErrorPage({ error, unstable_retry }: Props) {
   }, [error])
 
   return (
-    <PageShell title="Something went wrong">
-      <div className="max-w-2xl space-y-3">
+    <PageShell title="Something went wrong" width="text">
+      <div className="space-y-3">
         <Paragraph>
           This page failed to load. Trying again usually fixes it; if it keeps
           happening, the data may be mid-update.

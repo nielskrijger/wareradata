@@ -1,3 +1,5 @@
+import { Paragraph } from '@/components/paragraph'
+
 import { PageShell } from './page-shell'
 
 /**
@@ -7,11 +9,11 @@ import { PageShell } from './page-shell'
  */
 export function NoDataPage() {
   return (
-    <PageShell title="No data">
-      <p className="text-muted-foreground text-sm">
+    <PageShell title="No data" width="text">
+      <Paragraph>
         No data yet, the scraper hasn&apos;t finished its first run. Check back
         in a few minutes.
-      </p>
+      </Paragraph>
     </PageShell>
   )
 }

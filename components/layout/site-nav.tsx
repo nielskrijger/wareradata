@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { Logo } from './logo'
+import { PAGE_GUTTER } from './page-gutter'
 import { SiteSearch } from './site-search'
 import { ThemeToggle } from './theme-toggle'
 
@@ -43,13 +44,9 @@ export function SiteNav() {
 
   return (
     <nav className="bg-background sticky top-0 z-30 border-b">
-      {/* Logo at the screen's left edge, menu in the content column. The logo's track
-          never shrinks below the logo, so on narrower screens it pushes the menu right. */}
-      <div className="grid grid-cols-[minmax(max-content,1fr)_minmax(0,var(--container-site))_1fr] items-center py-3">
-        <Link
-          href="/countries"
-          className="font-brand flex items-center gap-2 pr-3 pl-6 text-[20px] tracking-wide sm:pl-8 lg:pl-12"
-        >
+      {/* Same column and gutters as the pages, so logo and search line up with page content. */}
+      <div className={cn(PAGE_GUTTER, 'max-w-site mx-auto flex items-center gap-3 py-3 sm:gap-6')}>
+        <Link href="/countries" className="font-brand flex shrink-0 items-center gap-2 text-[20px] tracking-wide">
           <Logo />
           {/* Drop the wordmark below lg so the eight inline links keep their
               room down to the md breakpoint; the logo mark alone still brands. */}
@@ -59,7 +56,7 @@ export function SiteNav() {
         {/* Inline links on wide screens. With the wordmark hidden below lg, the
             eight items + toggle fit down to md; below that they collapse into
             the hamburger menu on the right. */}
-        <div className="flex min-w-0 items-center gap-3 px-6 sm:gap-6 sm:px-8 lg:px-12">
+        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-6">
           <ul className="hidden items-center gap-1 text-sm md:flex">
             {links.map((link) => {
               const active = isActive(pathname, link.href)

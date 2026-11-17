@@ -9,10 +9,8 @@ import { PageMain } from '@/components/layout/page-main'
 import { buildAdvice } from '@/lib/advisor/build'
 import { advisorInputFromData } from '@/lib/advisor/input'
 import { getSnapshot } from '@/lib/cache/memory'
-import { cn } from '@/lib/utils'
 
 import { getAdviceData, getItemPrices } from '@/lib/warera/api'
-import { ADVISE_WIDTH } from './width'
 
 export const metadata: Metadata = {
   title: 'Advise',
@@ -35,7 +33,7 @@ export default async function AdvisePage({ params }: PageProps) {
   }
 
   return (
-    <PageMain className={cn('space-y-6', ADVISE_WIDTH)}>
+    <PageMain width="medium" className="space-y-6">
       <ItemCatalog>
         <AdviseList
           result={buildAdvice(advisorInputFromData(data, gameConfig, prices))}

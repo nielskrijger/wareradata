@@ -18,8 +18,8 @@ interface Props {
 
 export function NotFoundPage({ entity, listHref, listLabel }: Props) {
   return (
-    <PageShell title={`No such ${entity}`}>
-      <Paragraph className="max-w-2xl">
+    <PageShell title={`No such ${entity}`} width="text">
+      <Paragraph>
         There is no
         {' '}
         {entity}

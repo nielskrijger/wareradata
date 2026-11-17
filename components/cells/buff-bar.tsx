@@ -1,12 +1,12 @@
-import type { ReadinessPill } from '@/lib/rows'
+import type { BuffMix } from '@/lib/rows'
 
+import { GREEN, pct, RED, SLATE } from '@/components/buff-colors'
 import { EmptyDash } from '@/components/empty-dash'
-import { GREEN, pct, RED, SLATE } from '@/components/readiness-pill-colors'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
-  mix: ReadinessPill
+  mix: BuffMix
 
   /**
    * Bar track width. Defaults to 96px (a touch wider than the 64px health/
@@ -36,9 +36,9 @@ function BreakdownRow({ label, n, total, color }: { label: string, n: number, to
 }
 
 /**
- * Members by readiness as a stacked bar, broken down on hover.
+ * Members by buff status as a stacked bar, broken down on hover.
  */
-export function ReadinessPillBar({ mix, width = 96 }: Props) {
+export function BuffBar({ mix, width = 96 }: Props) {
   const total = mix.buff + mix.ready + mix.debuff
   if (total === 0) {
     return <EmptyDash />

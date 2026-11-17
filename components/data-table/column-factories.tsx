@@ -4,21 +4,21 @@ import type { ColumnDef, DataColumnMeta } from './features'
 
 import type { PointsStat } from '@/components/cells/points-breakdown-cell'
 
-import type { LeaderFields, ReadinessPill } from '@/lib/rows'
+import type { BuffMix, LeaderFields } from '@/lib/rows'
 
 import type { RankingTier } from '@/lib/warera/api'
 import { GearScorePill } from '@/components/badges/gear-score-pill'
 import { TierBadge } from '@/components/badges/tier-badge'
+import { BuffBar } from '@/components/cells/buff-bar'
 import { CombatModeShareCell } from '@/components/cells/combat-mode-share-cell'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CountryCell } from '@/components/cells/country-cell'
 import { LeaderCell } from '@/components/cells/leader-cell'
 import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
-import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
 import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
 import { formatDate, formatDecimal, formatNumber } from '@/lib/format'
-import { readinessScore } from '@/lib/rows'
+import { buffScore } from '@/lib/rows'
 
 /**
  * Column factories for patterns repeated across the entity tables. Required
@@ -171,18 +171,18 @@ export function tierColumn<T extends RowData>(
 }
 
 /**
- * The readiness buff/ready/debuff pill bar. `accessorFn` enables the sortable
+ * The buff/ready/debuff bar. `accessorFn` enables the sortable
  * header; the actual ordering is done server-side (manualSorting) via the
- * matching `readinessScore` sort case.
+ * matching `buffScore` sort case.
  */
-export function readinessColumn<T extends { readinessPill: ReadinessPill }>(
+export function buffColumn<T extends { buffMix: BuffMix }>(
   opts: { width?: number } = {},
 ): ColumnDef<T> {
   return {
-    id: 'readinessScore',
-    header: 'Readiness',
-    accessorFn: row => readinessScore(row.readinessPill),
-    cell: ({ row }) => <ReadinessPillBar mix={row.original.readinessPill} />,
+    id: 'buffScore',
+    header: 'Buff',
+    accessorFn: row => buffScore(row.buffMix),
+    cell: ({ row }) => <BuffBar mix={row.original.buffMix} />,
     sortDescFirst: true,
     sortUndefined: 'last',
     meta: { width: opts.width ?? 130 },

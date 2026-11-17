@@ -152,11 +152,11 @@ export function aggregateMembers(
       entry.employeeHappinessCount += workers
     }
 
-    if (u.readinessStatus === 'buff') {
+    if (u.buffStatus === 'buff') {
       entry.buffCount += 1
-    } else if (u.readinessStatus === 'debuff') {
+    } else if (u.buffStatus === 'debuff') {
       entry.debuffCount += 1
-    } else if (u.readinessStatus === 'neither') {
+    } else if (u.buffStatus === 'neither') {
       entry.readyCount += 1
     }
   }
@@ -292,11 +292,11 @@ export function aggPremium(agg: MemberAgg | undefined): GroupPremiumStats {
 export const PREMIUM_KEYS = ['gemsPurchasedTotal', 'premiumMonthsTotal', 'premiumGiftsTotal'] as const
 
 /**
- * Readiness-status mix (buff / ready / debuff member counts) from a
+ * Buff-status mix (buff / ready / debuff member counts) from a
  * {@link MemberAgg}, or all-zero when the agg is missing. Feeds the
- * ReadinessPillBar on country / MU rows.
+ * BuffBar on country / MU rows.
  */
-function aggReadinessPill(agg: MemberAgg | undefined): { buff: number, ready: number, debuff: number } {
+function aggBuffMix(agg: MemberAgg | undefined): { buff: number, ready: number, debuff: number } {
   return {
     buff: agg?.buffCount ?? 0,
     ready: agg?.readyCount ?? 0,
@@ -359,7 +359,7 @@ export const FACTORY_RANK_KEYS = [
 ] as const
 
 /**
- * Member averages and the readiness mix.
+ * Member averages and the buff mix.
  */
 export function aggVitals(agg: MemberAgg | undefined): GroupVitals {
   return {
@@ -371,6 +371,6 @@ export function aggVitals(agg: MemberAgg | undefined): GroupVitals {
     avgHealthRank: null,
     avgHunger: aggMean(agg?.hungerSum ?? 0, agg?.hungerCount ?? 0),
     avgHungerRank: null,
-    readinessPill: aggReadinessPill(agg),
+    buffMix: aggBuffMix(agg),
   }
 }

@@ -4,7 +4,7 @@ import type { UserRow } from '@/lib/rows'
 import type { CasesByType, Equipment } from '@/lib/warera/api'
 
 import { Avatar } from '@/components/avatar'
-import { ReadinessBadge } from '@/components/badges/readiness-badge'
+import { BuffBadge } from '@/components/badges/buff-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { RED_BADGE } from '@/components/badges/tone'
 import { CountryCell } from '@/components/cells/country-cell'
@@ -74,8 +74,8 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
         badges={(
           <>
             {user.levelTier && <TierBadge tier={user.levelTier} />}
-            {user.readinessStatus != null && (
-              <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} />
+            {user.buffStatus != null && (
+              <BuffBadge status={user.buffStatus} endsAt={user.buffEndsAt} />
             )}
             {user.isBanned && <Badge className={RED_BADGE}>banned</Badge>}
           </>

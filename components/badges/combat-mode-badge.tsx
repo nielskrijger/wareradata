@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 
 /**
  * Per-mode tint, following the house badge style (a 15% tinted background + dark-aware text),
- * matching TierBadge / ReadinessBadge. War reads red (combat), Eco green
+ * matching TierBadge / BuffBadge. War reads red (combat), Eco green
  * (growth), Hybrid amber (split), Untrained muted.
  */
 const MODE_META: Record<CombatMode, { label: string, className: string }> = {

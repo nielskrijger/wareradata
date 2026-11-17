@@ -91,14 +91,14 @@ export interface UserRow {
   premiumGiftsRank: number | null
   premiumMonths: number | null
   premiumMonthsRank: number | null
-  readinessStatus: 'buff' | 'debuff' | 'neither' | null
+  buffStatus: 'buff' | 'debuff' | 'neither' | null
 
   /**
    * ISO timestamp when the active buff/debuff ends (buffs.buffEndAt /
    * debuffEndAt from the scrape), or null when no effect is active. Drives the
    * live countdown on the Buff column.
    */
-  readinessEndsAt: string | null
+  buffEndsAt: string | null
   referrals: number | null
   referralsRank: number | null
 
@@ -220,21 +220,21 @@ export interface ActiveBattleSummary {
 }
 
 /**
- * Member counts by readiness status (buff / ready / debuff) for an entity, used
- * by the ReadinessPillBar. Excludes members with an unknown status, so the three
+ * Member counts by buff status (buff / ready / debuff) for an entity, used
+ * by the BuffBar. Excludes members with an unknown status, so the three
  * need not sum to the member count.
  */
-export interface ReadinessPill {
+export interface BuffMix {
   buff: number
   ready: number
   debuff: number
 }
 
 /**
- * Mean readiness on a buff +1 / ready 0 / debuff -1 scale, so groups of any
+ * Mean buff status on a buff +1 / ready 0 / debuff -1 scale, so groups of any
  * size compare. Null when no member's status is known.
  */
-export function readinessScore(mix: ReadinessPill): number | null {
+export function buffScore(mix: BuffMix): number | null {
   const total = mix.buff + mix.ready + mix.debuff
 
   return total > 0 ? (mix.buff - mix.debuff) / total : null
@@ -358,7 +358,7 @@ export interface GroupPremiumStats {
 }
 
 /**
- * Member averages of gear, war share, health and hunger, plus the readiness mix.
+ * Member averages of gear, war share, health and hunger, plus the buff mix.
  */
 export interface GroupVitals {
   avgGearScore: number | null
@@ -369,7 +369,7 @@ export interface GroupVitals {
   avgHealthRank: number | null
   avgHunger: number | null
   avgHungerRank: number | null
-  readinessPill: ReadinessPill
+  buffMix: BuffMix
 }
 
 /**

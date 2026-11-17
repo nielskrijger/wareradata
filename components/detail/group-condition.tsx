@@ -1,26 +1,26 @@
 import type { GroupVitals } from '@/lib/rows'
 
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
+import { BuffRows } from '@/components/detail/buff-rows'
 import { SidebarSection } from '@/components/detail/detail-sidebar'
 import { LeanSplit } from '@/components/detail/lean-split'
-import { ReadinessRows } from '@/components/detail/readiness-rows'
 import { SectionHeading } from '@/components/detail/section-heading'
 import { VitalRows } from '@/components/detail/vital-rows'
 import { classifyWarShare } from '@/lib/skills/classify'
 
 /**
- * The members' readiness, vitals and war/eco lean, as sidebar sections of an
+ * The members' buffs, vitals and war/eco lean, as sidebar sections of an
  * MU, country or alliance.
  */
 export function GroupCondition({ row }: { row: GroupVitals }) {
-  const { buff, ready, debuff } = row.readinessPill
+  const { buff, ready, debuff } = row.buffMix
 
   return (
     <>
       {buff + ready + debuff > 0 && (
         <SidebarSection>
-          <SectionHeading title="Readiness" />
-          <ReadinessRows mix={row.readinessPill} />
+          <SectionHeading title="Buff" />
+          <BuffRows mix={row.buffMix} />
         </SidebarSection>
       )}
 

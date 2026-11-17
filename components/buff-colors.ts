@@ -1,7 +1,7 @@
 /*
  * Buff = green, ready = slate, debuff = red, all from the shared --heat-* tokens
  * so good / neutral / bad read consistently across the app (war/eco, damage,
- * readiness). Ready uses a neutral grey (--heat-slate, with --heat-slate-text
+ * buffs). Ready uses a neutral grey (--heat-slate, with --heat-slate-text
  * for its numbers) rather than a saturated blue, so the neutral state reads calmer
  * beside the green/red and shares the gear pill's "neutral" language. The
  * tokens are theme-aware and still legible on the dark tooltip; a thin

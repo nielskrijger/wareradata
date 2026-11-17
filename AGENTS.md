@@ -27,3 +27,7 @@ In every change, clean up nearby: dead code, duplication, and pieces that should
 ## Fix the cause, not the case
 
 When one place looks wrong, first ask whether the shared piece behind it is wrong, and change that. Don't add flags, special cases or new variants to work around it for one caller. Before writing new code for a fix, look for the smallest change to what exists.
+
+## No backwards compatibility
+
+Rename and restructure freely. Don't add aliases, shims, redirects or migrations to keep old names, URLs, sort keys, saved column settings or API fields working; breaking them is fine.

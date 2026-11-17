@@ -11,6 +11,7 @@ import { WareraLinkIcon } from '@/components/cells/warera-link-icon'
 import { CountryHoverCard } from '@/components/country-hover-card'
 import { buildColumns } from '@/components/data-table/column-categories'
 import {
+  buffColumn,
   combatModeColumn,
   compactNumberColumn,
   dateColumn,
@@ -20,7 +21,6 @@ import {
   localeNumberColumn,
   percentBarColumn,
   rankTooltipColumn,
-  readinessColumn,
   tierColumn,
 } from '@/components/data-table/column-factories'
 import {
@@ -130,7 +130,7 @@ export const allianceColumns: ColumnDef<AllianceRow>[] = buildColumns<AllianceRo
         width: 140,
         tooltip: 'Average hunger across citizens.',
       }),
-      readinessColumn<AllianceRow>(),
+      buffColumn<AllianceRow>(),
       combatModeColumn<AllianceRow>(),
       tierColumn<AllianceRow>('damageTier'),
       rankTooltipColumn<AllianceRow>('damage', 'damageRank', 'Total', { width: 140, rankLabel: 'Total damage' }),

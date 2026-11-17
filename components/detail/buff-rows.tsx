@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 
-import type { ReadinessPill } from '@/lib/rows'
+import type { BuffMix } from '@/lib/rows'
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
-import { GREEN, GREEN_TEXT, pct, RED, SLATE, SLATE_TEXT } from '@/components/readiness-pill-colors'
+import { GREEN, GREEN_TEXT, pct, RED, SLATE, SLATE_TEXT } from '@/components/buff-colors'
 
 function CardRow({ icon, label, n, total, color, textColor = color }: {
   icon: ReactNode
@@ -34,7 +34,7 @@ function CardRow({ icon, label, n, total, color, textColor = color }: {
  * The three buff / ready / debuff bars. Renders nothing when no member has a
  * known status.
  */
-export function ReadinessRows({ mix }: { mix: ReadinessPill }) {
+export function BuffRows({ mix }: { mix: BuffMix }) {
   const total = mix.buff + mix.ready + mix.debuff
   if (total === 0) {
     return null

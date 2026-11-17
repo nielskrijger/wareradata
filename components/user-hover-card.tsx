@@ -11,8 +11,8 @@ import type { Equipment } from '@/lib/warera/api'
 import { Clock, Coins, Drumstick, Heart, Swords, Trophy } from 'lucide-react'
 
 import { Avatar } from '@/components/avatar'
+import { BuffBadge } from '@/components/badges/buff-badge'
 import { GearScorePill } from '@/components/badges/gear-score-pill'
-import { ReadinessBadge } from '@/components/badges/readiness-badge'
 import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { GearStrip } from '@/components/detail/gear-strip'
@@ -106,7 +106,7 @@ function Body({ data }: { data: FetchedData }) {
       <div className="border-y border-neutral-50/15 px-3 py-2">
         <div className="mb-1.5 flex items-center justify-between">
           <HoverLabel>Vitals</HoverLabel>
-          <ReadinessBadge status={user.readinessStatus} endsAt={user.readinessEndsAt} withTooltip={false} />
+          <BuffBadge status={user.buffStatus} endsAt={user.buffEndsAt} withTooltip={false} />
         </div>
         <div className="space-y-1">
           <FillBar icon={<Heart className={ICON_CLS} />} pct={user.health} />

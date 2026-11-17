@@ -1,4 +1,4 @@
-import { SEAM } from '@/components/readiness-pill-colors'
+import { SEAM } from '@/components/buff-colors'
 
 export interface BarSegment {
   key: string

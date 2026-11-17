@@ -3,7 +3,7 @@ import type { MURow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
-import { readinessScore } from '@/lib/rows'
+import { buffScore } from '@/lib/rows'
 import {
   CASE_FIELD_ALIASES,
   FACTORY_FIELD_ALIASES,
@@ -37,7 +37,7 @@ const muFieldAliases: FieldAliases = {
 
 const muSortValue = makeSortValue<MURow>({
   damageTier: row => (row.damageTier ? TIER_INDEX[row.damageTier] : null),
-  readinessScore: row => readinessScore(row.readinessPill),
+  buffScore: row => buffScore(row.buffMix),
 })
 
 export const GET = createTableRoute<MURow>(

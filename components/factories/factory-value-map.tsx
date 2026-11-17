@@ -4,6 +4,7 @@ import type { FactoryLedgerRow, LedgerEmployee } from '@/lib/factories/ledger'
 
 import { useLayoutEffect, useRef, useState } from 'react'
 
+import { TooltipHeading } from '@/components/cells/tooltip-ledger'
 import { ItemIcon } from '@/components/item-icon'
 import { Panel } from '@/components/panel'
 
@@ -12,7 +13,7 @@ import { potentialLeft } from '@/lib/factories/employee-stats'
 import { cn } from '@/lib/utils'
 
 import { EmployeeBreakdown } from './employee-breakdown'
-import { ENGINE_FILL, goldSigned, itemColors } from './format'
+import { ENGINE_FILL, goldSigned, itemColors, netClass } from './format'
 
 interface Point {
   e: LedgerEmployee
@@ -185,54 +186,93 @@ function netFill(net: number, best: number): string {
   return `color-mix(in oklch, var(--heat-green) ${Math.round(40 + t * 60)}%, var(--muted))`
 }
 
+interface Segment {
+  key: string
+  label: string
+  points: number
+  net: number
+  color: string
+}
+
 /**
- * Production points per factory, stacked engine-first then each employee, with
- * Net/day at the end of the bar.
+ * A factory's bar segments, engine first then each employee, shared by the bar
+ * and its tooltip so the colour keys match.
  */
+function segments(row: FactoryLedgerRow, best: number): Segment[] {
+  return [
+    {
+      key: 'engine',
+      label: `Engine Lvl ${row.engineLevel}`,
+      points: row.enginePointsPerDay,
+      net: row.engineNetPerDay,
+      color: ENGINE_FILL,
+    },
+    ...row.employees.map(e => ({
+      key: e.id,
+      label: e.name,
+      points: e.pointsPerDay,
+      net: e.netPerDay,
+      color: netFill(e.netPerDay, best),
+    })),
+  ]
+}
+
+const LEDGER_COLS = 'grid grid-cols-[1fr_auto_auto] items-center gap-x-5'
+
+function Swatch({ color }: { color?: string }) {
+  return <i className="size-2.5 shrink-0 rounded-[3px]" style={{ background: color }} />
+}
 
 /**
  * One factory's bar spelled out: engine, each employee and the manager, summing
- * to Net/day.
+ * to Net.
  */
-function FactoryBreakdown({ row }: { row: FactoryLedgerRow }) {
+function FactoryBreakdown({ row, parts }: { row: FactoryLedgerRow, parts: Segment[] }) {
   return (
-    <div className="space-y-1">
-      <div className="font-medium">
-        <ItemIcon code={row.itemCode} small />
-        {` ${row.name} · ${Math.round(row.pointsPerDay)} pts/day`}
+    <div className="min-w-60 tabular-nums">
+      <TooltipHeading label={<><ItemIcon code={row.itemCode} small />{` ${row.name}`}</>}>
+        {`${Math.round(row.pointsPerDay)} pts/day`}
+      </TooltipHeading>
+      <div className={cn(LEDGER_COLS, 'mb-0.5 text-[10px] tracking-wide text-neutral-500 uppercase')}>
+        <span>Source</span>
+        <span className="text-right">pts</span>
+        <span className="text-right">gold/day</span>
       </div>
-      <table className="tabular-nums">
-        <tbody>
-          <tr>
-            <td className="pr-3">Engine Lvl {row.engineLevel}</td>
-            <td className="pr-3 text-right">{Math.round(row.enginePointsPerDay)}</td>
-            <td className="text-right">{goldSigned(row.engineNetPerDay)}</td>
-          </tr>
-          {row.employees.map(e => (
-            <tr key={e.id}>
-              <td className="pr-3">{e.name}</td>
-              <td className="pr-3 text-right">{Math.round(e.pointsPerDay)}</td>
-              <td className="text-right">{goldSigned(e.netPerDay)}</td>
-            </tr>
-          ))}
-          {row.managerPerDay >= 0.05 && (
-            <tr>
-              <td className="pr-3">Manager</td>
-              <td />
-              <td className="text-right">{goldSigned(-row.managerPerDay)}</td>
-            </tr>
-          )}
-          <tr className="border-t font-medium">
-            <td className="pt-0.5 pr-3">Net / day</td>
-            <td />
-            <td className="pt-0.5 text-right">{goldSigned(row.netPerDay)}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div className="space-y-0.5">
+        {parts.map(p => (
+          <div key={p.key} className={LEDGER_COLS}>
+            <span className="flex items-center gap-1.5 text-neutral-400">
+              <Swatch color={p.color} />
+              {p.label}
+            </span>
+            <span className="text-right">{Math.round(p.points)}</span>
+            <span className={cn('text-right', netClass(p.net))}>{goldSigned(p.net)}</span>
+          </div>
+        ))}
+        {row.managerPerDay >= 0.05 && (
+          <div className={LEDGER_COLS}>
+            <span className="flex items-center gap-1.5 text-neutral-400">
+              <Swatch />
+              Manager
+            </span>
+            <span />
+            <span className="text-heat-red text-right">{goldSigned(-row.managerPerDay)}</span>
+          </div>
+        )}
+        <div className={cn(LEDGER_COLS, 'mt-1 border-t border-white/20 pt-1 font-medium')}>
+          <span>Net</span>
+          <span />
+          <span className={cn('text-right', netClass(row.netPerDay))}>{goldSigned(row.netPerDay)}</span>
+        </div>
+      </div>
     </div>
   )
 }
 
+/**
+ * Production points per factory, stacked engine-first then each employee, with
+ * Net/day at the end of the bar.
+ */
 function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
   const best = Math.max(0, ...rows.flatMap(r => r.employees.map(e => e.netPerDay)))
   const [ref, BW] = useWidth<HTMLDivElement>(380)
@@ -254,32 +294,25 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
       >
         {rows.map((row, i) => {
           const top = i * rowH + 3
-          let acc = row.enginePointsPerDay
+          const parts = segments(row, best)
+          let acc = 0
 
           return (
             <g key={row.id}>
               <text x={left - 6} y={top + 12} textAnchor="end" className={AXIS_TEXT}>{row.name}</text>
-              <rect
-                x={left}
-                y={top}
-                width={Math.max(0, scale(row.enginePointsPerDay) - 1.5)}
-                height={rowH - 7}
-                rx={2}
-                fill={ENGINE_FILL}
-              />
-              {row.employees.map((e) => {
+              {parts.map((p) => {
                 const x0 = left + scale(acc)
-                acc += e.pointsPerDay
+                acc += p.points
 
                 return (
                   <rect
-                    key={e.id}
+                    key={p.key}
                     x={x0}
                     y={top}
-                    width={Math.max(0, scale(e.pointsPerDay) - 1.5)}
+                    width={Math.max(0, scale(p.points) - 1.5)}
                     height={rowH - 7}
                     rx={2}
-                    fill={netFill(e.netPerDay, best)}
+                    fill={p.color}
                   />
                 )
               })}
@@ -307,7 +340,7 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
                   )}
                 />
                 <TooltipContent side="top" className="max-w-none">
-                  <FactoryBreakdown row={row} />
+                  <FactoryBreakdown row={row} parts={parts} />
                 </TooltipContent>
               </Tooltip>
             </g>

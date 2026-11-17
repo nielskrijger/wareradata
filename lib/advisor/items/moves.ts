@@ -22,19 +22,22 @@ const REGION_TRAITS = new Set(['patriot', 'nationalist', 'homesick', 'expat'])
 const STAY_TRAITS = new Set(['creatureOfHabit'])
 
 /**
- * Bonus sources whose condition the API doesn't show. Each keeps today's bonus
- * while its guessed condition, measured against today's team, still holds.
+ * Parts of the production bonus that change with the company or the team, with
+ * the game's sources behind each. The rest (owner Management, events, taxes,
+ * traits whose condition the API doesn't show) goes along unchanged.
  */
-const TEAM_SOURCES = ['sociable', 'girlPower', 'primaDonna'] as const
-type TeamSource = typeof TEAM_SOURCES[number]
+const PART_SOURCES = {
+  manager: ['manager'],
+  region: ['coreRegion'],
+  specialization: ['specialization'],
+  tool: ['tool', 'handy'],
+  friends: ['oldFriends'],
+  happiness: ['happiness'],
+}
 
-/**
- * Parts of the production bonus that change with the company or the team; the
- * rest (owner Management, events, taxes, other traits) goes along unchanged.
- */
-const PARTS = ['manager', 'region', 'specialization', 'tool', 'friends', 'team', 'happiness'] as const
-type Part = typeof PARTS[number]
+type Part = keyof typeof PART_SOURCES
 type Parts = Record<Part, number>
+const PARTS = Object.keys(PART_SOURCES) as Part[]
 
 const DRIVER_LABEL: Record<Part | 'value', string> = {
   value: 'Value per point',
@@ -43,7 +46,6 @@ const DRIVER_LABEL: Record<Part | 'value', string> = {
   specialization: 'Specialization',
   tool: 'Tools',
   friends: 'Old friends',
-  team: 'Team traits',
   happiness: 'Happiness',
 }
 
@@ -72,12 +74,9 @@ interface Worker {
   fixedPct: number
 
   /**
-   * Happiness that goes along, split by sign so a mitigating trait like Loyal applies.
+   * Happiness percent that goes along, including what Loyal mitigates today.
    */
-  happyPos: number
-  happyNeg: number
-  mitigation: number
-  happyOffset: number
+  happyPct: number
   itemTraits: { item?: string, delta: number }[]
   regionTraits: number
   homeRegion: string
@@ -89,9 +88,6 @@ interface Worker {
   friendId: string | null
   friendPct: number
   handyPct: number
-  teamPcts: Partial<Record<TeamSource, number>>
-  femaleCoworkers: number
-  teamSize: number
 }
 
 interface Move {
@@ -120,10 +116,6 @@ function owns(e: EmployeeLike, code: string): boolean {
   return (e.traits ?? []).some(t => t.code === code)
 }
 
-function production(e: EmployeeLike): number {
-  return e.breakdown?.production?.total ?? 0
-}
-
 function sumParts(p: Parts): number {
   return PARTS.reduce((s, k) => s + p[k], 0)
 }
@@ -137,35 +129,10 @@ function partsAt(w: Worker, p: Place, team: Worker[], specDays = w.days): Parts 
   const others = team.filter(o => o !== w)
   const tool = e.toolItem && toolFits(e.toolItem.code, p.c.itemCode) ? heldToolPct(e) : 0
 
-  let pos = w.happyPos
-  let neg = w.happyNeg
-  const add = (delta: number) => {
-    if (delta >= 0) {
-      pos += delta
-    } else {
-      neg += delta
-    }
-  }
-
-  for (const t of w.itemTraits) {
-    if (t.item === p.c.itemCode) {
-      add(t.delta)
-    }
-  }
-
-  if (p.c.regionId === w.homeRegion) {
-    add(w.regionTraits)
-  }
-
-  for (const o of others) {
-    add(o.gives)
-  }
-
-  const holds: Record<TeamSource, boolean> = {
-    sociable: team.length >= w.teamSize,
-    girlPower: others.filter(o => o.e.gender === 'female').length >= w.femaleCoworkers,
-    primaDonna: others.every(o => production(o.e) < production(e)),
-  }
+  const happiness = w.happyPct
+    + w.itemTraits.reduce((s, t) => s + (t.item === p.c.itemCode ? t.delta : 0), 0)
+    + (p.c.regionId === w.homeRegion ? w.regionTraits : 0)
+    + others.reduce((s, o) => s + o.gives, 0)
 
   return {
     manager: p.managerPct,
@@ -173,8 +140,7 @@ function partsAt(w: Worker, p: Place, team: Worker[], specDays = w.days): Parts 
     specialization: avgSpec(e.specializations?.[p.c.itemCode] ?? 0, Math.min(specDays, w.days)),
     tool: tool > 0 ? tool + w.handyPct : 0,
     friends: w.friendId && others.some(o => o.e._id === w.friendId) ? w.friendPct : 0,
-    team: TEAM_SOURCES.reduce((s, k) => s + (holds[k] ? w.teamPcts[k] ?? 0 : 0), 0),
-    happiness: w.happyOffset + pos + neg * (1 - w.mitigation),
+    happiness,
   }
 }
 
@@ -192,26 +158,9 @@ function teamGold(p: Place, team: Worker[]): number {
 
 /**
  * Builds the places and workers, reading each trait's amount from today's
- * breakdowns. A trait nobody shows today counts for nothing.
+ * breakdowns; a trait that shows nothing today counts for nothing.
  */
 function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
-  const seenBonus = new Map<string, number>()
-  const seenGiven = new Map<string, number>()
-  const seenOwn = new Map<string, number>()
-  for (const c of input.companies) {
-    for (const e of c.employees) {
-      for (const x of e.productionBonus?.contributions ?? []) {
-        seenBonus.set(x.source, x.percent)
-      }
-
-      for (const x of e.happinessBreakdown?.contributions ?? []) {
-        if (x.reason === 'trait' && x.code) {
-          (owns(e, x.code) ? seenOwn : seenGiven).set(x.code, x.delta)
-        }
-      }
-    }
-  }
-
   const places: Place[] = input.companies.map((c) => {
     const working = c.employees.filter(e => !e.companyDisabled)
     const first = working[0]
@@ -231,11 +180,11 @@ function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
 
     return working.map((e) => {
       const coworkers = working.filter(o => o !== e)
-      let [pos, neg, allNeg] = [0, 0, 0]
+      const hb = e.happinessBreakdown
+      let happyPct = (hb?.base ?? 50) - 50 + (hb?.mitigated ?? 0)
       let regionTraits = 0
       const itemTraits: Worker['itemTraits'] = []
-      for (const x of e.happinessBreakdown?.contributions ?? []) {
-        allNeg += Math.min(0, x.delta)
+      for (const x of hb?.contributions ?? []) {
         if (x.reason === 'trait' && x.code) {
           // Coworkers' traits and the item's are added back per place.
           if (!owns(e, x.code) || ITEM_TRAITS.has(x.code)) {
@@ -248,17 +197,13 @@ function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
           }
         }
 
-        if (x.delta >= 0) {
-          pos += x.delta
-        } else {
-          neg += x.delta
-        }
+        happyPct += x.delta
       }
 
       for (const t of e.traits ?? []) {
-        if (ITEM_TRAITS.has(t.code)) {
-          const shown = e.happinessBreakdown?.contributions?.find(x => x.reason === 'trait' && x.code === t.code)
-          itemTraits.push({ item: t.arg, delta: shown?.delta ?? seenOwn.get(t.code) ?? 0 })
+        const shown = hb?.contributions?.find(x => x.reason === 'trait' && x.code === t.code)
+        if (ITEM_TRAITS.has(t.code) && shown) {
+          itemTraits.push({ item: t.arg, delta: shown.delta })
         }
       }
 
@@ -271,14 +216,10 @@ function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
           .flatMap(o => o.happinessBreakdown?.contributions ?? [])
           .find(x => x.reason === 'trait' && x.code === t.code)
 
-        gives += shown ? shown.delta / holders : seenGiven.get(t.code) ?? 0
+        gives += shown ? shown.delta / holders : 0
       }
 
       const friend = e.traits?.find(t => t.code === 'oldFriends')?.arg ?? null
-      const teamPcts: Worker['teamPcts'] = {}
-      for (const k of TEAM_SOURCES) {
-        teamPcts[k] = bonusPct(e, k)
-      }
 
       const w: Worker = {
         e,
@@ -287,20 +228,14 @@ function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
         base: basePerHour(e),
         days: payingDays(e),
         fixedPct: 0,
-        happyPos: pos,
-        happyNeg: neg,
-        mitigation: allNeg < 0 ? (e.happinessBreakdown?.mitigated ?? 0) / -allNeg : 0,
-        happyOffset: (e.happinessBreakdown?.base ?? 50) - 50,
+        happyPct,
         itemTraits,
         regionTraits,
         homeRegion: p.c.regionId,
         gives,
         friendId: friend,
-        friendPct: friend ? bonusPct(e, 'oldFriends') || (seenBonus.get('oldFriends') ?? 0) : 0,
-        handyPct: owns(e, 'handy') ? bonusPct(e, 'handy') || (seenBonus.get('handy') ?? 0) : 0,
-        teamPcts,
-        femaleCoworkers: coworkers.filter(o => o.gender === 'female').length,
-        teamSize: working.length,
+        friendPct: bonusPct(e, 'oldFriends'),
+        handyPct: bonusPct(e, 'handy'),
       }
 
       workers.push(w)
@@ -327,13 +262,9 @@ export function placementCheck(input: AdvisorInput) {
   const { places, teams } = setup(input, new Map())
 
   return teams.flatMap((team, k) => team.map((w) => {
-    const ours = partsAt(w, places[k], team, 1)
-    const e = w.e
-    const game = bonusPct(e, 'manager') + bonusPct(e, 'coreRegion') + bonusPct(e, 'specialization')
-      + bonusPct(e, 'tool') + bonusPct(e, 'handy') + bonusPct(e, 'oldFriends') + bonusPct(e, 'happiness')
-      + TEAM_SOURCES.reduce((s, src) => s + bonusPct(e, src), 0)
+    const game = Object.values(PART_SOURCES).flat().reduce((s, src) => s + bonusPct(w.e, src), 0)
 
-    return { name: e.name, ours: sumParts(ours), game }
+    return { name: w.e.name, ours: sumParts(partsAt(w, places[k], team, 1)), game }
   }))
 }
 

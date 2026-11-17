@@ -10,7 +10,7 @@ import {
   toolKindFor,
 } from '../model'
 
-import { companyRef, firstName, fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
+import { companyRef, firstName, fmt, heldToolPct, MIN_GAIN_PER_DAY, titleAt } from '../shared'
 
 function toolLabel(code: string): string {
   const m = /^([a-z]+)(\d)$/i.exec(code)
@@ -52,10 +52,6 @@ interface Leg {
   from: Holder
   to: Holder
   gainPerDay: number
-}
-
-function heldPct(e: EmployeeLike): number {
-  return e.toolItem && !e.toolStatus?.isBroken ? e.toolStatus?.rolledPercent ?? 0 : 0
 }
 
 function legText(leg: Leg): string {
@@ -106,7 +102,7 @@ export function toolItems(input: AdvisorInput, vppByItem: Map<string, number>): 
   for (const c of input.companies) {
     const vpp = vppByItem.get(c.itemCode)
     for (const e of c.employees) {
-      const pct = heldPct(e)
+      const pct = heldToolPct(e)
       const code = pct > 0 ? e.toolItem?.code ?? null : null
       const kind = code ? toolKind(code) : toolKindFor(c.itemCode)
       if (e.companyDisabled || vpp == null || !kind) {

@@ -9,6 +9,7 @@ export const KIND: Record<TodoItem['kind'], { label: string, color: string }> = 
   item: { label: 'Production', color: 'var(--heat-gold)' },
   manager: { label: 'Manager', color: 'var(--heat-purple)' },
   train: { label: 'Training', color: 'var(--fire)' },
+  move: { label: 'Moves', color: 'var(--heat-orange)' },
   tool: { label: 'Tools', color: 'var(--heat-teal)' },
   employee: { label: 'Staff', color: 'var(--heat-blue)' },
   hire: { label: 'Hiring', color: 'var(--heat-green)' },

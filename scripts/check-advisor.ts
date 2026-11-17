@@ -1,5 +1,6 @@
 import { buildAdvice } from '@/lib/advisor/build'
 import { advisorInputFromData } from '@/lib/advisor/input'
+import { placementCheck } from '@/lib/advisor/items/moves'
 import { basePerHour, outputPerHour, RULES, wagePerHour } from '@/lib/advisor/model'
 import { getAdviceData, getGameConfig, getItemPrices, getKeyOwnerId, managerPointValue } from '@/lib/warera/api'
 
@@ -44,7 +45,13 @@ async function main() {
     }
   }
 
-  const result = buildAdvice(advisorInputFromData(data, gameConfig, prices))
+  const input = advisorInputFromData(data, gameConfig, prices)
+  for (const p of placementCheck(input)) {
+    check(`${p.name} bonus that depends on the company`, p.ours, p.game, 0.01)
+    check(`${p.name} Production that depends on the company`, p.oursStat, p.gameStat, 0)
+  }
+
+  const result = buildAdvice(input)
   const s = result.summary
   const f = (v: number) => v.toFixed(2)
   console.info(`profit ${f(s.netPerDay)}/day (output ${f(s.outputPerDay)} − payroll ${f(s.payrollPerDay)}),`

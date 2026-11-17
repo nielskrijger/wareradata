@@ -100,7 +100,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
         />
       </KpiStrip>
 
-      <RankMap title={`Where ${p.name} ranks`} total={total} unit="parties" groups={rankGroups(p)} />
+      <RankMap name={p.name} total={total} unit="parties" groups={rankGroups(p)} />
 
       {/* Party members are citizens of the party's country. */}
       <PageSection title="Members">

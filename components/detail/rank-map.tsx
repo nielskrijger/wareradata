@@ -28,7 +28,10 @@ export interface RankMapGroup {
 }
 
 interface Props {
-  title: string
+  /**
+   * Whose ranks these are; the heading reads "Where {name} ranks among …".
+   */
+  name: string
   groups: RankMapGroup[]
 
   /**
@@ -54,15 +57,12 @@ const MARKS = [0, 25, 50, 75, 100]
  * Linear in percentile, so bar length is simply the share of the set beaten;
  * the "top x%" beside each rank separates the very best.
  */
-export function RankMap({ title, groups, total, unit }: Props) {
+export function RankMap({ name, groups, total, unit }: Props) {
   return (
     <Panel as="section">
-      <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 className="font-medium">{title}</h2>
-        <span className="text-muted-foreground text-xs">
-          among {formatNumber(total)} {unit} · further right is better
-        </span>
-      </div>
+      <h2 className="mb-1 font-medium">
+        Where {name} ranks among {formatNumber(total)} {unit}
+      </h2>
 
       {/* Lines up with the track column of the rows below. */}
       <div className={cn('text-muted-foreground relative hidden h-6 text-[10px] sm:block', TRACK_INSET)}>

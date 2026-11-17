@@ -125,7 +125,7 @@ export default async function MUDetailPage({ params }: PageProps) {
         />
       </KpiStrip>
 
-      <RankMap title={`Where ${mu.name} ranks`} total={total} unit="MUs" groups={rankGroups(mu)} />
+      <RankMap name={mu.name} total={total} unit="MUs" groups={rankGroups(mu)} />
 
       <PageSection title="Members">
         <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} omitColumns={['muName']} />

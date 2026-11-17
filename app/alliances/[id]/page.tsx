@@ -118,7 +118,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
         />
       </KpiStrip>
 
-      <RankMap title={`Where ${a.name} ranks`} total={total} unit="alliances" groups={rankGroups(a)} />
+      <RankMap name={a.name} total={total} unit="alliances" groups={rankGroups(a)} />
 
       <PageSection title="Member countries">
         <MembersTable alliance={a} />

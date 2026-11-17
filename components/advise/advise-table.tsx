@@ -6,8 +6,9 @@ import { TitleParts } from '@/components/company-name'
 
 import { Panel } from '@/components/panel'
 import { cn } from '@/lib/utils'
-import { COLUMNS, KIND, pct, sum, things } from './format'
+import { COLUMNS, pct, sum, things } from './format'
 import { Gain } from './gain'
+import { KindIcon } from './kind-icon'
 import { Reason } from './reason'
 import { SMALL_GAIN_PER_DAY } from './rows'
 
@@ -38,7 +39,6 @@ export function AdviseTable({ big, small, total, energy }: {
       >
         <span>#</span>
         <span>Action</span>
-        <span>Kind</span>
         <span className="flex flex-col items-end leading-tight" title={hint}>
           <span>Energy</span>
           <span className="font-mono font-normal tabular-nums">{`${energy.current.toFixed(0)}/${energy.cap}`}</span>
@@ -68,8 +68,6 @@ export function AdviseTable({ big, small, total, energy }: {
 }
 
 function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, running?: number, small?: boolean }) {
-  const kind = KIND[row.kind]
-
   return (
     <li className={cn(
       'grid grid-cols-[20px_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1.5 border-t px-4 py-3 first:border-t-0',
@@ -79,19 +77,18 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
     )}
     >
       <span className="text-muted-foreground pt-0.5 font-mono text-xs md:pt-0">{rank}</span>
-      <span className="flex min-w-0 flex-col gap-1">
-        <span className={cn(small ? 'font-medium' : 'font-semibold')}>
-          {row.titleParts ? <TitleParts parts={row.titleParts} /> : row.title}
+      <span className="flex min-w-0 gap-3">
+        <KindIcon kind={row.kind} />
+        <span className="flex min-w-0 flex-col gap-1 pt-0.5">
+          <span className={cn(small ? 'font-medium' : 'font-semibold')}>
+            {row.titleParts ? <TitleParts parts={row.titleParts} /> : row.title}
+          </span>
+          {row.byCompany && <ByCompany groups={row.byCompany} />}
+          <Reason row={row} />
+          {row.energy > 0 && (
+            <span className="text-xs md:hidden" style={{ color: 'var(--fire)' }}>{`${row.energy} energy`}</span>
+          )}
         </span>
-        {row.byCompany && <ByCompany groups={row.byCompany} />}
-        <Reason row={row} />
-      </span>
-      <span className="col-start-2 flex items-center gap-1.5 text-xs md:col-start-auto">
-        <span className="size-2 shrink-0 rounded-full" style={{ background: kind.color }} />
-        {kind.label}
-        {row.energy > 0 && (
-          <span className="md:hidden" style={{ color: 'var(--fire)' }}>{` · ${row.energy} energy`}</span>
-        )}
       </span>
       <span className="hidden text-right text-xs md:block" style={{ color: 'var(--fire)' }}>
         {row.energy > 0 ? row.energy : ''}

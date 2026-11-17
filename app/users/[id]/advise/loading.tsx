@@ -2,7 +2,6 @@ import { PageMain } from '@/components/layout/page-main'
 
 import { Panel } from '@/components/panel'
 import { cn } from '@/lib/utils'
-import { ADVISE_WIDTH } from './width'
 
 const PULSE = 'bg-muted animate-pulse rounded-md'
 
@@ -11,7 +10,7 @@ const PULSE = 'bg-muted animate-pulse rounded-md'
  */
 export default function Loading() {
   return (
-    <PageMain className={cn('flex flex-col gap-5', ADVISE_WIDTH)} aria-busy>
+    <PageMain width="medium" className="flex flex-col gap-5" aria-busy>
       <div className="flex flex-col gap-2">
         <h1 className="font-brand text-4xl leading-none tracking-wide">Advise</h1>
         <span className={cn(PULSE, 'h-4 w-72')} />

@@ -1,20 +1,22 @@
 import type { ReactNode } from 'react'
 
-import { cn } from '@/lib/utils'
+import type { PageWidth } from './page-main'
 
+import { cn } from '@/lib/utils'
 import { PageMain } from './page-main'
 import { PageTitle } from './page-title'
 
 interface Props {
   title: ReactNode
   subtitle?: ReactNode
+  width?: PageWidth
   children?: ReactNode
   className?: string
 }
 
-export function PageShell({ title, subtitle, children, className }: Props) {
+export function PageShell({ title, subtitle, width, children, className }: Props) {
   return (
-    <PageMain className={cn('space-y-6', className)}>
+    <PageMain width={width} className={cn('space-y-6', className)}>
       <header>
         <PageTitle>{title}</PageTitle>
         {subtitle ? (

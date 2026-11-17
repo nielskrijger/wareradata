@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <PageShell title="Page not found">
+    <PageShell title="Page not found" width="text">
       <Paragraph>
         There is no page at this address. Go to
         {' '}

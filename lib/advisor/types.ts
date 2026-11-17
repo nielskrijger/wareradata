@@ -60,7 +60,7 @@ export interface TodoItem {
   /**
    * Steps listed under the company they're done at, in the game's order.
    */
-  byCompany?: { company: CompanyRef, steps: TitlePart[][] }[]
+  byCompany?: { company: CompanyRef, steps: string[] }[]
 }
 
 /**

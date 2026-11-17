@@ -1,30 +1,12 @@
 import type { Plan, World } from '../sim/world'
-import type { AdvisorCompany, AdvisorInput, Fact, TitlePart, TodoItem } from '../types'
+import type { AdvisorCompany, AdvisorInput, TodoItem } from '../types'
 
 import { humanizeItem } from '@/components/factories/format'
 import { rarityLabel } from '@/lib/gear/rarity'
 import { RULES } from '../model'
 import { companyRef, firstName, fmt, MIN_GAIN_PER_DAY, signedFmt } from '../shared'
-import { companyOf, searchPlan } from '../sim/search'
+import { clone, companyOf, searchPlan } from '../sim/search'
 import { companyDaily } from '../sim/world'
-
-/**
- * One thing the player does: move a worker, switch an item, or hand over a tool.
- */
-interface Change {
-  kind: 'move' | 'item' | 'tool'
-
-  /**
-   * Companies whose output it changes.
-   */
-  companies: number[]
-
-  /**
-   * The company it's listed under, and what to do there.
-   */
-  at: number
-  step: TitlePart[]
-}
 
 function plural(n: number, word: string): string {
   return `${n} ${word}${n === 1 ? '' : 's'}`
@@ -36,160 +18,175 @@ function toolLabel(code: string): string {
   return m ? `${rarityLabel(Number(m[2])).toLowerCase()} ${m[1]}` : code
 }
 
-function text(world: World, parts: TitlePart[]): string {
-  const name = (id: string) => world.companies.find(({ c }) => c.id === id)?.c.name
+/**
+ * Gold a change adds to companies `ks`, from plan `before` to plan `after`.
+ */
+function gainOf(world: World, before: Plan, after: Plan, ks: number[]) {
+  const horizon = RULES.horizonDays
+  const perCompany = ks.map(k => companyDaily(world, after, k).map((g, d) => g - companyDaily(world, before, k)[d]))
+  const daily = perCompany[0].map((_, d) => perCompany.reduce((s, x) => s + x[d], 0))
+  let sum = 0
+  const back = daily.findIndex(g => (sum += g) >= 0) + 1
 
-  return parts.map(p => (typeof p === 'string' ? p : 'item' in p ? humanizeItem(p.item) : name(p.id))).join('')
+  return {
+    perDay: daily.reduce((s, g) => s + g, 0) / horizon,
+    back: plural(back, 'day'),
+    facts: ks.length > 1
+      ? ks.map((k, i) => ({
+          label: world.companies[k].c.name,
+          value: `${signedFmt(perCompany[i].reduce((s, g) => s + g, 0) / horizon)} g/day`,
+        }))
+      : [],
+  }
 }
 
 /**
- * Everything the plan changes against today.
+ * Union-find over companies: the groups of `ks` that `links` join.
  */
-function changesOf(world: World, plan: Plan): Change[] {
-  const at = companyOf(plan)
-  const name = (i: number) => firstName(world.workers[i].e.name)
-  const ref = (k: number) => companyRef(world.companies[k].c)
-
-  return [
-    ...world.workers.flatMap((w, i) => (at[i] === w.home
-      ? []
-      : [{ kind: 'move' as const, companies: [w.home, at[i]], at: w.home, step: [`${name(i)} → `, ref(at[i])] }])),
-    ...plan.item.flatMap((item, k) => (item === world.today.item[k]
-      ? []
-      : [{ kind: 'item' as const, companies: [k], at: k, step: ['Switch to ', { item }] }])),
-    ...world.tools.flatMap(({ code, pct, owner }, ti) => {
-      const holder = plan.toolOf.indexOf(ti)
-      const home = world.workers[owner].home
-
-      return holder === owner
-        ? []
-        : [{
-            kind: 'tool' as const,
-            companies: [home, at[owner], at[holder]],
-            at: home,
-            step: [`${name(owner)}'s ${toolLabel(code)} (+${pct}%) → ${name(holder)}`],
-          }]
-    }),
-  ]
-}
-
-/**
- * Changes that share a company share a row, so rows can be done in any order
- * and each row's gain is exact. All moves share one: it's one trip to Reorganize.
- */
-function rowsOf(world: World, changes: Change[]): Change[][] {
-  const root = world.companies.map((_, k) => k)
+function groupsOf(n: number, links: number[][]): number[][] {
+  const root = Array.from({ length: n }, (_, k) => k)
   const find = (k: number): number => (root[k] === k ? k : (root[k] = find(root[k])))
-  const join = (ks: number[]) => ks.forEach(k => root[find(k)] = find(ks[0]))
-  changes.forEach(c => join(c.companies))
-  join(changes.filter(c => c.kind === 'move').flatMap(c => c.companies))
+  links.forEach(ks => ks.forEach(k => root[find(k)] = find(ks[0])))
 
-  const rows = new Map<number, Change[]>()
-  for (const c of changes) {
-    rows.set(find(c.at), [...rows.get(find(c.at)) ?? [], c])
+  const groups = new Map<number, number[]>()
+  for (const k of new Set(links.flat())) {
+    groups.set(find(k), [...groups.get(find(k)) ?? [], k])
   }
 
-  return [...rows.values()]
+  return [...groups.values()].map(ks => ks.sort((a, b) => a - b))
 }
 
 /**
- * One change is named in full; more are counted and listed under the row.
- */
-function title(world: World, row: Change[]): Pick<TodoItem, 'title' | 'titleParts'> {
-  if (row.length === 1) {
-    const parts = [companyRef(world.companies[row[0].at].c), ': ', ...row[0].step]
-
-    return { title: text(world, parts), titleParts: parts }
-  }
-
-  const count = (kind: Change['kind']) => row.filter(c => c.kind === kind).length
-  const [moves, items, tools] = [count('move'), count('item'), count('tool')]
-  if (moves) {
-    return { title: `Move ${plural(moves, 'worker')}` }
-  }
-
-  const switched = items === 1 ? world.companies[row.find(c => c.kind === 'item')!.at].c.name : plural(items, 'company')
-  const title = [items && `switch ${switched}`, tools && `hand over ${plural(tools, 'tool')}`]
-    .filter(Boolean)
-    .join(', and ')
-
-  return { title: title.charAt(0).toUpperCase() + title.slice(1) }
-}
-
-/**
- * The plan for the owner's companies (who works where, who holds which tool,
- * what each company makes) as rows of changes, each step listed under its
- * company in the game's company order.
+ * The plan for the owner's companies as rows: one for all moves (one trip to
+ * Reorganize), one per item switch, and one per group of tool hand-offs.
  *
- * Returns the companies as the plan leaves them, for the advice that builds on
- * the new teams.
+ * Each kind counts on top of the ones before it (moves, then switches, then
+ * tools), so the rows add up to the plan's gain.
+ *
+ * Returns the plan and the companies as it leaves them, for the advice that
+ * builds on the new teams.
  */
 export function planItems(input: AdvisorInput, world: World): {
   items: TodoItem[]
   plan: Plan
   companies: AdvisorCompany[]
 } {
-  const plan = searchPlan(world)
+  const target = searchPlan(world)
   const { today } = world
+  const company = (k: number) => world.companies[k].c
+  const name = (i: number) => firstName(world.workers[i].e.name)
   const horizon = RULES.horizonDays
   const items: TodoItem[] = []
 
-  for (const row of rowsOf(world, changesOf(world, plan))) {
-    const ks = [...new Set(row.flatMap(c => c.companies))].sort((a, b) => a - b)
-    const gains = ks.map(k => companyDaily(world, plan, k).map((g, d) => g - companyDaily(world, today, k)[d]))
-    const daily = gains[0].map((_, d) => gains.reduce((s, x) => s + x[d], 0))
-    const gain = daily.reduce((s, g) => s + g, 0)
-    if (gain / horizon < MIN_GAIN_PER_DAY) {
-      // Left as today, so the advice that builds on the plan doesn't count it.
-      for (const k of ks) {
-        plan.item[k] = today.item[k]
-        plan.team[k] = [...today.team[k]]
-        today.team[k].forEach(i => plan.toolOf[i] = today.toolOf[i])
-      }
+  // Moves.
+  const moved = { ...clone(today), team: target.team }
+  const at = companyOf(moved)
+  const movers = world.workers.flatMap((w, i) => (at[i] === w.home ? [] : [i]))
+  const moveKs = [...new Set(movers.flatMap(i => [world.workers[i].home, at[i]]))].sort((a, b) => a - b)
+  const moves = movers.length ? gainOf(world, today, moved, moveKs) : null
+  const movesKept = !!moves && moves.perDay >= MIN_GAIN_PER_DAY
+  if (moves && movesKept) {
+    items.push({
+      id: `move-${movers.map(i => world.workers[i].e._id).join('-')}`,
+      kind: 'move',
+      title: `Move ${plural(movers.length, 'worker')}`,
+      why: `Adds ${fmt(moves.perDay * horizon)} gold over ${horizon} days.`
+        + ' In Workforce, press Reorganize, drag each worker to the company named, then Apply.',
+      facts: [
+        { label: 'In the game', value: 'Workforce → Reorganize', brief: 'Workforce → Reorganize' },
+        ...moves.facts,
+      ],
+      gainPerDay: moves.perDay,
+      byCompany: moveKs.flatMap((k) => {
+        const steps = movers
+          .filter(i => world.workers[i].home === k)
+          .map(i => `${name(i)} → ${company(at[i]).ownName}`)
 
+        return steps.length ? [{ company: companyRef(company(k)), steps }] : []
+      }),
+    })
+  } else {
+    moved.team = today.team.map(t => [...t])
+  }
+
+  // Switches, each on top of the moves.
+  const switched = clone(moved)
+  for (const [k, item] of target.item.entries()) {
+    if (item === today.item[k]) {
       continue
     }
 
-    const switches = row.filter(c => c.kind === 'item').length
-    const moves = row.some(c => c.kind === 'move')
-    let total = 0
-    const back = plural(daily.findIndex(g => (total += g) >= 0) + 1, 'day')
-    const facts: Fact[] = [
-      ...switches
-        ? [
-            {
-              label: 'Switch cost',
-              value: `${switches * input.changeItemConcrete} = ${fmt(switches * world.switchCost)} g`,
-              icon: 'concrete',
-            },
-            { label: 'Earned back', value: back, brief: `back in ${back}` },
-          ]
-        : [],
-      ...ks.length > 1
-        ? ks.map((k, i) => ({
-            label: world.companies[k].c.name,
-            value: `${signedFmt(gains[i].reduce((s, g) => s + g, 0) / horizon)} g/day`,
-          }))
-        : [],
-    ]
+    const after = clone(moved)
+    after.item[k] = item
+    const sw = gainOf(world, moved, after, [k])
+    if (sw.perDay < MIN_GAIN_PER_DAY) {
+      continue
+    }
+
+    switched.item[k] = item
+    const c = company(k)
+    const [from, to] = [world.vpp.get(today.item[k]) ?? 0, world.vpp.get(item) ?? 0]
+    const more = from > 0 ? `+${Math.round((to / from - 1) * 100)}% per point` : `${fmt(to, 3)} g per point`
+    const afterMoves = movesKept && moveKs.includes(k)
+    items.push({
+      id: `item-${c.id}`,
+      kind: 'item',
+      // The name already starts with the current item, so only the new one is named.
+      title: `Switch ${c.name} to ${humanizeItem(item)}`,
+      titleParts: ['Switch ', companyRef(c), ' → ', { item }],
+      why: `Adds ${fmt(sw.perDay * horizon)} gold over ${horizon} days${afterMoves ? ' with its team after the moves' : ''},`
+        + ` after the switch cost, which is earned back in ${sw.back}.`,
+      facts: [
+        { label: 'Value per point', value: more, brief: more },
+        { label: 'Switch cost', value: `${input.changeItemConcrete} = ${fmt(world.switchCost)} g`, icon: 'concrete' },
+        { label: 'Earned back', value: sw.back, brief: `back in ${sw.back}` },
+      ],
+      gainPerDay: sw.perDay,
+    })
+  }
+
+  // Tool hand-offs, on top of both; tools that pass between the same companies share a row.
+  const plan = clone(switched)
+  const handOffs = world.tools.flatMap(({ owner }, ti) => {
+    const holder = target.toolOf.indexOf(ti)
+
+    return holder === owner ? [] : [{ ti, owner, holder, ks: [at[owner], at[holder]] }]
+  })
+
+  for (const ks of groupsOf(world.companies.length, handOffs.map(h => h.ks))) {
+    const row = handOffs.filter(h => ks.includes(h.ks[0]))
+    const after = clone(switched)
+    row.forEach(h => after.toolOf[h.holder] = h.ti)
+    // A giver whose tool went on and who got none back holds nothing.
+    row.forEach(h => after.toolOf[h.owner] = target.toolOf[h.owner])
+    const tools = gainOf(world, switched, after, ks)
+    if (tools.perDay < MIN_GAIN_PER_DAY) {
+      continue
+    }
+
+    row.forEach((h) => {
+      plan.toolOf[h.holder] = h.ti
+      plan.toolOf[h.owner] = target.toolOf[h.owner]
+    })
+
+    const text = ({ ti, owner, holder }: typeof row[number]) => {
+      const { code, pct } = world.tools[ti]
+
+      return `${name(owner)}'s ${toolLabel(code)} (+${pct}%) → ${name(holder)}`
+    }
 
     items.push({
-      id: `plan-${ks.map(k => world.companies[k].c.id).join('-')}`,
-      kind: moves ? 'move' : switches ? 'item' : 'tool',
-      ...title(world, row),
-      why: [
-        `Adds ${fmt(gain)} gold over ${horizon} days`,
-        switches ? `, after the switch cost, which is earned back in ${back}` : '',
-        '.',
-        moves ? ' In Workforce, press Reorganize, drag each worker to the company named, then Apply.' : '',
-      ].join(''),
-      facts,
-      gainPerDay: gain / horizon,
+      id: `tool-${row.map(h => world.workers[h.holder].e._id).join('-')}`,
+      kind: 'tool',
+      title: row.length > 1 ? `Hand over ${plural(row.length, 'tool')}` : `Give ${text(row[0])}`,
+      why: `Adds ${fmt(tools.perDay * horizon)} gold over ${horizon} days, with the teams and items above.`,
+      facts: tools.facts,
+      gainPerDay: tools.perDay,
       byCompany: row.length > 1
         ? ks.flatMap((k) => {
-            const steps = row.filter(c => c.at === k).map(c => c.step)
+            const steps = row.filter(h => at[h.owner] === k).map(text)
 
-            return steps.length ? [{ company: companyRef(world.companies[k].c), steps }] : []
+            return steps.length ? [{ company: companyRef(company(k)), steps }] : []
           })
         : undefined,
     })

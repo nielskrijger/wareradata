@@ -1,6 +1,7 @@
 import type { AdviseRow } from './rows'
 import type { AdvisorResult } from '@/lib/advisor/types'
 import { ChevronRight } from 'lucide-react'
+import { Fragment } from 'react'
 
 import { TitleParts } from '@/components/company-name'
 
@@ -109,24 +110,27 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
 }
 
 /**
- * Steps under each company, as the game's Reorganize screen lists them.
+ * One step per line, the company it starts from named on its first line, as
+ * the game's Reorganize screen lists them.
  */
 function ByCompany({ groups }: { groups: NonNullable<AdviseRow['byCompany']> }) {
   return (
-    <span className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
-      {groups.map(g => (
-        <span key={g.company.id} className="flex flex-col gap-0.5">
-          <span className="font-medium"><TitleParts parts={[g.company]} /></span>
-          <ul className="text-muted-foreground flex flex-col gap-0.5">
-            {g.steps.map((parts, i) => (
-              // eslint-disable-next-line react/no-array-index-key -- steps never reorder
-              <li key={i} className="flex items-center gap-1 before:content-['·']">
-                <TitleParts parts={parts} />
-              </li>
-            ))}
-          </ul>
-        </span>
-      ))}
+    <span className={cn(
+      'grid grid-cols-[minmax(0,6rem)_minmax(0,1fr)] gap-x-3 text-xs',
+      'sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)]',
+    )}
+    >
+      {groups.flatMap(g => g.steps.map((step, i) => (
+        // eslint-disable-next-line react/no-array-index-key -- steps never reorder
+        <Fragment key={`${g.company.id}-${i}`}>
+          <span className={cn('truncate', i === 0 && groups[0] !== g && 'pt-1.5')} style={{ color: 'var(--fire)' }}>
+            {i === 0 ? g.company.name : ''}
+          </span>
+          <span className={cn('text-muted-foreground', i === 0 && groups[0] !== g && 'pt-1.5')}>
+            {step}
+          </span>
+        </Fragment>
+      )))}
     </span>
   )
 }

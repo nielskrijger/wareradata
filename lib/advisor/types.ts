@@ -85,6 +85,7 @@ export interface AdvisorCompany {
   ownName: string
   itemCode: string
   regionId: string
+  storageLevel: number
   employeeCap: number
   enginePointsPerDay: number
   employees: EmployeeLike[]

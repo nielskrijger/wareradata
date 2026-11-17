@@ -44,6 +44,7 @@ export function advisorInputFromData(
         ownName: f.company.name,
         itemCode: f.company.itemCode,
         regionId: f.company.region,
+        storageLevel: f.company.activeUpgradeLevels?.storage ?? 0,
         employeeCap: f.hourly?.cap ?? 0,
         enginePointsPerDay: profit.enginePointsPerDay,
         employees: f.employees,

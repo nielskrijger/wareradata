@@ -11,28 +11,101 @@ import { bonusPct, companyRef, firstName, fmt, heldToolPct, signedFmt } from '..
 const MIN_SWAP_GAIN = 10
 
 /**
+ * Trait rules the API doesn't document, read off the breakdowns of 7,000
+ * employees across 2,800 companies; `check-advisor` re-checks them on the
+ * owner's roster.
+ */
+const TRAIT = {
+  /**
+   * Production percent per coworker, or for the team as a whole.
+   */
+  sociablePerCoworker: 25,
+  girlPowerPerWoman: 15,
+  bandOfBrothersPerMan: 15,
+  misogynistPerWoman: -15,
+  manHaterPerMan: -15,
+  lonerAlone: 100,
+  primaDonnaTopWage: 20,
+
+  /**
+   * Production percent while the trait's named coworker is on the team.
+   */
+  partners: { oldFriends: 15, sweethearts: 20, nemesis: -15 } as Record<string, number>,
+  handyWithTool: 40,
+  improviserWithoutTool: 25,
+
+  /**
+   * Below this storage level a claustrophobe loses 20%.
+   */
+  claustrophobeStorage: 3,
+  claustrophobe: -20,
+
+  /**
+   * Happiness, which adds a production percent per point away from 50, within this.
+   */
+  happinessCap: 50,
+  lonerAloneHappy: 5,
+  sociableAloneHappy: -10,
+  primaDonnaNotTopHappy: -10,
+  enviousPerRicher: -5,
+  xenophobeForeign: -5,
+  comicCoworker: 10,
+  foremanPerCoworker: 9,
+  bullyPerCoworker: -10,
+
+  /**
+   * Some owners' moved workers lose 10 happiness for 7 days, others' don't;
+   * a creature of habit loses 30% for 3 days.
+   */
+  movedHappy: -10,
+  movedDays: 7,
+  creatureOfHabit: -30,
+  creatureOfHabitDays: 3,
+}
+
+/**
+ * Happiness entries the team rules above recompute, by trait code or reason.
+ */
+const TEAM_HAPPY_CODES = new Set([
+  'loner',
+  'sociable',
+  'primaDonna',
+  'envious',
+  'xenophobe',
+  'comic',
+  'foreman',
+  'bully',
+])
+
+/**
  * Own happiness traits tied to the place: the item made, or the region.
  */
 const ITEM_TRAITS = new Set(['specialist'])
 const REGION_TRAITS = new Set(['patriot', 'nationalist', 'homesick', 'expat'])
 
 /**
- * Traits that dislike moving, so their holders stay put.
- */
-const STAY_TRAITS = new Set(['creatureOfHabit'])
-
-/**
  * Parts of the production bonus that change with the company or the team, with
- * the game's sources behind each. The rest (owner Management, events, taxes,
- * traits whose condition the API doesn't show) goes along unchanged.
+ * the game's sources behind each. The rest (owner Management, events, taxes)
+ * goes along unchanged. `moving` is the temporary cost of a move, which the
+ * game shows as happiness.
  */
 const PART_SOURCES = {
   manager: ['manager'],
-  region: ['coreRegion'],
+  place: ['coreRegion', 'claustrophobe'],
   specialization: ['specialization'],
-  tool: ['tool', 'handy'],
-  friends: ['oldFriends'],
+  tool: ['tool', 'handy', 'improviser'],
+  coworkers: [
+    ...Object.keys(TRAIT.partners),
+    'sociable',
+    'girlPower',
+    'bandOfBrothers',
+    'misogynist',
+    'manHater',
+    'loner',
+    'primaDonna',
+  ],
   happiness: ['happiness'],
+  moving: [] as string[],
 }
 
 type Part = keyof typeof PART_SOURCES
@@ -42,11 +115,12 @@ const PARTS = Object.keys(PART_SOURCES) as Part[]
 const DRIVER_LABEL: Record<Part | 'value', string> = {
   value: 'Value per point',
   manager: 'Manager bonus',
-  region: 'Region bonus',
+  place: 'Region and storage',
   specialization: 'Specialization',
   tool: 'Tools',
-  friends: 'Old friends',
+  coworkers: 'Coworker traits',
   happiness: 'Happiness',
+  moving: 'Settling in',
 }
 
 interface Place {
@@ -64,9 +138,9 @@ interface Place {
 interface Worker {
   e: EmployeeLike
   home: number
-  movable: boolean
   base: number
   days: number
+  wage: number
 
   /**
    * Bonus percent that goes wherever the worker goes.
@@ -80,14 +154,7 @@ interface Worker {
   itemTraits: { item?: string, delta: number }[]
   regionTraits: number
   homeRegion: string
-
-  /**
-   * Happiness this worker's traits give each coworker.
-   */
-  gives: number
-  friendId: string | null
-  friendPct: number
-  handyPct: number
+  movePenalty: boolean
 }
 
 interface Move {
@@ -123,24 +190,64 @@ function sumParts(p: Parts): number {
 /**
  * The bonus parts a worker gets at a place next to a team that includes them.
  * `specDays` averages specialization over that many days; 1 gives today's.
+ * A worker away from home pays the move's temporary cost, spread over their days.
  */
 function partsAt(w: Worker, p: Place, team: Worker[], specDays = w.days): Parts {
   const e = w.e
   const others = team.filter(o => o !== w)
+  const has = (code: string) => owns(e, code)
+  const count = (pick: (o: Worker) => boolean) => others.filter(pick).length
+  const women = count(o => o.e.gender === 'female')
+  const men = count(o => o.e.gender === 'male')
+  const alone = others.length === 0
+  const topWage = !alone && others.every(o => o.wage < w.wage)
   const tool = e.toolItem && toolFits(e.toolItem.code, p.c.itemCode) ? heldToolPct(e) : 0
 
-  const happiness = w.happyPct
+  let coworkers = 0
+  for (const t of e.traits ?? []) {
+    if (t.code in TRAIT.partners && others.some(o => o.e._id === t.arg)) {
+      coworkers += TRAIT.partners[t.code]
+    }
+  }
+
+  coworkers += (has('sociable') ? TRAIT.sociablePerCoworker * others.length : 0)
+    + (has('girlPower') ? TRAIT.girlPowerPerWoman * women : 0)
+    + (has('bandOfBrothers') ? TRAIT.bandOfBrothersPerMan * men : 0)
+    + (has('misogynist') ? TRAIT.misogynistPerWoman * women : 0)
+    + (has('manHater') ? TRAIT.manHaterPerMan * men : 0)
+    + (has('loner') && alone ? TRAIT.lonerAlone : 0)
+    + (has('primaDonna') && topWage ? TRAIT.primaDonnaTopWage : 0)
+
+  const happy = w.happyPct
     + w.itemTraits.reduce((s, t) => s + (t.item === p.c.itemCode ? t.delta : 0), 0)
     + (p.c.regionId === w.homeRegion ? w.regionTraits : 0)
-    + others.reduce((s, o) => s + o.gives, 0)
+    + (has('loner') && alone ? TRAIT.lonerAloneHappy : 0)
+    + (has('sociable') && alone ? TRAIT.sociableAloneHappy : 0)
+    + (has('primaDonna') && !alone && !topWage ? TRAIT.primaDonnaNotTopHappy : 0)
+    + (has('envious') ? TRAIT.enviousPerRicher * count(o => o.wage > w.wage) : 0)
+    + (has('xenophobe') && others.some(o => o.e.nationality !== e.nationality) ? TRAIT.xenophobeForeign : 0)
+    + (others.some(o => owns(o.e, 'comic')) ? TRAIT.comicCoworker : 0)
+    + TRAIT.foremanPerCoworker * count(o => owns(o.e, 'foreman'))
+    + TRAIT.bullyPerCoworker * count(o => owns(o.e, 'bully'))
+
+  const cramped = p.c.storageLevel < TRAIT.claustrophobeStorage
+  const days = Math.min(specDays, w.days)
+  const moved = p.c.id !== w.e.company && days > 1
+  const moving = moved
+    ? ((w.movePenalty ? TRAIT.movedHappy * Math.min(TRAIT.movedDays, days) : 0)
+      + (has('creatureOfHabit') ? TRAIT.creatureOfHabit * Math.min(TRAIT.creatureOfHabitDays, days) : 0)) / days
+    : 0
 
   return {
     manager: p.managerPct,
-    region: p.regionPct,
-    specialization: avgSpec(e.specializations?.[p.c.itemCode] ?? 0, Math.min(specDays, w.days)),
-    tool: tool > 0 ? tool + w.handyPct : 0,
-    friends: w.friendId && others.some(o => o.e._id === w.friendId) ? w.friendPct : 0,
-    happiness,
+    place: p.regionPct + (cramped && has('claustrophobe') ? TRAIT.claustrophobe : 0),
+    specialization: avgSpec(e.specializations?.[p.c.itemCode] ?? 0, days),
+    tool: tool > 0
+      ? tool + (has('handy') ? TRAIT.handyWithTool : 0)
+      : has('improviser') ? TRAIT.improviserWithoutTool : 0,
+    coworkers,
+    happiness: Math.max(-TRAIT.happinessCap, Math.min(TRAIT.happinessCap, happy)),
+    moving,
   }
 }
 
@@ -157,10 +264,23 @@ function teamGold(p: Place, team: Worker[]): number {
 }
 
 /**
- * Builds the places and workers, reading each trait's amount from today's
- * breakdowns; a trait that shows nothing today counts for nothing.
+ * Whether moving costs happiness for this owner: yes, unless a worker moved in
+ * the last week shows no such cost.
+ */
+function movePenaltyApplies(input: AdvisorInput): boolean {
+  const week = TRAIT.movedDays * HOURS_PER_DAY * 3600_000
+  const recent = input.companies.flatMap(c => c.employees)
+    .filter(e => e.lastMovedAt && Date.now() - Date.parse(e.lastMovedAt) < week)
+
+  return recent.every(e => e.happinessBreakdown?.contributions?.some(x => x.reason === 'recentlyMoved'))
+}
+
+/**
+ * Builds the places and workers. Happiness the rules recompute is taken out
+ * of what goes along, so only today's other reasons travel.
  */
 function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
+  const movePenalty = movePenaltyApplies(input)
   const places: Place[] = input.companies.map((c) => {
     const working = c.employees.filter(e => !e.companyDisabled)
     const first = working[0]
@@ -174,75 +294,43 @@ function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
     }
   })
 
-  const workers: Worker[] = []
-  const teams: Worker[][] = places.map((p, home) => {
-    const working = p.c.employees.filter(e => !e.companyDisabled)
-
-    return working.map((e) => {
-      const coworkers = working.filter(o => o !== e)
-      const hb = e.happinessBreakdown
-      let happyPct = (hb?.base ?? 50) - 50 + (hb?.mitigated ?? 0)
-      let regionTraits = 0
-      const itemTraits: Worker['itemTraits'] = []
-      for (const x of hb?.contributions ?? []) {
-        if (x.reason === 'trait' && x.code) {
-          // Coworkers' traits and the item's are added back per place.
-          if (!owns(e, x.code) || ITEM_TRAITS.has(x.code)) {
-            continue
-          }
-
-          if (REGION_TRAITS.has(x.code)) {
-            regionTraits += x.delta
-            continue
-          }
-        }
-
-        happyPct += x.delta
+  const teams: Worker[][] = places.map((p, home) => p.c.employees.filter(e => !e.companyDisabled).map((e) => {
+    const hb = e.happinessBreakdown
+    let happyPct = (hb?.base ?? 50) - 50 + (hb?.mitigated ?? 0)
+    let regionTraits = 0
+    const itemTraits: Worker['itemTraits'] = []
+    for (const x of hb?.contributions ?? []) {
+      if (x.code && TEAM_HAPPY_CODES.has(x.code)) {
+        continue
       }
 
-      for (const t of e.traits ?? []) {
-        const shown = hb?.contributions?.find(x => x.reason === 'trait' && x.code === t.code)
-        if (ITEM_TRAITS.has(t.code) && shown) {
-          itemTraits.push({ item: t.arg, delta: shown.delta })
-        }
+      if (x.reason === 'trait' && x.code && ITEM_TRAITS.has(x.code)) {
+        itemTraits.push({ item: e.traits?.find(t => t.code === x.code)?.arg, delta: x.delta })
+        continue
       }
 
-      // What a trait gives coworkers shows on them, split between holders of the same trait.
-      let gives = 0
-      for (const t of e.traits ?? []) {
-        const holders = working.filter(o => owns(o, t.code)).length
-        const shown = coworkers
-          .filter(o => !owns(o, t.code))
-          .flatMap(o => o.happinessBreakdown?.contributions ?? [])
-          .find(x => x.reason === 'trait' && x.code === t.code)
-
-        gives += shown ? shown.delta / holders : 0
+      if (x.reason === 'trait' && x.code && REGION_TRAITS.has(x.code)) {
+        regionTraits += x.delta
+        continue
       }
 
-      const friend = e.traits?.find(t => t.code === 'oldFriends')?.arg ?? null
+      happyPct += x.delta
+    }
 
-      const w: Worker = {
-        e,
-        home,
-        movable: !(e.traits ?? []).some(t => STAY_TRAITS.has(t.code)),
-        base: basePerHour(e),
-        days: payingDays(e),
-        fixedPct: 0,
-        happyPct,
-        itemTraits,
-        regionTraits,
-        homeRegion: p.c.regionId,
-        gives,
-        friendId: friend,
-        friendPct: bonusPct(e, 'oldFriends'),
-        handyPct: bonusPct(e, 'handy'),
-      }
-
-      workers.push(w)
-
-      return w
-    })
-  })
+    return {
+      e,
+      home,
+      base: basePerHour(e),
+      days: payingDays(e),
+      wage: e.estimate?.wage ?? e.wage ?? 0,
+      fixedPct: 0,
+      happyPct,
+      itemTraits,
+      regionTraits,
+      homeRegion: p.c.regionId,
+      movePenalty,
+    }
+  }))
 
   // The rest of today's bonus goes along, so today's total is reproduced exactly.
   teams.forEach((team, k) => {
@@ -251,7 +339,7 @@ function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
     }
   })
 
-  return { places, workers, teams }
+  return { places, workers: teams.flat(), teams }
 }
 
 /**
@@ -281,8 +369,8 @@ function optimize(places: Place[], teams: Worker[][]): Worker[][] {
     let best: { a: number, b: number, ta: Worker[], tb: Worker[], ga: number, gb: number, gain: number } | null = null
     for (let a = 0; a < places.length; a++) {
       for (let b = a + 1; b < places.length; b++) {
-        const xs: (Worker | null)[] = [...final[a].filter(w => w.movable), ...room(a) ? [null] : []]
-        const ys: (Worker | null)[] = [...final[b].filter(w => w.movable), ...room(b) ? [null] : []]
+        const xs: (Worker | null)[] = [...final[a], ...room(a) ? [null] : []]
+        const ys: (Worker | null)[] = [...final[b], ...room(b) ? [null] : []]
         for (const x of xs) {
           for (const y of ys) {
             if (!x && !y) {
@@ -413,8 +501,11 @@ export function moveItems(input: AdvisorInput, vppByItem: Map<string, number>): 
       }
     }
 
+    // The move's own cost joins the specialization that regrows, as one settling-in figure.
+    settling -= drivers.moving
     const gain = ks.reduce((s, k) => s + teamGold(places[k], final[k]) - teamGold(places[k], teams[k]), 0)
     const ranked = (Object.keys(drivers) as (keyof typeof drivers)[])
+      .filter(k => k !== 'moving')
       .filter(k => Math.abs(drivers[k]) / horizon >= 0.01)
       .sort((x, y) => drivers[y] - drivers[x])
 
@@ -444,7 +535,7 @@ export function moveItems(input: AdvisorInput, vppByItem: Map<string, number>): 
       ...title(moves, companies),
       why: [
         `Adds ${fmt(gain)} gold over ${horizon} days`,
-        settling >= 0.01 ? `, after ${fmt(settling)} lost while specialization on the new item grows` : '',
+        settling >= 0.01 ? `, after ${fmt(settling)} lost while they settle in` : '',
         top.length ? `, mostly from ${joinNames(top.map(k => DRIVER_LABEL[k].toLowerCase()))}.` : '.',
         ' In Workforce, press Reorganize, drag each worker to the company named, then Apply.',
       ].join(''),

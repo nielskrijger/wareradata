@@ -26,14 +26,14 @@ interface Sort {
   desc: boolean
 }
 
-interface Args {
+interface Args<V extends string> {
   initialSort: Sort
   defaultPageSize: number
 
   /**
    * The table's view tabs, the first being its default; empty for none.
    */
-  views?: readonly string[]
+  views?: readonly V[]
 
   /**
    * Default sort per view tab, replacing `initialSort` while that tab is open.
@@ -41,7 +41,7 @@ interface Args {
   viewSorts?: Partial<Record<string, Sort>>
 }
 
-interface State {
+interface State<V extends string> {
   /**
    * Debounced filter value — drives the fetch.
    */
@@ -62,10 +62,10 @@ interface State {
   /**
    * The open view tab: the URL's, else the last one picked on any table, else
    * the first. Switching tabs drops the sort and page, so the new tab opens on
-   * its own default sort.
+   * its own default sort. '' for a table without tabs.
    */
-  view: string
-  setView: (view: string) => void
+  view: V | ''
+  setView: (view: V) => void
 
   /**
    * True when the fetched rows match `initialSort` with no filter or paging,
@@ -81,13 +81,18 @@ interface State {
  * The filter is debounced so history doesn't fill with every keystroke, and
  * updates are shallow so the server doesn't re-render on each change.
  */
-export function useTableUrlState({ initialSort, defaultPageSize, views = [], viewSorts }: Args): State {
+export function useTableUrlState<V extends string>({
+  initialSort,
+  defaultPageSize,
+  views = [],
+  viewSorts,
+}: Args<V>): State<V> {
   const [q, setQ] = useQueryState('q', parseAsString.withDefault('').withOptions(urlOpts))
   const [viewParam, setViewParam] = useQueryState('view', parseAsString.withDefault('').withOptions(urlOpts))
   const [storedView, setStoredView] = useStored(VIEW_KEY)
 
   // Views this table lacks (from another table's URL or pick) fall back.
-  const view = [viewParam, storedView].find(v => v && views.includes(v)) ?? views[0] ?? ''
+  const view = views.find(v => v === viewParam) ?? views.find(v => v === storedView) ?? views[0] ?? ''
   const defaultSort = viewSorts?.[view] ?? initialSort
 
   const [sortParam, setSortParam] = useQueryState(
@@ -197,7 +202,7 @@ export function useTableUrlState({ initialSort, defaultPageSize, views = [], vie
     pageSize,
     setPageSize,
     view,
-    setView: (next: string) => {
+    setView: (next: V) => {
       const isDefault = next === views[0]
       setSortParam(null)
       setDirParam(null)

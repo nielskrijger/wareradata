@@ -141,7 +141,7 @@ function DataTableInner<TData extends RowData>({
     setPageIndex,
     pageSize,
     setPageSize,
-    view: openView,
+    view: tab,
     setView,
     isAtInitialState,
   } = useTableUrlState({ initialSort, defaultPageSize, views, viewSorts: columnViewSorts(columns) })
@@ -154,7 +154,7 @@ function DataTableInner<TData extends RowData>({
   const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId, hiddenByDefault)
 
   // Tables without view tabs show every column.
-  const view = (openView || 'all') as ColumnView
+  const view: ColumnView = tab || 'all'
   const shownColumns = viewVisibility(columns, view) ?? columnVisibility
   const [data, setData] = useState<PageResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()

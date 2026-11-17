@@ -86,6 +86,11 @@ export interface AdvisorCompany {
   itemCode: string
   regionId: string
   storageLevel: number
+
+  /**
+   * Raw goods (iron, grain…) rather than products, which some traits care about.
+   */
+  rawGood: boolean
   employeeCap: number
   enginePointsPerDay: number
   employees: EmployeeLike[]

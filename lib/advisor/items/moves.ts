@@ -1,7 +1,7 @@
 import type { EmployeeLike } from '../model'
 import type { AdvisorCompany, AdvisorInput, Fact, TitlePart, TodoItem } from '../types'
 
-import { basePerHour, HOURS_PER_DAY, payingDays, RULES, toolFits } from '../model'
+import { HOURS_PER_DAY, payingDays, RULES, toolFits } from '../model'
 import { bonusPct, companyRef, firstName, fmt, heldToolPct, signedFmt } from '../shared'
 
 /**
@@ -39,6 +39,19 @@ const TRAIT = {
    */
   claustrophobeStorage: 3,
   claustrophobe: -20,
+
+  /**
+   * Production stat points, which raise base output but not the wage.
+   */
+  craftsmanOnProduct: 3,
+  craftsmanOnRaw: -1,
+  laborerOnRaw: 3,
+  laborerOnProduct: -1,
+  specialistOnItem: 3,
+  cosmopolitanPerNationality: 2,
+  xenophobeForeignStat: -2,
+  comicWithCoworkers: -1,
+  bullyWithCoworkers: 2,
 
   /**
    * Happiness, which adds a production percent per point away from 50, within this.
@@ -112,7 +125,10 @@ type Part = keyof typeof PART_SOURCES
 type Parts = Record<Part, number>
 const PARTS = Object.keys(PART_SOURCES) as Part[]
 
-const DRIVER_LABEL: Record<Part | 'value', string> = {
+type Driver = Part | 'value' | 'stat'
+
+const DRIVER_LABEL: Record<Driver, string> = {
+  stat: 'Production stat',
   value: 'Value per point',
   manager: 'Manager bonus',
   place: 'Region and storage',
@@ -138,7 +154,12 @@ interface Place {
 interface Worker {
   e: EmployeeLike
   home: number
-  base: number
+
+  /**
+   * Production stat that goes along; the rest comes from the place and team.
+   */
+  fixedStat: number
+  regionStat: number
   days: number
   wage: number
 
@@ -181,6 +202,39 @@ function avgSpec(start: number, days: number): number {
 
 function owns(e: EmployeeLike, code: string): boolean {
   return (e.traits ?? []).some(t => t.code === code)
+}
+
+/**
+ * Production stat contributions `statAt` recomputes, for the check.
+ */
+const STAT_CODES = new Set([
+  ...['craftsman', 'laborer', 'specialist', 'cosmopolitan', 'xenophobe', 'comic', 'bully'],
+  ...REGION_TRAITS,
+])
+
+/**
+ * Production stat points from traits that depend on the good, region or team.
+ */
+function statAt(w: Worker, p: Place, team: Worker[]): number {
+  const e = w.e
+  const has = (code: string) => owns(e, code)
+  const others = team.filter(o => o !== w)
+  const raw = p.c.rawGood
+  const foreign = new Set(others.map(o => o.e.nationality).filter(n => n !== e.nationality)).size
+  const specialistItem = e.traits?.find(t => t.code === 'specialist')?.arg
+
+  return (has('craftsman') ? raw ? TRAIT.craftsmanOnRaw : TRAIT.craftsmanOnProduct : 0)
+    + (has('laborer') ? raw ? TRAIT.laborerOnRaw : TRAIT.laborerOnProduct : 0)
+    + (specialistItem && specialistItem === p.c.itemCode ? TRAIT.specialistOnItem : 0)
+    + (has('cosmopolitan') ? TRAIT.cosmopolitanPerNationality * foreign : 0)
+    + (has('xenophobe') && foreign > 0 ? TRAIT.xenophobeForeignStat : 0)
+    + (has('comic') && others.length > 0 ? TRAIT.comicWithCoworkers : 0)
+    + (has('bully') && others.length > 0 ? TRAIT.bullyWithCoworkers : 0)
+    + (p.c.regionId === w.homeRegion ? w.regionStat : 0)
+}
+
+function baseAt(w: Worker, p: Place, team: Worker[]): number {
+  return (w.fixedStat + statAt(w, p, team)) / RULES.productionDivisor
 }
 
 function sumParts(p: Parts): number {
@@ -256,7 +310,7 @@ function partsAt(w: Worker, p: Place, team: Worker[], specDays = w.days): Parts 
  * depend on the place).
  */
 function goldAt(w: Worker, p: Place, team: Worker[]): number {
-  return HOURS_PER_DAY * w.days * w.base * p.vpp * (1 + (w.fixedPct + sumParts(partsAt(w, p, team))) / 100)
+  return HOURS_PER_DAY * w.days * baseAt(w, p, team) * p.vpp * (1 + (w.fixedPct + sumParts(partsAt(w, p, team))) / 100)
 }
 
 function teamGold(p: Place, team: Worker[]): number {
@@ -320,7 +374,10 @@ function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
     return {
       e,
       home,
-      base: basePerHour(e),
+      fixedStat: 0,
+      regionStat: (e.breakdown?.production?.contributions ?? [])
+        .filter(x => REGION_TRAITS.has(x.code) && !x.percent)
+        .reduce((s, x) => s + x.delta, 0),
       days: payingDays(e),
       wage: e.estimate?.wage ?? e.wage ?? 0,
       fixedPct: 0,
@@ -332,9 +389,10 @@ function setup(input: AdvisorInput, vppByItem: Map<string, number>) {
     }
   }))
 
-  // The rest of today's bonus goes along, so today's total is reproduced exactly.
+  // The rest of today's stat and bonus goes along, so today's totals are reproduced exactly.
   teams.forEach((team, k) => {
     for (const w of team) {
+      w.fixedStat = (w.e.breakdown?.production?.total ?? 0) - statAt(w, places[k], team)
       w.fixedPct = (w.e.productionBonus?.total ?? 0) - sumParts(partsAt(w, places[k], team, 1))
     }
   })
@@ -351,8 +409,17 @@ export function placementCheck(input: AdvisorInput) {
 
   return teams.flatMap((team, k) => team.map((w) => {
     const game = Object.values(PART_SOURCES).flat().reduce((s, src) => s + bonusPct(w.e, src), 0)
+    const gameStat = (w.e.breakdown?.production?.contributions ?? [])
+      .filter(x => STAT_CODES.has(x.code) && !x.percent)
+      .reduce((s, x) => s + x.delta, 0)
 
-    return { name: w.e.name, ours: sumParts(partsAt(w, places[k], team, 1)), game }
+    return {
+      name: w.e.name,
+      ours: sumParts(partsAt(w, places[k], team, 1)),
+      game,
+      oursStat: statAt(w, places[k], team),
+      gameStat,
+    }
   }))
 }
 
@@ -480,16 +547,19 @@ export function moveItems(input: AdvisorInput, vppByItem: Map<string, number>): 
       .map(w => ({ w, from: places[w.home], to: places[placeOf.get(w)!] }))
       .sort((x, y) => x.w.home - y.w.home)
 
-    // Splits the gain over what drives it: new value per point first, then each bonus part.
-    const drivers = Object.fromEntries(['value', ...PARTS].map(k => [k, 0])) as Record<Part | 'value', number>
+    const drivers = Object.fromEntries(Object.keys(DRIVER_LABEL).map(k => [k, 0])) as Record<Driver, number>
     let settling = 0
     for (const k of ks) {
       for (const w of teams[k]) {
         const [from, to] = [places[k], places[placeOf.get(w)!]]
         const before = partsAt(w, from, teams[k])
         const after = partsAt(w, to, final[placeOf.get(w)!])
-        const scale = HOURS_PER_DAY * w.days * w.base
-        drivers.value += scale * (1 + (w.fixedPct + sumParts(before)) / 100) * (to.vpp - from.vpp)
+        // Base output first, then value per point, then each bonus part, so the drivers add up.
+        const [was, now] = [baseAt(w, from, teams[k]), baseAt(w, to, final[placeOf.get(w)!])]
+        const mult = 1 + (w.fixedPct + sumParts(before)) / 100
+        const scale = HOURS_PER_DAY * w.days * now
+        drivers.stat += HOURS_PER_DAY * w.days * (now - was) * from.vpp * mult
+        drivers.value += scale * mult * (to.vpp - from.vpp)
         for (const part of PARTS) {
           drivers[part] += scale * to.vpp * (after[part] - before[part]) / 100
         }

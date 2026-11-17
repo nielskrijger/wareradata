@@ -48,6 +48,7 @@ async function main() {
   const input = advisorInputFromData(data, gameConfig, prices)
   for (const p of placementCheck(input)) {
     check(`${p.name} bonus that depends on the company`, p.ours, p.game, 0.01)
+    check(`${p.name} Production that depends on the company`, p.oursStat, p.gameStat, 0)
   }
 
   const result = buildAdvice(input)

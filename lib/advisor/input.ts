@@ -30,6 +30,7 @@ export function advisorInputFromData(
   const skills = data.user.skills
   const wealth = (data.user.stats as { wealth?: { money?: number } } | undefined)?.wealth
   const recipe = recipeFromGameConfig(gameConfig)
+  const itemTypes = (gameConfig.items ?? {}) as unknown as Record<string, { type?: string } | undefined>
 
   return {
     companies: data.factories.map((f, i) => {
@@ -45,6 +46,7 @@ export function advisorInputFromData(
         itemCode: f.company.itemCode,
         regionId: f.company.region,
         storageLevel: f.company.activeUpgradeLevels?.storage ?? 0,
+        rawGood: itemTypes[f.company.itemCode]?.type === 'raw',
         employeeCap: f.hourly?.cap ?? 0,
         enginePointsPerDay: profit.enginePointsPerDay,
         employees: f.employees,

@@ -1,7 +1,7 @@
 import { buildAdvice } from '@/lib/advisor/build'
 import { advisorInputFromData } from '@/lib/advisor/input'
-import { placementCheck } from '@/lib/advisor/items/moves'
 import { basePerHour, outputPerHour, RULES, wagePerHour } from '@/lib/advisor/model'
+import { ruleCheck } from '@/lib/advisor/sim/world'
 import { getAdviceData, getGameConfig, getItemPrices, getKeyOwnerId, managerPointValue } from '@/lib/warera/api'
 
 /**
@@ -46,9 +46,10 @@ async function main() {
   }
 
   const input = advisorInputFromData(data, gameConfig, prices)
-  for (const p of placementCheck(input)) {
-    check(`${p.name} bonus that depends on the company`, p.ours, p.game, 0.01)
-    check(`${p.name} Production that depends on the company`, p.oursStat, p.gameStat, 0)
+  for (const r of ruleCheck(input)) {
+    check(`${r.name} Production from traits`, r.ours.stat, r.game.stat, 0)
+    check(`${r.name} bonus from traits`, r.ours.bonus, r.game.bonus, 0.01)
+    check(`${r.name} happiness from traits`, r.ours.happiness, r.game.happiness, 0.01)
   }
 
   const result = buildAdvice(input)

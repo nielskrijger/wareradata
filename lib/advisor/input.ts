@@ -46,7 +46,6 @@ export function advisorInputFromData(
         itemCode: f.company.itemCode,
         regionId: f.company.region,
         storageLevel: f.company.activeUpgradeLevels?.storage ?? 0,
-        rawGood: itemTypes[f.company.itemCode]?.type === 'raw',
         employeeCap: f.hourly?.cap ?? 0,
         enginePointsPerDay: profit.enginePointsPerDay,
         employees: f.employees,
@@ -64,5 +63,6 @@ export function advisorInputFromData(
     cash: wealth?.money ?? null,
     managerMarketWage: data.managerMarketWage,
     changeItemConcrete: gameConfig.company?.changeItemCost ?? 0,
+    rawGoods: new Set(Object.keys(itemTypes).filter(code => itemTypes[code]?.type === 'raw')),
   }
 }

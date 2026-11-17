@@ -1,14 +1,13 @@
 import type { AdvisorInput, AdvisorResult, SkippedItem, TodoItem } from './types'
 
-import { itemSwitchItem } from './items/item-switch'
 import { managerItems } from './items/manager'
 import { moneyItem } from './items/money'
-import { moveItems } from './items/moves'
+import { planItems } from './items/plan'
 import { fireItems, hireItem } from './items/staff'
-import { toolItems } from './items/tools'
 import { TRAIN_ENERGY, trainingItems } from './items/training'
 import { employeeNetPerDay, HOURS_PER_DAY } from './model'
 import { fmt, valuePerPoint } from './shared'
+import { buildWorld } from './sim/world'
 
 function median(values: number[]): number | null {
   if (!values.length) {
@@ -38,11 +37,12 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
   const skipped: SkippedItem[] = []
   const nets: number[] = []
 
-  // Tools, managers and hiring build on the teams after the moves.
-  const moves = moveItems(input, vppByItem)
-  const items: TodoItem[] = [...moves.items]
+  // Staff, managers and hiring are judged on the plan's teams and items.
+  const world = buildWorld(input, vppByItem)
+  const planned = planItems(input, world)
+  const items: TodoItem[] = [...planned.items]
 
-  input.companies.forEach((c, i) => {
+  input.companies.forEach((c, k) => {
     const vpp = vppByItem.get(c.itemCode) ?? input.ppValue
     for (const e of c.employees) {
       if (!e.companyDisabled) {
@@ -50,21 +50,15 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
       }
     }
 
-    const sw = itemSwitchItem(input, c, vppByItem)
-    if (sw) {
-      items.push(sw.item)
-    }
-
-    // Staff are judged on the item the company should make.
-    const staffVpp = sw?.vpp ?? vpp
-    items.push(...trainingItems(input, c, staffVpp, skipped))
-    items.push(...fireItems(c, staffVpp))
-    items.push(...managerItems(input, moves.companies[i], staffVpp, skipped))
+    const after = planned.companies[k]
+    const staffVpp = vppByItem.get(after.itemCode) ?? vpp
+    items.push(...trainingItems(input, after, staffVpp, skipped))
+    items.push(...fireItems(after, staffVpp))
+    items.push(...managerItems(input, world, planned.plan, k, skipped))
   })
 
-  items.push(...toolItems({ ...input, companies: moves.companies }, vppByItem))
   const medianNet = median(nets)
-  for (const c of moves.companies) {
+  for (const c of planned.companies) {
     const h = hireItem(c, medianNet)
     if (h) {
       items.push(h)
@@ -73,8 +67,8 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
 
   const { current, cap, regenPerHour } = input.energy
   const energyHours = regenPerHour > 0 ? Math.max(0, (cap - current) / regenPerHour) : Number.POSITIVE_INFINITY
-  const planned = items.reduce((s, i) => s + (i.energy ?? 0), 0)
-  const spare = input.energy.current - planned
+  const energyUsed = items.reduce((s, i) => s + (i.energy ?? 0), 0)
+  const spare = input.energy.current - energyUsed
   if (spare >= TRAIN_ENERGY && energyHours < HOURS_PER_DAY) {
     items.push({
       id: 'work',

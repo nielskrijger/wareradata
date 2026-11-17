@@ -1,34 +1,30 @@
-import type { AdvisorCompany, AdvisorInput, SkippedItem, TodoItem } from '../types'
+import type { Plan, World } from '../sim/world'
+import type { AdvisorInput, SkippedItem, TodoItem } from '../types'
 
-import {
-  basePerHour,
-  effectiveManagerPct,
-  HOURS_PER_DAY,
-  managerNetPerDay,
-  RULES,
-} from '../model'
-import { bonusPct, fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
+import { effectiveManagerPct, HOURS_PER_DAY, RULES } from '../model'
+import { fmt, MIN_GAIN_PER_DAY, titleAt } from '../shared'
+import { companyGold } from '../sim/world'
 
 /**
  * Fire a manager whose bonus is worth less than their wage, or post a job where a
- * market-rate manager pays, with the most a Management point is worth.
+ * market-rate manager pays, with the most a Management point is worth. Both are
+ * judged on the plan's team and item, over the horizon.
  */
-export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number, skipped: SkippedItem[]): TodoItem[] {
-  const working = c.employees.filter(e => !e.companyDisabled)
-  const baseSum = working.reduce((s, e) => s + basePerHour(e), 0)
-  const ownerPct = working[0] ? bonusPct(working[0], 'management') : 0
+export function managerItems(
+  input: AdvisorInput,
+  world: World,
+  plan: Plan,
+  k: number,
+  skipped: SkippedItem[],
+): TodoItem[] {
+  const c = { ...world.companies[k].c, itemCode: plan.item[k] }
+  const ownerPct = world.companies[k].managementPct
+  const perDay = (pct: number) => companyGold(world, plan, k, pct) / RULES.horizonDays
 
   if (c.manager) {
     const m = c.manager
-    const net = managerNetPerDay({
-      basePerHourSum: baseSum,
-      managerPct: m.productionBonusPercent,
-      ownerPct,
-      hourlyWage: m.hourlyWage,
-      valuePerPoint: vpp,
-    })
-
     const counted = effectiveManagerPct(m.productionBonusPercent, ownerPct)
+    const net = perDay(counted) - perDay(0) - HOURS_PER_DAY * m.hourlyWage
     const output = fmt(net + HOURS_PER_DAY * m.hourlyWage)
     const wages = fmt(HOURS_PER_DAY * m.hourlyWage)
     if (net < -MIN_GAIN_PER_DAY) {
@@ -50,13 +46,13 @@ export function managerItems(input: AdvisorInput, c: AdvisorCompany, vpp: number
   }
 
   const points = effectiveManagerPct(RULES.managerCapPct, ownerPct) / RULES.managementPctPerPoint
-  if (!working.length || !points || input.managerMarketWage == null) {
+  if (!plan.team[k].length || !points || input.managerMarketWage == null) {
     return []
   }
 
   // The market wage buys a manager at the cap, so it divides by the cap's points.
   const marketRate = input.managerMarketWage / (RULES.managerCapPct / RULES.managementPctPerPoint)
-  const breakEven = baseSum * (RULES.managementPctPerPoint / 100) * vpp
+  const breakEven = (perDay(points * RULES.managementPctPerPoint) - perDay(0)) / HOURS_PER_DAY / points
   const net = HOURS_PER_DAY * points * (breakEven - marketRate)
   const [most, market] = [fmt(breakEven, 4), fmt(marketRate, 4)]
   if (net < MIN_GAIN_PER_DAY) {

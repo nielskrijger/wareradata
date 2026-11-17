@@ -49,19 +49,9 @@ export function bonusPct(e: EmployeeLike, source: string): number {
   return e.productionBonus?.contributions?.find(c => c.source === source)?.percent ?? 0
 }
 
-export function specializationPct(e: EmployeeLike): number {
-  return bonusPct(e, 'specialization')
-}
-
 /**
  * The rolled bonus of a held tool, whether or not it works on the item made.
  */
 export function heldToolPct(e: EmployeeLike): number {
   return e.toolItem && !e.toolStatus?.isBroken ? e.toolStatus?.rolledPercent ?? 0 : 0
-}
-
-export function toolPct(e: EmployeeLike): number {
-  const s = e.toolStatus
-
-  return s && s.isUsable && !s.isBroken ? s.bonusPercent : 0
 }

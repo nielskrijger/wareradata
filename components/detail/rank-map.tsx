@@ -115,9 +115,14 @@ function Row({ row, color, total }: { row: RankMapRow, color: string, total: num
         ))}
         {ranked && (
           <>
+            {/* Fades in toward the dot and glows, so the stem reads bright without muddying the track. */}
             <div
-              className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full opacity-40"
-              style={{ width: `${pos}%`, background: color }}
+              className="absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full opacity-85"
+              style={{
+                width: `${pos}%`,
+                background: `linear-gradient(to right, transparent, ${color})`,
+                filter: `drop-shadow(0 0 3px ${color})`,
+              }}
             />
             <div
               className="ring-card absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2"

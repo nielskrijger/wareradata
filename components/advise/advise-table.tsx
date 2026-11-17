@@ -83,6 +83,7 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
         <span className={cn(small ? 'font-medium' : 'font-semibold')}>
           {row.titleParts ? <TitleParts parts={row.titleParts} /> : row.title}
         </span>
+        {row.byCompany && <ByCompany groups={row.byCompany} />}
         <Reason row={row} />
       </span>
       <span className="col-start-2 flex items-center gap-1.5 text-xs md:col-start-auto">
@@ -104,6 +105,29 @@ function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, runn
         )}
       </span>
     </li>
+  )
+}
+
+/**
+ * Steps under each company, as the game's Reorganize screen lists them.
+ */
+function ByCompany({ groups }: { groups: NonNullable<AdviseRow['byCompany']> }) {
+  return (
+    <span className="flex flex-wrap gap-x-6 gap-y-2 text-xs">
+      {groups.map(g => (
+        <span key={g.company.id} className="flex flex-col gap-0.5">
+          <span className="font-medium"><TitleParts parts={[g.company]} /></span>
+          <ul className="text-muted-foreground flex flex-col gap-0.5">
+            {g.steps.map((parts, i) => (
+              // eslint-disable-next-line react/no-array-index-key -- steps never reorder
+              <li key={i} className="flex items-center gap-1 before:content-['·']">
+                <TitleParts parts={parts} />
+              </li>
+            ))}
+          </ul>
+        </span>
+      ))}
+    </span>
   )
 }
 

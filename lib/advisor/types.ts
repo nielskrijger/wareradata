@@ -56,6 +56,11 @@ export interface TodoItem {
    * Energy the action takes; none when absent.
    */
   energy?: number
+
+  /**
+   * Steps listed under the company they're done at, in the game's order.
+   */
+  byCompany?: { company: CompanyRef, steps: TitlePart[][] }[]
 }
 
 /**
@@ -86,11 +91,6 @@ export interface AdvisorCompany {
   itemCode: string
   regionId: string
   storageLevel: number
-
-  /**
-   * Raw goods (iron, grain…) rather than products, which some traits care about.
-   */
-  rawGood: boolean
   employeeCap: number
   enginePointsPerDay: number
   employees: EmployeeLike[]
@@ -127,6 +127,11 @@ export interface AdvisorInput {
    * Concrete it takes to change what a company makes.
    */
   changeItemConcrete: number
+
+  /**
+   * Raw goods (iron, grain…) rather than products, which some traits care about.
+   */
+  rawGoods: Set<string>
 }
 
 /**

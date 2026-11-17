@@ -58,7 +58,7 @@ const TOOL_GOODS: Record<string, string[]> = {
 /**
  * A tool's kind without its rarity: `pickaxe3` → `pickaxe`.
  */
-export function toolKind(toolCode: string): string {
+function toolKind(toolCode: string): string {
   return toolCode.replace(/\d+$/, '')
 }
 
@@ -67,13 +67,6 @@ export function toolKind(toolCode: string): string {
  */
 export function toolFits(toolCode: string, itemCode: string): boolean {
   return TOOL_GOODS[toolKind(toolCode)]?.includes(itemCode) ?? false
-}
-
-/**
- * The tool kind that works on an item, if any.
- */
-export function toolKindFor(itemCode: string): string | null {
-  return Object.keys(TOOL_GOODS).find(kind => TOOL_GOODS[kind].includes(itemCode)) ?? null
 }
 
 /**
@@ -187,19 +180,4 @@ export function effectiveManagerPct(managerPct: number, ownerPct: number): numbe
   const room = Math.max(0, RULES.combinedManagementCapPct - ownerPct)
 
   return Math.max(0, Math.min(managerPct, RULES.managerCapPct, room))
-}
-
-/**
- * A manager's daily gold: the output their bonus adds minus their wage.
- */
-export function managerNetPerDay(opts: {
-  basePerHourSum: number
-  managerPct: number
-  ownerPct: number
-  hourlyWage: number
-  valuePerPoint: number
-}): number {
-  const pct = effectiveManagerPct(opts.managerPct, opts.ownerPct)
-
-  return HOURS_PER_DAY * (opts.basePerHourSum * (pct / 100) * opts.valuePerPoint - opts.hourlyWage)
 }

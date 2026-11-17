@@ -3,8 +3,9 @@
 import type { PageResult } from '@/components/data-table/data-table'
 import type { BattleRow } from '@/lib/rows'
 
-import { parseAsString, parseAsStringEnum, useQueryState, useQueryStates } from 'nuqs'
+import { parseAsStringEnum, useQueryState } from 'nuqs'
 
+import { useClearTableUrlState } from '@/components/data-table/use-table-url-state'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 
 import { formatNumber } from '@/lib/format'
@@ -31,13 +32,10 @@ export function BattleTabs({ active, finished }: Props) {
     parseAsStringEnum([...TABS]).withDefault('active').withOptions({ shallow: true, history: 'replace' }),
   )
 
-  const [, setTableState] = useQueryStates(
-    { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString, view: parseAsString },
-    { shallow: true, history: 'replace' },
-  )
+  const clearTableState = useClearTableUrlState()
 
   function selectTab(next: Tab) {
-    setTableState({ q: null, sort: null, dir: null, page: null, view: null })
+    clearTableState()
     setTab(next)
   }
 

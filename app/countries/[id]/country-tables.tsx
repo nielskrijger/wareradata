@@ -3,7 +3,7 @@
 import type { PageResult } from '@/components/data-table/data-table'
 import type { BattleRow, MURow, PartyRow, UserRow } from '@/lib/rows'
 
-import { parseAsString, parseAsStringEnum, useQueryState, useQueryStates } from 'nuqs'
+import { parseAsStringEnum, useQueryState } from 'nuqs'
 import { useEffect, useRef } from 'react'
 
 import { BattlesTable } from '@/app/battles/battles-table'
@@ -11,6 +11,7 @@ import { activeBattleColumns } from '@/app/battles/columns'
 import { MUsTable } from '@/app/mus/mus-table'
 import { PartiesTable } from '@/app/parties/parties-table'
 import { UsersTable } from '@/app/users/users-table'
+import { useClearTableUrlState } from '@/components/data-table/use-table-url-state'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { formatNumber } from '@/lib/format'
 
@@ -38,10 +39,7 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
     parseAsStringEnum([...TABS]).withDefault('citizens').withOptions({ shallow: true, history: 'replace' }),
   )
 
-  const [, setTableState] = useQueryStates(
-    { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString, view: parseAsString },
-    { shallow: true, history: 'replace' },
-  )
+  const clearTableState = useClearTableUrlState()
 
   // Scroll to the tables only when a non-default tab arrives via the URL (a deep
   // link or the header's ⚔ pill); a click on a tab here sets skipScrollRef so
@@ -65,9 +63,7 @@ export function CountryTables({ code, citizens, mus, parties, battles }: Props) 
 
   function selectTab(next: Tab) {
     skipScrollRef.current = true
-    // Drop the active table's paging/sort/filter so it doesn't bleed into the
-    // table we're switching to.
-    setTableState({ q: null, sort: null, dir: null, page: null, view: null })
+    clearTableState()
     setTab(next)
   }
 

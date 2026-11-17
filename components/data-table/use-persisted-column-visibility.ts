@@ -2,49 +2,11 @@
 
 import type { ColumnVisibilityState, Updater } from '@tanstack/react-table'
 
-import { useCallback, useMemo, useSyncExternalStore } from 'react'
+import { useCallback, useMemo } from 'react'
+
+import { readStored, useStored, writeStored } from '@/lib/local-storage'
 
 const KEY_PREFIX = 'wareradata:hidden-columns:'
-
-/**
- * The `storage` event only fires in other tabs, so writes here notify directly.
- */
-const listeners = new Set<() => void>()
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  window.addEventListener('storage', listener)
-
-  return () => {
-    listeners.delete(listener)
-    window.removeEventListener('storage', listener)
-  }
-}
-
-/**
- * Storage can throw (private mode, blocked site data); fall back to the defaults.
- */
-function readRaw(key: string): string | null {
-  try {
-    return window.localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function writeRaw(key: string, overrides: ColumnVisibilityState) {
-  try {
-    if (Object.keys(overrides).length === 0) {
-      window.localStorage.removeItem(key)
-    } else {
-      window.localStorage.setItem(key, JSON.stringify(overrides))
-    }
-  } catch {
-    return
-  }
-
-  listeners.forEach(listener => listener())
-}
 
 /**
  * Stored choices: a `{ id: visible }` map, or an array of hidden ids as
@@ -87,7 +49,7 @@ export function usePersistedColumnVisibility(
   hiddenByDefault: readonly string[],
 ): [ColumnVisibilityState, (updater: Updater<ColumnVisibilityState>, knownIds: string[]) => void] {
   const key = KEY_PREFIX + tableId
-  const raw = useSyncExternalStore(subscribe, () => readRaw(key), () => null)
+  const [raw] = useStored(key)
 
   // Joined so a fresh array with the same ids each render keeps the memo.
   const defaultsKey = hiddenByDefault.join('\n')
@@ -102,7 +64,7 @@ export function usePersistedColumnVisibility(
   )
 
   const setVisibility = useCallback((updater: Updater<ColumnVisibilityState>, knownIds: string[]) => {
-    const current: ColumnVisibilityState = { ...defaults, ...parseOverrides(readRaw(key)) }
+    const current: ColumnVisibilityState = { ...defaults, ...parseOverrides(readStored(key)) }
     const next = typeof updater === 'function' ? updater(current) : updater
     const overrides: ColumnVisibilityState = {}
     for (const id of knownIds) {
@@ -112,7 +74,7 @@ export function usePersistedColumnVisibility(
       }
     }
 
-    writeRaw(key, overrides)
+    writeStored(key, Object.keys(overrides).length > 0 ? JSON.stringify(overrides) : null)
   }, [key, defaults])
 
   return [visibility, setVisibility]

@@ -2,12 +2,19 @@
 
 import type { SortingState } from '@tanstack/react-table'
 
-import { parseAsInteger, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs'
+import { parseAsInteger, parseAsString, parseAsStringEnum, useQueryState, useQueryStates } from 'nuqs'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { useStored } from '@/lib/local-storage'
 
 const FILTER_DEBOUNCE_MS = 250
 
 const urlOpts = { shallow: true, scroll: false, history: 'replace' as const }
+
+/**
+ * The last view tab picked on any table, so every table that has it opens there.
+ */
+const VIEW_KEY = 'wareradata:column-view'
 
 /**
  * A table's default page size must be one of these.
@@ -22,6 +29,11 @@ interface Sort {
 interface Args {
   initialSort: Sort
   defaultPageSize: number
+
+  /**
+   * The table's view tabs, the first being its default; empty for none.
+   */
+  views?: readonly string[]
 
   /**
    * Default sort per view tab, replacing `initialSort` while that tab is open.
@@ -48,11 +60,12 @@ interface State {
   setPageSize: (size: number) => void
 
   /**
-   * The column view tab, '' for the table's default. Switching tabs drops
-   * the sort and page, so the new tab opens on its own default sort.
+   * The open view tab: the URL's, else the last one picked on any table, else
+   * the first. Switching tabs drops the sort and page, so the new tab opens on
+   * its own default sort.
    */
   view: string
-  setView: (view: string | null) => void
+  setView: (view: string) => void
 
   /**
    * True when the fetched rows match `initialSort` with no filter or paging,
@@ -68,9 +81,13 @@ interface State {
  * The filter is debounced so history doesn't fill with every keystroke, and
  * updates are shallow so the server doesn't re-render on each change.
  */
-export function useTableUrlState({ initialSort, defaultPageSize, viewSorts }: Args): State {
+export function useTableUrlState({ initialSort, defaultPageSize, views = [], viewSorts }: Args): State {
   const [q, setQ] = useQueryState('q', parseAsString.withDefault('').withOptions(urlOpts))
-  const [view, setViewParam] = useQueryState('view', parseAsString.withDefault('').withOptions(urlOpts))
+  const [viewParam, setViewParam] = useQueryState('view', parseAsString.withDefault('').withOptions(urlOpts))
+  const [storedView, setStoredView] = useStored(VIEW_KEY)
+
+  // Views this table lacks (from another table's URL or pick) fall back.
+  const view = [viewParam, storedView].find(v => v && views.includes(v)) ?? views[0] ?? ''
   const defaultSort = viewSorts?.[view] ?? initialSort
 
   const [sortParam, setSortParam] = useQueryState(
@@ -180,12 +197,30 @@ export function useTableUrlState({ initialSort, defaultPageSize, viewSorts }: Ar
     pageSize,
     setPageSize,
     view,
-    setView: (next: string | null) => {
+    setView: (next: string) => {
+      const isDefault = next === views[0]
       setSortParam(null)
       setDirParam(null)
       setPageParam(null)
-      setViewParam(next)
+      setViewParam(isDefault ? null : next)
+      setStoredView(isDefault ? null : next)
     },
     isAtInitialState,
   }
+}
+
+/**
+ * Clears the table URL keys, for pages that swap one DataTable for another
+ * behind tabs: every table reads the same keys, so `?page=2` from one would
+ * otherwise carry into the next.
+ */
+export function useClearTableUrlState(): () => void {
+  const [, setTableState] = useQueryStates(
+    { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString, view: parseAsString },
+    urlOpts,
+  )
+
+  return useCallback(() => {
+    setTableState({ q: null, sort: null, dir: null, page: null, view: null })
+  }, [setTableState])
 }

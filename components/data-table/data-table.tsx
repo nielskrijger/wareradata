@@ -3,6 +3,7 @@
 import type { RowData } from '@tanstack/react-table'
 import type { ReactNode } from 'react'
 
+import type { ColumnView } from './column-views'
 import type { ColumnDef } from './features'
 
 import type { Range } from '@/lib/query'
@@ -140,10 +141,10 @@ function DataTableInner<TData extends RowData>({
     setPageIndex,
     pageSize,
     setPageSize,
-    view: viewParam,
+    view: openView,
     setView,
     isAtInitialState,
-  } = useTableUrlState({ initialSort, defaultPageSize, viewSorts: columnViewSorts(columns) })
+  } = useTableUrlState({ initialSort, defaultPageSize, views, viewSorts: columnViewSorts(columns) })
 
   // From all columns, so stored choices for omitted ones match the full table's.
   const hiddenByDefault = allColumns
@@ -152,8 +153,8 @@ function DataTableInner<TData extends RowData>({
 
   const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId, hiddenByDefault)
 
-  // Unknown or stale view params (from another table's URL) fall back to the first view.
-  const view = views.find(v => v === viewParam) ?? views[0] ?? 'all'
+  // Tables without view tabs show every column.
+  const view = (openView || 'all') as ColumnView
   const shownColumns = viewVisibility(columns, view) ?? columnVisibility
   const [data, setData] = useState<PageResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
@@ -252,7 +253,7 @@ function DataTableInner<TData extends RowData>({
         <ColumnViewTabs
           views={views}
           value={view}
-          onChange={next => setView(next === views[0] ? null : next)}
+          onChange={setView}
           counts={columnViewCount(columns)}
         />
       )}

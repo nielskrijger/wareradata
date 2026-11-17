@@ -13,7 +13,7 @@ export const EFFORT = {
   switch: 30,
 }
 
-function clone(plan: Plan): Plan {
+export function clone(plan: Plan): Plan {
   return { item: [...plan.item], team: plan.team.map(t => [...t]), toolOf: [...plan.toolOf] }
 }
 

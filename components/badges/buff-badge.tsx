@@ -67,7 +67,7 @@ function useExpired(iso: string | null | undefined): boolean {
  * Buff (green) or Debuff (red) with a countdown, or a grey Ready when neither
  * is active.
  */
-export function ReadinessBadge({ status, endsAt, withTooltip = true }: Props) {
+export function BuffBadge({ status, endsAt, withTooltip = true }: Props) {
   const expired = useExpired(endsAt)
 
   if (status == null) {

@@ -40,7 +40,7 @@ export function CombatModeShareCell({ avgWarShare, width = 84 }: Props) {
       <TooltipTrigger
         render={(
           // Pad vertically so the hover/hit area covers the row height, not just
-          // the 1.5px-tall bar (matching ReadinessPillBar).
+          // the 1.5px-tall bar (matching BuffBar).
           <div className="flex cursor-default items-center py-2" style={{ width }}>
             <StackedBar
               className="h-1.5 w-full bg-white/10"

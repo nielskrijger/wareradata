@@ -4,7 +4,7 @@ import type { ColumnDef } from '@/components/data-table/features'
 
 import type { UserRow } from '@/lib/rows'
 
-import { ReadinessBadge } from '@/components/badges/readiness-badge'
+import { BuffBadge } from '@/components/badges/buff-badge'
 import { RED_BADGE } from '@/components/badges/tone'
 import { CombatModeCell } from '@/components/cells/combat-mode-cell'
 import { GroupCell } from '@/components/cells/group-cell'
@@ -151,13 +151,13 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       percentBarColumn<UserRow>('hunger', 'Hunger', { width: 120 }),
       gearColumn<UserRow>('gearScore', 'Gear'),
       {
-        // Sorts on the buff/debuff time remaining (see readinessSortValue in the
+        // Sorts on the buff/debuff time remaining (see buffSortValue in the
         // API route): descending — the default first click — puts the longest buff
         // on top, "ready" in the middle, and the longest debuff at the bottom.
-        accessorKey: 'readinessStatus',
+        accessorKey: 'buffStatus',
         header: 'Buff',
         cell: ({ row }) => (
-          <ReadinessBadge status={row.original.readinessStatus} endsAt={row.original.readinessEndsAt} />
+          <BuffBadge status={row.original.buffStatus} endsAt={row.original.buffEndsAt} />
         ),
         sortDescFirst: true,
         meta: { width: 100 },

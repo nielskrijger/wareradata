@@ -9,6 +9,7 @@ import { IdentityCell } from '@/components/cells/identity-cell'
 import { buildColumns } from '@/components/data-table/column-categories'
 import {
   avgLevelColumn,
+  buffColumn,
   combatModeColumn,
   compactNumberColumn,
   countryColumn,
@@ -16,7 +17,6 @@ import {
   localeNumberColumn,
   percentBarColumn,
   rankTooltipColumn,
-  readinessColumn,
   tierColumn,
 } from '@/components/data-table/column-factories'
 import {
@@ -69,7 +69,7 @@ export const muColumns: ColumnDef<MURow>[] = buildColumns<MURow>(
       }),
       percentBarColumn<MURow>('avgHealth', 'Avg Health', { tooltip: 'Average health across members.' }),
       percentBarColumn<MURow>('avgHunger', 'Avg Hunger', { width: 140, tooltip: 'Average hunger across members.' }),
-      readinessColumn<MURow>(),
+      buffColumn<MURow>(),
       combatModeColumn<MURow>(),
       tierColumn<MURow>('damageTier'),
       rankTooltipColumn<MURow>('damage', 'damageRank', 'Total', { width: 90, rankLabel: 'Total damage' }),

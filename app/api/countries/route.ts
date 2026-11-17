@@ -4,7 +4,7 @@ import type { CountryRow } from '@/lib/rows'
 import { withActiveBattleCounts } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute, makeSortValue } from '@/lib/query'
-import { readinessScore } from '@/lib/rows'
+import { buffScore } from '@/lib/rows'
 import {
   CASE_FIELD_ALIASES,
   FACTORY_FIELD_ALIASES,
@@ -40,7 +40,7 @@ const countryFieldAliases: FieldAliases = {
 
 const countrySortValue = makeSortValue<CountryRow>({
   damageTier: row => (row.damageTier ? TIER_INDEX[row.damageTier] : null),
-  readinessScore: row => readinessScore(row.readinessPill),
+  buffScore: row => buffScore(row.buffMix),
 })
 
 /**

@@ -9,6 +9,7 @@ import { IdentityCell } from '@/components/cells/identity-cell'
 import { buildColumns } from '@/components/data-table/column-categories'
 import {
   avgLevelColumn,
+  buffColumn,
   combatModeColumn,
   compactNumberColumn,
   decimalColumn,
@@ -17,7 +18,6 @@ import {
   percentBarColumn,
   percentColumn,
   rankTooltipColumn,
-  readinessColumn,
   tierColumn,
 } from '@/components/data-table/column-factories'
 import {
@@ -100,7 +100,7 @@ export const countryColumns: ColumnDef<CountryRow>[] = buildColumns<CountryRow>(
         width: 140,
         tooltip: 'Average hunger across citizens.',
       }),
-      readinessColumn<CountryRow>(),
+      buffColumn<CountryRow>(),
       combatModeColumn<CountryRow>(),
       tierColumn<CountryRow>('damageTier'),
       rankTooltipColumn<CountryRow>('damage', 'damageRank', 'Total', { width: 90, rankLabel: 'Total damage' }),

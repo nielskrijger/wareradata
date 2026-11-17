@@ -136,8 +136,8 @@ function buildUserRow(u: User, ctx: UserRowContext) {
   const skills = u.skills
   const health = barPercent(skills?.health)
   const hunger = barPercent(skills?.hunger)
-  const readinessStatus = toReadinessStatus(skills?.attack)
-  const readinessEndsAt = u.buffs?.buffEndAt ?? u.buffs?.debuffEndAt ?? null
+  const buffStatus = toBuffStatus(skills?.attack)
+  const buffEndsAt = u.buffs?.buffEndAt ?? u.buffs?.debuffEndAt ?? null
   const gear = equipment[u._id]
   const gearScore = gear ? computeGearScore(gear, slotSpecs, gearLookup) : null
   const warPoints = skillPoints(skills, WAR_SKILLS, skillCost)
@@ -218,8 +218,8 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     premiumGiftsRank: null,
     premiumMonths: r?.userPremiumMonths?.value ?? null,
     premiumMonthsRank: null,
-    readinessStatus,
-    readinessEndsAt,
+    buffStatus,
+    buffEndsAt,
     referrals: r?.userReferrals?.value ?? null,
     referralsRank: null,
     prestige,
@@ -285,11 +285,11 @@ function barPercent(bar: { currentBarValue?: number, total?: number } | undefine
 }
 
 /**
- * Net readiness status from the attack skill's buff / debuff percentages: 'buff'
+ * Net buff status from the attack skill's buff / debuff percentages: 'buff'
  * when buffed more than debuffed, 'debuff' when the reverse, 'neither' when
  * they're equal (typically both zero). Null when the attack data is missing.
  */
-function toReadinessStatus(
+function toBuffStatus(
   attack: { buffsPercent?: number, debuffsPercent?: number } | undefined,
 ): 'buff' | 'debuff' | 'neither' | null {
   if (!attack) {

@@ -28,12 +28,12 @@ const userFieldAliases: FieldAliases = {
   lastSeen: 'lastConnectionAt',
   joined: 'createdAt',
   ppd: 'pointsPerDay',
-  buff: 'readinessStatus',
+  buff: 'buffStatus',
 }
 
 const userSortValue = makeSortValue<UserRow>({
   levelTier: row => (row.levelTier ? TIER_INDEX[row.levelTier] : null),
-  readinessStatus: readinessSortValue,
+  buffStatus: buffSortValue,
 })
 
 /**
@@ -43,19 +43,19 @@ const userSortValue = makeSortValue<UserRow>({
  * The absolute end time orders the same as time remaining, and keeps the
  * comparator off the clock so one sort stays consistent.
  */
-function readinessSortValue(row: UserRow): number | null {
-  if (row.readinessStatus == null) {
+function buffSortValue(row: UserRow): number | null {
+  if (row.buffStatus == null) {
     return null
   }
 
-  if (row.readinessStatus === 'neither') {
+  if (row.buffStatus === 'neither') {
     return 0
   }
 
-  const endsAt = row.readinessEndsAt ? Date.parse(row.readinessEndsAt) : Number.NaN
+  const endsAt = row.buffEndsAt ? Date.parse(row.buffEndsAt) : Number.NaN
   const magnitude = Number.isNaN(endsAt) ? 1 : endsAt
 
-  return row.readinessStatus === 'buff' ? magnitude : -magnitude
+  return row.buffStatus === 'buff' ? magnitude : -magnitude
 }
 
 export const GET = createTableRoute<UserRow>(

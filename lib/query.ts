@@ -231,7 +231,7 @@ type SortValue = number | string | null
 
 /**
  * Sorts any column by its own row value; `custom` covers columns whose value
- * doesn't order naturally (tiers, readiness). Strings compare lowercased so
+ * doesn't order naturally (tiers, buffs). Strings compare lowercased so
  * names sort case-insensitively.
  */
 export function makeSortValue<T>(

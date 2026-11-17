@@ -26,6 +26,13 @@ export function formatNumber(n: number | null | undefined, maximumFractionDigits
 }
 
 /**
+ * Leaderboard position ("#1,234"), or the empty placeholder.
+ */
+export function formatRank(rank: number | null | undefined): string {
+  return rank == null ? EMPTY : `#${formatNumber(rank)}`
+}
+
+/**
  * The calendar date of an ISO timestamp ("2025-03-14").
  */
 export function formatDate(iso: string | null | undefined): string {

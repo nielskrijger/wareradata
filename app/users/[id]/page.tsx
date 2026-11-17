@@ -129,6 +129,8 @@ export default async function UserDetailPage({ params }: PageProps) {
           icon={<Trophy />}
           value={formatNumber(user.points)}
           sub={user.pointsPerDay != null ? `${formatNumber(user.pointsPerDay)}/day` : undefined}
+          rank={user.pointsRank}
+          total={total}
         />
         <Kpi
           label="Damage"

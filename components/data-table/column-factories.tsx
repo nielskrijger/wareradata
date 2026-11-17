@@ -209,14 +209,15 @@ export function combatModeColumn<T extends { avgWarShare: number | null }>(
 /**
  * The headline points column: a {@link PointsBreakdownCell} reading the entity's
  * total (`totalKey`) plus the fixed `levelPoints`/`damagePoints`/`wealthPoints`
- * breakdown every row carries. `stats` adds rows (averages, rates) to the tooltip.
+ * breakdown every row carries. `stats` adds rows (averages, rates) to the tooltip,
+ * and `rankKey` the leaderboard position.
  */
 export function pointsBreakdownColumn<
   T extends { levelPoints: number, damagePoints: number, wealthPoints: number },
 >(
   totalKey: Key<T>,
   header: string,
-  opts: { width?: number, tooltip?: string, stats?: (row: T) => PointsStat[] } = {},
+  opts: { width?: number, tooltip?: string, rankKey?: Key<T>, stats?: (row: T) => PointsStat[] } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: totalKey,
@@ -224,6 +225,7 @@ export function pointsBreakdownColumn<
     cell: ({ row }) => (
       <PointsBreakdownCell
         total={row.original[totalKey] as number}
+        rank={opts.rankKey ? row.original[opts.rankKey] as number | null : null}
         level={row.original.levelPoints}
         damage={row.original.damagePoints}
         wealth={row.original.wealthPoints}

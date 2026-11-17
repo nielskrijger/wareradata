@@ -23,7 +23,7 @@ import {
   pointsBreakdownColumn,
   rankTooltipColumn,
 } from '@/components/data-table/column-factories'
-import { casesColumns } from '@/components/data-table/column-groups'
+import { casesColumns, pointsSplitColumns } from '@/components/data-table/column-groups'
 import { InfoTooltip } from '@/components/info-tooltip'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -60,6 +60,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       pointsBreakdownColumn<UserRow>('points', 'Points', {
         width: 105,
         tooltip: 'Ranking points: level + damage + wealth combined.',
+        rankKey: 'pointsRank',
         stats: row => [{ label: 'Avg / day', value: row.pointsPerDay }],
       }),
       {
@@ -94,6 +95,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
           hiddenByDefault: true,
         },
       },
+      ...pointsSplitColumns<UserRow>(),
     ],
     general: [
       // The flag on the avatar already shows the country.

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 
 import { TooltipHeading, TooltipRow } from '@/components/cells/tooltip-ledger'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatNumber } from '@/lib/format'
+import { formatRank } from '@/lib/format'
 
 interface Props {
   rank: number | null | undefined
@@ -42,7 +42,7 @@ export function ValueWithRankTooltip({ rank, label, value, children }: Props) {
       <TooltipContent side="top">
         <div className="min-w-40">
           <TooltipHeading label={label}>{value}</TooltipHeading>
-          <TooltipRow label="Rank">#{formatNumber(rank)}</TooltipRow>
+          <TooltipRow label="Rank">{formatRank(rank)}</TooltipRow>
         </div>
       </TooltipContent>
     </Tooltip>

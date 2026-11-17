@@ -5,19 +5,9 @@ import { moneyItem } from './items/money'
 import { planItems } from './items/plan'
 import { fireItems, hireItem } from './items/staff'
 import { TRAIN_ENERGY, trainingItems } from './items/training'
-import { employeeNetPerDay, HOURS_PER_DAY } from './model'
+import { HOURS_PER_DAY } from './model'
 import { fmt, valuePerPoint } from './shared'
 import { buildWorld } from './sim/world'
-
-function median(values: number[]): number | null {
-  if (!values.length) {
-    return null
-  }
-
-  const s = [...values].sort((a, b) => a - b)
-
-  return s[Math.floor(s.length / 2)]
-}
 
 /**
  * Builds the ranked to-do list from the owner's companies, employees and bars.
@@ -35,7 +25,6 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
   }
 
   const skipped: SkippedItem[] = []
-  const nets: number[] = []
 
   // Staff, managers and hiring are judged on the plan's teams and items.
   const world = buildWorld(input, vppByItem)
@@ -44,26 +33,16 @@ export function buildAdvice(input: AdvisorInput): AdvisorResult {
 
   input.companies.forEach((c, k) => {
     const vpp = vppByItem.get(c.itemCode) ?? input.ppValue
-    for (const e of c.employees) {
-      if (!e.companyDisabled) {
-        nets.push(employeeNetPerDay(e, vpp))
-      }
-    }
-
     const after = planned.companies[k]
     const staffVpp = vppByItem.get(after.itemCode) ?? vpp
     items.push(...trainingItems(input, after, staffVpp, skipped))
     items.push(...fireItems(after, staffVpp))
     items.push(...managerItems(input, world, planned.plan, k, skipped))
-  })
-
-  const medianNet = median(nets)
-  for (const c of planned.companies) {
-    const h = hireItem(c, medianNet)
-    if (h) {
-      items.push(h)
+    const hire = hireItem(world, planned.plan, k)
+    if (hire) {
+      items.push(hire)
     }
-  }
+  })
 
   const { current, cap, regenPerHour } = input.energy
   const energyHours = regenPerHour > 0 ? Math.max(0, (cap - current) / regenPerHour) : Number.POSITIVE_INFINITY

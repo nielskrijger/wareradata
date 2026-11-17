@@ -1,19 +1,21 @@
+import type { LucideIcon } from 'lucide-react'
 import type { AdviseRow } from './rows'
 import type { TodoItem } from '@/lib/advisor/types'
+import { ArrowLeftRight, Briefcase, Coins, Dumbbell, Factory, UserCog, UserPlus, Users, Wrench } from 'lucide-react'
 
 /**
- * Label and colour per kind of action, shared by the bar, the table and the cards.
+ * Label, colour and icon per kind of action, shared by the bar, the table and the cards.
  */
-export const KIND: Record<TodoItem['kind'], { label: string, color: string }> = {
-  money: { label: 'Money', color: 'var(--heat-red)' },
-  item: { label: 'Production', color: 'var(--heat-gold)' },
-  manager: { label: 'Manager', color: 'var(--heat-purple)' },
-  train: { label: 'Training', color: 'var(--fire)' },
-  move: { label: 'Moves', color: 'var(--heat-orange)' },
-  tool: { label: 'Tools', color: 'var(--heat-teal)' },
-  employee: { label: 'Staff', color: 'var(--heat-blue)' },
-  hire: { label: 'Hiring', color: 'var(--heat-green)' },
-  work: { label: 'Work', color: 'var(--heat-slate)' },
+export const KIND: Record<TodoItem['kind'], { label: string, color: string, icon: LucideIcon }> = {
+  money: { label: 'Money', color: 'var(--heat-red)', icon: Coins },
+  item: { label: 'Production', color: 'var(--heat-gold)', icon: Factory },
+  manager: { label: 'Manager', color: 'var(--heat-purple)', icon: UserCog },
+  train: { label: 'Training', color: 'var(--fire)', icon: Dumbbell },
+  move: { label: 'Moves', color: 'var(--heat-orange)', icon: ArrowLeftRight },
+  tool: { label: 'Tools', color: 'var(--heat-teal)', icon: Wrench },
+  employee: { label: 'Staff', color: 'var(--heat-blue)', icon: Users },
+  hire: { label: 'Hiring', color: 'var(--heat-green)', icon: UserPlus },
+  work: { label: 'Work', color: 'var(--heat-slate)', icon: Briefcase },
 }
 
 export const GAIN = 'var(--heat-green-text)'
@@ -21,7 +23,7 @@ export const GAIN = 'var(--heat-green-text)'
 /**
  * Shared by the header and every row, so the columns line up.
  */
-export const COLUMNS = 'md:grid-cols-[28px_minmax(0,1fr)_110px_70px_140px]'
+export const COLUMNS = 'md:grid-cols-[28px_minmax(0,1fr)_70px_140px]'
 
 export function gain(value: number): string {
   return `+${value.toFixed(2)}`

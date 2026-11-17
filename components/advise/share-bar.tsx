@@ -5,6 +5,7 @@ import { Panel } from '@/components/panel'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { gain, KIND, pct, sum, things } from './format'
 import { Gain } from './gain'
+import { KindIcon } from './kind-icon'
 import { SMALL_GAIN_PER_DAY } from './rows'
 
 /**
@@ -50,14 +51,14 @@ export function ShareBar({ big, small, total }: { big: AdviseRow[], small: Advis
       <ul className="flex flex-col gap-1 text-xs md:hidden">
         {big.map(row => (
           <li key={row.id} className="flex items-center gap-2">
-            <span className="size-2 shrink-0 rounded-full" style={{ background: KIND[row.kind].color }} />
+            <KindIcon kind={row.kind} small />
             <span className="min-w-0 flex-1 truncate">{row.title}</span>
             <span className="text-muted-foreground font-mono tabular-nums">{pct(row.gainPerDay / total)}</span>
           </li>
         ))}
         {smallGain > 0 && (
           <li className="text-muted-foreground flex items-center gap-2">
-            <span className="bg-muted-foreground/45 size-2 shrink-0 rounded-full" />
+            <span className="bg-muted-foreground/20 size-5 shrink-0 rounded-md" />
             <span className="flex-1">{`${things(small.length)}`}</span>
             <span className="font-mono tabular-nums">{pct(smallGain / total)}</span>
           </li>

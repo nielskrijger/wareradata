@@ -180,7 +180,7 @@ export function readinessColumn<T extends { readinessPill: ReadinessPill }>(
 ): ColumnDef<T> {
   return {
     id: 'readinessScore',
-    header: 'Readiness',
+    header: 'Buff',
     accessorFn: row => readinessScore(row.readinessPill),
     cell: ({ row }) => <ReadinessPillBar mix={row.original.readinessPill} />,
     sortDescFirst: true,

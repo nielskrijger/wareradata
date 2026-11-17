@@ -19,7 +19,7 @@ export function GroupCondition({ row }: { row: GroupVitals }) {
     <>
       {buff + ready + debuff > 0 && (
         <SidebarSection>
-          <SectionHeading title="Readiness" />
+          <SectionHeading title="Buff" />
           <ReadinessRows mix={row.readinessPill} />
         </SidebarSection>
       )}

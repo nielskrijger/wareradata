@@ -21,7 +21,6 @@ import {
   percentBarColumn,
   percentColumn,
   pointsBreakdownColumn,
-  rankColumn,
   rankTooltipColumn,
 } from '@/components/data-table/column-factories'
 import { casesColumns, pointsSplitColumns } from '@/components/data-table/column-groups'
@@ -61,11 +60,8 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
       pointsBreakdownColumn<UserRow>('points', 'Points', {
         width: 105,
         tooltip: 'Ranking points: level + damage + wealth combined.',
+        rankKey: 'pointsRank',
         stats: row => [{ label: 'Avg / day', value: row.pointsPerDay }],
-      }),
-      rankColumn<UserRow>('pointsRank', 'Rank', {
-        tooltip: 'Position on the global points leaderboard.',
-        hiddenByDefault: true,
       }),
       {
         accessorKey: 'pointsPerDay',

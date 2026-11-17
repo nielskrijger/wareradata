@@ -5,7 +5,7 @@ import { TooltipHeading, TooltipRow } from '@/components/cells/tooltip-ledger'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, formatRank } from '@/lib/format'
 
 export interface PointsStat {
   label: string
@@ -14,6 +14,7 @@ export interface PointsStat {
 
 interface Props {
   total: number
+  rank?: number | null
   level: number
   damage: number
   wealth: number
@@ -21,11 +22,11 @@ interface Props {
 }
 
 /**
- * Renders a points total in a table cell with a hover tooltip listing any
- * extra `stats` (averages, rates), then the three contributing slices (level,
+ * Renders a points total in a table cell with a hover tooltip listing its rank
+ * and any extra `stats` (averages, rates), then the three contributing slices (level,
  * damage, wealth), each as an icon-led row with its value, percent, and a mini bar.
  */
-export function PointsBreakdownCell({ total, level, damage, wealth, stats = [] }: Props) {
+export function PointsBreakdownCell({ total, rank = null, level, damage, wealth, stats = [] }: Props) {
   const slices = [
     { label: 'Level' as const, value: level },
     { label: 'Damage' as const, value: damage },
@@ -42,8 +43,9 @@ export function PointsBreakdownCell({ total, level, damage, wealth, stats = [] }
       </TooltipTrigger>
       <TooltipContent align="end" side="top" className="w-60 px-3 py-2">
         <TooltipHeading label="Points">{formatNumber(total)}</TooltipHeading>
-        {shownStats.length > 0 && (
+        {(rank != null || shownStats.length > 0) && (
           <div className="mb-2 space-y-1 border-b border-white/10 pb-2">
+            {rank != null && <TooltipRow label="Rank">{formatRank(rank)}</TooltipRow>}
             {shownStats.map(s => <TooltipRow key={s.label} label={s.label}>{formatNumber(s.value)}</TooltipRow>)}
           </div>
         )}

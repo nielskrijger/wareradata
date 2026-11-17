@@ -10,7 +10,6 @@ import {
   localeNumberColumn,
   percentColumn,
   pointsBreakdownColumn,
-  rankColumn,
 } from './column-factories'
 
 /**
@@ -67,8 +66,8 @@ export function pointsSplitColumns<
 }
 
 /**
- * Member-summed total points with the per-member averages in its tooltip, its
- * leaderboard rank, the averages as their own columns (for sorting), and the
+ * Member-summed total points with its rank and the per-member averages in its
+ * tooltip, the averages as their own columns (for sorting), and the
  * level / damage / wealth split. `who` names the collective in the tooltips.
  */
 export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
@@ -77,14 +76,11 @@ export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'):
   return [
     pointsBreakdownColumn<T>('totalPoints' as Key<T>, 'Points', {
       tooltip: `Combined points of all ${who}.`,
+      rankKey: 'totalPointsRank' as Key<T>,
       stats: row => [
         { label: `Average per ${one}`, value: row.avgPoints },
         { label: `Avg / day per ${one}`, value: row.avgPointsPerDay },
       ],
-    }),
-    rankColumn<T>('totalPointsRank' as Key<T>, 'Rank', {
-      tooltip: 'Position on the points leaderboard.',
-      hiddenByDefault: true,
     }),
     localeNumberColumn<T>('avgPoints' as Key<T>, 'Average', {
       heat: 'median',

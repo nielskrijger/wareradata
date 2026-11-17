@@ -17,7 +17,7 @@ import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
 import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
-import { formatDate, formatDecimal, formatNumber, formatRank } from '@/lib/format'
+import { formatDate, formatDecimal, formatNumber } from '@/lib/format'
 import { readinessScore } from '@/lib/rows'
 
 /**
@@ -137,32 +137,6 @@ export function rankTooltipColumn<T extends RowData>(
 }
 
 /**
- * A bare leaderboard position ("#12"), for when the rank is worth its own
- * column rather than a {@link rankTooltipColumn} hover. Ascending = best.
- */
-export function rankColumn<T extends RowData>(
-  rankKey: Key<T>,
-  header: string,
-  opts: { width?: number, tooltip?: string, hiddenByDefault?: boolean } = {},
-): ColumnDef<T> {
-  return {
-    accessorKey: rankKey,
-    header,
-    cell: ({ row }) => formatRank(row.original[rankKey] as number | null),
-    sortDescFirst: false,
-    sortUndefined: 'last',
-    meta: {
-      heat: 'invert',
-      sortInvert: true,
-      align: 'right',
-      width: opts.width ?? 90,
-      tooltip: opts.tooltip,
-      hiddenByDefault: opts.hiddenByDefault,
-    },
-  }
-}
-
-/**
  * Inline 0-100 `<PercentBar>` (health, hunger).
  */
 export function percentBarColumn<T extends RowData>(
@@ -235,14 +209,15 @@ export function combatModeColumn<T extends { avgWarShare: number | null }>(
 /**
  * The headline points column: a {@link PointsBreakdownCell} reading the entity's
  * total (`totalKey`) plus the fixed `levelPoints`/`damagePoints`/`wealthPoints`
- * breakdown every row carries. `stats` adds rows (averages, rates) to the tooltip.
+ * breakdown every row carries. `stats` adds rows (averages, rates) to the tooltip,
+ * and `rankKey` the leaderboard position.
  */
 export function pointsBreakdownColumn<
   T extends { levelPoints: number, damagePoints: number, wealthPoints: number },
 >(
   totalKey: Key<T>,
   header: string,
-  opts: { width?: number, tooltip?: string, stats?: (row: T) => PointsStat[] } = {},
+  opts: { width?: number, tooltip?: string, rankKey?: Key<T>, stats?: (row: T) => PointsStat[] } = {},
 ): ColumnDef<T> {
   return {
     accessorKey: totalKey,
@@ -250,6 +225,7 @@ export function pointsBreakdownColumn<
     cell: ({ row }) => (
       <PointsBreakdownCell
         total={row.original[totalKey] as number}
+        rank={opts.rankKey ? row.original[opts.rankKey] as number | null : null}
         level={row.original.levelPoints}
         damage={row.original.damagePoints}
         wealth={row.original.wealthPoints}

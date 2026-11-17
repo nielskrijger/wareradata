@@ -156,7 +156,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
         />
       </KpiStrip>
 
-      <RankMap title={`Where ${c.name} ranks`} total={total} unit="countries" groups={rankGroups(c)} />
+      <RankMap name={c.name} total={total} unit="countries" groups={rankGroups(c)} />
 
       <GovernmentSection government={government} />
 

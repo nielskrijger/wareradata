@@ -12,7 +12,7 @@ import { KindIcon } from './kind-icon'
 import { Reason } from './reason'
 import { SMALL_GAIN_PER_DAY } from './rows'
 
-const FILL = 'color-mix(in oklch, var(--foreground) 8%, transparent)'
+const FILL = 'color-mix(in oklch, var(--foreground) 5%, transparent)'
 
 /**
  * The big wins with a running share, then the small stuff folded away. Each

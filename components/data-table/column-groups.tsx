@@ -5,7 +5,13 @@ import type { CaseRarity } from '@/lib/warera/api'
 import { MIN_LUCK_PULLS } from '@/lib/cases'
 import { CASE_RARITIES } from '@/lib/warera/api'
 
-import { compactNumberColumn, localeNumberColumn, percentColumn, pointsBreakdownColumn } from './column-factories'
+import {
+  compactNumberColumn,
+  localeNumberColumn,
+  percentColumn,
+  pointsBreakdownColumn,
+  rankColumn,
+} from './column-factories'
 
 /**
  * Whole-category column groups shared by the group tables (MUs, countries,
@@ -25,6 +31,7 @@ type Key<T> = Extract<keyof T, string>
  */
 interface PointsRow {
   totalPoints: number
+  totalPointsRank: number | null
   levelPoints: number
   damagePoints: number
   wealthPoints: number
@@ -33,9 +40,36 @@ interface PointsRow {
 }
 
 /**
- * Member-summed total points with the per-member averages in its tooltip. The
- * averages also have their own hidden columns, for sorting. `who` names the
- * collective in the tooltips.
+ * The three parts a points total is built from, as their own sortable columns
+ * (the Points cell only shows them on hover). Shared with /users; `who` names
+ * the members whose points are summed, or is omitted for a single player.
+ */
+export function pointsSplitColumns<
+  T extends { levelPoints: number, damagePoints: number, wealthPoints: number },
+>(who?: 'members' | 'citizens'): ColumnDef<T>[] {
+  const across = who ? `, summed across ${who}` : ''
+  const opts = { heat: 'median', width: 110, hiddenByDefault: true } as const
+
+  return [
+    localeNumberColumn<T>('levelPoints' as Key<T>, 'Level', {
+      ...opts,
+      tooltip: `Points from level and prestige (1,000 per level, 2,500 per prestige)${across}.`,
+    }),
+    localeNumberColumn<T>('damagePoints' as Key<T>, 'Damage', {
+      ...opts,
+      tooltip: `Points from total damage (1 per 2,000 damage)${across}.`,
+    }),
+    localeNumberColumn<T>('wealthPoints' as Key<T>, 'Wealth', {
+      ...opts,
+      tooltip: `Points from wealth (1 per gold)${across}.`,
+    }),
+  ]
+}
+
+/**
+ * Member-summed total points with the per-member averages in its tooltip, its
+ * leaderboard rank, the averages as their own columns (for sorting), and the
+ * level / damage / wealth split. `who` names the collective in the tooltips.
  */
 export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
   const one = who.slice(0, -1)
@@ -47,6 +81,10 @@ export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'):
         { label: `Average per ${one}`, value: row.avgPoints },
         { label: `Avg / day per ${one}`, value: row.avgPointsPerDay },
       ],
+    }),
+    rankColumn<T>('totalPointsRank' as Key<T>, 'Rank', {
+      tooltip: 'Position on the points leaderboard.',
+      hiddenByDefault: true,
     }),
     localeNumberColumn<T>('avgPoints' as Key<T>, 'Average', {
       heat: 'median',
@@ -60,6 +98,7 @@ export function pointsColumns<T extends PointsRow>(who: 'members' | 'citizens'):
       tooltip: `Average points earned per day, per ${one}.`,
       hiddenByDefault: true,
     }),
+    ...pointsSplitColumns<T>(who),
   ]
 }
 

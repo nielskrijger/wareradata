@@ -17,7 +17,7 @@ import { PercentBar } from '@/components/cells/percent-bar'
 import { PointsBreakdownCell } from '@/components/cells/points-breakdown-cell'
 import { ReadinessPillBar } from '@/components/cells/readiness-pill-bar'
 import { ValueWithRankTooltip } from '@/components/cells/value-with-rank-tooltip'
-import { formatDate, formatDecimal, formatNumber } from '@/lib/format'
+import { formatDate, formatDecimal, formatNumber, formatRank } from '@/lib/format'
 import { readinessScore } from '@/lib/rows'
 
 /**
@@ -133,6 +133,32 @@ export function rankTooltipColumn<T extends RowData>(
     sortDescFirst: false,
     sortUndefined: 'last',
     meta: { heat: 'invert', sortInvert: true, align: 'right', width: opts.width ?? 130, tooltip: opts.tooltip },
+  }
+}
+
+/**
+ * A bare leaderboard position ("#12"), for when the rank is worth its own
+ * column rather than a {@link rankTooltipColumn} hover. Ascending = best.
+ */
+export function rankColumn<T extends RowData>(
+  rankKey: Key<T>,
+  header: string,
+  opts: { width?: number, tooltip?: string, hiddenByDefault?: boolean } = {},
+): ColumnDef<T> {
+  return {
+    accessorKey: rankKey,
+    header,
+    cell: ({ row }) => formatRank(row.original[rankKey] as number | null),
+    sortDescFirst: false,
+    sortUndefined: 'last',
+    meta: {
+      heat: 'invert',
+      sortInvert: true,
+      align: 'right',
+      width: opts.width ?? 90,
+      tooltip: opts.tooltip,
+      hiddenByDefault: opts.hiddenByDefault,
+    },
   }
 }
 

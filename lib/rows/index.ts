@@ -86,6 +86,7 @@ export interface UserRow {
   partyId: string | null
   partyName: string | null
   points: number
+  pointsRank: number | null
   pointsPerDay: number | null
   premiumGifts: number | null
   premiumGiftsRank: number | null

@@ -56,6 +56,11 @@ export interface TodoItem {
    * Energy the action takes; none when absent.
    */
   energy?: number
+
+  /**
+   * Steps listed under the company they're done at, in the game's order.
+   */
+  byCompany?: { company: CompanyRef, steps: TitlePart[][] }[]
 }
 
 /**

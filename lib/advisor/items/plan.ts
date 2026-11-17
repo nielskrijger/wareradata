@@ -86,6 +86,29 @@ function legsTitle(legs: Leg[], companies: AdvisorCompany[]): Pick<TodoItem, 'ti
 }
 
 /**
+ * A move row's steps under the company each worker leaves, in the game's
+ * company order, so the player can go down the Reorganize screen once.
+ */
+function byCompany(
+  companies: AdvisorCompany[],
+  moves: Move[],
+  switched: Map<AdvisorCompany, string>,
+): TodoItem['byCompany'] {
+  return companies.flatMap((c) => {
+    const steps: TitlePart[][] = moves
+      .filter(m => m.from === c)
+      .map(m => [`${firstName(m.w.e.name)} → `, companyRef(m.to)])
+
+    const item = switched.get(c)
+    if (item) {
+      steps.push(['Switch to ', { item }])
+    }
+
+    return steps.length ? [{ company: companyRef(c), steps }] : []
+  })
+}
+
+/**
  * The plan for the owner's companies (who works where, who holds which tool,
  * what each company makes) and one row per group of changes that share
  * companies. Groups touch no common company, so rows can be done in any order
@@ -172,7 +195,6 @@ export function planItems(input: AdvisorInput, world: World): {
       ...rowMoves.map(m => ({
         label: m.w.e.name,
         value: `${m.from.name} → ${m.to.name}`,
-        brief: rowMoves.length > 2 ? `${firstName(m.w.e.name)} → ${m.to.name}` : undefined,
       })),
       ...rowSwitches.map((k) => {
         const item = plan.item[k]
@@ -182,7 +204,9 @@ export function planItems(input: AdvisorInput, world: World): {
         return {
           label: `${company(k).name} → ${humanizeCode(plan.item[k])}`,
           value: more,
-          brief: rowMoves.length || rowSwitches.length > 1 ? `${company(k).name} → ${humanizeCode(item)}` : more,
+          brief: rowMoves.length
+            ? undefined
+            : rowSwitches.length > 1 ? `${company(k).name} → ${humanizeCode(item)}` : more,
         }
       }),
       ...rowLegs.map(l => ({
@@ -242,6 +266,9 @@ export function planItems(input: AdvisorInput, world: World): {
       ].join(''),
       facts,
       gainPerDay: gain / horizon,
+      byCompany: rowMoves.length
+        ? byCompany(companies, rowMoves, new Map(rowSwitches.map(k => [company(k), plan.item[k]])))
+        : undefined,
     })
   }
 

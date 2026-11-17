@@ -17,6 +17,7 @@ export interface AdviseRow {
   gainPerDay: number
   energy: number
   titleParts?: TodoItem['titleParts']
+  byCompany?: TodoItem['byCompany']
 }
 
 function toRow(item: TodoItem): AdviseRow {
@@ -25,6 +26,7 @@ function toRow(item: TodoItem): AdviseRow {
     kind: item.kind,
     title: item.title,
     titleParts: item.titleParts,
+    byCompany: item.byCompany,
     why: item.why,
     facts: item.facts ?? [],
     gainPerDay: item.gainPerDay ?? 0,

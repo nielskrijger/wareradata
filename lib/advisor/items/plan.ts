@@ -50,28 +50,10 @@ function companiesTitle(lead: string, companies: AdvisorCompany[]): Pick<TodoIte
   return { title: `${lead}${joinNames(companies.map(c => c.name))}`, titleParts: parts }
 }
 
-function movesTitle(moves: Move[], companies: AdvisorCompany[]): Pick<TodoItem, 'title' | 'titleParts'> {
-  const [a, b] = moves
-  if (moves.length === 1) {
-    const lead = `Move ${firstName(a.w.e.name)} from `
+function moveTitle({ w, from, to }: Move): Pick<TodoItem, 'title' | 'titleParts'> {
+  const lead = `Move ${firstName(w.e.name)} from `
 
-    return {
-      title: `${lead}${a.from.name} to ${a.to.name}`,
-      titleParts: [lead, companyRef(a.from), ' to ', companyRef(a.to)],
-    }
-  }
-
-  if (moves.length === 2 && a.from === b.to && a.to === b.from) {
-    const lead = `Swap ${firstName(a.w.e.name)} at `
-    const mid = ` with ${firstName(b.w.e.name)} at `
-
-    return {
-      title: `${lead}${a.from.name}${mid}${b.from.name}`,
-      titleParts: [lead, companyRef(a.from), mid, companyRef(b.from)],
-    }
-  }
-
-  return companiesTitle(`Move ${moves.length} workers between `, companies)
+  return { title: `${lead}${from.name} to ${to.name}`, titleParts: [lead, companyRef(from), ' to ', companyRef(to)] }
 }
 
 /**
@@ -149,6 +131,9 @@ export function planItems(input: AdvisorInput, world: World): {
     link([l.from.home, at[indexOf(l.from)], at[indexOf(l.to)]])
   }
 
+  // Every move is one trip to Reorganize, so all moves share a row.
+  link(moved.flatMap(w => [w.home, at[indexOf(w)]]))
+
   for (const w of moved) {
     touched.add(w.home).add(at[indexOf(w)])
   }
@@ -191,12 +176,9 @@ export function planItems(input: AdvisorInput, world: World): {
     let total = 0
     const back = daily.findIndex(g => (total += g) >= 0) + 1
     const backIn = `${back} day${back === 1 ? '' : 's'}`
+    // A move row lists its moves and switches under each company, so the breakdown leaves them out.
     const facts: Fact[] = [
-      ...rowMoves.map(m => ({
-        label: m.w.e.name,
-        value: `${m.from.name} → ${m.to.name}`,
-      })),
-      ...rowSwitches.map((k) => {
+      ...(rowMoves.length ? [] : rowSwitches).map((k) => {
         const item = plan.item[k]
         const [from, to] = [world.vpp.get(today.item[k]) ?? 0, world.vpp.get(item) ?? 0]
         const more = from > 0 ? `+${Math.round((to / from - 1) * 100)}% per point` : `${fmt(to, 3)} g per point`
@@ -204,9 +186,7 @@ export function planItems(input: AdvisorInput, world: World): {
         return {
           label: `${company(k).name} → ${humanizeCode(plan.item[k])}`,
           value: more,
-          brief: rowMoves.length
-            ? undefined
-            : rowSwitches.length > 1 ? `${company(k).name} → ${humanizeCode(item)}` : more,
+          brief: rowSwitches.length > 1 ? `${company(k).name} → ${humanizeCode(item)}` : more,
         }
       }),
       ...rowLegs.map(l => ({
@@ -234,20 +214,23 @@ export function planItems(input: AdvisorInput, world: World): {
 
     const [first] = rowSwitches
     const tools = rowLegs.length ? `, and hand over ${rowLegs.length} tool${rowLegs.length === 1 ? '' : 's'}` : ''
-    const heading = rowMoves.length
-      ? movesTitle(rowMoves, companies)
-      : rowSwitches.length === 1
-        ? {
-            // The name already starts with the current item, so only the new one is named.
-            title: `Switch ${company(first).name} to ${humanizeItem(plan.item[first])}${tools}`,
-            titleParts: ['Switch ', companyRef(company(first)), ' → ', { item: plan.item[first] }, tools],
-          }
-        : rowSwitches.length
-          ? companiesTitle('Switch and rearrange ', companies)
-          : legsTitle(rowLegs, companies)
+    const heading = rowMoves.length > 1
+      ? { title: `Move ${rowMoves.length} workers` }
+      : rowMoves.length
+        ? moveTitle(rowMoves[0])
+        : rowSwitches.length === 1
+          ? {
+              // The name already starts with the current item, so only the new one is named.
+              title: `Switch ${company(first).name} to ${humanizeItem(plan.item[first])}${tools}`,
+              titleParts: ['Switch ', companyRef(company(first)), ' → ', { item: plan.item[first] }, tools],
+            }
+          : rowSwitches.length
+            ? companiesTitle('Switch and rearrange ', companies)
+            : legsTitle(rowLegs, companies)
 
     const steps = [
-      ...rowMoves.length || rowSwitches.length > 1
+      // A move row lists its switches under each company already.
+      ...!rowMoves.length && rowSwitches.length > 1
         ? rowSwitches.map(k => `Switch ${company(k).name} to ${humanizeItem(plan.item[k])}.`)
         : [],
       rowMoves.length ? 'In Workforce, press Reorganize, drag each worker to the company named, then Apply.' : '',

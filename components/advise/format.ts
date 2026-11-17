@@ -4,7 +4,7 @@ import type { TodoItem } from '@/lib/advisor/types'
 import { ArrowLeftRight, Briefcase, Coins, Dumbbell, Factory, UserCog, UserPlus, Users, Wrench } from 'lucide-react'
 
 /**
- * Label, colour and icon per kind of action, shared by the bar, the table and the cards.
+ * Label, colour and icon per kind of action, shared by the table and the cards.
  */
 export const KIND: Record<TodoItem['kind'], { label: string, color: string, icon: LucideIcon }> = {
   money: { label: 'Money', color: 'var(--heat-red)', icon: Coins },

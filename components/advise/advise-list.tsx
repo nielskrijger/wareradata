@@ -10,7 +10,6 @@ import { sum } from './format'
 import { Gain } from './gain'
 import { RefreshButton } from './refresh-button'
 import { splitBySize } from './rows'
-import { ShareBar } from './share-bar'
 import { AdviseSummary } from './summary'
 
 interface Props {
@@ -19,8 +18,8 @@ interface Props {
 }
 
 /**
- * The advice, most profitable first: the total, a bar of where it comes from,
- * then a table of the big wins with the small stuff folded away below.
+ * The advice, most profitable first: the total, then a table of the big wins
+ * with the small stuff folded away below.
  */
 export function AdviseList({ result, user }: Props) {
   const money = result.items.find(i => i.kind === 'money')
@@ -46,9 +45,7 @@ export function AdviseList({ result, user }: Props) {
 
       <AdviseSummary summary={result.summary} />
 
-      {total > 0
-        ? <ShareBar big={big} small={small} total={total} />
-        : <AllSet />}
+      {total === 0 && <AllSet />}
 
       {money && <MoneyCard item={money} />}
 

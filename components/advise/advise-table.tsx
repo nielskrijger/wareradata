@@ -12,8 +12,11 @@ import { KindIcon } from './kind-icon'
 import { Reason } from './reason'
 import { SMALL_GAIN_PER_DAY } from './rows'
 
+const FILL = 'color-mix(in oklch, var(--foreground) 8%, transparent)'
+
 /**
- * The big wins with a running share, then the small stuff folded away.
+ * The big wins with a running share, then the small stuff folded away. Each
+ * row is shaded by its gain against the biggest one.
  */
 export function AdviseTable({ big, small, total, energy }: {
   big: AdviseRow[]
@@ -28,6 +31,7 @@ export function AdviseTable({ big, small, total, energy }: {
     ? 'full'
     : Number.isFinite(energy.hoursToFull) ? `full in ${energy.hoursToFull.toFixed(1)} h` : 'not refilling'
 
+  const top = Math.max(...big.map(r => r.gainPerDay), ...small.map(r => r.gainPerDay)) || 1
   const hint = short ? `The big wins need ${needed}, ${needed - energy.current} more than you have · ${refill}` : refill
 
   return (
@@ -56,25 +60,38 @@ export function AdviseTable({ big, small, total, energy }: {
             key={row.id}
             row={row}
             rank={i + 1}
+            size={row.gainPerDay / top}
             running={sum(big.slice(0, i + 1), 'gainPerDay') / total}
           />
         ))}
       </ol>
       {small.length > 0 && (
-        <SmallStuff rows={small} start={big.length + 1} open={big.length === 0} />
+        <SmallStuff rows={small} start={big.length + 1} top={top} open={big.length === 0} />
       )}
     </Panel>
   )
 }
 
-function Row({ row, rank, running, small }: { row: AdviseRow, rank: number, running?: number, small?: boolean }) {
+function Row({ row, rank, size, running, small }: {
+  row: AdviseRow
+  rank: number
+  size: number
+  running?: number
+  small?: boolean
+}) {
+  // The shading stops short of the gain column so the number stays clean.
+  const shade = `linear-gradient(to right, ${FILL} calc((100% - var(--gain-col)) * ${size}), transparent 0)`
+
   return (
-    <li className={cn(
-      'grid grid-cols-[20px_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1.5 border-t px-4 py-3 first:border-t-0',
-      'md:items-center md:py-2.5',
-      COLUMNS,
-      small && 'bg-muted/20',
-    )}
+    <li
+      style={{ backgroundImage: shade }}
+      className={cn(
+        'grid grid-cols-[20px_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1.5 border-t px-4 py-3 first:border-t-0',
+        '[--gain-col:72px] md:[--gain-col:156px]',
+        'md:items-center md:py-2.5',
+        COLUMNS,
+        small && 'bg-muted/20',
+      )}
     >
       <span className="text-muted-foreground pt-0.5 font-mono text-xs md:pt-0">{rank}</span>
       <span className="flex min-w-0 gap-3">
@@ -122,7 +139,7 @@ function ByCompany({ groups }: { groups: NonNullable<AdviseRow['byCompany']> }) 
   )
 }
 
-function SmallStuff({ rows, start, open }: { rows: AdviseRow[], start: number, open: boolean }) {
+function SmallStuff({ rows, start, top, open }: { rows: AdviseRow[], start: number, top: number, open: boolean }) {
   return (
     <details open={open} className="group border-t">
       <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center
@@ -137,7 +154,7 @@ function SmallStuff({ rows, start, open }: { rows: AdviseRow[], start: number, o
         </Gain>
       </summary>
       <ol className="border-t">
-        {rows.map((row, i) => <Row key={row.id} row={row} rank={start + i} small />)}
+        {rows.map((row, i) => <Row key={row.id} row={row} rank={start + i} size={row.gainPerDay / top} small />)}
       </ol>
     </details>
   )

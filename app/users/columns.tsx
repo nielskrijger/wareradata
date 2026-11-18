@@ -19,11 +19,15 @@ import {
   gearColumn,
   localeNumberColumn,
   percentBarColumn,
-  percentColumn,
   pointsBreakdownColumn,
   rankTooltipColumn,
 } from '@/components/data-table/column-factories'
-import { casesColumns, pointsSplitColumns } from '@/components/data-table/column-groups'
+import {
+  casesColumns,
+  employeesColumns,
+  factoriesColumns,
+  pointsSplitColumns,
+} from '@/components/data-table/column-groups'
 import { InfoTooltip } from '@/components/info-tooltip'
 import { RelativeTime } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -248,71 +252,8 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
         tooltip: 'Skins this player owns.',
       }),
     ],
-    factories: [
-      localeNumberColumn<UserRow>('factoryCount', '# Factories', {
-        heat: 'ramp',
-        width: 130,
-        tooltip: 'Number of factories this player owns.',
-      }),
-      compactNumberColumn<UserRow>('factoryNetPerDay', 'Total / day', {
-        heat: 'median',
-        width: 120,
-        tooltip: 'Daily factory profit: automated engines + NPC employees, net of employee and manager wages.',
-      }),
-      compactNumberColumn<UserRow>('factoryEngineNetPerDay', 'Auto / day', {
-        heat: 'median',
-        width: 120,
-        tooltip: 'Daily profit from this player\'s automated engines.',
-      }),
-      compactNumberColumn<UserRow>('factoryEmployeeNetPerDay', 'Employees / day', {
-        heat: 'median',
-        width: 155,
-        tooltip: 'Daily profit from this player\'s NPC employees, after their wages and the managers\' wages.',
-      }),
-      compactNumberColumn<UserRow>('factoryPayrollPerDay', 'Payroll / day', {
-        heat: 'invertMedian',
-        width: 140,
-        tooltip: 'Daily wages of this player\'s NPC employees and managers.',
-      }),
-      compactNumberColumn<UserRow>('factoryPpPerDay', 'PP / day', {
-        heat: 'median',
-        width: 110,
-        tooltip: 'Production points produced per day across this player\'s factories.',
-      }),
-      percentColumn<UserRow>('factoryEfficiencyPct', 'Efficiency', {
-        heat: 'median',
-        decimals: 0,
-        width: 115,
-        tooltip: 'Net as a share of the Top potential (the same production on the most profitable item). 100% = already on the best item.',
-      }),
-    ],
-    employees: [
-      localeNumberColumn<UserRow>('factoryWorkers', '# Employees', {
-        heat: 'ramp',
-        width: 135,
-        tooltip: 'NPC employees across this player\'s factories.',
-      }),
-      compactNumberColumn<UserRow>('employeeAvgPpPerDay', 'Avg PP / day', {
-        heat: 'median',
-        width: 135,
-        tooltip: 'Production points per employee per day.',
-      }),
-      compactNumberColumn<UserRow>('employeeAvgNetPerDay', 'Avg net / day', {
-        heat: 'median',
-        width: 140,
-        tooltip: 'Daily profit per employee: their output value minus wages, with the managers\' wages shared out.',
-      }),
-      compactNumberColumn<UserRow>('employeeAvgHappiness', 'Avg happiness', {
-        heat: 'median',
-        width: 150,
-        tooltip: 'Average employee happiness. Below 50 hurts production.',
-      }),
-      localeNumberColumn<UserRow>('employeeRetiringSoon', 'Retiring ≤7d', {
-        heat: 'invertMedian',
-        width: 135,
-        tooltip: 'Employees retiring within a week.',
-      }),
-    ],
+    factories: factoriesColumns<UserRow>(),
+    employees: employeesColumns<UserRow>(),
     premium: [
       localeNumberColumn<UserRow>('premiumMonths', 'Premium Mo.', { heat: 'ramp', width: 145 }),
       localeNumberColumn<UserRow>('premiumGifts', 'Premium Gifts', { heat: 'ramp', width: 155 }),

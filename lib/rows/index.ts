@@ -193,6 +193,11 @@ export interface UserRow {
   factoryPayrollPerDay: number | null
 
   /**
+   * Employee slots left to fill across the player's factories.
+   */
+  factoryOpenSlots: number | null
+
+  /**
    * The Employees group: per-employee averages and the count retiring within a
    * week. Null when the roster is unknown.
    */
@@ -313,6 +318,8 @@ export interface GroupFactoryStats {
   factoryEfficiencyPctRank: number | null
   factoryPayrollPerDay: number
   factoryPayrollPerDayRank: number | null
+  factoryOpenSlots: number
+  factoryOpenSlotsRank: number | null
 
   /**
    * Per-employee averages pooled over every employee of members whose roster is

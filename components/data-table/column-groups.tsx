@@ -14,7 +14,8 @@ import {
 
 /**
  * Whole-category column groups shared by the group tables (MUs, countries,
- * parties, alliances). /users keeps its own, since its values are one player's.
+ * parties, alliances). Groups that also fit one player take an optional `who`
+ * and are shared with /users.
  */
 
 /**
@@ -158,59 +159,68 @@ export function wealthColumns<T extends WealthComponentsRow>(
 }
 
 /**
- * Rows carrying the member-summed factory aggregates, the shape every group
- * table shares.
+ * Rows carrying the factory aggregates: one player's (nullable until scraped)
+ * or summed across a group's members.
  */
 interface FactoryStatsRow {
-  factoryCount: number
-  factoryPpPerDay: number
-  factoryNetPerDay: number
-  factoryEngineNetPerDay: number
-  factoryEmployeeNetPerDay: number
-  factoryWorkers: number
+  factoryCount: number | null
+  factoryPpPerDay: number | null
+  factoryNetPerDay: number | null
+  factoryEngineNetPerDay: number | null
+  factoryEmployeeNetPerDay: number | null
+  factoryWorkers: number | null
+  factoryOpenSlots: number | null
   factoryEfficiencyPct: number | null
-  factoryPayrollPerDay: number
+  factoryPayrollPerDay: number | null
   employeeAvgPpPerDay: number | null
   employeeAvgNetPerDay: number | null
   employeeAvgHappiness: number | null
-  employeeRetiringSoon: number
+  employeeRetiringSoon: number | null
 }
 
 /**
- * Members' factories: count, profit split into Auto and Employees, payroll,
- * production and efficiency. Empty until the factory scrape has run.
+ * Tooltip wording for whose factories a column covers: a group's members or
+ * citizens, or one player when `who` is omitted.
  */
-export function factoriesColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
+function factoryScope(who?: 'members' | 'citizens') {
+  return {
+    across: who ? ` across ${who}` : '',
+    whose: who ? `${who}'` : 'this player\'s',
+  }
+}
+
+/**
+ * Factories: count, profit split into Auto and Employees, production and
+ * efficiency. Shared with /users; empty until the factory scrape has run.
+ */
+export function factoriesColumns<T extends FactoryStatsRow>(who?: 'members' | 'citizens'): ColumnDef<T>[] {
+  const { across, whose } = factoryScope(who)
+
   return [
     localeNumberColumn<T>('factoryCount' as Key<T>, '# Factories', {
       heat: 'ramp',
       width: 130,
-      tooltip: `Total factories owned across ${who}.`,
+      tooltip: `Factories owned${across}.`,
     }),
     compactNumberColumn<T>('factoryNetPerDay' as Key<T>, 'Total / day', {
       heat: 'median',
       width: 120,
-      tooltip: `Combined factory profit per day across ${who}: automated engines + NPC employees, net of employee and manager wages. Excludes self-work.`,
+      tooltip: `Factory profit per day${across}: automated engines + NPC employees, net of employee and manager wages. Excludes self-work.`,
     }),
     compactNumberColumn<T>('factoryEngineNetPerDay' as Key<T>, 'Auto / day', {
       heat: 'median',
       width: 120,
-      tooltip: `Profit per day from automated engines across ${who}.`,
+      tooltip: `Profit per day from ${whose} automated engines.`,
     }),
     compactNumberColumn<T>('factoryEmployeeNetPerDay' as Key<T>, 'Employees / day', {
       heat: 'median',
       width: 155,
-      tooltip: `Profit per day from NPC employees across ${who}, after their wages and the managers' wages.`,
-    }),
-    compactNumberColumn<T>('factoryPayrollPerDay' as Key<T>, 'Payroll / day', {
-      heat: 'invertMedian',
-      width: 140,
-      tooltip: `Daily wages of NPC employees and managers across ${who}.`,
+      tooltip: `Profit per day from ${whose} NPC employees, after their wages and the managers' wages.`,
     }),
     compactNumberColumn<T>('factoryPpPerDay' as Key<T>, 'PP / day', {
       heat: 'median',
       width: 110,
-      tooltip: `Combined production points per day across ${who}.`,
+      tooltip: `Production points per day${across}.`,
     }),
     percentColumn<T>('factoryEfficiencyPct' as Key<T>, 'Efficiency', {
       heat: 'median',
@@ -222,36 +232,47 @@ export function factoriesColumns<T extends FactoryStatsRow>(who: 'members' | 'ci
 }
 
 /**
- * The Employees column group: NPC headcount, per-employee averages pooled over
- * every employee across `who`, and how many retire within a week. Shares the
- * factory row shape.
+ * Employees: NPC headcount, open slots, payroll, per-employee averages pooled
+ * over every employee, and how many retire within a week. Shared with /users.
  */
-export function employeesColumns<T extends FactoryStatsRow>(who: 'members' | 'citizens'): ColumnDef<T>[] {
+export function employeesColumns<T extends FactoryStatsRow>(who?: 'members' | 'citizens'): ColumnDef<T>[] {
+  const { across, whose } = factoryScope(who)
+
   return [
     localeNumberColumn<T>('factoryWorkers' as Key<T>, '# Employees', {
       heat: 'ramp',
       width: 135,
-      tooltip: `Total NPC employees across ${who}.`,
+      tooltip: `NPC employees${across}.`,
+    }),
+    localeNumberColumn<T>('factoryOpenSlots' as Key<T>, 'Open slots', {
+      heat: 'median',
+      width: 125,
+      tooltip: `Employee slots left to fill in ${whose} factories: capacity minus headcount.`,
+    }),
+    compactNumberColumn<T>('factoryPayrollPerDay' as Key<T>, 'Payroll / day', {
+      heat: 'invertMedian',
+      width: 140,
+      tooltip: `Daily wages of ${whose} NPC employees and managers.`,
     }),
     compactNumberColumn<T>('employeeAvgPpPerDay' as Key<T>, 'Avg PP / day', {
       heat: 'median',
       width: 135,
-      tooltip: `Production points per employee per day, over every employee across ${who}.`,
+      tooltip: `Production points per employee per day${across}.`,
     }),
     compactNumberColumn<T>('employeeAvgNetPerDay' as Key<T>, 'Avg net / day', {
       heat: 'median',
       width: 140,
-      tooltip: `Daily profit per employee across ${who}: output value minus wages, with the managers' wages shared out.`,
+      tooltip: `Daily profit per employee${across}: output value minus wages, with the managers' wages shared out.`,
     }),
     compactNumberColumn<T>('employeeAvgHappiness' as Key<T>, 'Avg happiness', {
       heat: 'median',
       width: 150,
-      tooltip: `Average happiness over every employee across ${who}. Below 50 hurts production.`,
+      tooltip: `Average employee happiness${across}. Below 50 hurts production.`,
     }),
     localeNumberColumn<T>('employeeRetiringSoon' as Key<T>, 'Retiring ≤7d', {
       heat: 'invertMedian',
       width: 135,
-      tooltip: `Employees across ${who} retiring within a week.`,
+      tooltip: `Employees${across} retiring within a week.`,
     }),
   ]
 }

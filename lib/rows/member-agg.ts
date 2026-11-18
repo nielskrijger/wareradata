@@ -46,6 +46,7 @@ const SUM_KEYS = [
   'factoryWorkers',
   'factoryTopPotential',
   'factoryPayrollPerDay',
+  'factoryOpenSlots',
   'employeeRetiringSoon',
 ] as const satisfies readonly (keyof UserRow)[]
 
@@ -332,6 +333,8 @@ export function aggFactories(agg: MemberAgg | undefined): GroupFactoryStats {
     factoryEfficiencyPctRank: null,
     factoryPayrollPerDay: agg?.factoryPayrollPerDay ?? 0,
     factoryPayrollPerDayRank: null,
+    factoryOpenSlots: agg?.factoryOpenSlots ?? 0,
+    factoryOpenSlotsRank: null,
     employeeAvgPpPerDay: aggMeanRaw(agg?.employeePpSum ?? 0, agg?.employeeKnownCount ?? 0),
     employeeAvgPpPerDayRank: null,
     employeeAvgNetPerDay: aggMeanRaw(agg?.employeeNetSum ?? 0, agg?.employeeKnownCount ?? 0),
@@ -355,6 +358,7 @@ export const FACTORY_RANK_KEYS = [
   'factoryWorkers',
   'factoryEfficiencyPct',
   'factoryPayrollPerDay',
+  'factoryOpenSlots',
   'employeeAvgPpPerDay',
   'employeeAvgNetPerDay',
   'employeeAvgHappiness',

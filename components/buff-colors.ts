@@ -15,7 +15,3 @@ export const SLATE_TEXT = 'var(--heat-slate-text)'
 export const RED = 'var(--heat-red)'
 
 export const SEAM = '2px solid var(--card)'
-
-export function pct(n: number, t: number): number {
-  return t > 0 ? Math.round((n / t) * 100) : 0
-}

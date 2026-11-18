@@ -44,6 +44,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         memberCount: p.members?.length ?? 0,
         memberCountRank: null,
         memberWealth: agg?.wealth ?? 0,
+        memberWealthRank: null,
         name: p.name,
       } satisfies PartyRow
     })
@@ -56,6 +57,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
     ...POINTS_RANK_KEYS,
     'avgLevel',
     'memberCount',
+    'memberWealth',
     ...WEALTH_PART_KEYS,
     ...PREMIUM_KEYS,
   ])

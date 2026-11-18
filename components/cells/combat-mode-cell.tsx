@@ -9,7 +9,7 @@ import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
-import { formatRank } from '@/lib/format'
+import { formatRank, percentOf } from '@/lib/format'
 
 interface Props {
   mode: CombatMode
@@ -91,7 +91,7 @@ function BreakdownRow({ label, value, total, color, icon }: {
   color: string
   icon: React.ReactNode
 }) {
-  const pct = total > 0 ? Math.round((value / total) * 100) : 0
+  const pct = percentOf(value, total)
 
   return (
     <div>

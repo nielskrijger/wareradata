@@ -3,21 +3,24 @@ import type { Metadata } from 'next'
 import type { RankMapGroup } from '@/components/detail/rank-map'
 import type { AllianceRow } from '@/lib/rows'
 
-import { Building2, Swords, Trophy, Users } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
 
 import { UsersTable } from '@/app/users/users-table'
 import { AllianceSidebar } from '@/components/alliance/alliance-sidebar'
-import { CompactNumber } from '@/components/cells/compact-number'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { Kpi, KpiStrip } from '@/components/detail/kpi'
 import { RankMap } from '@/components/detail/rank-map'
-import { decimalRankRow, GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import {
+  decimalRankRow,
+  GROUP_COLOR,
+  pointsGroup,
+  premiumGroup,
+  rankRow,
+  wealthPartRows,
+} from '@/components/detail/rank-row'
 import { PageSection } from '@/components/layout/page-section'
 import { getSnapshot } from '@/lib/cache/memory'
-import { formatDecimal, formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 import { firstPage } from '@/lib/query'
 
@@ -87,37 +90,6 @@ export default async function AllianceDetailPage({ params }: PageProps) {
     <DetailLayout
       sidebar={<AllianceSidebar alliance={a} citizenCount={citizenPage.total} strategicBonus={strategicBonus} />}
     >
-      <KpiStrip points={{ total: a.totalPoints, level: a.levelPoints, damage: a.damagePoints, wealth: a.wealthPoints }}>
-        <Kpi
-          label="Points"
-          icon={<Trophy />}
-          value={formatNumber(a.totalPoints)}
-          rank={a.totalPointsRank}
-          total={total}
-        />
-        <Kpi
-          label="Development"
-          icon={<Building2 />}
-          value={formatDecimal(a.development)}
-          rank={a.developmentRank}
-          total={total}
-        />
-        <Kpi
-          label="Damage"
-          icon={<Swords />}
-          value={<CompactNumber value={a.damage} />}
-          rank={a.damageRank}
-          total={total}
-        />
-        <Kpi
-          label="Population"
-          icon={<Users />}
-          value={formatNumber(a.population)}
-          rank={a.populationRank}
-          total={total}
-        />
-      </KpiStrip>
-
       <RankMap name={a.name} total={total} unit="alliances" groups={rankGroups(a)} />
 
       <PageSection title="Member countries">
@@ -136,6 +108,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
  */
 function rankGroups(a: AllianceRow): RankMapGroup[] {
   return [
+    pointsGroup(a, 'Per citizen'),
     {
       title: 'Combat',
       color: GROUP_COLOR.combat,
@@ -162,7 +135,6 @@ function rankGroups(a: AllianceRow): RankMapGroup[] {
         decimalRankRow('Core development', a.coreDevelopment, a.coreDevelopmentRank),
         decimalRankRow('Avg development', a.averageDevelopment, a.averageDevelopmentRank),
         rankRow('Population', a.population, a.populationRank),
-        rankRow('Avg points', a.avgPoints, a.avgPointsRank, true),
       ],
     },
     premiumGroup(a),

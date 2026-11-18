@@ -3,21 +3,24 @@ import type { Metadata } from 'next'
 import type { RankMapGroup } from '@/components/detail/rank-map'
 import type { CountryRow } from '@/lib/rows'
 
-import { Coins, Swords, Trophy, Users } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
 
-import { CompactNumber } from '@/components/cells/compact-number'
 import { CountrySidebar } from '@/components/country/country-sidebar'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { GovernmentSection } from '@/components/detail/government-section'
-import { Kpi, KpiStrip } from '@/components/detail/kpi'
 import { RankMap } from '@/components/detail/rank-map'
-import { decimalRankRow, GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import {
+  decimalRankRow,
+  GROUP_COLOR,
+  pointsGroup,
+  premiumGroup,
+  rankRow,
+  wealthPartRows,
+} from '@/components/detail/rank-row'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
-import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 
@@ -124,38 +127,6 @@ export default async function CountryDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <KpiStrip points={{ total: c.totalPoints, level: c.levelPoints, damage: c.damagePoints, wealth: c.wealthPoints }}>
-        <Kpi
-          label="Points"
-          icon={<Trophy />}
-          value={formatNumber(c.totalPoints)}
-          rank={c.totalPointsRank}
-          total={total}
-        />
-        <Kpi
-          label="Damage"
-          icon={<Swords />}
-          value={<CompactNumber value={c.damage} />}
-          rank={c.damageRank}
-          total={total}
-        />
-        <Kpi
-          label="Wealth"
-          icon={<Coins />}
-          value={<CompactNumber value={c.wealth} />}
-          rank={c.wealthRank}
-          total={total}
-        />
-        <Kpi
-          label="Active citizens"
-          icon={<Users />}
-          value={formatNumber(c.activePopulation)}
-          sub={c.avgPoints != null ? `${formatNumber(c.avgPoints)} pts each` : undefined}
-          rank={c.activePopulationRank}
-          total={total}
-        />
-      </KpiStrip>
-
       <RankMap name={c.name} total={total} unit="countries" groups={rankGroups(c)} />
 
       <GovernmentSection government={government} />
@@ -176,6 +147,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
  */
 function rankGroups(c: CountryRow): RankMapGroup[] {
   return [
+    pointsGroup(c, 'Per citizen'),
     {
       title: 'Combat',
       color: GROUP_COLOR.combat,
@@ -205,7 +177,6 @@ function rankGroups(c: CountryRow): RankMapGroup[] {
       rows: [
         rankRow('Active pop.', c.activePopulation, c.activePopulationRank),
         rankRow('Avg level', c.avgLevel, c.avgLevelRank),
-        rankRow('Avg points', c.avgPoints, c.avgPointsRank, true),
         rankRow('MUs', c.musCount, c.musCountRank),
         rankRow('Parties', c.partyCount, c.partyCountRank),
         rankRow('Allies', c.alliesCount, c.alliesCountRank),

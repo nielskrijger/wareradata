@@ -5,8 +5,9 @@ import { ChevronRight } from 'lucide-react'
 import { TitleParts } from '@/components/company-name'
 
 import { Panel } from '@/components/panel'
+import { formatPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { COLUMNS, pct, sum, things } from './format'
+import { COLUMNS, sum, things } from './format'
 import { Gain } from './gain'
 import { KindIcon } from './kind-icon'
 import { Reason } from './reason'
@@ -115,7 +116,9 @@ function Row({ row, rank, size, running, small }: {
       >
         <Gain value={row.gainPerDay} className={cn('tabular-nums', small ? 'text-sm' : 'text-base')} />
         {running != null && (
-          <span className="text-muted-foreground text-right font-mono text-xs tabular-nums md:w-9">{pct(running)}</span>
+          <span className="text-muted-foreground text-right font-mono text-xs tabular-nums md:w-9">
+            {formatPercent(running)}
+          </span>
         )}
       </span>
     </li>

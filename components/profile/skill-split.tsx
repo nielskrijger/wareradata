@@ -8,7 +8,7 @@ import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
 import { SectionHeading } from '@/components/detail/section-heading'
 import { StackedBar } from '@/components/stacked-bar'
 import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, percentOf } from '@/lib/format'
 
 interface Props {
   mode: CombatMode
@@ -66,7 +66,7 @@ interface SplitRowProps {
  * One discipline line: icon + label on the left, points and share on the right.
  */
 function SplitRow({ label, points, total, icon }: SplitRowProps) {
-  const pct = total > 0 ? Math.round((points / total) * 100) : 0
+  const pct = percentOf(points, total)
 
   return (
     <div className="flex items-baseline gap-1.5 text-sm">

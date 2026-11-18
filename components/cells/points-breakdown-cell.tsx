@@ -2,10 +2,10 @@
 
 import type { PointsCategory } from '@/components/points-breakdown-legend'
 import { TooltipHeading, TooltipRow } from '@/components/cells/tooltip-ledger'
-import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
+import { POINTS_LEGEND, pointSlices } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatNumber, formatRank } from '@/lib/format'
+import { formatNumber, formatRank, percentOf } from '@/lib/format'
 
 export interface PointsStat {
   label: string
@@ -27,11 +27,7 @@ interface Props {
  * damage, wealth), each as an icon-led row with its value, percent, and a mini bar.
  */
 export function PointsBreakdownCell({ total, rank = null, level, damage, wealth, stats = [] }: Props) {
-  const slices = [
-    { label: 'Level' as const, value: level },
-    { label: 'Damage' as const, value: damage },
-    { label: 'Wealth' as const, value: wealth },
-  ].sort((a, b) => b.value - a.value)
+  const slices = pointSlices({ level, damage, wealth })
 
   const max = Math.max(level, damage, wealth)
   const shownStats = stats.filter((s): s is { label: string, value: number } => s.value !== null)
@@ -67,7 +63,7 @@ interface RowProps {
 }
 
 function BreakdownRow({ label, value, total, max }: RowProps) {
-  const pct = total > 0 ? Math.round((value / total) * 100) : 0
+  const pct = percentOf(value, total)
   const { color, icon: Icon } = POINTS_LEGEND[label]
 
   return (

@@ -1,5 +1,5 @@
 import type { RankMapGroup, RankMapRow } from '@/components/detail/rank-map'
-import type { GroupPointsStats, GroupPremiumStats } from '@/lib/rows'
+import type { GroupPointsStats, GroupPremiumStats, PointSources } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/cells/compact-number'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
@@ -72,15 +72,17 @@ const POINT_SOURCES = [
 ] as const
 
 /**
- * A group's points: the total, each source with its share of it, and the
- * per-member average (`perLabel`, e.g. "Per citizen").
+ * Points: the total, each source with its share of it, then a rate row
+ * (a group's per-member average, a player's points per day).
  */
-export function pointsGroup(r: GroupPointsStats, perLabel: string): RankMapGroup {
+export function pointsGroupOf(total: RankMapRow, r: PointSources, rate: RankMapRow): RankMapGroup {
+  const whole = total.value ?? 0
+
   return {
     title: 'Points',
     color: GROUP_COLOR.points,
     rows: [
-      rankRow('Total', r.totalPoints, r.totalPointsRank),
+      total,
       ...POINT_SOURCES.map(([label, key]): RankMapRow => ({
         label,
         icon: POINTS_LEGEND[label].icon,
@@ -89,11 +91,22 @@ export function pointsGroup(r: GroupPointsStats, perLabel: string): RankMapGroup
         display: (
           <>
             <CompactNumber value={r[key]} />
-            <span className="text-muted-foreground ml-1.5 text-xs">{percentOf(r[key], r.totalPoints)}%</span>
+            <span className="text-muted-foreground ml-1.5 text-xs">{percentOf(r[key], whole)}%</span>
           </>
         ),
       })),
-      rankRow(perLabel, r.avgPoints, r.avgPointsRank),
+      rate,
     ],
   }
+}
+
+/**
+ * A group's {@link pointsGroupOf}, closing on the per-member average (`perLabel`, e.g. "Per citizen").
+ */
+export function pointsGroup(r: GroupPointsStats, perLabel: string): RankMapGroup {
+  return pointsGroupOf(
+    rankRow('Total', r.totalPoints, r.totalPointsRank),
+    r,
+    rankRow(perLabel, r.avgPoints, r.avgPointsRank),
+  )
 }

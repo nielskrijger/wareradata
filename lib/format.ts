@@ -154,10 +154,11 @@ export function percentOf(part: number, whole: number): number {
 }
 
 /**
- * "top 9%", with a decimal under 1% so the very best don't all read "top 0%".
+ * "top 9%", with a decimal under 1% so the very best don't all read "top 0%",
+ * floored at 0.1% so they don't read "top 0.0%" either.
  */
 export function topPercent(rank: number, total: number): string {
   const pct = (rank / total) * 100
 
-  return pct < 1 ? `top ${pct.toFixed(1)}%` : `top ${Math.round(pct)}%`
+  return pct < 1 ? `top ${Math.max(pct, 0.1).toFixed(1)}%` : `top ${Math.round(pct)}%`
 }

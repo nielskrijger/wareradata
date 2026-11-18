@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 
 import type { Range } from '@/lib/query'
 
+import { formatPercent } from '@/lib/format'
+
 type Mode = 'ramp' | 'median' | 'invert' | 'invertMedian'
 
 interface Props {
@@ -97,16 +99,14 @@ export function HeatCell({ value, range, mode = 'ramp', center, logScale = false
 }
 
 function tinted(token: string, weight: number, children: ReactNode) {
+  const mix = formatPercent(Math.max(0, Math.min(1, weight)))
+
   return (
     <span
       className="font-medium"
-      style={{ color: `color-mix(in oklab, var(${token}) ${pct(weight)}, var(--foreground))` }}
+      style={{ color: `color-mix(in oklab, var(${token}) ${mix}, var(--foreground))` }}
     >
       {children}
     </span>
   )
-}
-
-function pct(v: number): string {
-  return `${Math.round(Math.max(0, Math.min(1, v)) * 100)}%`
 }

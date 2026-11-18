@@ -1,4 +1,4 @@
-import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
+import { POINTS_LEGEND, pointSlices } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
 import { formatNumber, percentOf } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -15,11 +15,7 @@ interface Props {
  * Where a player's points come from, as one bar with a legend, largest first.
  */
 export function PointsSplit({ total, level, damage, wealth, className }: Props) {
-  const slices = [
-    { label: 'Level' as const, value: level },
-    { label: 'Damage' as const, value: damage },
-    { label: 'Wealth' as const, value: wealth },
-  ].sort((a, b) => b.value - a.value)
+  const slices = pointSlices({ level, damage, wealth })
 
   return (
     <div className={cn('space-y-1.5', className)}>

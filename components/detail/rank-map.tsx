@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils'
 /**
  * The tick header's insets must match the row columns either side of the track.
  */
-const ROW_COLUMNS = 'grid-cols-[minmax(0,1fr)_auto_8.5rem] sm:grid-cols-[9.5rem_5rem_minmax(0,1fr)_8.5rem]'
-const TRACK_INSET = 'mr-[calc(8.5rem+1rem)] ml-[calc(9.5rem+5rem+2rem)]'
+const ROW_COLUMNS = 'grid-cols-[minmax(0,1fr)_auto_8.5rem] sm:grid-cols-[9.5rem_6rem_minmax(0,1fr)_8.5rem]'
+const TRACK_INSET = 'mr-[calc(8.5rem+1rem)] ml-[calc(9.5rem+6rem+2rem)]'
 
 export interface RankMapRow {
   label: string
@@ -112,7 +112,9 @@ function Row({ row, color, total }: { row: RankMapRow, color: string, total: num
         {Icon && <Icon className="size-3.5 shrink-0" />}
         <span className="truncate">{label}</span>
       </span>
-      <span className="text-right tabular-nums">{value == null ? '–' : (display ?? formatNumber(value))}</span>
+      <span className="text-right whitespace-nowrap tabular-nums">
+        {value == null ? '–' : (display ?? formatNumber(value))}
+      </span>
       <div className="relative order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         <div className="bg-muted-foreground/25 absolute inset-x-0 top-1/2 h-px" />
         {MARKS.map(m => (

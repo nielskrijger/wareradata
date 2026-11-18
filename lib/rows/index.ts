@@ -6,7 +6,19 @@ import type { CaseRarityCounts, RankingTier } from '@/lib/warera/api'
  * Kept narrow on purpose: client only renders these fields, so the wire
  * payload stays small.
  */
-export interface UserRow {
+/**
+ * Where a row's points come from, each source ranked on its own.
+ */
+export interface PointSources {
+  levelPoints: number
+  levelPointsRank: number | null
+  damagePoints: number
+  damagePointsRank: number | null
+  wealthPoints: number
+  wealthPointsRank: number | null
+}
+
+export interface UserRow extends PointSources {
   avatarUrl: string | null
   bounty: number | null
   bountyRank: number | null
@@ -60,7 +72,6 @@ export interface UserRow {
   createdAt: string | null
   damageRank: number | null
   damage: number | null
-  damagePoints: number
   ecoPoints: number
   ecoPointsRank: number | null
   health: number | null
@@ -74,7 +85,6 @@ export interface UserRow {
   lastConnectionAt: string | null
   lastRefreshedAt: string | null
   level: number | null
-  levelPoints: number
   levelRank: number | null
   levelTier: RankingTier | null
   militaryRank: number | null
@@ -88,6 +98,7 @@ export interface UserRow {
   points: number
   pointsRank: number | null
   pointsPerDay: number | null
+  pointsPerDayRank: number | null
   premiumGifts: number | null
   premiumGiftsRank: number | null
   premiumMonths: number | null
@@ -135,7 +146,6 @@ export interface UserRow {
    * null when neither is trained. The Mode column sorts on this distribution.
    */
   warShare: number | null
-  wealthPoints: number
   wealthRank: number | null
   wealth: number | null
 
@@ -339,18 +349,12 @@ export interface GroupFactoryStats {
  * Aggregate ranking points shared by every group row: the member-summed Total
  * with its level / damage / wealth breakdown, plus the per-member averages.
  */
-export interface GroupPointsStats {
+export interface GroupPointsStats extends PointSources {
   totalPoints: number
   totalPointsRank: number | null
   avgPoints: number | null
   avgPointsRank: number | null
   avgPointsPerDay: number | null
-  levelPoints: number
-  levelPointsRank: number | null
-  damagePoints: number
-  damagePointsRank: number | null
-  wealthPoints: number
-  wealthPointsRank: number | null
 }
 
 /**

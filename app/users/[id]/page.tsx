@@ -4,23 +4,19 @@ import type { RankMapGroup } from '@/components/detail/rank-map'
 import type { UserRow } from '@/lib/rows'
 import type { CasesByType } from '@/lib/warera/api'
 
-import { Coins, Factory, Swords, Trophy } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache, Suspense } from 'react'
 
-import { CompactNumber } from '@/components/cells/compact-number'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { Kpi, KpiStrip } from '@/components/detail/kpi'
 import { RankMap } from '@/components/detail/rank-map'
-import { GROUP_COLOR, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import { GROUP_COLOR, pointsGroupOf, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
-import { FactoriesSection, FactoryKpi } from '@/components/factories/factories-section'
+import { FactoriesSection } from '@/components/factories/factories-section'
 import { Panel } from '@/components/panel'
 import { ProfileSidebar } from '@/components/profile/profile-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
 import { getUserEquipment } from '@/lib/cache/users'
-import { EMPTY, formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 
 import { getUserCasesByType } from '@/lib/warera/api'
@@ -101,7 +97,6 @@ export default async function UserDetailPage({ params }: PageProps) {
 
   // Parse the full loadout only when there's a gear section to fill.
   const equipment = user.gearScore != null ? (await getUserEquipment(user.id)) ?? undefined : undefined
-  const hasFactories = user.factoryCount != null
 
   return (
     <DetailLayout
@@ -116,43 +111,6 @@ export default async function UserDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <KpiStrip
-        points={{
-          total: user.points,
-          level: user.levelPoints,
-          damage: user.damagePoints,
-          wealth: user.wealthPoints,
-        }}
-      >
-        <Kpi
-          label="Points"
-          icon={<Trophy />}
-          value={formatNumber(user.points)}
-          sub={user.pointsPerDay != null ? `${formatNumber(user.pointsPerDay)}/day` : undefined}
-          rank={user.pointsRank}
-          total={total}
-        />
-        <Kpi
-          label="Damage"
-          icon={<Swords />}
-          value={<CompactNumber value={user.damage} />}
-          rank={user.damageRank}
-          total={total}
-        />
-        <Kpi
-          label="Wealth"
-          icon={<Coins />}
-          value={<CompactNumber value={user.wealth} />}
-          rank={user.wealthRank}
-          total={total}
-        />
-        {hasFactories && (
-          <Suspense fallback={<Kpi label="Factories" icon={<Factory />} value={EMPTY} sub="Loading…" />}>
-            <FactoryKpi userId={user.id} />
-          </Suspense>
-        )}
-      </KpiStrip>
-
       <RankMap name={user.username} total={total} unit="players" groups={rankGroups(user)} />
 
       <Suspense
@@ -171,6 +129,11 @@ export default async function UserDetailPage({ params }: PageProps) {
  */
 function rankGroups(user: UserRow): RankMapGroup[] {
   return [
+    pointsGroupOf(
+      rankRow('Total', user.points, user.pointsRank),
+      user,
+      rankRow('Per day', user.pointsPerDay, user.pointsPerDayRank),
+    ),
     {
       title: 'Combat',
       color: GROUP_COLOR.combat,

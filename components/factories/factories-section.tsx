@@ -1,9 +1,5 @@
 import type { FactoryLedgerRow } from '@/lib/factories/ledger'
 
-import { Factory } from 'lucide-react'
-import { cache } from 'react'
-
-import { Kpi } from '@/components/detail/kpi'
 import { ItemCatalog } from '@/components/item-catalog'
 import { getSnapshot } from '@/lib/cache/memory'
 import { buildEngineModel } from '@/lib/factories/engine'
@@ -15,7 +11,6 @@ import { logger } from '@/lib/log'
 import { getItemPrices, getUserCompanies } from '@/lib/warera/api'
 
 import { FactoryOverview } from './factory-overview'
-import { goldSigned, netClass } from './format'
 
 const log = logger.child({ component: 'factories' })
 
@@ -25,10 +20,9 @@ const log = logger.child({ component: 'factories' })
  * Returns null when they own none or a call fails: the section is optional, so
  * an API outage shouldn't fail the user page.
  *
- * Rows keep the game's factory order. Request-memoized so the KPI and the
- * roster share one fetch.
+ * Rows keep the game's factory order.
  */
-const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[] | null> => {
+async function loadFactoryRows(userId: string): Promise<FactoryLedgerRow[] | null> {
   try {
     const factories = await getUserCompanies(userId)
     if (!factories.length) {
@@ -55,28 +49,6 @@ const loadFactoryRows = cache(async (userId: string): Promise<FactoryLedgerRow[]
 
     return null
   }
-})
-
-/**
- * The KPI strip's factory figure, live like the roster: the scraped
- * aggregates can lag behind it.
- */
-export async function FactoryKpi({ userId }: { userId: string }) {
-  const rows = await loadFactoryRows(userId)
-  if (!rows) {
-    return null
-  }
-
-  const net = portfolioTotals(rows).netPerDay
-
-  return (
-    <Kpi
-      label="Factories"
-      icon={<Factory />}
-      value={<span className={netClass(net)}>{goldSigned(net)}</span>}
-      sub={`per day · ${rows.length} ${rows.length === 1 ? 'factory' : 'factories'}`}
-    />
-  )
 }
 
 export async function FactoriesSection({ userId }: { userId: string }) {

@@ -36,6 +36,7 @@ export async function loadFactoryAggregates(
 
     let rosterKnown = true
     let workers = 0
+    let openSlots = 0
     let employeeNet = 0
     let payroll = 0
     let employeePtsSum = 0
@@ -85,6 +86,7 @@ export async function loadFactoryAggregates(
 
       rosterKnown &&= !isLegacy && !r.rosterMissing
       workers += r.employeeCount ?? 0
+      openSlots += Math.max(0, (r.employeeCap ?? 0) - (r.employeeCount ?? 0))
       payroll += wagePerDay + managerPerDay
       employeePtsSum += employeePts
 
@@ -107,6 +109,7 @@ export async function loadFactoryAggregates(
       engineNetPerDay,
       topPotentialNetPerDay,
       workerCount: known(workers),
+      openSlots: known(openSlots),
       employeeNetPerDay: known(employeeNet),
       payrollPerDay: known(payroll),
       employeeAvgPpPerDay: rosterKnown && workers > 0 ? employeePtsSum / workers : null,

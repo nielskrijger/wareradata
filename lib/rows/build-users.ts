@@ -265,6 +265,7 @@ function buildUserRow(u: User, ctx: UserRowContext) {
     factoryEmployeeNetPerDay: factory?.employeeNetPerDay ?? null,
     factoryWorkers: factory?.workerCount ?? null,
     factoryPayrollPerDay: factory?.payrollPerDay ?? null,
+    factoryOpenSlots: factory?.openSlots ?? null,
     employeeAvgPpPerDay: factory?.employeeAvgPpPerDay ?? null,
     employeeAvgNetPerDay: factory?.employeeAvgNetPerDay ?? null,
     employeeAvgHappiness: factory?.employeeAvgHappiness ?? null,

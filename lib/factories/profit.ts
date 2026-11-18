@@ -264,6 +264,11 @@ export interface UserFactoryAgg {
    * as an empty one.
    */
   workerCount: number | null
+
+  /**
+   * Employee slots left to fill: cap minus headcount, summed over factories.
+   */
+  openSlots: number | null
   employeeNetPerDay: number | null
   payrollPerDay: number | null
 

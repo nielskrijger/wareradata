@@ -4,7 +4,8 @@ import type { BuffMix } from '@/lib/rows'
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
-import { GREEN, GREEN_TEXT, pct, RED, SLATE, SLATE_TEXT } from '@/components/buff-colors'
+import { GREEN, GREEN_TEXT, RED, SLATE, SLATE_TEXT } from '@/components/buff-colors'
+import { percentOf } from '@/lib/format'
 
 function CardRow({ icon, label, n, total, color, textColor = color }: {
   icon: ReactNode
@@ -21,7 +22,7 @@ function CardRow({ icon, label, n, total, color, textColor = color }: {
         {label}
       </span>
       <div className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full">
-        <div className="h-full rounded-full" style={{ width: `${pct(n, total)}%`, backgroundColor: color }} />
+        <div className="h-full rounded-full" style={{ width: `${percentOf(n, total)}%`, backgroundColor: color }} />
       </div>
       <span className="text-muted-foreground w-12 text-right tabular-nums">
         {n}

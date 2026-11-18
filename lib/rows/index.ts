@@ -330,8 +330,7 @@ export interface GroupFactoryStats {
 
 /**
  * Aggregate ranking points shared by every group row: the member-summed Total
- * (with its level / damage / wealth breakdown) plus the two per-member
- * averages. Only Total and Average carry a rank.
+ * with its level / damage / wealth breakdown, plus the per-member averages.
  */
 export interface GroupPointsStats {
   totalPoints: number
@@ -340,8 +339,11 @@ export interface GroupPointsStats {
   avgPointsRank: number | null
   avgPointsPerDay: number | null
   levelPoints: number
+  levelPointsRank: number | null
   damagePoints: number
+  damagePointsRank: number | null
   wealthPoints: number
+  wealthPointsRank: number | null
 }
 
 /**
@@ -802,6 +804,7 @@ export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsS
    * points derivative). Surfaced as the "Total" wealth column.
    */
   memberWealth: number
+  memberWealthRank: number | null
   name: string
 }
 

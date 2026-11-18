@@ -5,7 +5,7 @@ import { TooltipHeading, TooltipRow } from '@/components/cells/tooltip-ledger'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatNumber, formatRank } from '@/lib/format'
+import { formatNumber, formatRank, percentOf } from '@/lib/format'
 
 export interface PointsStat {
   label: string
@@ -67,7 +67,7 @@ interface RowProps {
 }
 
 function BreakdownRow({ label, value, total, max }: RowProps) {
-  const pct = total > 0 ? Math.round((value / total) * 100) : 0
+  const pct = percentOf(value, total)
   const { color, icon: Icon } = POINTS_LEGEND[label]
 
   return (

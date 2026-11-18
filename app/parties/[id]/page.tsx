@@ -3,21 +3,17 @@ import type { Metadata } from 'next'
 import type { RankMapGroup } from '@/components/detail/rank-map'
 import type { PartyRow } from '@/lib/rows'
 
-import { Coins, TrendingUp, Trophy, Users } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
 
 import { UsersTable } from '@/app/users/users-table'
-import { CompactNumber } from '@/components/cells/compact-number'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { Kpi, KpiStrip } from '@/components/detail/kpi'
 import { RankMap } from '@/components/detail/rank-map'
-import { GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import { GROUP_COLOR, pointsGroup, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { PageSection } from '@/components/layout/page-section'
 import { PartySidebar } from '@/components/party/party-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
-import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 import { firstPage } from '@/lib/query'
 
@@ -69,37 +65,6 @@ export default async function PartyDetailPage({ params }: PageProps) {
 
   return (
     <DetailLayout sidebar={<PartySidebar party={p} />}>
-      <KpiStrip points={{ total: p.totalPoints, level: p.levelPoints, damage: p.damagePoints, wealth: p.wealthPoints }}>
-        <Kpi
-          label="Points"
-          icon={<Trophy />}
-          value={formatNumber(p.totalPoints)}
-          rank={p.totalPointsRank}
-          total={total}
-        />
-        <Kpi
-          label="Members"
-          icon={<Users />}
-          value={formatNumber(p.memberCount)}
-          sub={p.avgPoints != null ? `${formatNumber(p.avgPoints)} pts each` : undefined}
-          rank={p.memberCountRank}
-          total={total}
-        />
-        <Kpi
-          label="Avg
-          level"
-          icon={<TrendingUp />}
-          value={formatNumber(p.avgLevel)}
-          rank={p.avgLevelRank}
-          total={total}
-        />
-        <Kpi
-          label="Member wealth"
-          icon={<Coins />}
-          value={<CompactNumber value={p.memberWealth} />}
-        />
-      </KpiStrip>
-
       <RankMap name={p.name} total={total} unit="parties" groups={rankGroups(p)} />
 
       {/* Party members are citizens of the party's country. */}
@@ -119,12 +84,11 @@ export default async function PartyDetailPage({ params }: PageProps) {
  */
 function rankGroups(p: PartyRow): RankMapGroup[] {
   return [
+    pointsGroup(p, 'Per member'),
     {
       title: 'Society',
       color: GROUP_COLOR.society,
       rows: [
-        rankRow('Points', p.totalPoints, p.totalPointsRank, true),
-        rankRow('Avg points', p.avgPoints, p.avgPointsRank, true),
         rankRow('Members', p.memberCount, p.memberCountRank),
         rankRow('Avg level', p.avgLevel, p.avgLevelRank),
       ],
@@ -132,7 +96,10 @@ function rankGroups(p: PartyRow): RankMapGroup[] {
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
-      rows: wealthPartRows(p),
+      rows: [
+        rankRow('Member wealth', p.memberWealth, p.memberWealthRank, true),
+        ...wealthPartRows(p),
+      ],
     },
     premiumGroup(p),
   ]

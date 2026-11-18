@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import { Panel } from '@/components/panel'
@@ -12,6 +13,11 @@ const TRACK_INSET = 'mr-[calc(8.5rem+1rem)] ml-[calc(9.5rem+5rem+2rem)]'
 
 export interface RankMapRow {
   label: string
+
+  /**
+   * A muted glyph before the label, for rows that need telling apart at a glance.
+   */
+  icon?: LucideIcon
   value: number | null | undefined
 
   /**
@@ -95,14 +101,17 @@ function markLabel(m: number): string {
  * On phones the track drops under the label so it keeps the full width.
  */
 function Row({ row, color, total }: { row: RankMapRow, color: string, total: number }) {
-  const { label, value, display, rank } = row
+  const { label, icon: Icon, value, display, rank } = row
   // Everyone at zero shares one rank, which would read as "top 12%" for nothing.
   const ranked = rank != null && value != null && value !== 0
   const pos = ranked ? 100 * (1 - (rank - 1) / Math.max(total - 1, 1)) : 0
 
   return (
     <div className={cn('grid items-center gap-x-3 gap-y-0.5 py-1 text-sm sm:gap-x-4', ROW_COLUMNS)}>
-      <span className="text-muted-foreground truncate">{label}</span>
+      <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1.5">
+        {Icon && <Icon className="size-3.5 shrink-0" />}
+        <span className="truncate">{label}</span>
+      </span>
       <span className="text-right tabular-nums">{value == null ? '–' : (display ?? formatNumber(value))}</span>
       <div className="relative order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         <div className="bg-muted-foreground/25 absolute inset-x-0 top-1/2 h-px" />

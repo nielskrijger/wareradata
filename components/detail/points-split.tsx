@@ -1,6 +1,6 @@
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { StackedBar } from '@/components/stacked-bar'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, percentOf } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -37,7 +37,7 @@ export function PointsSplit({ total, level, damage, wealth, className }: Props) 
               <Icon className="size-3" style={{ color }} />
               {s.label}
               <span className="text-foreground">{formatNumber(s.value)}</span>
-              ({total > 0 ? Math.round((s.value / total) * 100) : 0}%)
+              ({percentOf(s.value, total)}%)
             </span>
           )
         })}

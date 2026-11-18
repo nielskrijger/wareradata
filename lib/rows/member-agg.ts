@@ -262,15 +262,18 @@ export function aggPoints(agg: MemberAgg | undefined): GroupPointsStats {
     avgPointsRank: null,
     avgPointsPerDay: aggMean(agg?.pointsPerDaySum ?? 0, agg?.pointsPerDayCount ?? 0),
     levelPoints: agg?.levelPoints ?? 0,
+    levelPointsRank: null,
     damagePoints: agg?.damagePoints ?? 0,
+    damagePointsRank: null,
     wealthPoints: agg?.wealthPoints ?? 0,
+    wealthPointsRank: null,
   }
 }
 
 /**
  * The {@link aggPoints} value keys rankAll should rank.
  */
-export const POINTS_RANK_KEYS = ['totalPoints', 'avgPoints'] as const
+export const POINTS_RANK_KEYS = ['totalPoints', 'avgPoints', 'levelPoints', 'damagePoints', 'wealthPoints'] as const
 
 /**
  * Member-summed premium spend; alliances have none.

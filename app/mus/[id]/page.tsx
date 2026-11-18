@@ -3,22 +3,18 @@ import type { Metadata } from 'next'
 import type { RankMapGroup } from '@/components/detail/rank-map'
 import type { MURow } from '@/lib/rows'
 
-import { Coins, Swords, Trophy, Users } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
 
 import { UsersTable } from '@/app/users/users-table'
-import { CompactNumber } from '@/components/cells/compact-number'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { Kpi, KpiStrip } from '@/components/detail/kpi'
 import { RankMap } from '@/components/detail/rank-map'
-import { GROUP_COLOR, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import { GROUP_COLOR, pointsGroup, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { PageSection } from '@/components/layout/page-section'
 import { MUSidebar } from '@/components/mu/mu-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
-import { formatNumber } from '@/lib/format'
 import { pageMetadata } from '@/lib/metadata'
 import { firstPage } from '@/lib/query'
 
@@ -86,45 +82,6 @@ export default async function MUDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <KpiStrip
-        points={{
-          total: mu.totalPoints,
-          level: mu.levelPoints,
-          damage: mu.damagePoints,
-          wealth: mu.wealthPoints,
-        }}
-      >
-        <Kpi
-          label="Points"
-          icon={<Trophy />}
-          value={formatNumber(mu.totalPoints)}
-          rank={mu.totalPointsRank}
-          total={total}
-        />
-        <Kpi
-          label="Damage"
-          icon={<Swords />}
-          value={<CompactNumber value={mu.damage} />}
-          rank={mu.damageRank}
-          total={total}
-        />
-        <Kpi
-          label="Wealth"
-          icon={<Coins />}
-          value={<CompactNumber value={mu.wealth} />}
-          rank={mu.wealthRank}
-          total={total}
-        />
-        <Kpi
-          label="Members"
-          icon={<Users />}
-          value={formatNumber(mu.memberCount)}
-          sub={mu.avgPoints != null ? `${formatNumber(mu.avgPoints)} pts each` : undefined}
-          rank={mu.memberCountRank}
-          total={total}
-        />
-      </KpiStrip>
-
       <RankMap name={mu.name} total={total} unit="MUs" groups={rankGroups(mu)} />
 
       <PageSection title="Members">
@@ -139,6 +96,7 @@ export default async function MUDetailPage({ params }: PageProps) {
  */
 function rankGroups(mu: MURow): RankMapGroup[] {
   return [
+    pointsGroup(mu, 'Per member'),
     {
       title: 'Combat',
       color: GROUP_COLOR.combat,
@@ -166,7 +124,6 @@ function rankGroups(mu: MURow): RankMapGroup[] {
       rows: [
         rankRow('Members', mu.memberCount, mu.memberCountRank),
         rankRow('Avg level', mu.avgLevel, mu.avgLevelRank),
-        rankRow('Avg points', mu.avgPoints, mu.avgPointsRank, true),
         rankRow('Reputation', mu.reputation, mu.reputationRank),
         rankRow('Headquarters', mu.headquartersLevel, mu.headquartersLevelRank),
         rankRow('Dormitories', mu.dormitoriesLevel, mu.dormitoriesLevelRank),

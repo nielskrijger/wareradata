@@ -1,9 +1,10 @@
 import type { BuffMix } from '@/lib/rows'
 
-import { GREEN, pct, RED, SLATE } from '@/components/buff-colors'
+import { GREEN, RED, SLATE } from '@/components/buff-colors'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { percentOf } from '@/lib/format'
 
 interface Props {
   mix: BuffMix
@@ -20,14 +21,14 @@ function BreakdownRow({ label, n, total, color }: { label: string, n: number, to
     <div className="flex items-center gap-2">
       <span className="w-12">{label}</span>
       <div className="h-1 w-16 overflow-hidden rounded-full bg-white/15">
-        <div className="h-full rounded-full" style={{ width: `${pct(n, total)}%`, backgroundColor: color }} />
+        <div className="h-full rounded-full" style={{ width: `${percentOf(n, total)}%`, backgroundColor: color }} />
       </div>
       <span className="ml-auto whitespace-nowrap tabular-nums">
         {n}
         {' '}
         <span className="text-white/60">
           (
-          {pct(n, total)}
+          {percentOf(n, total)}
           %)
         </span>
       </span>

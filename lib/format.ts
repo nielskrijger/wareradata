@@ -140,6 +140,13 @@ export function formatDuration(ms: number): string {
 }
 
 /**
+ * `part` as a whole-number percentage of `whole`; 0 when there is no whole.
+ */
+export function percentOf(part: number, whole: number): number {
+  return whole > 0 ? Math.round((part / whole) * 100) : 0
+}
+
+/**
  * "top 9%", with a decimal under 1% so the very best don't all read "top 0%".
  */
 export function topPercent(rank: number, total: number): string {

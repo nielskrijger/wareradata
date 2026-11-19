@@ -46,6 +46,11 @@ export interface FactoryInput {
   regionName: string
   employeeCount: number
   employeeCap: number
+
+  /**
+   * Switched off in the game, so every figure is 0.
+   */
+  disabled: boolean
   enginePointsPerDay: number
   employeePointsPerDay: number
   wagePerDay: number
@@ -71,6 +76,7 @@ export interface FactoryProfit {
   itemCode: string
   employeeCount: number
   employeeCap: number
+  disabled: boolean
 
   /**
    * Production points/day (engine + employees). Summed into the entity PP
@@ -223,6 +229,7 @@ export function computeFactoryProfit(
     itemCode: input.itemCode,
     employeeCount: input.employeeCount,
     employeeCap: input.employeeCap,
+    disabled: input.disabled,
     pointsPerDay,
     enginePointsPerDay: input.enginePointsPerDay,
     employeePointsPerDay: input.employeePointsPerDay,

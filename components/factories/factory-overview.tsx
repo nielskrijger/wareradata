@@ -17,6 +17,7 @@ import { FactoryValueMap } from './factory-value-map'
 export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], totals: PortfolioTotals }) {
   const [open, setOpen] = useState(() => new Set<string>())
   const employeeCount = rows.reduce((n, r) => n + r.employees.length, 0)
+  const disabledCount = rows.filter(r => r.disabled).length
   const allOpen = open.size === rows.length
 
   function toggle(id: string) {
@@ -36,9 +37,11 @@ export function FactoryOverview({ rows, totals }: { rows: FactoryLedgerRow[], to
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 pt-4 sm:px-5">
           <h2 className="font-medium">Factories</h2>
           <span className="text-muted-foreground text-xs tabular-nums">
-            {totals.activeCount < totals.count
-              ? `${totals.activeCount}/${totals.count} active`
-              : plural(totals.count, 'factory', 'factories')}
+            {disabledCount > 0
+              ? `${plural(totals.count, 'factory', 'factories')} · ${disabledCount} disabled`
+              : totals.activeCount < totals.count
+                ? `${totals.activeCount}/${totals.count} active`
+                : plural(totals.count, 'factory', 'factories')}
             {' · '}
             {plural(employeeCount, 'employee', 'employees')}
           </span>

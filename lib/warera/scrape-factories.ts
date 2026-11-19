@@ -86,6 +86,7 @@ export async function scrapeFactories(
             managerPerDay: input.managerPerDay,
             employeeCount: input.employeeCount,
             employeeCap: input.employeeCap,
+            ...(input.disabled && { disabled: true as const }),
             ...(f.hourly ? { employees: f.employees.map(trimEmployee) } : { rosterMissing: true as const }),
           }
         })

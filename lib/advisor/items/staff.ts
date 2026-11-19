@@ -21,7 +21,7 @@ export function fireItems(c: AdvisorCompany, vpp: number): TodoItem[] {
 
   for (const e of c.employees) {
     const net = employeeNetPerDay(e, vpp)
-    if (net > -MIN_GAIN_PER_DAY || e.companyDisabled) {
+    if (net > -MIN_GAIN_PER_DAY || c.disabled) {
       continue
     }
 

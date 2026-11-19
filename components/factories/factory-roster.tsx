@@ -7,7 +7,7 @@ import type { PortfolioTotals } from '@/lib/factories/profit'
 import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
-import { GREEN_BADGE, RED_BADGE } from '@/components/badges/tone'
+import { GREEN_BADGE, MUTED_BADGE, RED_BADGE } from '@/components/badges/tone'
 import { CompanyName } from '@/components/company-name'
 import { EmptyDash } from '@/components/empty-dash'
 import { ItemIcon } from '@/components/item-icon'
@@ -161,7 +161,7 @@ function TraitChips({ e }: { e: LedgerEmployee }) {
             'font-normal',
             t.tone > 0 && GREEN_BADGE,
             t.tone < 0 && RED_BADGE,
-            t.tone === 0 && 'bg-muted text-muted-foreground',
+            t.tone === 0 && MUTED_BADGE,
           )}
         >
           {humanizeCode(t.code)}{t.arg && <span className="opacity-75"> ({humanizeCode(t.arg)})</span>}
@@ -369,6 +369,11 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
                 company={{ id: row.id, name: row.name, itemCode: row.itemCode, workers: row.employees.length }}
               />
             </span>
+            {row.disabled && (
+              <Badge title="Switched off in the game: nothing here produces." className={cn('shrink-0', MUTED_BADGE)}>
+                Disabled
+              </Badge>
+            )}
             <span className="text-muted-foreground hidden truncate text-xs sm:inline">{details}</span>
             {row.bestOpportunityPerDay >= 1 && (
               <Tooltip>
@@ -405,7 +410,9 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
           </div>
         </TableCell>
         <TableCell className={cn('text-right font-medium tabular-nums', netClass(row.netPerDay))}>
-          {row.isIdle ? <span className="text-muted-foreground font-normal">idle</span> : goldSigned(row.netPerDay)}
+          {row.isIdle
+            ? <span className="text-muted-foreground font-normal">{row.disabled ? 'disabled' : 'idle'}</span>
+            : goldSigned(row.netPerDay)}
         </TableCell>
       </TableRow>
     )

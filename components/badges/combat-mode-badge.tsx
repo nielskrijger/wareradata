@@ -1,6 +1,6 @@
 import type { CombatMode } from '@/lib/skills/classify'
 
-import { GREEN_BADGE, RED_BADGE } from '@/components/badges/tone'
+import { GREEN_BADGE, MUTED_BADGE, RED_BADGE } from '@/components/badges/tone'
 import { Badge } from '@/components/ui/badge'
 
 /**
@@ -12,7 +12,7 @@ const MODE_META: Record<CombatMode, { label: string, className: string }> = {
   war: { label: 'War', className: RED_BADGE },
   eco: { label: 'Eco', className: GREEN_BADGE },
   hybrid: { label: 'Hybrid', className: 'bg-amber-500/15 text-amber-800 dark:text-amber-300' },
-  untrained: { label: 'Untrained', className: 'bg-muted text-muted-foreground' },
+  untrained: { label: 'Untrained', className: MUTED_BADGE },
 }
 
 interface Props {

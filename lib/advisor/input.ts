@@ -4,7 +4,7 @@ import type { AdviceData, GameConfig } from '@/lib/warera/api'
 
 import { humanizeCode } from '@/components/factories/format'
 import { buildEngineModel } from '@/lib/factories/engine'
-import { factoryInputFromData, recipeFromGameConfig } from '@/lib/factories/inputs'
+import { factoryInputFromData, isFactoryDisabled, recipeFromGameConfig } from '@/lib/factories/inputs'
 import { computeFactoryProfit } from '@/lib/factories/profit'
 import { HOURS_PER_DAY } from './model'
 
@@ -47,6 +47,7 @@ export function advisorInputFromData(
         regionId: f.company.region,
         storageLevel: f.company.activeUpgradeLevels?.storage ?? 0,
         employeeCap: f.hourly?.cap ?? 0,
+        disabled: isFactoryDisabled(f),
         enginePointsPerDay: profit.enginePointsPerDay,
         employees: f.employees,
         manager: m ? { hourlyWage: m.hourlyWage, productionBonusPercent: m.productionBonusPercent } : null,

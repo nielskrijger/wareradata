@@ -20,6 +20,11 @@ export interface FactoryRawRow {
   employeeCap?: number
 
   /**
+   * Switched off in the game: it produces nothing and its employees sit idle.
+   */
+  disabled?: true
+
+  /**
    * The roster call failed, so the employee fields are unknown rather than zero.
    */
   rosterMissing?: true

@@ -63,6 +63,7 @@ export async function loadFactoryAggregates(
           regionName: '',
           employeeCount: r.employeeCount ?? 0,
           employeeCap: r.employeeCap ?? 0,
+          disabled: r.disabled ?? false,
           enginePointsPerDay: enginePts,
           employeePointsPerDay: employeePts,
           wagePerDay,
@@ -83,6 +84,11 @@ export async function loadFactoryAggregates(
       const vpp = valuePerPp(r.itemCode)
       engineNetPerDay += enginePts * vpp
       employeeNet += employeePts * vpp - wagePerDay - managerPerDay
+
+      // Idle employees and slots that can't be worked would skew the roster figures.
+      if (r.disabled) {
+        continue
+      }
 
       rosterKnown &&= !isLegacy && !r.rosterMissing
       workers += r.employeeCount ?? 0

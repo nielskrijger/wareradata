@@ -92,6 +92,11 @@ export interface AdvisorCompany {
   regionId: string
   storageLevel: number
   employeeCap: number
+
+  /**
+   * Switched off in the game: its employees idle and it takes no one.
+   */
+  disabled: boolean
   enginePointsPerDay: number
   employees: EmployeeLike[]
   manager: { hourlyWage: number, productionBonusPercent: number } | null

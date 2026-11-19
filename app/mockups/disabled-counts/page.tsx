@@ -34,7 +34,8 @@ const ROWS: Row[] = [
 const VARIANTS = {
   now: 'Now',
   a: 'A · Muted note',
-  b: 'B · Running / total',
+  b: 'B · Running / total (11/13)',
+  b2: 'B2 · Total / running (13/11)',
   c: 'C · Icon badge',
   d: 'D · Tooltip only',
   e: 'E · Own columns',
@@ -107,6 +108,16 @@ function Count({ v, total, off, noun }: CountProps) {
       <Tip content={tip}>
         <span className={cn(off === total && 'text-muted-foreground')}>{formatNumber(total - off)}</span>
         <span className="text-muted-foreground">/{formatNumber(total)}</span>
+      </Tip>
+    )
+  }
+
+  if (v === 'b2') {
+    return (
+      <Tip content={tip}>
+        {formatNumber(total)}
+        <span className="text-muted-foreground">/</span>
+        <span className={off === total ? 'text-muted-foreground' : 'text-amber-700 dark:text-amber-300'}>{formatNumber(total - off)}</span>
       </Tip>
     )
   }
@@ -251,6 +262,14 @@ function UserHeader({ v }: { v: Variant }) {
         <span className="text-foreground">{e - eOff}</span>/{e} employees working
       </>
     )
+  } else if (v === 'b2') {
+    summary = (
+      <>
+        <span className="text-foreground">{f}</span>/<span className="text-amber-700 dark:text-amber-300">{f - fOff}</span> factories running
+        {' · '}
+        <span className="text-foreground">{e}</span>/<span className="text-amber-700 dark:text-amber-300">{e - eOff}</span> employees working
+      </>
+    )
   } else if (v === 'c') {
     summary = (
       <span className="inline-flex items-center gap-1.5">
@@ -298,7 +317,7 @@ function UserHeader({ v }: { v: Variant }) {
   }
 
   // C keeps the icon badge's own markup; the rest are one muted text run.
-  const badgeOnly = !['now', 'a', 'b', 'd', 'e'].includes(v)
+  const badgeOnly = !['now', 'a', 'b', 'b2', 'd', 'e'].includes(v)
 
   return (
     <Panel as="section" padding="none" className="overflow-hidden">

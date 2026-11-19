@@ -116,8 +116,8 @@ function Count({ v, total, off, noun }: CountProps) {
   if (v === 'b3') {
     return (
       <Tip content={tip}>
-        {formatNumber(total)}
-        <span className="text-muted-foreground">/{formatNumber(total - off)}</span>
+        <span className="text-muted-foreground">{formatNumber(total)}/</span>
+        <span className={cn(off === total && 'text-muted-foreground')}>{formatNumber(total - off)}</span>
       </Tip>
     )
   }
@@ -275,9 +275,9 @@ function UserHeader({ v }: { v: Variant }) {
   } else if (v === 'b3') {
     summary = (
       <>
-        <span className="text-foreground">{f}</span>/{f - fOff} factories running
+        {f}/<span className="text-foreground">{f - fOff}</span> factories running
         {' · '}
-        <span className="text-foreground">{e}</span>/{e - eOff} employees working
+        {e}/<span className="text-foreground">{e - eOff}</span> employees working
       </>
     )
   } else if (v === 'b2') {

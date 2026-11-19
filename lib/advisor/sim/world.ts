@@ -90,6 +90,13 @@ export interface World {
   cache: Map<string, number[]>
 }
 
+/**
+ * The employees a company has at work: none while it's disabled.
+ */
+function working(c: AdvisorCompany): EmployeeLike[] {
+  return c.disabled ? [] : c.employees
+}
+
 function clampHappy(pct: number): number {
   return Math.max(-HAPPINESS_CAP, Math.min(HAPPINESS_CAP, pct))
 }
@@ -184,11 +191,10 @@ export function buildWorld(input: AdvisorInput, vpp: Map<string, number>): World
   const toolOf: number[] = []
 
   // Management is the owner's own skill, so any working employee shows it.
-  const anyone = input.companies.flatMap(c => c.employees).find(e => !e.companyDisabled)
+  const anyone = input.companies.find(c => !c.disabled && c.employees.length)?.employees[0]
   const managementPct = anyone ? bonusPct(anyone, 'management') : 0
   const companies: SimCompany[] = input.companies.map((c) => {
-    const working = c.employees.filter(e => !e.companyDisabled)
-    const first = working[0]
+    const first = c.disabled ? undefined : c.employees[0]
 
     return {
       c,
@@ -197,11 +203,12 @@ export function buildWorld(input: AdvisorInput, vpp: Map<string, number>): World
         : effectiveManagerPct(c.manager?.productionBonusPercent ?? 0, managementPct),
       regionPct: first ? bonusPct(first, 'coreRegion') : 0,
       managementPct,
-      idle: c.employees.length - working.length,
+      // A disabled company's slots can't be filled.
+      idle: c.disabled ? c.employeeCap : 0,
     }
   })
 
-  const team = input.companies.map((c, home) => c.employees.filter(e => !e.companyDisabled).map((e) => {
+  const team = input.companies.map((c, home) => working(c).map((e) => {
     const hb = e.happinessBreakdown
     let happyFixed = (hb?.base ?? 50) - 50 + (hb?.mitigated ?? 0)
     let regionHappy = 0
@@ -336,13 +343,13 @@ export function companyGold(world: World, plan: Plan, k: number, managerPct?: nu
  */
 export function ruleCheck(input: AdvisorInput) {
   return input.companies.flatMap((c) => {
-    const working = c.employees.filter(e => !e.companyDisabled)
+    const team = working(c)
 
-    return working.map((e) => {
+    return team.map((e) => {
       const tool = e.toolItem ? { code: e.toolItem.code, pct: heldToolPct(e), owner: 0 } : null
       const ours = ruleTotals({
         e,
-        others: working.filter(o => o !== e),
+        others: team.filter(o => o !== e),
         wageOf: o => o.estimate?.wage ?? o.wage ?? 0,
         itemCode: c.itemCode,
         rawGood: input.rawGoods.has(c.itemCode),

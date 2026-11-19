@@ -195,7 +195,7 @@ export function planItems(input: AdvisorInput, world: World): {
   const companies = world.companies.map(({ c }, k) => ({
     ...c,
     itemCode: plan.item[k],
-    employees: [...c.employees.filter(e => e.companyDisabled), ...plan.team[k].map(i => world.workers[i].e)],
+    employees: c.disabled ? c.employees : plan.team[k].map(i => world.workers[i].e),
   }))
 
   return { items, plan, companies }

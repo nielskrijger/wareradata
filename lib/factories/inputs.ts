@@ -28,8 +28,18 @@ export function engineLevelOf(f: FactoryData): number {
 }
 
 /**
+ * Whether the game has switched the factory off: nothing produces, not even the engine.
+ */
+export function isFactoryDisabled(f: FactoryData): boolean {
+  return f.company.disabledAt != null
+}
+
+/**
  * One factory as model input: engine output from its level, employee output
  * and wages from the hourly estimate × 24. No estimate means no employees.
+ *
+ * The hourly estimate already reads 0 for a disabled factory, but the engine
+ * multiplier doesn't.
  */
 export function factoryInputFromData(
   f: FactoryData,
@@ -37,6 +47,7 @@ export function factoryInputFromData(
   model: EngineModel,
 ): FactoryInput {
   const h = f.hourly
+  const disabled = isFactoryDisabled(f)
 
   return {
     id: f.company._id,
@@ -45,7 +56,8 @@ export function factoryInputFromData(
     regionName: regionName(f.company.region),
     employeeCount: f.employees.length,
     employeeCap: h?.cap ?? 0,
-    enginePointsPerDay: enginePointsPerDay(engineLevelOf(f), model, h?.engineMultiplier ?? 1),
+    disabled,
+    enginePointsPerDay: disabled ? 0 : enginePointsPerDay(engineLevelOf(f), model, h?.engineMultiplier ?? 1),
     employeePointsPerDay: (h?.production ?? 0) * 24,
     wagePerDay: (h?.wageCost ?? 0) * 24,
     managerPerDay: (h?.managerCost ?? 0) * 24,

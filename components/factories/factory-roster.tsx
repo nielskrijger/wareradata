@@ -405,7 +405,9 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
           </div>
         </TableCell>
         <TableCell className={cn('text-right font-medium tabular-nums', netClass(row.netPerDay))}>
-          {row.isIdle ? <span className="text-muted-foreground font-normal">idle</span> : goldSigned(row.netPerDay)}
+          {row.isIdle
+            ? <span className="text-muted-foreground font-normal">{row.disabled ? 'disabled' : 'idle'}</span>
+            : goldSigned(row.netPerDay)}
         </TableCell>
       </TableRow>
     )

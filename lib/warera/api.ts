@@ -676,7 +676,12 @@ export async function getTournamentInfo(): Promise<TournamentInfo> {
 /**
  * A factory (company) as returned by company.getById.
  */
-export type Factory = CompanyGetByIdResponse
+export type Factory = CompanyGetByIdResponse & {
+  /**
+   * Set while the game has the company switched off; missing from the SDK types.
+   */
+  disabledAt?: string
+}
 
 /**
  * A company's hourly employee production and wages; engine output isn't

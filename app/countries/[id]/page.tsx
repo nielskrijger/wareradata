@@ -18,6 +18,7 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
+  withMemberTicks,
 } from '@/components/detail/rank-row'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -56,7 +57,8 @@ const getCountry = cache(async (id: string) => {
   const total = countries.length
 
   const code = country.code
-  const citizenPage = firstPage(users.filter(u => u.countryCode === code), 'points')
+  const citizens = users.filter(u => u.countryCode === code)
+  const citizenPage = firstPage(citizens, 'points')
   const muPage = firstPage(mus.filter(m => m.countryCode === code), 'totalPoints')
   const partyPage = firstPage(parties.filter(p => p.countryCode === code), 'totalPoints')
   const battlePage = firstPage(liveActive.filter(b => b.attacker.id === id || b.defender.id === id), 'totalDamage')
@@ -71,6 +73,8 @@ const getCountry = cache(async (id: string) => {
     strategicBonus,
     ranges,
     total,
+    citizens,
+    players: users.length,
     citizenPage,
     muPage,
     partyPage,
@@ -108,6 +112,8 @@ export default async function CountryDetailPage({ params }: PageProps) {
     strategicBonus,
     ranges,
     total,
+    citizens,
+    players,
     citizenPage,
     muPage,
     partyPage,
@@ -127,7 +133,13 @@ export default async function CountryDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <RankMap name={c.name} total={total} unit="countries" groups={rankGroups(c)} />
+      <RankMap
+        name={c.name}
+        total={total}
+        unit="countries"
+        groups={withMemberTicks(rankGroups(c), citizens, players)}
+        members={{ count: citizens.length, noun: 'citizen', players }}
+      />
 
       <GovernmentSection government={government} />
 
@@ -152,11 +164,11 @@ function rankGroups(c: CountryRow): RankMapGroup[] {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', c.damage, c.damageRank, true),
-        rankRow('Weekly damage', c.weeklyDamage, c.weeklyDamageRank, true),
-        rankRow('Per citizen', c.weeklyDamagePerCitizen, c.weeklyDamagePerCitizenRank, true),
-        rankRow('Avg gear', c.avgGearScore, c.avgGearScoreRank),
-        rankRow('Bounty', c.bounty, c.bountyRank, true),
+        rankRow('Damage', c.damage, c.damageRank, true, 'damage'),
+        rankRow('Weekly damage', c.weeklyDamage, c.weeklyDamageRank, true, 'weeklyDamage'),
+        rankRow('Per citizen', c.weeklyDamagePerCitizen, c.weeklyDamagePerCitizenRank, true, 'weeklyDamage'),
+        rankRow('Avg gear', c.avgGearScore, c.avgGearScoreRank, false, 'gearScore'),
+        rankRow('Bounty', c.bounty, c.bountyRank, true, 'bounty'),
       ],
     },
     {
@@ -165,7 +177,7 @@ function rankGroups(c: CountryRow): RankMapGroup[] {
       rows: [
         rankRow('Treasury', c.money, c.moneyRank, true),
         rankRow('Country wealth', c.wealth, c.wealthRank, true),
-        rankRow('Citizen wealth', c.citizenWealth, c.citizenWealthRank, true),
+        rankRow('Citizen wealth', c.citizenWealth, c.citizenWealthRank, true, 'wealth'),
         rankRow('Daily income', c.dailyIncome, c.dailyIncomeRank, true),
         decimalRankRow('Development', c.development, c.developmentRank),
         ...wealthPartRows(c),
@@ -176,7 +188,7 @@ function rankGroups(c: CountryRow): RankMapGroup[] {
       color: GROUP_COLOR.society,
       rows: [
         rankRow('Active pop.', c.activePopulation, c.activePopulationRank),
-        rankRow('Avg level', c.avgLevel, c.avgLevelRank),
+        rankRow('Avg level', c.avgLevel, c.avgLevelRank, false, 'level'),
         rankRow('MUs', c.musCount, c.musCountRank),
         rankRow('Parties', c.partyCount, c.partyCountRank),
         rankRow('Allies', c.alliesCount, c.alliesCountRank),

@@ -10,7 +10,14 @@ import { cache } from 'react'
 import { UsersTable } from '@/app/users/users-table'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { RankMap } from '@/components/detail/rank-map'
-import { GROUP_COLOR, pointsGroup, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import {
+  GROUP_COLOR,
+  pointsGroup,
+  premiumGroup,
+  rankRow,
+  wealthPartRows,
+  withMemberTicks,
+} from '@/components/detail/rank-row'
 import { PageSection } from '@/components/layout/page-section'
 import { PartySidebar } from '@/components/party/party-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -33,9 +40,10 @@ const getParty = cache(async (id: string) => {
   }
 
   const total = parties.length
-  const memberPage = firstPage(users.filter(u => u.partyId === id), 'points')
+  const members = users.filter(u => u.partyId === id)
+  const memberPage = firstPage(members, 'points')
 
-  return { party, total, memberPage }
+  return { party, total, members, players: users.length, memberPage }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -61,11 +69,17 @@ export default async function PartyDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { party: p, total, memberPage } = result
+  const { party: p, total, members, players, memberPage } = result
 
   return (
     <DetailLayout sidebar={<PartySidebar party={p} />}>
-      <RankMap name={p.name} total={total} unit="parties" groups={rankGroups(p)} />
+      <RankMap
+        name={p.name}
+        total={total}
+        unit="parties"
+        groups={withMemberTicks(rankGroups(p), members, players)}
+        members={{ count: members.length, noun: 'member', players }}
+      />
 
       {/* Party members are citizens of the party's country. */}
       <PageSection title="Members">
@@ -90,14 +104,14 @@ function rankGroups(p: PartyRow): RankMapGroup[] {
       color: GROUP_COLOR.society,
       rows: [
         rankRow('Members', p.memberCount, p.memberCountRank),
-        rankRow('Avg level', p.avgLevel, p.avgLevelRank),
+        rankRow('Avg level', p.avgLevel, p.avgLevelRank, false, 'level'),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Member wealth', p.memberWealth, p.memberWealthRank, true),
+        rankRow('Member wealth', p.memberWealth, p.memberWealthRank, true, 'wealth'),
         ...wealthPartRows(p),
       ],
     },

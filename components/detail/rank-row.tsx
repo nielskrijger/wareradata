@@ -1,10 +1,12 @@
 import type { RankMapGroup, RankMapRow } from '@/components/detail/rank-map'
-import type { GroupPointsStats, GroupPremiumStats, PointSources } from '@/lib/rows'
+import type { PlayerStat } from '@/lib/rank-scale'
+import type { GroupPointsStats, GroupPremiumStats, PointSources, UserRow } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/cells/compact-number'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { WAR_COLOR } from '@/components/war-eco-colors'
 import { formatDecimal, percentOf } from '@/lib/format'
+import { memberTicks } from '@/lib/rank-scale'
 
 // Its own file because Fast Refresh needs component files to export only components.
 
@@ -20,10 +22,17 @@ export const GROUP_COLOR = {
 }
 
 /**
- * A row, compact for the big skewed stats (damage, gold) and plain for small counts.
+ * A row, compact for the big skewed stats (damage, gold) and plain for small
+ * counts. `stat` names the player stat members are placed by, if any.
  */
-export function rankRow(label: string, value: number | null, rank: number | null, compact = false): RankMapRow {
-  return { label, value, rank, display: compact ? <CompactNumber value={value} /> : undefined }
+export function rankRow(
+  label: string,
+  value: number | null,
+  rank: number | null,
+  compact = false,
+  stat?: PlayerStat,
+): RankMapRow {
+  return { label, value, rank, stat, display: compact ? <CompactNumber value={value} /> : undefined }
 }
 
 /**
@@ -42,11 +51,11 @@ type WealthParts = Record<`${WealthPart}Wealth` | `${WealthPart}WealthRank`, num
  */
 export function wealthPartRows(r: WealthParts): RankMapRow[] {
   return [
-    rankRow('Companies', r.companiesWealth, r.companiesWealthRank, true),
-    rankRow('Items', r.itemsWealth, r.itemsWealthRank, true),
-    rankRow('Cash', r.cashWealth, r.cashWealthRank, true),
-    rankRow('Equipment', r.equipmentWealth, r.equipmentWealthRank, true),
-    rankRow('Weapons', r.weaponsWealth, r.weaponsWealthRank, true),
+    rankRow('Companies', r.companiesWealth, r.companiesWealthRank, true, 'companiesWealth'),
+    rankRow('Items', r.itemsWealth, r.itemsWealthRank, true, 'itemsWealth'),
+    rankRow('Cash', r.cashWealth, r.cashWealthRank, true, 'cashWealth'),
+    rankRow('Equipment', r.equipmentWealth, r.equipmentWealthRank, true, 'equipmentWealth'),
+    rankRow('Weapons', r.weaponsWealth, r.weaponsWealthRank, true, 'weaponsWealth'),
   ]
 }
 
@@ -58,9 +67,9 @@ export function premiumGroup(r: GroupPremiumStats): RankMapGroup {
     title: 'Premium',
     color: GROUP_COLOR.premium,
     rows: [
-      rankRow('Gems bought', r.gemsPurchasedTotal, r.gemsPurchasedTotalRank, true),
-      rankRow('Premium months', r.premiumMonthsTotal, r.premiumMonthsTotalRank),
-      rankRow('Gifts', r.premiumGiftsTotal, r.premiumGiftsTotalRank),
+      rankRow('Gems bought', r.gemsPurchasedTotal, r.gemsPurchasedTotalRank, true, 'gemsPurchased'),
+      rankRow('Premium months', r.premiumMonthsTotal, r.premiumMonthsTotalRank, false, 'premiumMonths'),
+      rankRow('Gifts', r.premiumGiftsTotal, r.premiumGiftsTotalRank, false, 'premiumGifts'),
     ],
   }
 }
@@ -88,6 +97,7 @@ export function pointsGroupOf(total: RankMapRow, r: PointSources, rate: RankMapR
         icon: POINTS_LEGEND[label].icon,
         value: r[key],
         rank: r[`${key}Rank`],
+        stat: key,
         display: (
           <>
             <CompactNumber value={r[key]} />
@@ -105,8 +115,18 @@ export function pointsGroupOf(total: RankMapRow, r: PointSources, rate: RankMapR
  */
 export function pointsGroup(r: GroupPointsStats, perLabel: string): RankMapGroup {
   return pointsGroupOf(
-    rankRow('Total', r.totalPoints, r.totalPointsRank),
+    rankRow('Total', r.totalPoints, r.totalPointsRank, false, 'points'),
     r,
-    rankRow(perLabel, r.avgPoints, r.avgPointsRank),
+    rankRow(perLabel, r.avgPoints, r.avgPointsRank, false, 'points'),
   )
+}
+
+/**
+ * Places `members` (ranked among `players`) on every row that names a player stat.
+ */
+export function withMemberTicks(groups: RankMapGroup[], members: UserRow[], players: number): RankMapGroup[] {
+  return groups.map(g => ({
+    ...g,
+    rows: g.rows.map(row => (row.stat ? { ...row, ticks: memberTicks(members, row.stat, players) } : row)),
+  }))
 }

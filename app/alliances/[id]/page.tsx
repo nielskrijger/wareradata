@@ -18,6 +18,7 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
+  withMemberTicks,
 } from '@/components/detail/rank-row'
 import { PageSection } from '@/components/layout/page-section'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -46,14 +47,12 @@ const getAlliance = cache(async (id: string) => {
   // Citizens of all member countries, the alliance-wide equivalent of the
   // country page's citizens tab.
   const memberCodes = new Set(alliance.members.map(m => m.code).filter(Boolean))
-  const citizenPage = firstPage(
-    users.filter(u => u.countryCode !== null && memberCodes.has(u.countryCode)),
-    'points',
-  )
+  const citizens = users.filter(u => u.countryCode !== null && memberCodes.has(u.countryCode))
+  const citizenPage = firstPage(citizens, 'points')
 
   const strategicBonus = strategicBonuses.byAlliance[id] ?? null
 
-  return { alliance, total, citizenPage, strategicBonus }
+  return { alliance, total, citizens, players: users.length, citizenPage, strategicBonus }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -79,7 +78,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { alliance: a, total, citizenPage, strategicBonus } = result
+  const { alliance: a, total, citizens, players, citizenPage, strategicBonus } = result
 
   // The user's filter on the citizens table is applied within this scope, so a
   // search can never widen past the alliance's member countries.
@@ -90,7 +89,13 @@ export default async function AllianceDetailPage({ params }: PageProps) {
     <DetailLayout
       sidebar={<AllianceSidebar alliance={a} citizenCount={citizenPage.total} strategicBonus={strategicBonus} />}
     >
-      <RankMap name={a.name} total={total} unit="alliances" groups={rankGroups(a)} />
+      <RankMap
+        name={a.name}
+        total={total}
+        unit="alliances"
+        groups={withMemberTicks(rankGroups(a), citizens, players)}
+        members={{ count: citizens.length, noun: 'citizen', players }}
+      />
 
       <PageSection title="Member countries">
         <MembersTable alliance={a} />
@@ -113,17 +118,17 @@ function rankGroups(a: AllianceRow): RankMapGroup[] {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', a.damage, a.damageRank, true),
-        rankRow('Weekly damage', a.weeklyDamage, a.weeklyDamageRank, true),
-        rankRow('Per citizen', a.weeklyDamagePerCitizen, a.weeklyDamagePerCitizenRank, true),
-        rankRow('Avg gear', a.avgGearScore, a.avgGearScoreRank),
+        rankRow('Damage', a.damage, a.damageRank, true, 'damage'),
+        rankRow('Weekly damage', a.weeklyDamage, a.weeklyDamageRank, true, 'weeklyDamage'),
+        rankRow('Per citizen', a.weeklyDamagePerCitizen, a.weeklyDamagePerCitizenRank, true, 'weeklyDamage'),
+        rankRow('Avg gear', a.avgGearScore, a.avgGearScoreRank, false, 'gearScore'),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Citizen wealth', a.citizenWealth, a.citizenWealthRank, true),
+        rankRow('Citizen wealth', a.citizenWealth, a.citizenWealthRank, true, 'wealth'),
         ...wealthPartRows(a),
       ],
     },

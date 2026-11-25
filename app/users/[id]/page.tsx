@@ -10,7 +10,7 @@ import { cache, Suspense } from 'react'
 
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { RankMap } from '@/components/detail/rank-map'
-import { GROUP_COLOR, pointsGroupOf, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import { GROUP_COLOR, pointsGroupOf, rankRow, wealthPartRows, withMemberTicks } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { FactoriesSection } from '@/components/factories/factories-section'
 import { Panel } from '@/components/panel'
@@ -37,7 +37,9 @@ const getUser = cache(async (id: string) => {
     return null
   }
 
-  return { user, total: users.length, gearLookup }
+  const muMates = user.muId ? users.filter(u => u.muId === user.muId && u.id !== user.id) : []
+
+  return { user, total: users.length, muMates, gearLookup }
 })
 
 /**
@@ -91,7 +93,7 @@ export default async function UserDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { user, total, gearLookup } = result
+  const { user, total, muMates, gearLookup } = result
 
   const cases = await resolveCasesByType(user)
 
@@ -111,7 +113,13 @@ export default async function UserDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <RankMap name={user.username} total={total} unit="players" groups={rankGroups(user)} />
+      <RankMap
+        name={user.username}
+        total={total}
+        unit="players"
+        groups={withMemberTicks(rankGroups(user), muMates, total)}
+        members={{ count: muMates.length, noun: 'MU mate', players: total }}
+      />
 
       <Suspense
         fallback={(
@@ -130,42 +138,42 @@ export default async function UserDetailPage({ params }: PageProps) {
 function rankGroups(user: UserRow): RankMapGroup[] {
   return [
     pointsGroupOf(
-      rankRow('Total', user.points, user.pointsRank),
+      rankRow('Total', user.points, user.pointsRank, false, 'points'),
       user,
-      rankRow('Per day', user.pointsPerDay, user.pointsPerDayRank),
+      rankRow('Per day', user.pointsPerDay, user.pointsPerDayRank, false, 'pointsPerDay'),
     ),
     {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', user.damage, user.damageRank, true),
-        rankRow('Weekly damage', user.weeklyDamage, user.weeklyDamageRank, true),
+        rankRow('Damage', user.damage, user.damageRank, true, 'damage'),
+        rankRow('Weekly damage', user.weeklyDamage, user.weeklyDamageRank, true, 'weeklyDamage'),
         rankRow('Military rank', user.militaryRank, user.militaryRankPos),
-        rankRow('Terrain', user.terrain, user.terrainRank),
-        rankRow('Gear score', user.gearScore, user.gearScoreRank),
-        rankRow('War skills', user.warPoints, user.warPointsRank),
-        rankRow('Bounty', user.bounty, user.bountyRank, true),
+        rankRow('Terrain', user.terrain, user.terrainRank, false, 'terrain'),
+        rankRow('Gear score', user.gearScore, user.gearScoreRank, false, 'gearScore'),
+        rankRow('War skills', user.warPoints, user.warPointsRank, false, 'warPoints'),
+        rankRow('Bounty', user.bounty, user.bountyRank, true, 'bounty'),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Wealth', user.wealth, user.wealthRank, true),
+        rankRow('Wealth', user.wealth, user.wealthRank, true, 'wealth'),
         ...wealthPartRows(user),
-        rankRow('Eco skills', user.ecoPoints, user.ecoPointsRank),
+        rankRow('Eco skills', user.ecoPoints, user.ecoPointsRank, false, 'ecoPoints'),
       ],
     },
     {
       title: 'Account',
       color: GROUP_COLOR.premium,
       rows: [
-        rankRow('Level', user.level, user.levelRank),
-        rankRow('Cases opened', user.casesOpened, user.casesOpenedRank),
-        rankRow('Gems bought', user.gemsPurchased, user.gemsPurchasedRank, true),
-        rankRow('Premium months', user.premiumMonths, user.premiumMonthsRank),
-        rankRow('Gifts', user.premiumGifts, user.premiumGiftsRank),
-        rankRow('Referrals', user.referrals, user.referralsRank),
+        rankRow('Level', user.level, user.levelRank, false, 'level'),
+        rankRow('Cases opened', user.casesOpened, user.casesOpenedRank, false, 'casesOpened'),
+        rankRow('Gems bought', user.gemsPurchased, user.gemsPurchasedRank, true, 'gemsPurchased'),
+        rankRow('Premium months', user.premiumMonths, user.premiumMonthsRank, false, 'premiumMonths'),
+        rankRow('Gifts', user.premiumGifts, user.premiumGiftsRank, false, 'premiumGifts'),
+        rankRow('Referrals', user.referrals, user.referralsRank, false, 'referrals'),
       ],
     },
   ]

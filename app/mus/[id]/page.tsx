@@ -10,7 +10,14 @@ import { cache } from 'react'
 import { UsersTable } from '@/app/users/users-table'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { RankMap } from '@/components/detail/rank-map'
-import { GROUP_COLOR, pointsGroup, premiumGroup, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import {
+  GROUP_COLOR,
+  pointsGroup,
+  premiumGroup,
+  rankRow,
+  wealthPartRows,
+  withMemberTicks,
+} from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { PageSection } from '@/components/layout/page-section'
 import { MUSidebar } from '@/components/mu/mu-sidebar'
@@ -40,9 +47,10 @@ const getMU = cache(async (id: string) => {
   // First page of this MU's members, sorted like /users (points desc). The
   // embedded UsersTable takes over client-side, re-fetching with the same
   // muId scope applied as a base filter.
-  const memberPage = firstPage(users.filter(u => u.muId === id), 'points')
+  const members = users.filter(u => u.muId === id)
+  const memberPage = firstPage(members, 'points')
 
-  return { mu, total, memberPage }
+  return { mu, total, members, players: users.length, memberPage }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -71,7 +79,7 @@ export default async function MUDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { mu, total, memberPage } = result
+  const { mu, total, members, players, memberPage } = result
 
   return (
     <DetailLayout
@@ -82,7 +90,13 @@ export default async function MUDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <RankMap name={mu.name} total={total} unit="MUs" groups={rankGroups(mu)} />
+      <RankMap
+        name={mu.name}
+        total={total}
+        unit="MUs"
+        groups={withMemberTicks(rankGroups(mu), members, players)}
+        members={{ count: members.length, noun: 'member', players }}
+      />
 
       <PageSection title="Members">
         <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} omitColumns={['muName']} />
@@ -101,11 +115,11 @@ function rankGroups(mu: MURow): RankMapGroup[] {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', mu.damage, mu.damageRank, true),
-        rankRow('Weekly damage', mu.weeklyDamage, mu.weeklyDamageRank, true),
-        rankRow('Avg gear', mu.avgGearScore, mu.avgGearScoreRank),
-        rankRow('Terrain', mu.terrain, mu.terrainRank),
-        rankRow('Bounty', mu.bounty, mu.bountyRank, true),
+        rankRow('Damage', mu.damage, mu.damageRank, true, 'damage'),
+        rankRow('Weekly damage', mu.weeklyDamage, mu.weeklyDamageRank, true, 'weeklyDamage'),
+        rankRow('Avg gear', mu.avgGearScore, mu.avgGearScoreRank, false, 'gearScore'),
+        rankRow('Terrain', mu.terrain, mu.terrainRank, false, 'terrain'),
+        rankRow('Bounty', mu.bounty, mu.bountyRank, true, 'bounty'),
       ],
     },
     {
@@ -113,7 +127,7 @@ function rankGroups(mu: MURow): RankMapGroup[] {
       color: GROUP_COLOR.economy,
       rows: [
         rankRow('MU wealth', mu.wealth, mu.wealthRank, true),
-        rankRow('Member wealth', mu.memberWealth, mu.memberWealthRank, true),
+        rankRow('Member wealth', mu.memberWealth, mu.memberWealthRank, true, 'wealth'),
         ...wealthPartRows(mu),
         rankRow('Invested', mu.investedMoney, mu.investedMoneyRank, true),
       ],
@@ -123,7 +137,7 @@ function rankGroups(mu: MURow): RankMapGroup[] {
       color: GROUP_COLOR.society,
       rows: [
         rankRow('Members', mu.memberCount, mu.memberCountRank),
-        rankRow('Avg level', mu.avgLevel, mu.avgLevelRank),
+        rankRow('Avg level', mu.avgLevel, mu.avgLevelRank, false, 'level'),
         rankRow('Reputation', mu.reputation, mu.reputationRank),
         rankRow('Headquarters', mu.headquartersLevel, mu.headquartersLevelRank),
         rankRow('Dormitories', mu.dormitoriesLevel, mu.dormitoriesLevelRank),

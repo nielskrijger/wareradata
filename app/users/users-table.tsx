@@ -5,10 +5,14 @@ import type { UserRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
+import { useSetHoveredMember } from '@/components/detail/hovered-member-context'
 
 import { userColumns } from './columns'
 
 export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProps<UserRow>) {
+  // Places the hovered player on the page's rank map, if there is one.
+  const setHovered = useSetHoveredMember()
+
   return (
     <DataTable
       tableId="users"
@@ -18,6 +22,7 @@ export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProp
       endpoint="/api/users"
       baseFilter={baseFilter}
       omitColumns={omitColumns}
+      onRowHover={setHovered}
       searchPlaceholder="Filter by username, country, MU, or party…"
       searchHint={(
         <AdvancedSearchHint

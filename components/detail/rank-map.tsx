@@ -102,7 +102,7 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
             {formatNumber(members.rows.length)} {members.noun}{members.rows.length === 1 ? '' : 's'},
             {' '}
             among {formatNumber(members.players)} players
-            <HighlightedPlayerName />
+            <HighlightedPlayerName members={ranked?.rows ?? []} />
           </span>
         )}
       </div>

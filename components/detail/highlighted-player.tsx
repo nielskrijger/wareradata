@@ -5,7 +5,8 @@ import type { MouseEvent, PointerEvent, ReactNode } from 'react'
 import type { HighlightedPlayer } from './highlighted-player-context'
 import type { MemberRanks, PlayerStat } from '@/lib/rank-scale'
 
-import { use, useState } from 'react'
+import { useQueryState } from 'nuqs'
+import { use, useEffect, useState } from 'react'
 
 import { UserHoverCard } from '@/components/user-hover-card'
 import { formatRank, topPercent } from '@/lib/format'
@@ -22,10 +23,30 @@ const PICK_RADIUS = 8
 
 export function HighlightedPlayerProvider({ children }: { children: ReactNode }) {
   const [hovered, setHovered] = useState<HighlightedPlayer | null>(null)
-  const [pinned, setPinned] = useState<HighlightedPlayer | null>(null)
+  const [pinned, setPinned] = useQueryState('player', { history: 'push', scroll: false })
+
+  // A click anywhere but the ticks and the legend name releases the pin.
+  useEffect(() => {
+    if (!pinned) {
+      return
+    }
+
+    function release(e: globalThis.MouseEvent) {
+      if (!(e.target as Element).closest('[data-keeps-pin]')) {
+        void setPinned(null)
+      }
+    }
+
+    document.addEventListener('click', release)
+
+    return () => document.removeEventListener('click', release)
+  }, [pinned, setPinned])
+
+  // Skips a pin that changes nothing, so it doesn't add a history entry.
+  const pin = (id: string | null) => id !== pinned && void setPinned(id)
 
   return (
-    <HighlightedPlayerContext value={{ row: hovered ?? pinned, pinned, set: setHovered, pin: setPinned }}>
+    <HighlightedPlayerContext value={{ id: hovered?.id ?? pinned, hovered, pinned, set: setHovered, pin }}>
       {children}
     </HighlightedPlayerContext>
   )
@@ -35,16 +56,17 @@ export function HighlightedPlayerProvider({ children }: { children: ReactNode })
  * The highlighted player's name, for the rank map legend, with their player
  * card on hover; once pinned, with a button to unpin.
  */
-export function HighlightedPlayerName() {
-  const { row, pinned, pin } = use(HighlightedPlayerContext)
+export function HighlightedPlayerName({ members }: { members: MemberRanks[] }) {
+  const { id, hovered, pinned, pin } = use(HighlightedPlayerContext)
+  const name = hovered?.username ?? members.find(m => m.id === id)?.username
 
-  return row && (
-    <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
+  return id != null && name != null && (
+    <span className="text-foreground ml-2 inline-flex items-center gap-1.5" data-keeps-pin>
       <span className={`size-2.5 ${DOT}`} />
-      <UserHoverCard userId={row.id}>
-        <span className="cursor-default underline decoration-dotted underline-offset-2">{row.username}</span>
+      <UserHoverCard userId={id}>
+        <span className="cursor-default underline decoration-dotted underline-offset-2">{name}</span>
       </UserHoverCard>
-      {row.id === pinned?.id && (
+      {id === pinned && (
         <button
           type="button"
           aria-label="Unpin"
@@ -60,12 +82,13 @@ export function HighlightedPlayerName() {
 
 /**
  * The members as ticks on a `stat` track. Pointing at a tick highlights the
- * nearest member and labels their rank here; clicking pins them, until
- * clicked again. A highlighted member gets a white dot and the ticks fade.
+ * nearest member and labels their rank here; clicking pins them, and
+ * clicking anywhere else releases. A highlighted member gets a white dot and
+ * the ticks fade.
  */
 export function MemberTicks({ stat, members, players, color }: MemberTicksProps) {
-  const { row, pinned, set, pin } = use(HighlightedPlayerContext)
-  const shown = row && members.find(m => m.id === row.id)
+  const { id, set, pin } = use(HighlightedPlayerContext)
+  const shown = id == null ? undefined : members.find(m => m.id === id)
   const rank = shown?.ranks[stat]
   const at = rank == null ? null : rankPosition(rank, players)
   // Overlapping ticks add up, so dense spots read brighter; big groups get
@@ -90,22 +113,19 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
 
   function hover(e: PointerEvent<HTMLDivElement>) {
     const m = nearest(e)
-    if (m?.id !== row?.id) {
+    if (m?.id !== id) {
       set(m)
     }
   }
 
   function click(e: MouseEvent<HTMLDivElement>) {
-    const m = nearest(e)
-    if (m) {
-      pin(m.id === pinned?.id ? null : m)
-    }
+    pin(nearest(e)?.id ?? null)
   }
 
   return (
     <div className="group absolute inset-0">
       <svg
-        className={`absolute inset-0 size-full transition-opacity duration-150 ${row ? 'opacity-25' : ''}`}
+        className={`absolute inset-0 size-full transition-opacity duration-150 ${id ? 'opacity-25' : ''}`}
         viewBox="0 0 100 16"
         preserveAspectRatio="none"
         aria-hidden
@@ -147,6 +167,7 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
       )}
       <div
         className="absolute inset-0 z-20 cursor-pointer"
+        data-keeps-pin
         onPointerMove={hover}
         onPointerLeave={() => set(null)}
         onClick={click}

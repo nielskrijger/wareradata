@@ -1,13 +1,13 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import type { PlayerStat } from '@/lib/rank-scale'
+import type { MemberRanks, PlayerStat } from '@/lib/rank-scale'
 import type { UserRow } from '@/lib/rows'
 
-import { HighlightedPlayerDot, HighlightedPlayerName } from '@/components/detail/highlighted-player'
+import { HighlightedPlayerName, MemberTicks } from '@/components/detail/highlighted-player'
 import { Panel } from '@/components/panel'
 import { formatNumber, formatRank, topPercent } from '@/lib/format'
-import { memberTicks, RANK_MARKS, rankPosition } from '@/lib/rank-scale'
+import { memberRanks, RANK_MARKS, rankPosition } from '@/lib/rank-scale'
 import { cn } from '@/lib/utils'
 
 /**
@@ -82,19 +82,14 @@ interface Members {
 }
 
 /**
- * Per-tick opacity; overlapping ticks add up, so dense spots read brighter.
- * Lower for big groups so they don't turn into a solid bar.
- */
-function tickOpacity(members: Members) {
-  return members.rows.length > 60 ? 0.12 : 0.7
-}
-
-/**
  * Every stat as a dot on one shared rank track, so strong and weak
  * spots read at a glance. Where a stat has a player counterpart, each
  * member is a tick on the same track, ranked among all players.
  */
 export function RankMap({ name, groups, total, unit, members }: Props) {
+  const stats = groups.flatMap(g => g.rows.flatMap(r => (r.stat ? [r.stat] : [])))
+  const ranked = members && { rows: members.rows.map(m => memberRanks(m, stats)), players: members.players }
+
   return (
     <Panel as="section">
       <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -103,7 +98,6 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
         </h2>
         {members && members.rows.length > 0 && (
           <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
-            <span className="bg-muted-foreground h-3 w-px" />
             {formatNumber(members.rows.length)} {members.noun}{members.rows.length === 1 ? '' : 's'},
             {' '}
             among {formatNumber(members.players)} players
@@ -125,7 +119,7 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
         <div key={g.title} className="mt-2 border-t pt-2">
           <h3 className="text-xs font-medium tracking-wide uppercase" style={{ color: g.color }}>{g.title}</h3>
           {g.rows.map(row => (
-            <Row key={row.label} row={row} color={g.color} total={total} members={members} />
+            <Row key={row.label} row={row} color={g.color} total={total} members={ranked} />
           ))}
         </div>
       ))}
@@ -136,9 +130,15 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
 /**
  * On phones the track drops under the label so it keeps the full width.
  */
-function Row({ row, color, total, members }: { row: RankMapRow, color: string, total: number, members?: Members }) {
+interface RowProps {
+  row: RankMapRow
+  color: string
+  total: number
+  members?: { rows: MemberRanks[], players: number }
+}
+
+function Row({ row, color, total, members }: RowProps) {
   const { label, icon: Icon, value, display, rank, stat } = row
-  const ticks = stat && members ? memberTicks(members.rows, stat, members.players) : null
   // Everyone at zero shares one rank, which would read as "top 12%" for nothing.
   const ranked = rank != null && value != null && value !== 0
   const pos = ranked ? rankPosition(rank, total) : 0
@@ -161,23 +161,7 @@ function Row({ row, color, total, members }: { row: RankMapRow, color: string, t
             style={{ left: `${m.at}%` }}
           />
         ))}
-        {ticks && members && (
-          <svg className="absolute inset-0 size-full" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden>
-            {[...ticks].map(([at, n]) => (
-              <line
-                key={at}
-                x1={at}
-                x2={at}
-                y1={2}
-                y2={14}
-                stroke={color}
-                strokeOpacity={1 - (1 - tickOpacity(members)) ** n}
-                vectorEffect="non-scaling-stroke"
-              />
-            ))}
-          </svg>
-        )}
-        {stat && members && <HighlightedPlayerDot stat={stat} players={members.players} />}
+        {stat && members && <MemberTicks stat={stat} members={members.rows} players={members.players} color={color} />}
         {ranked && (
           <>
             {/* Fades in toward the dot and glows, so the stem reads bright without muddying the track. */}

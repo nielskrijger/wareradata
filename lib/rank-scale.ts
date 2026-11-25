@@ -1,28 +1,24 @@
 import type { UserRow } from '@/lib/rows'
 
 /**
- * The best share the scale tells apart; anything better sits at #1.
- */
-const FLOOR = 0.0005
-
-/**
  * Where a rank sits on a rank track, 0 (last) to 100 (#1).
  *
- * Log in the share of the set ranked above, so the top 1% gets as much room
- * as the top 10% and members of a strong group don't all pile up at the end.
- * Being a share, groups and players of different set sizes line up.
+ * Square root of the share of the set ranked above: the top quarter gets half
+ * the track, so the best spread out without the top 1% swallowing it. Being a
+ * share, groups and players of different set sizes line up.
  */
 export function rankPosition(rank: number, total: number): number {
-  return sharePosition((rank - 1) / total)
+  return sharePosition((rank - 1) / Math.max(total - 1, 1))
 }
 
 function sharePosition(share: number): number {
-  return 100 * (1 - Math.log(Math.max(share, FLOOR) / FLOOR) / Math.log(1 / FLOOR))
+  return 100 * (1 - Math.sqrt(share))
 }
 
 export const RANK_MARKS = [
   { label: 'last', at: 0 },
-  { label: 'top 10%', at: sharePosition(0.1) },
+  { label: 'top 25%', at: sharePosition(0.25) },
+  { label: 'top 6%', at: sharePosition(0.0625) },
   { label: 'top 1%', at: sharePosition(0.01) },
   { label: '#1', at: 100 },
 ]

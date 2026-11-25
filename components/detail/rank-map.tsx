@@ -5,6 +5,7 @@ import type { MemberRanks, PlayerStat } from '@/lib/rank-scale'
 import type { UserRow } from '@/lib/rows'
 
 import { HighlightedPlayerName, MemberTicks } from '@/components/detail/highlighted-player'
+import { Stem, StemTrack } from '@/components/detail/stem'
 import { Panel } from '@/components/panel'
 import { formatNumber, formatRank, topPercent } from '@/lib/format'
 import { memberRanks, RANK_MARKS, rankPosition } from '@/lib/rank-scale'
@@ -152,8 +153,7 @@ function Row({ row, color, total, members }: RowProps) {
       <span className="text-right whitespace-nowrap tabular-nums">
         {value == null ? '–' : (display ?? formatNumber(value))}
       </span>
-      <div className="relative order-last col-span-3 h-4 sm:order-none sm:col-span-1">
-        <div className="bg-muted-foreground/25 absolute inset-x-0 top-1/2 h-px" />
+      <StemTrack className="order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         {RANK_MARKS.map(m => (
           <div
             key={m.label}
@@ -162,24 +162,8 @@ function Row({ row, color, total, members }: RowProps) {
           />
         ))}
         {stat && members && <MemberTicks stat={stat} members={members.rows} players={members.players} color={color} />}
-        {ranked && (
-          <>
-            {/* Fades in toward the dot and glows, so the stem reads bright without muddying the track. */}
-            <div
-              className="absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full opacity-85"
-              style={{
-                width: `${pos}%`,
-                background: `linear-gradient(to right, transparent, ${color})`,
-                filter: `drop-shadow(0 0 3px ${color})`,
-              }}
-            />
-            <div
-              className="ring-card absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2"
-              style={{ left: `${pos}%`, background: color }}
-            />
-          </>
-        )}
-      </div>
+        {ranked && <Stem pct={pos} color={color} />}
+      </StemTrack>
       <span className="text-muted-foreground text-right text-xs tabular-nums">
         {ranked
           ? (

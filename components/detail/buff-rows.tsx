@@ -5,9 +5,10 @@ import type { BuffMix } from '@/lib/rows'
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
 import { GREEN, GREEN_TEXT, RED, SLATE, SLATE_TEXT } from '@/components/buff-colors'
+import { Stem, StemTrack } from '@/components/detail/stem'
 import { percentOf } from '@/lib/format'
 
-function CardRow({ icon, label, n, total, color, textColor = color }: {
+function BuffRow({ icon, label, n, total, color, textColor = color }: {
   icon: ReactNode
   label: string
   n: number
@@ -21,9 +22,9 @@ function CardRow({ icon, label, n, total, color, textColor = color }: {
         {icon}
         {label}
       </span>
-      <div className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full">
-        <div className="h-full rounded-full" style={{ width: `${percentOf(n, total)}%`, backgroundColor: color }} />
-      </div>
+      <StemTrack className="flex-1">
+        <Stem pct={percentOf(n, total)} color={color} />
+      </StemTrack>
       <span className="text-muted-foreground w-12 text-right tabular-nums">
         {n}
       </span>
@@ -43,7 +44,7 @@ export function BuffRows({ mix }: { mix: BuffMix }) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <CardRow
+      <BuffRow
         icon={<ArrowUp className="size-3.5" />}
         label="Buff"
         n={mix.buff}
@@ -51,7 +52,7 @@ export function BuffRows({ mix }: { mix: BuffMix }) {
         color={GREEN}
         textColor={GREEN_TEXT}
       />
-      <CardRow
+      <BuffRow
         icon={<Minus className="size-3.5" />}
         label="Ready"
         n={mix.ready}
@@ -59,7 +60,7 @@ export function BuffRows({ mix }: { mix: BuffMix }) {
         color={SLATE}
         textColor={SLATE_TEXT}
       />
-      <CardRow icon={<ArrowDown className="size-3.5" />} label="Debuff" n={mix.debuff} total={total} color={RED} />
+      <BuffRow icon={<ArrowDown className="size-3.5" />} label="Debuff" n={mix.debuff} total={total} color={RED} />
     </div>
   )
 }

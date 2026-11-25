@@ -2,7 +2,7 @@ import type { UserRow } from '@/lib/rows'
 
 import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { TooltipHeading, TooltipRow } from '@/components/cells/tooltip-ledger'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, formatRank } from '@/lib/format'
 
 type Props = Pick<UserRow, 'level' | 'levelRank' | 'prestige' | 'prestigePoints' | 'totalXp'> & {
   /**
@@ -23,7 +23,7 @@ export function LevelTooltipContent({ level, levelRank, prestige, prestigePoints
           ? <span className="font-normal text-neutral-400">Unranked</span>
           : (
               <>
-                #{formatNumber(levelRank)}
+                {formatRank(levelRank)}
                 {rankedTotal != null && (
                   <span className="font-normal text-neutral-400"> of {formatNumber(rankedTotal)}</span>
                 )}

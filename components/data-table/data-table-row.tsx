@@ -11,11 +11,15 @@ import { columnWidthStyle, STICKY_CELL, STICKY_WIDTH } from './sticky-column'
 
 interface Props<TData extends RowData> {
   row: Row<DataTableFeatures, TData>
+  onHover?: (row: TData | null) => void
 }
 
-export function DataTableRow<TData extends RowData>({ row }: Props<TData>) {
+export function DataTableRow<TData extends RowData>({ row, onHover }: Props<TData>) {
   return (
-    <TableRow>
+    <TableRow
+      onPointerEnter={onHover && (() => onHover(row.original))}
+      onPointerLeave={onHover && (() => onHover(null))}
+    >
       {row.getVisibleCells().map((cell, index) => {
         const meta = cell.column.columnDef.meta
         const align = meta?.align ?? 'left'

@@ -1,13 +1,13 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import type { MemberSpots, PlayerStat } from '@/lib/rank-scale'
+import type { MemberRanks, PlayerStat } from '@/lib/rank-scale'
 import type { UserRow } from '@/lib/rows'
 
 import { HighlightedPlayerName, MemberTicks } from '@/components/detail/highlighted-player'
 import { Panel } from '@/components/panel'
 import { formatNumber, formatRank, topPercent } from '@/lib/format'
-import { memberSpots, RANK_MARKS, rankPosition } from '@/lib/rank-scale'
+import { memberRanks, RANK_MARKS, rankPosition } from '@/lib/rank-scale'
 import { cn } from '@/lib/utils'
 
 /**
@@ -88,7 +88,7 @@ interface Members {
  */
 export function RankMap({ name, groups, total, unit, members }: Props) {
   const stats = groups.flatMap(g => g.rows.flatMap(r => (r.stat ? [r.stat] : [])))
-  const spots = members?.rows.map(m => memberSpots(m, stats, members.players))
+  const ranked = members && { rows: members.rows.map(m => memberRanks(m, stats)), players: members.players }
 
   return (
     <Panel as="section">
@@ -120,7 +120,7 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
         <div key={g.title} className="mt-2 border-t pt-2">
           <h3 className="text-xs font-medium tracking-wide uppercase" style={{ color: g.color }}>{g.title}</h3>
           {g.rows.map(row => (
-            <Row key={row.label} row={row} color={g.color} total={total} spots={spots} />
+            <Row key={row.label} row={row} color={g.color} total={total} members={ranked} />
           ))}
         </div>
       ))}
@@ -135,10 +135,10 @@ interface RowProps {
   row: RankMapRow
   color: string
   total: number
-  spots?: MemberSpots[]
+  members?: { rows: MemberRanks[], players: number }
 }
 
-function Row({ row, color, total, spots }: RowProps) {
+function Row({ row, color, total, members }: RowProps) {
   const { label, icon: Icon, value, display, rank, stat } = row
   // Everyone at zero shares one rank, which would read as "top 12%" for nothing.
   const ranked = rank != null && value != null && value !== 0
@@ -162,7 +162,7 @@ function Row({ row, color, total, spots }: RowProps) {
             style={{ left: `${m.at}%` }}
           />
         ))}
-        {stat && spots && <MemberTicks stat={stat} members={spots} color={color} />}
+        {stat && members && <MemberTicks stat={stat} members={members.rows} players={members.players} color={color} />}
         {ranked && (
           <>
             {/* Fades in toward the dot and glows, so the stem reads bright without muddying the track. */}

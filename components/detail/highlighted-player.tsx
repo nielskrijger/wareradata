@@ -3,11 +3,13 @@
 import type { MouseEvent, PointerEvent, ReactNode } from 'react'
 
 import type { HighlightedPlayer } from './highlighted-player-context'
-import type { MemberSpots, PlayerStat } from '@/lib/rank-scale'
+import type { MemberRanks, PlayerStat } from '@/lib/rank-scale'
 
 import { use, useState } from 'react'
 
-import { memberTicks } from '@/lib/rank-scale'
+import { UserHoverCard } from '@/components/user-hover-card'
+import { formatRank, topPercent } from '@/lib/format'
+import { memberPosition, memberTicks, rankPosition } from '@/lib/rank-scale'
 
 import { HighlightedPlayerContext } from './highlighted-player-context'
 
@@ -30,8 +32,8 @@ export function HighlightedPlayerProvider({ children }: { children: ReactNode })
 }
 
 /**
- * The highlighted player's name, for the rank map legend; once pinned, with
- * a button to unpin.
+ * The highlighted player's name, for the rank map legend, with their player
+ * card on hover; once pinned, with a button to unpin.
  */
 export function HighlightedPlayerName() {
   const { row, pinned, pin } = use(HighlightedPlayerContext)
@@ -39,7 +41,9 @@ export function HighlightedPlayerName() {
   return row && (
     <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
       <span className={`size-2.5 ${DOT}`} />
-      {row.username}
+      <UserHoverCard userId={row.id}>
+        <span className="cursor-default underline decoration-dotted underline-offset-2">{row.username}</span>
+      </UserHoverCard>
       {row.id === pinned?.id && (
         <button
           type="button"
@@ -56,26 +60,29 @@ export function HighlightedPlayerName() {
 
 /**
  * The members as ticks on a `stat` track. Pointing at a tick highlights the
- * nearest member and clicking pins them, until clicked again; a highlighted
- * member gets a white dot and the ticks fade.
+ * nearest member and labels their rank here; clicking pins them, until
+ * clicked again. A highlighted member gets a white dot and the ticks fade.
  */
-export function MemberTicks({ stat, members, color }: { stat: PlayerStat, members: MemberSpots[], color: string }) {
+export function MemberTicks({ stat, members, players, color }: MemberTicksProps) {
   const { row, pinned, set, pin } = use(HighlightedPlayerContext)
-  const highlighted = row && members.find(m => m.id === row.id)?.spots[stat]
+  const [pointing, setPointing] = useState(false)
+  const shown = row && members.find(m => m.id === row.id)
+  const rank = shown?.ranks[stat]
+  const at = rank == null ? null : rankPosition(rank, players)
   // Overlapping ticks add up, so dense spots read brighter; big groups get
   // fainter ticks so they don't turn into a solid bar.
   const alpha = members.length > 60 ? 0.12 : 0.7
 
   function nearest(e: MouseEvent<HTMLDivElement>) {
     const box = e.currentTarget.getBoundingClientRect()
-    const at = ((e.clientX - box.left) / box.width) * 100
-    let found: MemberSpots | null = null
+    const pointer = ((e.clientX - box.left) / box.width) * 100
+    let found: MemberRanks | null = null
     let distance = (PICK_RADIUS / box.width) * 100
     for (const m of members) {
-      const spot = m.spots[stat]
-      if (spot != null && Math.abs(spot - at) <= distance) {
+      const pos = memberPosition(m, stat, players)
+      if (pos != null && Math.abs(pos - pointer) <= distance) {
         found = m
-        distance = Math.abs(spot - at)
+        distance = Math.abs(pos - pointer)
       }
     }
 
@@ -83,10 +90,16 @@ export function MemberTicks({ stat, members, color }: { stat: PlayerStat, member
   }
 
   function hover(e: PointerEvent<HTMLDivElement>) {
+    setPointing(true)
     const m = nearest(e)
     if (m?.id !== row?.id) {
       set(m)
     }
+  }
+
+  function leave() {
+    setPointing(false)
+    set(null)
   }
 
   function click(e: MouseEvent<HTMLDivElement>) {
@@ -104,11 +117,11 @@ export function MemberTicks({ stat, members, color }: { stat: PlayerStat, member
         preserveAspectRatio="none"
         aria-hidden
       >
-        {[...memberTicks(members, stat)].map(([at, n]) => (
+        {[...memberTicks(members, stat, players)].map(([tick, n]) => (
           <line
-            key={at}
-            x1={at}
-            x2={at}
+            key={tick}
+            x1={tick}
+            x2={tick}
             y1={2}
             y2={14}
             stroke={color}
@@ -117,18 +130,44 @@ export function MemberTicks({ stat, members, color }: { stat: PlayerStat, member
           />
         ))}
       </svg>
-      {highlighted != null && (
+      {at != null && (
         <div
           className={`absolute top-1/2 z-10 size-3 -translate-x-1/2 -translate-y-1/2 ${DOT}`}
-          style={{ left: `${highlighted}%` }}
+          style={{ left: `${at}%` }}
         />
+      )}
+      {pointing && shown && rank != null && (
+        <div
+          className={`bg-card pointer-events-none absolute bottom-full z-30 mb-1 -translate-x-1/2 rounded border
+            px-1.5 py-0.5 text-[10px] whitespace-nowrap shadow`}
+          style={{ left: `${rankPosition(rank, players)}%` }}
+        >
+          {shown.username}
+          <span className="text-muted-foreground">
+            {' · '}
+            {formatRank(rank)}
+            {' · '}
+            {topPercent(rank, players)}
+          </span>
+        </div>
       )}
       <div
         className="absolute inset-0 z-20 cursor-pointer"
         onPointerMove={hover}
-        onPointerLeave={() => set(null)}
+        onPointerLeave={leave}
         onClick={click}
       />
     </>
   )
+}
+
+interface MemberTicksProps {
+  stat: PlayerStat
+  members: MemberRanks[]
+
+  /**
+   * Size of the player set the ranks are in.
+   */
+  players: number
+  color: string
 }

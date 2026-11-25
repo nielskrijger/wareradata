@@ -47,3 +47,16 @@ export function HighlightedPlayerDot({ stat, players }: { stat: PlayerStat, play
     />
   )
 }
+
+/**
+ * Fades the member ticks while a player is highlighted, so their dot stands out.
+ */
+export function HighlightedPlayerFade({ children }: { children: ReactNode }) {
+  const { row } = use(HighlightedPlayerContext)
+
+  return (
+    <div className={`absolute inset-0 transition-opacity duration-150 ${row ? 'opacity-25' : ''}`}>
+      {children}
+    </div>
+  )
+}

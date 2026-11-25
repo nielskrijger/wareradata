@@ -4,7 +4,11 @@ import type { ReactNode } from 'react'
 import type { PlayerStat } from '@/lib/rank-scale'
 import type { UserRow } from '@/lib/rows'
 
-import { HighlightedPlayerDot, HighlightedPlayerName } from '@/components/detail/highlighted-player'
+import {
+  HighlightedPlayerDot,
+  HighlightedPlayerFade,
+  HighlightedPlayerName,
+} from '@/components/detail/highlighted-player'
 import { Panel } from '@/components/panel'
 import { formatNumber, formatRank, topPercent } from '@/lib/format'
 import { memberTicks, RANK_MARKS, rankPosition } from '@/lib/rank-scale'
@@ -162,20 +166,22 @@ function Row({ row, color, total, members }: { row: RankMapRow, color: string, t
           />
         ))}
         {ticks && members && (
-          <svg className="absolute inset-0 size-full" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden>
-            {[...ticks].map(([at, n]) => (
-              <line
-                key={at}
-                x1={at}
-                x2={at}
-                y1={2}
-                y2={14}
-                stroke={color}
-                strokeOpacity={1 - (1 - tickOpacity(members)) ** n}
-                vectorEffect="non-scaling-stroke"
-              />
-            ))}
-          </svg>
+          <HighlightedPlayerFade>
+            <svg className="absolute inset-0 size-full" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden>
+              {[...ticks].map(([at, n]) => (
+                <line
+                  key={at}
+                  x1={at}
+                  x2={at}
+                  y1={2}
+                  y2={14}
+                  stroke={color}
+                  strokeOpacity={1 - (1 - tickOpacity(members)) ** n}
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+            </svg>
+          </HighlightedPlayerFade>
         )}
         {stat && members && <HighlightedPlayerDot stat={stat} players={members.players} />}
         {ranked && (

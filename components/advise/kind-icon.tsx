@@ -1,4 +1,5 @@
 import type { AdviseRow } from './rows'
+import { tint } from '@/components/colors'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
@@ -17,7 +18,7 @@ export function KindIcon({ kind, small }: { kind: AdviseRow['kind'], small?: boo
           <span
             aria-label={label}
             className={cn('flex shrink-0 items-center justify-center rounded-md', small ? 'size-5' : 'size-7')}
-            style={{ background: `color-mix(in oklch, ${color} 18%, transparent)`, color }}
+            style={{ background: tint(color, 18), color }}
           />
         )}
       >

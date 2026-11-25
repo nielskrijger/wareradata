@@ -17,12 +17,12 @@ interface Props {
  */
 export function BoolCell({ value, falsy = 'no' }: Props) {
   if (value) {
-    return <span className="font-medium text-heat-green-text">Yes</span>
+    return <span className="font-medium text-green">Yes</span>
   }
 
   if (falsy === 'dash') {
     return <EmptyDash />
   }
 
-  return <span className="font-medium text-heat-red">No</span>
+  return <span className="font-medium text-red">No</span>
 }

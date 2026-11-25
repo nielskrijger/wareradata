@@ -4,21 +4,20 @@ import type { BuffMix } from '@/lib/rows'
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
 
-import { GREEN, GREEN_TEXT, RED, SLATE, SLATE_TEXT } from '@/components/buff-colors'
+import { COLOR } from '@/components/colors'
 import { Stem, StemTrack } from '@/components/detail/stem'
 import { percentOf } from '@/lib/format'
 
-function BuffRow({ icon, label, n, total, color, textColor = color }: {
+function BuffRow({ icon, label, n, total, color }: {
   icon: ReactNode
   label: string
   n: number
   total: number
   color: string
-  textColor?: string
 }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className="inline-flex w-16 items-center gap-1" style={{ color: textColor }}>
+      <span className="inline-flex w-16 items-center gap-1" style={{ color }}>
         {icon}
         {label}
       </span>
@@ -49,18 +48,22 @@ export function BuffRows({ mix }: { mix: BuffMix }) {
         label="Buff"
         n={mix.buff}
         total={total}
-        color={GREEN}
-        textColor={GREEN_TEXT}
+        color={COLOR.green}
       />
       <BuffRow
         icon={<Minus className="size-3.5" />}
         label="Ready"
         n={mix.ready}
         total={total}
-        color={SLATE}
-        textColor={SLATE_TEXT}
+        color={COLOR.grey}
       />
-      <BuffRow icon={<ArrowDown className="size-3.5" />} label="Debuff" n={mix.debuff} total={total} color={RED} />
+      <BuffRow
+        icon={<ArrowDown className="size-3.5" />}
+        label="Debuff"
+        n={mix.debuff}
+        total={total}
+        color={COLOR.red}
+      />
     </div>
   )
 }

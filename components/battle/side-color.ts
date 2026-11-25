@@ -1,6 +1,8 @@
 import type { BattleSideKey } from '@/lib/rows'
 
+import { COLOR } from '@/components/colors'
+
 export const SIDE_COLOR: Record<BattleSideKey, string> = {
-  attacker: 'var(--heat-red)',
-  defender: 'var(--heat-blue)',
+  attacker: COLOR.red,
+  defender: COLOR.blue,
 }

@@ -1,5 +1,6 @@
 import type { TodoItem } from '@/lib/advisor/types'
 import { Check, TriangleAlert } from 'lucide-react'
+import { tint } from '@/components/colors'
 
 import { GAIN, KIND } from './format'
 
@@ -11,7 +12,7 @@ export function AllSet() {
     >
       <span
         className="flex size-11 items-center justify-center rounded-full"
-        style={{ background: `color-mix(in oklch, ${GAIN} 18%, transparent)`, color: GAIN }}
+        style={{ background: tint(GAIN, 18), color: GAIN }}
       >
         <Check aria-hidden className="size-5" />
       </span>

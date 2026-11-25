@@ -3,6 +3,7 @@ import type { GovernmentOfficial, GovernmentRow } from '@/lib/rows'
 import Link from 'next/link'
 
 import { Avatar } from '@/components/avatar'
+import { COLOR, seriesColor, tint } from '@/components/colors'
 import { PageSection } from '@/components/layout/page-section'
 import { InternalLink } from '@/components/links'
 import { Panel } from '@/components/panel'
@@ -18,27 +19,9 @@ interface Props {
 }
 
 /**
- * Parties have no colour in the WarEra API, so we assign one per party
- * deterministically: the largest bloc gets the first (most separable) hue, on
- * down. Medium-saturation values chosen to read on both light and dark cards.
+ * Officials with no party (independents).
  */
-const PARTY_PALETTE = [
-  '37, 99, 235', // blue
-  '220, 38, 38', // red
-  '5, 150, 105', // emerald
-  '217, 119, 6', // amber
-  '147, 70, 210', // purple
-  '13, 160, 160', // teal
-  '222, 49, 130', // pink
-  '120, 170, 40', // lime
-  '90, 110, 145', // steel
-  '233, 100, 30', // orange
-]
-
-/**
- * Neutral grey for officials with no party (independents).
- */
-const INDEPENDENT_RGB = '130, 130, 140'
+const INDEPENDENT_COLOR = COLOR.grey
 
 /**
  * Sentinel bench id for the no-party group, which has no party page to link to.
@@ -54,9 +37,8 @@ interface Bench {
 }
 
 /**
- * Assigns each party an RGB triplet, ordered by how many officials belong to it
- * (largest first), so the biggest blocs get the most distinct colours and the
- * mapping is stable for a given government.
+ * Parties have no colour in the API, so each gets a series hue by size (largest
+ * first): the biggest blocs get the most distinct colours, stable per government.
  */
 function assignPartyColors(officials: GovernmentOfficial[]): Map<string, string> {
   const counts = new Map<string, number>()
@@ -68,17 +50,17 @@ function assignPartyColors(officials: GovernmentOfficial[]): Map<string, string>
 
   const ordered = [...counts.entries()].sort((a, b) => b[1] - a[1])
   const colors = new Map<string, string>()
-  ordered.forEach(([id], i) => colors.set(id, PARTY_PALETTE[i % PARTY_PALETTE.length]))
+  ordered.forEach(([id], i) => colors.set(id, seriesColor(i)))
 
   return colors
 }
 
 function colorFor(partyId: string | null, colors: Map<string, string>): string {
   if (!partyId) {
-    return INDEPENDENT_RGB
+    return INDEPENDENT_COLOR
   }
 
-  return colors.get(partyId) ?? INDEPENDENT_RGB
+  return colors.get(partyId) ?? INDEPENDENT_COLOR
 }
 
 /**
@@ -205,13 +187,13 @@ export function GovernmentSection({ government }: Props) {
               <div
                 key={bench.id}
                 className="flex flex-col gap-2 overflow-hidden rounded-md p-3 sm:flex-row sm:items-center sm:gap-3 sm:py-2"
-                style={{ backgroundColor: `rgba(${bench.color}, 0.08)`, borderLeft: `3px solid rgb(${bench.color})` }}
+                style={{ backgroundColor: tint(bench.color, 8), borderLeft: `3px solid ${bench.color}` }}
               >
                 <div className="flex items-center gap-2 sm:w-48 sm:shrink-0">
                   {bench.avatarUrl ? <Avatar src={bench.avatarUrl} name={bench.name} size={20} /> : (
                     <span
                       className="size-3 shrink-0 rounded-full"
-                      style={{ backgroundColor: `rgb(${bench.color})` }}
+                      style={{ backgroundColor: bench.color }}
                     />
                   )}
                   {bench.id === INDEPENDENT_KEY
@@ -257,7 +239,7 @@ function GovFace({ official, size, color }: { official: GovernmentOfficial, size
           src={official.avatarUrl}
           name={official.name}
           size={size}
-          style={{ boxShadow: `0 0 0 2px rgb(${color})` }}
+          style={{ boxShadow: `0 0 0 2px ${color}` }}
         />
       </Link>
     </UserHoverCard>

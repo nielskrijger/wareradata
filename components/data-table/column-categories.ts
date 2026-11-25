@@ -2,6 +2,7 @@ import type { RowData } from '@tanstack/react-table'
 import type { LucideIcon } from 'lucide-react'
 
 import type { ColumnDef, DataColumnMeta } from './features'
+
 import {
   Building2,
   Coins,
@@ -14,6 +15,7 @@ import {
   Swords,
   Trophy,
 } from 'lucide-react'
+import { CATEGORY_COLOR } from '@/components/colors'
 
 /**
  * Column categories, in table and Columns-menu order. A column's category comes
@@ -48,33 +50,30 @@ interface CategoryMeta {
 }
 
 /**
- * Label, icon and color per category.
- *
- * General stays colorless: a glyph on every general header would be noise, so
- * its icon shows only in the Columns menu. Government and MU-specific share
- * slate because they never appear in the same table.
+ * Label, icon and color per category. General stays colorless: a glyph on every
+ * general header would be noise, so its icon shows only in the Columns menu.
  */
 export const CATEGORY_META: Record<Category, CategoryMeta> = {
-  points: { label: 'Points', Icon: Trophy, color: 'var(--heat-teal)', sortBy: ['totalPoints', 'points'] },
+  points: { label: 'Points', Icon: Trophy, color: CATEGORY_COLOR.points, sortBy: ['totalPoints', 'points'] },
   general: { label: 'General', Icon: LayoutGrid },
-  combat: { label: 'Combat', Icon: Swords, color: 'var(--heat-red)', sortBy: ['weeklyDamage'] },
-  government: { label: 'Government', Icon: Landmark, color: 'var(--heat-slate-text)', sortBy: ['development'] },
-  muSpecific: { label: 'MU-specific', Icon: Building2, color: 'var(--heat-slate-text)', sortBy: ['reputation'] },
+  combat: { label: 'Combat', Icon: Swords, color: CATEGORY_COLOR.combat, sortBy: ['weeklyDamage'] },
+  government: { label: 'Government', Icon: Landmark, color: CATEGORY_COLOR.government, sortBy: ['development'] },
+  muSpecific: { label: 'MU-specific', Icon: Building2, color: CATEGORY_COLOR.muSpecific, sortBy: ['reputation'] },
   wealth: {
     label: 'Wealth',
     Icon: Coins,
-    color: 'var(--heat-gold)',
+    color: CATEGORY_COLOR.wealth,
     sortBy: ['memberWealth', 'citizenWealth', 'wealthRank'],
   },
-  factories: { label: 'Factories', Icon: Factory, color: 'var(--heat-orange)', sortBy: ['factoryNetPerDay'] },
-  employees: { label: 'Employees', Icon: HardHat, color: 'var(--heat-blue)', sortBy: ['factoryWorkers'] },
+  factories: { label: 'Factories', Icon: Factory, color: CATEGORY_COLOR.factories, sortBy: ['factoryNetPerDay'] },
+  employees: { label: 'Employees', Icon: HardHat, color: CATEGORY_COLOR.employees, sortBy: ['factoryWorkers'] },
   premium: {
     label: 'Premium',
     Icon: Sparkles,
-    color: 'var(--heat-purple)',
+    color: CATEGORY_COLOR.premium,
     sortBy: ['gemsPurchasedTotal', 'gemsPurchased'],
   },
-  cases: { label: 'Cases', Icon: PackageOpen, color: 'var(--heat-cyan)', sortBy: ['standardCasesOpened'] },
+  cases: { label: 'Cases', Icon: PackageOpen, color: CATEGORY_COLOR.cases, sortBy: ['standardCasesOpened'] },
 }
 
 /**

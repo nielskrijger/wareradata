@@ -1,10 +1,11 @@
 'use client'
 
 import type { FactoryLedgerRow, LedgerEmployee } from '@/lib/factories/ledger'
-
 import { useLayoutEffect, useRef, useState } from 'react'
 
 import { TooltipHeading } from '@/components/cells/tooltip-ledger'
+
+import { COLOR } from '@/components/colors'
 import { ItemIcon } from '@/components/item-icon'
 import { Panel } from '@/components/panel'
 
@@ -137,17 +138,17 @@ function Scatter({ points }: { points: Point[] }) {
 
         <polygon
           points={`${x(0)},${y(0)} ${x(xMax)},${y(0)} ${x(xMax)},${y(edge)} ${x(edge)},${y(edge)}`}
-          className="fill-heat-red/10"
+          className="fill-red/10"
         />
         <line
           x1={x(0)}
           y1={y(0)}
           x2={x(edge)}
           y2={y(edge)}
-          className="stroke-heat-red"
+          className="stroke-red"
           strokeDasharray="4 3"
         />
-        <text x={x(edge) - 4} y={y(edge) - 6} textAnchor="end" className="fill-heat-red text-[10px]">
+        <text x={x(edge) - 4} y={y(edge) - 6} textAnchor="end" className="fill-red text-[10px]">
           break-even
         </text>
 
@@ -178,12 +179,12 @@ function Scatter({ points }: { points: Point[] }) {
  */
 function netFill(net: number, best: number): string {
   if (net < 0) {
-    return 'var(--heat-red)'
+    return COLOR.red
   }
 
   const t = best > 0 ? Math.min(1, net / best) : 0
 
-  return `color-mix(in oklch, var(--heat-green) ${Math.round(40 + t * 60)}%, var(--muted))`
+  return `color-mix(in oklch, var(--green) ${Math.round(40 + t * 60)}%, var(--muted))`
 }
 
 interface Segment {
@@ -256,7 +257,7 @@ function FactoryBreakdown({ row, parts }: { row: FactoryLedgerRow, parts: Segmen
               Manager
             </span>
             <span />
-            <span className="text-heat-red text-right">{goldSigned(-row.managerPerDay)}</span>
+            <span className="text-red text-right">{goldSigned(-row.managerPerDay)}</span>
           </div>
         )}
         <div className={cn(LEDGER_COLS, 'mt-1 border-t border-white/20 pt-1 font-medium')}>
@@ -321,7 +322,7 @@ function OutputBars({ rows }: { rows: FactoryLedgerRow[] }) {
                 y={top + 12}
                 className={cn(
                   'text-[11px] tabular-nums',
-                  row.netPerDay >= 0 ? 'fill-heat-green-text' : 'fill-heat-red',
+                  row.netPerDay >= 0 ? 'fill-green' : 'fill-red',
                 )}
               >
                 {goldSigned(row.netPerDay)}

@@ -3,11 +3,12 @@
 import type { CSSProperties } from 'react'
 import type { FactoryLedgerRow, LedgerEmployee } from '@/lib/factories/ledger'
 import type { PortfolioTotals } from '@/lib/factories/profit'
-
 import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react'
-import { Fragment, useMemo, useState } from 'react'
 
-import { GREEN_BADGE, MUTED_BADGE, RED_BADGE } from '@/components/badges/tone'
+import { Fragment, useMemo, useState } from 'react'
+import { BADGE } from '@/components/badges/tone'
+
+import { COLOR, tint } from '@/components/colors'
 import { CompanyName } from '@/components/company-name'
 import { EmptyDash } from '@/components/empty-dash'
 import { ItemIcon } from '@/components/item-icon'
@@ -107,7 +108,7 @@ function heat(value: number, [lo, hi]: [number, number]): CSSProperties | undefi
 
   const t = Math.max(0, Math.min(1, (value - lo) / (hi - lo)))
 
-  return { background: `color-mix(in oklch, var(--heat-green) ${Math.round(t * 30)}%, transparent)` }
+  return { background: tint(COLOR.green, Math.round(t * 30)) }
 }
 
 function Pips({ value, max, scale }: { value: number, max: number, scale: number }) {
@@ -119,8 +120,8 @@ function Pips({ value, max, scale }: { value: number, max: number, scale: number
             key={i}
             className={cn(
               'h-2.5 w-1 rounded-[1px]',
-              i < value && 'bg-heat-green',
-              i >= value && i < max && 'bg-heat-green/30',
+              i < value && 'bg-green',
+              i >= value && i < max && 'bg-green/30',
               i >= max && 'bg-muted',
             )}
           />
@@ -159,9 +160,9 @@ function TraitChips({ e }: { e: LedgerEmployee }) {
           title={t.effects.join(', ') || 'No visible effect'}
           className={cn(
             'font-normal',
-            t.tone > 0 && GREEN_BADGE,
-            t.tone < 0 && RED_BADGE,
-            t.tone === 0 && MUTED_BADGE,
+            t.tone > 0 && BADGE.green,
+            t.tone < 0 && BADGE.red,
+            t.tone === 0 && BADGE.muted,
           )}
         >
           {humanizeCode(t.code)}{t.arg && <span className="opacity-75"> ({humanizeCode(t.arg)})</span>}
@@ -303,8 +304,8 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
         <TableCell
           className={cn(
             'text-right tabular-nums',
-            e.happiness >= 65 && 'text-heat-green-text',
-            e.happiness < 50 && 'text-heat-red',
+            e.happiness >= 65 && 'text-green',
+            e.happiness < 50 && 'text-red',
           )}
         >
           {e.happiness}
@@ -317,7 +318,7 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
               {humanizeCode(e.tool.code.replace(/\d+$/, ''))}{' '}
               <span className="text-muted-foreground">
                 +{e.tool.bonusPct}% ·{' '}
-                <span className={cn(e.tool.durabilityPct < 60 && 'text-amber-700 dark:text-amber-400')}>
+                <span className={cn(e.tool.durabilityPct < 60 && 'text-orange')}>
                   {Math.round(e.tool.durabilityPct)}%
                 </span>
               </span>
@@ -370,7 +371,7 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
               />
             </span>
             {row.disabled && (
-              <Badge title="Switched off in the game: nothing here produces." className={cn('shrink-0', MUTED_BADGE)}>
+              <Badge title="Switched off in the game: nothing here produces." className={cn('shrink-0', BADGE.muted)}>
                 Disabled
               </Badge>
             )}
@@ -378,7 +379,7 @@ export function FactoryRoster({ rows, totals, open, onToggle }: Props) {
             {row.bestOpportunityPerDay >= 1 && (
               <Tooltip>
                 <TooltipTrigger render={<span className="shrink-0 cursor-help" />}>
-                  <Badge className={GREEN_BADGE}>
+                  <Badge className={BADGE.green}>
                     <ItemIcon code={row.bestProductCode} small />
                     {goldSigned(row.bestOpportunityPerDay)}
                   </Badge>

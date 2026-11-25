@@ -1,4 +1,5 @@
-import { rarityColor, rarityTint as tint } from '@/lib/gear/rarity'
+import { tint } from '@/components/colors'
+import { rarityColor } from '@/lib/gear/rarity'
 import { gearScoreTier } from '@/lib/gear/score'
 
 interface Props {

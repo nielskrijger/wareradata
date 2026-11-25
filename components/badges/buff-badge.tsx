@@ -2,8 +2,9 @@
 
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { BADGE } from '@/components/badges/tone'
 
-import { GREEN_BADGE, RED_BADGE } from '@/components/badges/tone'
+import { COLOR } from '@/components/colors'
 import { EmptyDash } from '@/components/empty-dash'
 import { Countdown } from '@/components/relative-time'
 import { Badge } from '@/components/ui/badge'
@@ -85,7 +86,7 @@ export function BuffBadge({ status, endsAt, withTooltip = true }: Props) {
   }
 
   const isBuff = status === 'buff'
-  const cls = isBuff ? GREEN_BADGE : RED_BADGE
+  const cls = isBuff ? BADGE.green : BADGE.red
 
   const Icon = isBuff ? ArrowUp : ArrowDown
 
@@ -104,7 +105,7 @@ export function BuffBadge({ status, endsAt, withTooltip = true }: Props) {
     <Tooltip>
       <TooltipTrigger render={<span className="inline-flex w-fit cursor-default">{badge}</span>} />
       <TooltipContent>
-        <div className="font-medium" style={{ color: isBuff ? 'var(--heat-green-text)' : 'var(--heat-red)' }}>
+        <div className="font-medium" style={{ color: isBuff ? COLOR.green : COLOR.red }}>
           {isBuff ? 'Attack buff' : 'Attack debuff'}
         </div>
         {endsAt && (

@@ -3,21 +3,21 @@ import type { PlayerStat } from '@/lib/rank-scale'
 import type { GroupPointsStats, GroupPremiumStats, PointSources } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/cells/compact-number'
+import { CATEGORY_COLOR, COLOR } from '@/components/colors'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
-import { WAR_COLOR } from '@/components/war-eco-colors'
 import { formatDecimal, percentOf } from '@/lib/format'
 
 // Its own file because Fast Refresh needs component files to export only components.
 
 /**
- * One hue per rank map group, the same on every detail page.
+ * One hue per rank map group, the table category's where there is one.
  */
 export const GROUP_COLOR = {
-  points: 'var(--heat-purple)',
-  combat: WAR_COLOR,
-  economy: POINTS_LEGEND.Wealth.color,
-  society: 'var(--heat-blue)',
-  premium: 'var(--heat-green)',
+  points: CATEGORY_COLOR.points,
+  combat: CATEGORY_COLOR.combat,
+  economy: CATEGORY_COLOR.wealth,
+  society: COLOR.blue,
+  premium: CATEGORY_COLOR.premium,
 }
 
 /**

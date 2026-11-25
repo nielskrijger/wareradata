@@ -71,7 +71,7 @@ export function HeatCell({ value, range, mode = 'ramp', center, logScale = false
       return <>{children}</>
     }
 
-    return tinted('--heat-green-text', 0.3 + 0.7 * t, children)
+    return tinted('--green', 0.3 + 0.7 * t, children)
   }
 
   // Diverging: distance from the neutral center, normalized by *that side's*
@@ -93,7 +93,7 @@ export function HeatCell({ value, range, mode = 'ramp', center, logScale = false
 
   // 'median' greens above center; the invert modes green below.
   const isGreen = mode === 'median' ? high : !high
-  const token = isGreen ? '--heat-green-text' : '--heat-red'
+  const token = isGreen ? '--green' : '--red'
 
   return tinted(token, 0.45 + 0.45 * intensity, children)
 }

@@ -1,5 +1,5 @@
+import { ECO_COLOR, WAR_COLOR } from '@/components/colors'
 import { Stem, StemTrack } from '@/components/detail/stem'
-import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 
 /**
  * The average war / eco split as two stems meeting at the split, with its shares.

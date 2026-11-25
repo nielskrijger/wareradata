@@ -42,16 +42,37 @@ export function playerPosition(player: UserRow, stat: PlayerStat, players: numbe
 }
 
 /**
+ * A member's spots on a rank map, rounded like the ticks; much lighter for the
+ * page to ship than their {@link UserRow}.
+ */
+export interface MemberSpots {
+  id: string
+  username: string
+  spots: Partial<Record<PlayerStat, number>>
+}
+
+export function memberSpots(member: UserRow, stats: PlayerStat[], players: number): MemberSpots {
+  const spots: MemberSpots['spots'] = {}
+  for (const stat of stats) {
+    const at = playerPosition(member, stat, players)
+    if (at != null) {
+      spots[stat] = Math.round(at * 4) / 4
+    }
+  }
+
+  return { id: member.id, username: member.username, spots }
+}
+
+/**
  * Members per quarter percent of the track, so a big country stays a few
  * hundred ticks.
  */
-export function memberTicks(members: UserRow[], stat: PlayerStat, players: number): Map<number, number> {
+export function memberTicks(members: MemberSpots[], stat: PlayerStat): Map<number, number> {
   const counts = new Map<number, number>()
   for (const m of members) {
-    const at = playerPosition(m, stat, players)
+    const at = m.spots[stat]
     if (at != null) {
-      const key = Math.round(at * 4) / 4
-      counts.set(key, (counts.get(key) ?? 0) + 1)
+      counts.set(at, (counts.get(at) ?? 0) + 1)
     }
   }
 

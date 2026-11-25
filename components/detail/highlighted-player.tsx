@@ -1,20 +1,20 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import type { PointerEvent, ReactNode } from 'react'
 
-import type { PlayerStat } from '@/lib/rank-scale'
-import type { UserRow } from '@/lib/rows'
+import type { HighlightedPlayer } from './highlighted-player-context'
+import type { MemberSpots, PlayerStat } from '@/lib/rank-scale'
 
 import { use, useState } from 'react'
 
 import { playerPosition } from '@/lib/rank-scale'
 
-import { HighlightedPlayerContext } from './highlighted-player-context'
+import { HighlightedPlayerContext, RankMapMembersContext } from './highlighted-player-context'
 
 const DOT = 'ring-card rounded-full bg-white ring-2'
 
 export function HighlightedPlayerProvider({ children }: { children: ReactNode }) {
-  const [row, setRow] = useState<UserRow | null>(null)
+  const [row, setRow] = useState<HighlightedPlayer | null>(null)
 
   return <HighlightedPlayerContext value={{ row, set: setRow }}>{children}</HighlightedPlayerContext>
 }
@@ -38,7 +38,7 @@ export function HighlightedPlayerName() {
  */
 export function HighlightedPlayerDot({ stat, players }: { stat: PlayerStat, players: number }) {
   const { row } = use(HighlightedPlayerContext)
-  const at = row && playerPosition(row, stat, players)
+  const at = row && ('spots' in row ? row.spots[stat] : playerPosition(row, stat, players))
 
   return at != null && (
     <div
@@ -59,4 +59,41 @@ export function HighlightedPlayerFade({ children }: { children: ReactNode }) {
       {children}
     </div>
   )
+}
+
+export function RankMapMembers({ members, children }: { members: MemberSpots[], children: ReactNode }) {
+  return <RankMapMembersContext value={members}>{children}</RankMapMembersContext>
+}
+
+/**
+ * How far from a tick, in pixels, the pointer still picks it.
+ */
+const PICK_RADIUS = 8
+
+/**
+ * Highlights the member whose tick is nearest the pointer on a `stat` track.
+ */
+export function HighlightedPlayerPicker({ stat }: { stat: PlayerStat }) {
+  const { row, set } = use(HighlightedPlayerContext)
+  const members = use(RankMapMembersContext)
+
+  function pick(e: PointerEvent<HTMLDivElement>) {
+    const box = e.currentTarget.getBoundingClientRect()
+    const at = ((e.clientX - box.left) / box.width) * 100
+    let nearest: MemberSpots | null = null
+    let distance = (PICK_RADIUS / box.width) * 100
+    for (const m of members) {
+      const spot = m.spots[stat]
+      if (spot != null && Math.abs(spot - at) <= distance) {
+        nearest = m
+        distance = Math.abs(spot - at)
+      }
+    }
+
+    if (nearest?.id !== row?.id) {
+      set(nearest)
+    }
+  }
+
+  return <div className="absolute inset-0 z-20" onPointerMove={pick} onPointerLeave={() => set(null)} />
 }

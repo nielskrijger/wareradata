@@ -1,8 +1,13 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import type { PlayerStat } from '@/lib/rank-scale'
+import type { UserRow } from '@/lib/rows'
+
+import { HighlightedPlayerDot, HighlightedPlayerName } from '@/components/detail/highlighted-player'
 import { Panel } from '@/components/panel'
-import { formatNumber, topPercent } from '@/lib/format'
+import { formatNumber, formatRank, topPercent } from '@/lib/format'
+import { memberTicks, RANK_MARKS, rankPosition } from '@/lib/rank-scale'
 import { cn } from '@/lib/utils'
 
 /**
@@ -25,6 +30,12 @@ export interface RankMapRow {
    */
   display?: ReactNode
   rank: number | null | undefined
+
+  /**
+   * The player stat this row compares with, to place members (and the
+   * highlighted player) on the same track.
+   */
+  stat?: PlayerStat
 }
 
 export interface RankMapGroup {
@@ -49,32 +60,63 @@ interface Props {
    * What the ranked set holds, plural ("players", "MUs").
    */
   unit: string
+
+  /**
+   * The group's players, drawn as ticks on every row with a {@link RankMapRow.stat}.
+   */
+  members?: Members
+}
+
+interface Members {
+  rows: UserRow[]
+
+  /**
+   * One of them, singular ("member", "citizen", "MU mate").
+   */
+  noun: string
+
+  /**
+   * Size of the player set the ticks are ranked in.
+   */
+  players: number
 }
 
 /**
- * Track marks as the share of the set ranked below, from last to #1.
+ * Per-tick opacity; overlapping ticks add up, so dense spots read brighter.
+ * Lower for big groups so they don't turn into a solid bar.
  */
-const MARKS = [0, 25, 50, 75, 100]
+function tickOpacity(members: Members) {
+  return members.rows.length > 60 ? 0.12 : 0.7
+}
 
 /**
  * Every stat as a dot on one shared rank track, so strong and weak
- * spots read at a glance.
- *
- * Linear in percentile, so bar length is simply the share of the set beaten;
- * the "top x%" beside each rank separates the very best.
+ * spots read at a glance. Where a stat has a player counterpart, each
+ * member is a tick on the same track, ranked among all players.
  */
-export function RankMap({ name, groups, total, unit }: Props) {
+export function RankMap({ name, groups, total, unit, members }: Props) {
   return (
     <Panel as="section">
-      <h2 className="mb-1 font-medium">
-        Where {name} ranks among {formatNumber(total)} {unit}
-      </h2>
+      <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 className="font-medium">
+          Where {name} ranks among {formatNumber(total)} {unit}
+        </h2>
+        {members && members.rows.length > 0 && (
+          <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
+            <span className="bg-muted-foreground h-3 w-px" />
+            {formatNumber(members.rows.length)} {members.noun}{members.rows.length === 1 ? '' : 's'},
+            {' '}
+            among {formatNumber(members.players)} players
+            <HighlightedPlayerName />
+          </span>
+        )}
+      </div>
 
       {/* Lines up with the track column of the rows below. */}
       <div className={cn('text-muted-foreground relative hidden h-6 text-[10px] sm:block', TRACK_INSET)}>
-        {MARKS.map(m => (
-          <span key={m} className="absolute top-2 -translate-x-1/2 tabular-nums" style={{ left: `${m}%` }}>
-            {markLabel(m)}
+        {RANK_MARKS.map(m => (
+          <span key={m.label} className="absolute top-2 -translate-x-1/2 tabular-nums" style={{ left: `${m.at}%` }}>
+            {m.label}
           </span>
         ))}
       </div>
@@ -82,29 +124,24 @@ export function RankMap({ name, groups, total, unit }: Props) {
       {groups.map(g => (
         <div key={g.title} className="mt-2 border-t pt-2">
           <h3 className="text-xs font-medium tracking-wide uppercase" style={{ color: g.color }}>{g.title}</h3>
-          {g.rows.map(row => <Row key={row.label} row={row} color={g.color} total={total} />)}
+          {g.rows.map(row => (
+            <Row key={row.label} row={row} color={g.color} total={total} members={members} />
+          ))}
         </div>
       ))}
     </Panel>
   )
 }
 
-function markLabel(m: number): string {
-  if (m === 0) {
-    return 'last'
-  }
-
-  return m === 100 ? '#1' : `top ${100 - m}%`
-}
-
 /**
  * On phones the track drops under the label so it keeps the full width.
  */
-function Row({ row, color, total }: { row: RankMapRow, color: string, total: number }) {
-  const { label, icon: Icon, value, display, rank } = row
+function Row({ row, color, total, members }: { row: RankMapRow, color: string, total: number, members?: Members }) {
+  const { label, icon: Icon, value, display, rank, stat } = row
+  const ticks = stat && members ? memberTicks(members.rows, stat, members.players) : null
   // Everyone at zero shares one rank, which would read as "top 12%" for nothing.
   const ranked = rank != null && value != null && value !== 0
-  const pos = ranked ? 100 * (1 - (rank - 1) / Math.max(total - 1, 1)) : 0
+  const pos = ranked ? rankPosition(rank, total) : 0
 
   return (
     <div className={cn('grid items-center gap-x-3 gap-y-0.5 py-1 text-sm sm:gap-x-4', ROW_COLUMNS)}>
@@ -117,13 +154,30 @@ function Row({ row, color, total }: { row: RankMapRow, color: string, total: num
       </span>
       <div className="relative order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         <div className="bg-muted-foreground/25 absolute inset-x-0 top-1/2 h-px" />
-        {MARKS.map(m => (
+        {RANK_MARKS.map(m => (
           <div
-            key={m}
+            key={m.label}
             className="bg-muted-foreground/45 absolute top-0.5 h-3 w-px -translate-x-1/2"
-            style={{ left: `${m}%` }}
+            style={{ left: `${m.at}%` }}
           />
         ))}
+        {ticks && members && (
+          <svg className="absolute inset-0 size-full" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden>
+            {[...ticks].map(([at, n]) => (
+              <line
+                key={at}
+                x1={at}
+                x2={at}
+                y1={2}
+                y2={14}
+                stroke={color}
+                strokeOpacity={1 - (1 - tickOpacity(members)) ** n}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+          </svg>
+        )}
+        {stat && members && <HighlightedPlayerDot stat={stat} players={members.players} />}
         {ranked && (
           <>
             {/* Fades in toward the dot and glows, so the stem reads bright without muddying the track. */}
@@ -146,7 +200,7 @@ function Row({ row, color, total }: { row: RankMapRow, color: string, total: num
         {ranked
           ? (
               <>
-                #{formatNumber(rank)}
+                {formatRank(rank)}
                 <span className="text-muted-foreground/60"> · {topPercent(rank, total)}</span>
               </>
             )

@@ -98,6 +98,11 @@ interface DataTableProps<TData extends RowData> {
    * MU on an MU's members). Gone from the Columns menu too.
    */
   omitColumns?: string[]
+
+  /**
+   * Called with the row under the pointer, and null when it leaves.
+   */
+  onRowHover?: (row: TData | null) => void
 }
 
 /**
@@ -124,6 +129,7 @@ function DataTableInner<TData extends RowData>({
   searchPlaceholder = 'Filter…',
   searchHint,
   omitColumns,
+  onRowHover,
 }: DataTableProps<TData>) {
   const columns = omitColumns
     ? allColumns.filter(c => !omitColumns.includes(columnId(c)))
@@ -295,7 +301,7 @@ function DataTableInner<TData extends RowData>({
             ))}
           </TableHeader>
           <TableBody>
-            {rows.map(row => <DataTableRow key={row.id} row={row} />)}
+            {rows.map(row => <DataTableRow key={row.id} row={row} onHover={onRowHover} />)}
             {rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={table.getVisibleLeafColumns().length} className="h-24 text-center">

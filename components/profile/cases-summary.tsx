@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { SectionHeading } from '@/components/detail/section-heading'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, formatRank } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { CASE_RARITIES } from '@/lib/warera/api'
 
@@ -115,7 +115,7 @@ export function CasesSummary({
           {active.opened == null ? <EmptyDash /> : formatNumber(active.opened)}
           {seg === 'all' && rank != null && combinedOpened != null && rankOf != null && (
             <span className="text-muted-foreground/60 ml-2 text-xs">
-              #{formatNumber(rank)} of {formatNumber(rankOf)}
+              {formatRank(rank)} of {formatNumber(rankOf)}
             </span>
           )}
         </span>

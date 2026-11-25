@@ -1,11 +1,12 @@
 'use client'
 
-import type { PointerEvent, ReactNode } from 'react'
+import type { MouseEvent, PointerEvent, ReactNode } from 'react'
 
 import type { HighlightedPlayer } from './highlighted-player-context'
 import type { MemberSpots, PlayerStat } from '@/lib/rank-scale'
 
-import { use, useState } from 'react'
+import Link from 'next/link'
+import { use, useEffect, useState } from 'react'
 
 import { memberTicks } from '@/lib/rank-scale'
 
@@ -19,51 +20,92 @@ const DOT = 'ring-card rounded-full bg-white ring-2'
 const PICK_RADIUS = 8
 
 export function HighlightedPlayerProvider({ children }: { children: ReactNode }) {
-  const [row, setRow] = useState<HighlightedPlayer | null>(null)
+  const [hovered, setHovered] = useState<HighlightedPlayer | null>(null)
+  const [pinned, setPinned] = useState<HighlightedPlayer | null>(null)
 
-  return <HighlightedPlayerContext value={{ row, set: setRow }}>{children}</HighlightedPlayerContext>
+  useEffect(() => {
+    if (!pinned) {
+      return
+    }
+
+    const unpin = (e: KeyboardEvent) => e.key === 'Escape' && setPinned(null)
+    window.addEventListener('keydown', unpin)
+
+    return () => window.removeEventListener('keydown', unpin)
+  }, [pinned])
+
+  return (
+    <HighlightedPlayerContext value={{ row: hovered ?? pinned, pinned, set: setHovered, pin: setPinned }}>
+      {children}
+    </HighlightedPlayerContext>
+  )
 }
 
 /**
- * The highlighted player's name, for the rank map legend.
+ * The highlighted player's name, for the rank map legend; once pinned, it
+ * links to them and can be unpinned.
  */
 export function HighlightedPlayerName() {
-  const { row } = use(HighlightedPlayerContext)
+  const { row, pinned, pin } = use(HighlightedPlayerContext)
+  const isPinned = row != null && row.id === pinned?.id
 
   return row && (
     <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
       <span className={`size-2.5 ${DOT}`} />
-      {row.username}
+      {isPinned ? <Link href={`/users/${row.id}`} className="hover:underline">{row.username}</Link> : row.username}
+      {isPinned && (
+        <button
+          type="button"
+          aria-label="Unpin"
+          className="text-muted-foreground hover:text-foreground -my-1 px-1"
+          onClick={() => pin(null)}
+        >
+          ×
+        </button>
+      )}
     </span>
   )
 }
 
 /**
  * The members as ticks on a `stat` track. Pointing at a tick highlights the
- * nearest member; a highlighted member gets a white dot and the ticks fade.
+ * nearest member and clicking pins them, until clicked again; a highlighted
+ * member gets a white dot and the ticks fade.
  */
 export function MemberTicks({ stat, members, color }: { stat: PlayerStat, members: MemberSpots[], color: string }) {
-  const { row, set } = use(HighlightedPlayerContext)
+  const { row, pinned, set, pin } = use(HighlightedPlayerContext)
   const highlighted = row && members.find(m => m.id === row.id)?.spots[stat]
   // Overlapping ticks add up, so dense spots read brighter; big groups get
   // fainter ticks so they don't turn into a solid bar.
   const alpha = members.length > 60 ? 0.12 : 0.7
 
-  function pick(e: PointerEvent<HTMLDivElement>) {
+  function nearest(e: MouseEvent<HTMLDivElement>) {
     const box = e.currentTarget.getBoundingClientRect()
     const at = ((e.clientX - box.left) / box.width) * 100
-    let nearest: MemberSpots | null = null
+    let found: MemberSpots | null = null
     let distance = (PICK_RADIUS / box.width) * 100
     for (const m of members) {
       const spot = m.spots[stat]
       if (spot != null && Math.abs(spot - at) <= distance) {
-        nearest = m
+        found = m
         distance = Math.abs(spot - at)
       }
     }
 
-    if (nearest?.id !== row?.id) {
-      set(nearest)
+    return found
+  }
+
+  function hover(e: PointerEvent<HTMLDivElement>) {
+    const m = nearest(e)
+    if (m?.id !== row?.id) {
+      set(m)
+    }
+  }
+
+  function click(e: MouseEvent<HTMLDivElement>) {
+    const m = nearest(e)
+    if (m) {
+      pin(m.id === pinned?.id ? null : m)
     }
   }
 
@@ -94,7 +136,12 @@ export function MemberTicks({ stat, members, color }: { stat: PlayerStat, member
           style={{ left: `${highlighted}%` }}
         />
       )}
-      <div className="absolute inset-0 z-20" onPointerMove={pick} onPointerLeave={() => set(null)} />
+      <div
+        className="absolute inset-0 z-20 cursor-pointer"
+        onPointerMove={hover}
+        onPointerLeave={() => set(null)}
+        onClick={click}
+      />
     </>
   )
 }

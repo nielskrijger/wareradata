@@ -1,10 +1,10 @@
 import { Drumstick, Heart } from 'lucide-react'
 
-import { StackedBar } from '@/components/stacked-bar'
+import { Stem, StemTrack } from '@/components/detail/stem'
 import { heatColor, heatTextColor } from '@/lib/utils'
 
 /**
- * Health and hunger as heat-tinted rows with bars.
+ * Health and hunger as heat-tinted rows with stems.
  */
 export function VitalRows({ health, hunger }: { health: number | null, hunger: number | null }) {
   return (
@@ -16,7 +16,7 @@ export function VitalRows({ health, hunger }: { health: number | null, hunger: n
 }
 
 /**
- * One heat-tinted reading with its bar.
+ * One heat-tinted reading with its stem.
  */
 function VitalRow({ label, icon, value }: {
   label: string
@@ -42,11 +42,9 @@ function VitalRow({ label, icon, value }: {
           %
         </span>
       </div>
-      <StackedBar
-        className="bg-muted h-1.5 w-full"
-        total={100}
-        segments={[{ key: 'value', value, color }]}
-      />
+      <StemTrack>
+        <Stem pct={value} color={color} />
+      </StemTrack>
     </div>
   )
 }

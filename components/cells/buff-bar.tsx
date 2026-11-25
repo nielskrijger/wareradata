@@ -1,6 +1,6 @@
 import type { BuffMix } from '@/lib/rows'
 
-import { GREEN, RED, SLATE } from '@/components/buff-colors'
+import { COLOR } from '@/components/colors'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -55,9 +55,9 @@ export function BuffBar({ mix, width = 96 }: Props) {
             <StackedBar
               className="h-1.5 w-full"
               segments={[
-                { key: 'buff', value: mix.buff, color: GREEN },
-                { key: 'ready', value: mix.ready, color: SLATE },
-                { key: 'debuff', value: mix.debuff, color: RED },
+                { key: 'buff', value: mix.buff, color: COLOR.green },
+                { key: 'ready', value: mix.ready, color: COLOR.grey },
+                { key: 'debuff', value: mix.debuff, color: COLOR.red },
               ]}
             />
           </div>
@@ -65,9 +65,9 @@ export function BuffBar({ mix, width = 96 }: Props) {
       />
       <TooltipContent side="top" className="w-max">
         <div className="flex flex-col gap-1">
-          <BreakdownRow label="Buff" n={mix.buff} total={total} color={GREEN} />
-          <BreakdownRow label="Ready" n={mix.ready} total={total} color={SLATE} />
-          <BreakdownRow label="Debuff" n={mix.debuff} total={total} color={RED} />
+          <BreakdownRow label="Buff" n={mix.buff} total={total} color={COLOR.green} />
+          <BreakdownRow label="Ready" n={mix.ready} total={total} color={COLOR.grey} />
+          <BreakdownRow label="Debuff" n={mix.debuff} total={total} color={COLOR.red} />
         </div>
       </TooltipContent>
     </Tooltip>

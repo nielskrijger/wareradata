@@ -2,23 +2,24 @@ import type { LucideIcon } from 'lucide-react'
 import type { AdviseRow } from './rows'
 import type { TodoItem } from '@/lib/advisor/types'
 import { ArrowLeftRight, Briefcase, Coins, Dumbbell, Factory, UserCog, UserPlus, Users, Wrench } from 'lucide-react'
+import { COLOR } from '@/components/colors'
 
 /**
  * Label, colour and icon per kind of action, shared by the table and the cards.
  */
 export const KIND: Record<TodoItem['kind'], { label: string, color: string, icon: LucideIcon }> = {
-  money: { label: 'Money', color: 'var(--heat-red)', icon: Coins },
-  item: { label: 'Production', color: 'var(--heat-gold)', icon: Factory },
-  manager: { label: 'Manager', color: 'var(--heat-purple)', icon: UserCog },
+  money: { label: 'Money', color: COLOR.red, icon: Coins },
+  item: { label: 'Production', color: COLOR.gold, icon: Factory },
+  manager: { label: 'Manager', color: COLOR.purple, icon: UserCog },
   train: { label: 'Training', color: 'var(--fire)', icon: Dumbbell },
-  move: { label: 'Moves', color: 'var(--heat-orange)', icon: ArrowLeftRight },
-  tool: { label: 'Tools', color: 'var(--heat-teal)', icon: Wrench },
-  employee: { label: 'Staff', color: 'var(--heat-blue)', icon: Users },
-  hire: { label: 'Hiring', color: 'var(--heat-green)', icon: UserPlus },
-  work: { label: 'Work', color: 'var(--heat-slate)', icon: Briefcase },
+  move: { label: 'Moves', color: COLOR.orange, icon: ArrowLeftRight },
+  tool: { label: 'Tools', color: COLOR.teal, icon: Wrench },
+  employee: { label: 'Staff', color: COLOR.blue, icon: Users },
+  hire: { label: 'Hiring', color: COLOR.green, icon: UserPlus },
+  work: { label: 'Work', color: COLOR.grey, icon: Briefcase },
 }
 
-export const GAIN = 'var(--heat-green-text)'
+export const GAIN = COLOR.green
 
 /**
  * Shared by the header and every row, so the columns line up.

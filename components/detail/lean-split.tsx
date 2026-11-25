@@ -1,5 +1,5 @@
+import { ECO_COLOR, WAR_COLOR } from '@/components/colors'
 import { StackedBar } from '@/components/stacked-bar'
-import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 
 /**
  * The average war / eco split as a two-tone bar with its shares.

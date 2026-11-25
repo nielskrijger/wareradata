@@ -1,3 +1,5 @@
+import { COLOR, seriesColor } from '@/components/colors'
+
 /**
  * Shared formatting for the factory views (the income bar and the roster).
  */
@@ -30,34 +32,20 @@ export function goldSigned(value: number, decimals = 1): string {
  */
 export function netClass(value: number): string {
   if (value > 0) {
-    return 'text-heat-green-text'
+    return 'text-green'
   }
 
   if (value < 0) {
-    return 'text-heat-red'
+    return 'text-red'
   }
 
   return 'text-muted-foreground'
 }
 
-/**
- * Hues for the value map, assigned in the order a user's items first appear.
- */
-const ITEM_PALETTE = [
-  'var(--color-sky-500)',
-  'var(--color-orange-500)',
-  'var(--color-amber-400)',
-  'var(--color-stone-400)',
-  'var(--color-violet-500)',
-  'var(--color-emerald-500)',
-  'var(--color-pink-500)',
-  'var(--color-lime-500)',
-]
-
 export function itemColors(codes: string[]): Map<string, string> {
   const unique = [...new Set(codes)]
 
-  return new Map(unique.map((code, i) => [code, ITEM_PALETTE[i % ITEM_PALETTE.length]]))
+  return new Map(unique.map((code, i) => [code, seriesColor(i)]))
 }
 
 /**
@@ -69,5 +57,5 @@ export function humanizeCode(code: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-export const ENGINE_FILL = 'var(--engine)'
-export const STAFF_FILL = 'var(--heat-green)'
+export const ENGINE_FILL = COLOR.grey
+export const STAFF_FILL = COLOR.green

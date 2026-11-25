@@ -8,20 +8,12 @@ import { SectionHeading } from '@/components/detail/section-heading'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { formatNumber, formatRank } from '@/lib/format'
+import { rarityColor, rarityTier } from '@/lib/gear/rarity'
 import { cn } from '@/lib/utils'
 import { CASE_RARITIES } from '@/lib/warera/api'
 
-/**
- * Rarity accents reuse the shared heat tokens so the dots match the rest of the
- * app's palette; common is the neutral grey since it's the floor.
- */
-const RARITY_COLOR: Record<CaseRarity, string> = {
-  common: 'var(--heat-slate)',
-  uncommon: 'var(--heat-green)',
-  rare: 'var(--heat-blue)',
-  epic: 'var(--heat-purple)',
-  legendary: 'var(--heat-gold)',
-  mythic: 'var(--heat-red)',
+function caseColor(rarity: CaseRarity): string {
+  return rarityColor(rarityTier(rarity))
 }
 
 interface Props extends CasesByType {
@@ -125,7 +117,7 @@ export function CasesSummary({
         <>
           <StackedBar
             className="bg-muted h-2"
-            segments={CASE_RARITIES.map(r => ({ key: r, value: active.rarities?.[r] ?? 0, color: RARITY_COLOR[r] }))}
+            segments={CASE_RARITIES.map(r => ({ key: r, value: active.rarities?.[r] ?? 0, color: caseColor(r) }))}
           />
           <dl className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums">
             {CASE_RARITIES.map((rarity) => {
@@ -135,7 +127,7 @@ export function CasesSummary({
               // yet, so the rarities the player has actually opened stand out.
               return (
                 <div key={rarity} className={cn('inline-flex items-center gap-1', count === 0 && 'opacity-40')}>
-                  <span className="size-2 shrink-0 rounded-full" style={{ background: RARITY_COLOR[rarity] }} />
+                  <span className="size-2 shrink-0 rounded-full" style={{ background: caseColor(rarity) }} />
                   <dt className="capitalize">{rarity}</dt>
                   <dd className="text-foreground">{formatNumber(count)}</dd>
                 </div>

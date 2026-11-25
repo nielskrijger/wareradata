@@ -1,5 +1,3 @@
-import { SEAM } from '@/components/buff-colors'
-
 export interface BarSegment {
   key: string
   value: number
@@ -49,7 +47,7 @@ export function StackedBar({ segments, total, className }: Props) {
           style={{
             width: `${(seg.value / sum) * 100}%`,
             background: seg.color,
-            borderLeft: i > 0 ? SEAM : undefined,
+            borderLeft: i > 0 ? '2px solid var(--card)' : undefined,
           }}
         />
       ))}

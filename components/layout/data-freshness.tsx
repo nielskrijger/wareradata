@@ -22,7 +22,7 @@ export async function DataFreshness() {
   const stale = isOlderThan(scrapedAt, STALE_AFTER_MS)
 
   return (
-    <span className={stale ? 'text-amber-700 dark:text-amber-300' : undefined}>
+    <span className={stale ? 'text-orange' : undefined}>
       Data updated
       {' '}
       <RelativeTime iso={scrapedAt} />

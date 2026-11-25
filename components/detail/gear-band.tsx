@@ -1,8 +1,9 @@
 import type { GearLookup } from '@/lib/gear/score'
 import type { Equipment } from '@/lib/warera/api'
 
+import { tint } from '@/components/colors'
 import { GearStrip } from '@/components/detail/gear-strip'
-import { rarityColor, rarityLabel, rarityTint as tint } from '@/lib/gear/rarity'
+import { rarityColor, rarityLabel } from '@/lib/gear/rarity'
 import { computeGearTier, gearScoreTier } from '@/lib/gear/score'
 import { cn } from '@/lib/utils'
 

@@ -3,7 +3,7 @@ import type { PlayerStat } from '@/lib/rank-scale'
 import type { GroupPointsStats, GroupPremiumStats, PointSources } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/cells/compact-number'
-import { CATEGORY_COLOR } from '@/components/data-table/column-categories'
+import { CATEGORY_COLOR, COLOR } from '@/components/colors'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { formatDecimal, percentOf } from '@/lib/format'
 
@@ -16,7 +16,7 @@ export const GROUP_COLOR = {
   points: CATEGORY_COLOR.points,
   combat: CATEGORY_COLOR.combat,
   economy: CATEGORY_COLOR.wealth,
-  society: 'var(--heat-blue)',
+  society: COLOR.blue,
   premium: CATEGORY_COLOR.premium,
 }
 

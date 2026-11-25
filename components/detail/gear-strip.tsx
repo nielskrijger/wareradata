@@ -1,9 +1,12 @@
+import type { CSSProperties } from 'react'
+
 import type { GearLookup } from '@/lib/gear/score'
 import type { Equipment } from '@/lib/warera/api'
 
 import { Footprints, Hand, HardHat, Shield, Sword, Target } from 'lucide-react'
 import Image from 'next/image'
 
+import { tint } from '@/components/colors'
 import { rarityColor } from '@/lib/gear/rarity'
 import { tierOfCode } from '@/lib/gear/score'
 import { cn } from '@/lib/utils'
@@ -23,25 +26,10 @@ type Slot = (typeof SLOT_ORDER)[number]
 type Surface = 'dark' | 'card'
 
 /**
- * Ring classes matching the rarity colours. Classes rather than inline styles so
- * Tailwind generates them.
+ * A ring in the rarity colour; common on a card takes the border so it doesn't vanish.
  */
-const RARITY_RING = [
-  'ring-1 ring-neutral-50/15',
-  'ring-1 ring-heat-green/40',
-  'ring-1 ring-blue-400/40',
-  'ring-1 ring-violet-400/50',
-  'ring-1 ring-amber-400/50',
-  'ring-1 ring-red-400/60',
-]
-
-function rarityRing(t: number, surface: Surface): string {
-  const i = Math.max(0, Math.min(5, t - 1))
-  if (i === 0 && surface === 'card') {
-    return 'ring-1 ring-border'
-  }
-
-  return RARITY_RING[i]
+function rarityRing(t: number, color: string, surface: Surface): CSSProperties {
+  return { boxShadow: `0 0 0 1px ${t <= 1 && surface === 'card' ? 'var(--border)' : tint(color, 50)}` }
 }
 
 /**
@@ -218,8 +206,8 @@ export function GearStrip({ equipment, gearLookup, className, surface = 'dark' }
                 'relative flex items-center justify-center overflow-hidden rounded-md',
                 tileSize,
                 tileBg,
-                rarityRing(t, surface),
               )}
+              style={rarityRing(t, color, surface)}
             >
               <Image
                 src={iconUrl(slot, code)}

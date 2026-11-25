@@ -15,7 +15,7 @@ import {
   Swords,
   Trophy,
 } from 'lucide-react'
-import { WAR_COLOR } from '@/components/war-eco-colors'
+import { CATEGORY_COLOR } from '@/components/colors'
 
 /**
  * Column categories, in table and Columns-menu order. A column's category comes
@@ -50,26 +50,8 @@ interface CategoryMeta {
 }
 
 /**
- * Hue per category, shared by table tabs, headers and the detail pages' rank maps.
- *
- * General stays colorless: a glyph on every general header would be noise, so
- * its icon shows only in the Columns menu. Government and MU-specific share
- * slate because they never appear in the same table.
- */
-export const CATEGORY_COLOR = {
-  points: 'var(--heat-teal)',
-  combat: WAR_COLOR,
-  government: 'var(--heat-slate-text)',
-  muSpecific: 'var(--heat-slate-text)',
-  wealth: 'var(--heat-gold)',
-  factories: 'var(--heat-orange)',
-  employees: 'var(--heat-blue)',
-  premium: 'var(--heat-purple)',
-  cases: 'var(--heat-cyan)',
-} satisfies Partial<Record<Category, string>>
-
-/**
- * Label, icon and color per category.
+ * Label, icon and color per category. General stays colorless: a glyph on every
+ * general header would be noise, so its icon shows only in the Columns menu.
  */
 export const CATEGORY_META: Record<Category, CategoryMeta> = {
   points: { label: 'Points', Icon: Trophy, color: CATEGORY_COLOR.points, sortBy: ['totalPoints', 'points'] },

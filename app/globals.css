@@ -16,12 +16,14 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-fire: var(--fire);
-  --color-heat-green: var(--heat-green);
-  --color-heat-green-text: var(--heat-green-text);
-  --color-heat-slate: var(--heat-slate);
-  --color-heat-slate-text: var(--heat-slate-text);
-  --color-heat-red: var(--heat-red);
-  --color-engine: var(--engine);
+  --color-red: var(--red);
+  --color-orange: var(--orange);
+  --color-gold: var(--gold);
+  --color-green: var(--green);
+  --color-teal: var(--teal);
+  --color-blue: var(--blue);
+  --color-purple: var(--purple);
+  --color-grey: var(--grey);
   --color-table-surface: var(--table-surface);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -62,41 +64,18 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  /* Heat and categorical accent hues (level purple, wealth gold, defender/rare
-     blue). Red, purple, blue and slate are dark enough for text on white
-     (WCAG AA); gold, teal, cyan and orange stay lighter by choice. Brightened in
-     .dark, which the always-dark tooltips also use. */
-  /* Green has a bright shade for bars, dots and tints and a darker one for
-     text, the same hue so the app shows one green. */
-  --heat-green: oklch(0.68 0.19 145);
-  --heat-green-text: oklch(0.54 0.19 145);
-  --heat-red: oklch(0.56 0.2 27);
-  --heat-purple: oklch(0.55 0.18 295);
-  --heat-gold: oklch(0.74 0.15 80);
-  --heat-blue: oklch(0.54 0.14 240);
-  --heat-teal: oklch(0.68 0.13 195);
-  /* Cases cyan: between teal (195) and blue (240) but lighter than both, for
-     the Cases category icon. */
-  --heat-cyan: oklch(0.66 0.13 215);
-  /* Industry orange (hue 48, between red and gold): a furnace/hard-hat warm for
-     the Industry category icon, distinct from wealth gold and combat red. */
-  --heat-orange: oklch(0.66 0.18 48);
-  /* Neutral grey (buff "Ready", common rarity): light for bars and dots,
-     darker for text. */
-  --heat-slate: #a3a3a3;
-  --heat-slate-text: #737373;
-  /* Factory engine slate-blue, apart from the employee greens; mid-tone so
-     one value works in both themes. */
-  --engine: oklch(0.55 0.06 250);
+  /* The app's palette: one shade per hue and theme, used for text, bars and
+     dots alike. Colour lists in code read it through components/colors.ts. */
+  --red: oklch(0.56 0.2 27);
+  --orange: oklch(0.62 0.18 48);
+  --gold: oklch(0.7 0.15 80);
+  --green: oklch(0.6 0.19 145);
+  --teal: oklch(0.6 0.12 195);
+  --blue: oklch(0.54 0.14 240);
+  --purple: oklch(0.55 0.18 295);
+  --grey: oklch(0.6 0 0);
   /* How much heatTextColor darkens the green end of the vitals ramp. */
   --heat-text-dim: 0.14;
-  /* Gear rarity, common → mythic. Legendary keeps the lighter wealth gold. */
-  --rarity-1: var(--heat-slate-text);
-  --rarity-2: var(--heat-green-text);
-  --rarity-3: var(--heat-blue);
-  --rarity-4: var(--heat-purple);
-  --rarity-5: var(--heat-gold);
-  --rarity-6: var(--heat-red);
   /* Brand orange (matches the logo) for the active nav pill. */
   --fire: oklch(0.66 0.21 50);
   /* Opaque equivalent of the table fill, for sticky cells that can't be
@@ -128,24 +107,15 @@
   /* Matches the dark table fill (page bg + ~7.5% white from dark:bg-input/50),
      but opaque so sticky cells don't reveal scrolled columns underneath. */
   --table-surface: color-mix(in oklab, oklch(1 0 0) 7.5%, var(--background));
-  --heat-green: oklch(0.8 0.2 145);
-  --heat-green-text: var(--heat-green);
-  --heat-red: oklch(0.7 0.22 27);
-  --heat-purple: oklch(0.7 0.2 295);
-  --heat-gold: oklch(0.82 0.15 80);
-  --heat-blue: oklch(0.68 0.15 240);
-  --heat-teal: oklch(0.78 0.14 195);
-  --heat-cyan: oklch(0.76 0.13 215);
-  --heat-orange: oklch(0.76 0.19 48);
-  --heat-slate: #a3a3a3;
-  --heat-slate-text: #a3a3a3;
+  --red: oklch(0.7 0.22 27);
+  --orange: oklch(0.76 0.19 48);
+  --gold: oklch(0.82 0.15 80);
+  --green: oklch(0.8 0.2 145);
+  --teal: oklch(0.78 0.14 195);
+  --blue: oklch(0.68 0.15 240);
+  --purple: oklch(0.7 0.2 295);
+  --grey: oklch(0.72 0 0);
   --heat-text-dim: 0;
-  --rarity-1: #a3a3a3;
-  --rarity-2: #34d399;
-  --rarity-3: #60a5fa;
-  --rarity-4: #c4b5fd;
-  --rarity-5: #fcd34d;
-  --rarity-6: #f87171;
   --fire: oklch(0.79 0.19 55);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);

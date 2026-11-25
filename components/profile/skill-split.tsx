@@ -5,9 +5,9 @@ import type { CombatMode } from '@/lib/skills/classify'
 import { Coins, Swords } from 'lucide-react'
 
 import { CombatModeBadge } from '@/components/badges/combat-mode-badge'
+import { ECO_COLOR, WAR_COLOR } from '@/components/colors'
 import { SectionHeading } from '@/components/detail/section-heading'
 import { StackedBar } from '@/components/stacked-bar'
-import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 import { formatNumber, percentOf } from '@/lib/format'
 
 interface Props {

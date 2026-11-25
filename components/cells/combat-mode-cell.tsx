@@ -5,10 +5,10 @@ import type { CombatMode } from '@/lib/skills/classify'
 import { Coins, Swords } from 'lucide-react'
 
 import { TooltipHeading } from '@/components/cells/tooltip-ledger'
+import { ECO_COLOR, WAR_COLOR } from '@/components/colors'
 import { EmptyDash } from '@/components/empty-dash'
 import { StackedBar } from '@/components/stacked-bar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { ECO_COLOR, WAR_COLOR } from '@/components/war-eco-colors'
 import { formatRank, percentOf } from '@/lib/format'
 
 interface Props {

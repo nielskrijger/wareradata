@@ -1,16 +1,4 @@
-/**
- * Rarity palette shared by every gear-rendering surface, tier 1 (common) to
- * tier 6 (mythic). CSS variables so light surfaces get darker, readable shades
- * (defined in globals.css).
- */
-const RARITY_COLORS = [
-  'var(--rarity-1)', // common
-  'var(--rarity-2)', // uncommon
-  'var(--rarity-3)', // rare
-  'var(--rarity-4)', // epic
-  'var(--rarity-5)', // legendary
-  'var(--rarity-6)', // mythic
-] as const
+import { RARITY_COLOR } from '@/components/colors'
 
 const RARITY_LABELS = [
   'Common',
@@ -22,14 +10,7 @@ const RARITY_LABELS = [
 ] as const
 
 export function rarityColor(tier: number): string {
-  return RARITY_COLORS[Math.max(0, Math.min(5, tier - 1))]
-}
-
-/**
- * A rarity colour at `percent` opacity, for tile fills and rings.
- */
-export function rarityTint(color: string, percent: number): string {
-  return `color-mix(in oklab, ${color} ${percent}%, transparent)`
+  return RARITY_COLOR[Math.max(0, Math.min(5, tier - 1))]
 }
 
 export function rarityLabel(tier: number): string {

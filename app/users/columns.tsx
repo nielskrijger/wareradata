@@ -5,7 +5,7 @@ import type { ColumnDef } from '@/components/data-table/features'
 import type { UserRow } from '@/lib/rows'
 
 import { BuffBadge } from '@/components/badges/buff-badge'
-import { RED_BADGE } from '@/components/badges/tone'
+import { BADGE } from '@/components/badges/tone'
 import { CombatModeCell } from '@/components/cells/combat-mode-cell'
 import { GroupCell } from '@/components/cells/group-cell'
 import { IdentityCell } from '@/components/cells/identity-cell'
@@ -53,7 +53,7 @@ export const userColumns: ColumnDef<UserRow>[] = buildColumns<UserRow>(
           />
         </UserHoverCard>
         {row.original.isBanned && (
-          <Badge className={cn(RED_BADGE, 'shrink-0')}>banned</Badge>
+          <Badge className={cn(BADGE.red, 'shrink-0')}>banned</Badge>
         )}
       </IdentityCell>
     ),

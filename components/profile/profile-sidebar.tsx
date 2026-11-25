@@ -6,7 +6,7 @@ import type { CasesByType, Equipment } from '@/lib/warera/api'
 import { Avatar } from '@/components/avatar'
 import { BuffBadge } from '@/components/badges/buff-badge'
 import { TierBadge } from '@/components/badges/tier-badge'
-import { RED_BADGE } from '@/components/badges/tone'
+import { BADGE } from '@/components/badges/tone'
 import { CountryCell } from '@/components/cells/country-cell'
 import { GroupCell } from '@/components/cells/group-cell'
 import { LevelTooltipContent } from '@/components/cells/level-tooltip-content'
@@ -77,7 +77,7 @@ export function ProfileSidebar({ user, total, cases, equipment, gearLookup, refr
             {user.buffStatus != null && (
               <BuffBadge status={user.buffStatus} endsAt={user.buffEndsAt} />
             )}
-            {user.isBanned && <Badge className={RED_BADGE}>banned</Badge>}
+            {user.isBanned && <Badge className={BADGE.red}>banned</Badge>}
           </>
         )}
       >

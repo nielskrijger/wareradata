@@ -80,17 +80,17 @@ export function EmployeeBreakdown({ e, factory }: { e: LedgerEmployee, factory?:
 
       <TooltipSection title="Per day">
         <TooltipRow label="Revenue">
-          <span className="text-heat-green-text">{goldSigned(e.revenuePerDay)}</span>
+          <span className="text-green">{goldSigned(e.revenuePerDay)}</span>
         </TooltipRow>
         {e.inputCostPerDay >= 0.05 && (
           <TooltipRow label="Inputs">
-            <span className="text-heat-red">{goldSigned(-e.inputCostPerDay)}</span>
+            <span className="text-red">{goldSigned(-e.inputCostPerDay)}</span>
           </TooltipRow>
         )}
         <TooltipRow
           label={<>Wage <span className="text-neutral-500">({wageRate}/h, asks {e.wageExpectation})</span></>}
         >
-          <span className="text-heat-red">{goldSigned(-e.wagePerDay)}</span>
+          <span className="text-red">{goldSigned(-e.wagePerDay)}</span>
         </TooltipRow>
         <TooltipRow label="Net" className="mt-0.5 border-t border-white/20 pt-0.5 font-medium">
           <span className={netClass(e.netPerDay)}>{goldSigned(e.netPerDay)}</span>

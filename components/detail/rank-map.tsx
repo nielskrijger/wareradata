@@ -98,7 +98,6 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
         </h2>
         {members && members.rows.length > 0 && (
           <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
-            <span className="bg-muted-foreground h-3 w-px" />
             {formatNumber(members.rows.length)} {members.noun}{members.rows.length === 1 ? '' : 's'},
             {' '}
             among {formatNumber(members.players)} players

@@ -5,8 +5,7 @@ import type { MouseEvent, PointerEvent, ReactNode } from 'react'
 import type { HighlightedPlayer } from './highlighted-player-context'
 import type { MemberSpots, PlayerStat } from '@/lib/rank-scale'
 
-import Link from 'next/link'
-import { use, useEffect, useState } from 'react'
+import { use, useState } from 'react'
 
 import { memberTicks } from '@/lib/rank-scale'
 
@@ -23,17 +22,6 @@ export function HighlightedPlayerProvider({ children }: { children: ReactNode })
   const [hovered, setHovered] = useState<HighlightedPlayer | null>(null)
   const [pinned, setPinned] = useState<HighlightedPlayer | null>(null)
 
-  useEffect(() => {
-    if (!pinned) {
-      return
-    }
-
-    const unpin = (e: KeyboardEvent) => e.key === 'Escape' && setPinned(null)
-    window.addEventListener('keydown', unpin)
-
-    return () => window.removeEventListener('keydown', unpin)
-  }, [pinned])
-
   return (
     <HighlightedPlayerContext value={{ row: hovered ?? pinned, pinned, set: setHovered, pin: setPinned }}>
       {children}
@@ -42,18 +30,17 @@ export function HighlightedPlayerProvider({ children }: { children: ReactNode })
 }
 
 /**
- * The highlighted player's name, for the rank map legend; once pinned, it
- * links to them and can be unpinned.
+ * The highlighted player's name, for the rank map legend; once pinned, with
+ * a button to unpin.
  */
 export function HighlightedPlayerName() {
   const { row, pinned, pin } = use(HighlightedPlayerContext)
-  const isPinned = row != null && row.id === pinned?.id
 
   return row && (
     <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
       <span className={`size-2.5 ${DOT}`} />
-      {isPinned ? <Link href={`/users/${row.id}`} className="hover:underline">{row.username}</Link> : row.username}
-      {isPinned && (
+      {row.username}
+      {row.id === pinned?.id && (
         <button
           type="button"
           aria-label="Unpin"

@@ -16,7 +16,6 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-  withMemberTicks,
 } from '@/components/detail/rank-row'
 import { PageSection } from '@/components/layout/page-section'
 import { PartySidebar } from '@/components/party/party-sidebar'
@@ -77,8 +76,8 @@ export default async function PartyDetailPage({ params }: PageProps) {
         name={p.name}
         total={total}
         unit="parties"
-        groups={withMemberTicks(rankGroups(p), members, players)}
-        members={{ count: members.length, noun: 'member', players }}
+        groups={rankGroups(p)}
+        members={{ rows: members, noun: 'member', players }}
       />
 
       {/* Party members are citizens of the party's country. */}

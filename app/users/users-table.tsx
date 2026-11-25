@@ -3,15 +3,17 @@
 import type { EntityTableProps } from '@/components/data-table/data-table'
 import type { UserRow } from '@/lib/rows'
 
+import { use } from 'react'
+
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
-import { useSetHoveredMember } from '@/components/detail/hovered-member-context'
+import { HighlightedPlayerContext } from '@/components/detail/highlighted-player-context'
 
 import { userColumns } from './columns'
 
 export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProps<UserRow>) {
-  // Places the hovered player on the page's rank map, if there is one.
-  const setHovered = useSetHoveredMember()
+  // Highlights the hovered player on the page's rank map, if there is one.
+  const { set: highlight } = use(HighlightedPlayerContext)
 
   return (
     <DataTable
@@ -22,7 +24,7 @@ export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProp
       endpoint="/api/users"
       baseFilter={baseFilter}
       omitColumns={omitColumns}
-      onRowHover={setHovered}
+      onRowHover={highlight}
       searchPlaceholder="Filter by username, country, MU, or party…"
       searchHint={(
         <AdvancedSearchHint

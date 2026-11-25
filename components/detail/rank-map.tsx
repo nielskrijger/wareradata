@@ -1,12 +1,13 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import type { MemberTick, PlayerStat } from '@/lib/rank-scale'
+import type { PlayerStat } from '@/lib/rank-scale'
+import type { UserRow } from '@/lib/rows'
 
-import { HoveredMemberDot, HoveredMemberName } from '@/components/detail/hovered-member'
+import { HighlightedPlayerDot, HighlightedPlayerName } from '@/components/detail/highlighted-player'
 import { Panel } from '@/components/panel'
 import { formatNumber, formatRank, topPercent } from '@/lib/format'
-import { RANK_MARKS, rankPosition } from '@/lib/rank-scale'
+import { memberTicks, RANK_MARKS, rankPosition } from '@/lib/rank-scale'
 import { cn } from '@/lib/utils'
 
 /**
@@ -32,14 +33,9 @@ export interface RankMapRow {
 
   /**
    * The player stat this row compares with, to place members (and the
-   * hovered member) on the same track.
+   * highlighted player) on the same track.
    */
   stat?: PlayerStat
-
-  /**
-   * Each member's rank among players on {@link stat}; see `withMemberTicks`.
-   */
-  ticks?: MemberTick[]
 }
 
 export interface RankMapGroup {
@@ -66,13 +62,13 @@ interface Props {
   unit: string
 
   /**
-   * Who the member ticks are, for the legend; rows without ticks ignore it.
+   * The group's players, drawn as ticks on every row with a {@link RankMapRow.stat}.
    */
-  members?: MemberLegend
+  members?: Members
 }
 
-export interface MemberLegend {
-  count: number
+interface Members {
+  rows: UserRow[]
 
   /**
    * One of them, singular ("member", "citizen", "MU mate").
@@ -83,6 +79,14 @@ export interface MemberLegend {
    * Size of the player set the ticks are ranked in.
    */
   players: number
+}
+
+/**
+ * Per-tick opacity; overlapping ticks add up, so dense spots read brighter.
+ * Lower for big groups so they don't turn into a solid bar.
+ */
+function tickOpacity(members: Members) {
+  return members.rows.length > 60 ? 0.12 : 0.7
 }
 
 /**
@@ -97,13 +101,13 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
         <h2 className="font-medium">
           Where {name} ranks among {formatNumber(total)} {unit}
         </h2>
-        {members && members.count > 0 && (
+        {members && members.rows.length > 0 && (
           <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
             <span className="bg-muted-foreground h-3 w-px" />
-            {formatNumber(members.count)} {members.noun}{members.count === 1 ? '' : 's'},
+            {formatNumber(members.rows.length)} {members.noun}{members.rows.length === 1 ? '' : 's'},
             {' '}
             among {formatNumber(members.players)} players
-            <HoveredMemberName />
+            <HighlightedPlayerName />
           </span>
         )}
       </div>
@@ -121,7 +125,7 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
         <div key={g.title} className="mt-2 border-t pt-2">
           <h3 className="text-xs font-medium tracking-wide uppercase" style={{ color: g.color }}>{g.title}</h3>
           {g.rows.map(row => (
-            <Row key={row.label} row={row} color={g.color} total={total} players={members?.players} />
+            <Row key={row.label} row={row} color={g.color} total={total} members={members} />
           ))}
         </div>
       ))}
@@ -132,8 +136,9 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
 /**
  * On phones the track drops under the label so it keeps the full width.
  */
-function Row({ row, color, total, players }: { row: RankMapRow, color: string, total: number, players?: number }) {
-  const { label, icon: Icon, value, display, rank, stat, ticks } = row
+function Row({ row, color, total, members }: { row: RankMapRow, color: string, total: number, members?: Members }) {
+  const { label, icon: Icon, value, display, rank, stat } = row
+  const ticks = stat && members ? memberTicks(members.rows, stat, members.players) : null
   // Everyone at zero shares one rank, which would read as "top 12%" for nothing.
   const ranked = rank != null && value != null && value !== 0
   const pos = ranked ? rankPosition(rank, total) : 0
@@ -156,9 +161,9 @@ function Row({ row, color, total, players }: { row: RankMapRow, color: string, t
             style={{ left: `${m.at}%` }}
           />
         ))}
-        {ticks && ticks.length > 0 && (
+        {ticks && members && (
           <svg className="absolute inset-0 size-full" viewBox="0 0 100 16" preserveAspectRatio="none" aria-hidden>
-            {ticks.map(([at, opacity]) => (
+            {[...ticks].map(([at, n]) => (
               <line
                 key={at}
                 x1={at}
@@ -166,13 +171,13 @@ function Row({ row, color, total, players }: { row: RankMapRow, color: string, t
                 y1={2}
                 y2={14}
                 stroke={color}
-                strokeOpacity={opacity}
+                strokeOpacity={1 - (1 - tickOpacity(members)) ** n}
                 vectorEffect="non-scaling-stroke"
               />
             ))}
           </svg>
         )}
-        {stat && players != null && <HoveredMemberDot stat={stat} players={players} />}
+        {stat && members && <HighlightedPlayerDot stat={stat} players={members.players} />}
         {ranked && (
           <>
             {/* Fades in toward the dot and glows, so the stem reads bright without muddying the track. */}

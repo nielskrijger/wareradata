@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import type { WareraEntityKind } from '@/lib/warera/urls'
 
-import { HoveredMemberProvider } from '@/components/detail/hovered-member'
+import { HighlightedPlayerProvider } from '@/components/detail/highlighted-player'
 import { PageMain } from '@/components/layout/page-main'
 import { ExternalLink } from '@/components/links'
 import { Panel } from '@/components/panel'
@@ -99,7 +99,7 @@ export function DetailLayout({ sidebar, children }: { sidebar: ReactNode, childr
     <PageMain className="grid grid-cols-1 gap-4 xl:grid-cols-[23.5rem_minmax(0,1fr)]">
       {sidebar}
       <div className="flex min-w-0 flex-col gap-4">
-        <HoveredMemberProvider>{children}</HoveredMemberProvider>
+        <HighlightedPlayerProvider>{children}</HighlightedPlayerProvider>
       </div>
     </PageMain>
   )

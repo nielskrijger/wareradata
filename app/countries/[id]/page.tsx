@@ -18,7 +18,6 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-  withMemberTicks,
 } from '@/components/detail/rank-row'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -137,8 +136,8 @@ export default async function CountryDetailPage({ params }: PageProps) {
         name={c.name}
         total={total}
         unit="countries"
-        groups={withMemberTicks(rankGroups(c), citizens, players)}
-        members={{ count: citizens.length, noun: 'citizen', players }}
+        groups={rankGroups(c)}
+        members={{ rows: citizens, noun: 'citizen', players }}
       />
 
       <GovernmentSection government={government} />

@@ -16,7 +16,6 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-  withMemberTicks,
 } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { PageSection } from '@/components/layout/page-section'
@@ -94,8 +93,8 @@ export default async function MUDetailPage({ params }: PageProps) {
         name={mu.name}
         total={total}
         unit="MUs"
-        groups={withMemberTicks(rankGroups(mu), members, players)}
-        members={{ count: members.length, noun: 'member', players }}
+        groups={rankGroups(mu)}
+        members={{ rows: members, noun: 'member', players }}
       />
 
       <PageSection title="Members">

@@ -35,33 +35,29 @@ export type PlayerStat = {
 }[keyof UserRow]
 
 /**
- * A member tick: its position on the track and opacity.
+ * Where a player sits on `stat`, or null when unranked or at zero (everyone
+ * at zero shares the last rank, which would place them for nothing).
  */
-export type MemberTick = [at: number, opacity: number]
+export function playerPosition(player: UserRow, stat: PlayerStat, players: number): number | null {
+  const value = player[stat]
+  const rank = player[`${stat}Rank`] as number | null
+
+  return rank == null || value == null || value === 0 ? null : rankPosition(rank, players)
+}
 
 /**
- * Ticks for each member's rank among players on one stat, merged per quarter
- * percent so a big country stays a few hundred ticks.
- *
- * Overlapping ticks add up like stacked translucent lines, so dense spots
- * read brighter; the per-tick opacity drops for big groups so they don't
- * turn into a solid bar.
+ * Members per quarter percent of the track, so a big country stays a few
+ * hundred ticks.
  */
-export function memberTicks(members: UserRow[], stat: PlayerStat, players: number): MemberTick[] {
+export function memberTicks(members: UserRow[], stat: PlayerStat, players: number): Map<number, number> {
   const counts = new Map<number, number>()
   for (const m of members) {
-    const value = m[stat]
-    const rank = m[`${stat}Rank`] as number | null
-    // Everyone at zero shares the last rank; they'd pile up at "last" for nothing.
-    if (rank == null || value == null || value === 0) {
-      continue
+    const at = playerPosition(m, stat, players)
+    if (at != null) {
+      const key = Math.round(at * 4) / 4
+      counts.set(key, (counts.get(key) ?? 0) + 1)
     }
-
-    const at = Math.round(rankPosition(rank, players) * 4) / 4
-    counts.set(at, (counts.get(at) ?? 0) + 1)
   }
 
-  const alpha = members.length > 60 ? 0.12 : 0.7
-
-  return [...counts].map(([at, n]) => [at, Math.round((1 - (1 - alpha) ** n) * 100) / 100])
+  return counts
 }

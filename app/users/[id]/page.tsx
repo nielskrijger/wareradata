@@ -10,7 +10,7 @@ import { cache, Suspense } from 'react'
 
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { RankMap } from '@/components/detail/rank-map'
-import { GROUP_COLOR, pointsGroupOf, rankRow, wealthPartRows, withMemberTicks } from '@/components/detail/rank-row'
+import { GROUP_COLOR, pointsGroupOf, rankRow, wealthPartRows } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { FactoriesSection } from '@/components/factories/factories-section'
 import { Panel } from '@/components/panel'
@@ -117,8 +117,8 @@ export default async function UserDetailPage({ params }: PageProps) {
         name={user.username}
         total={total}
         unit="players"
-        groups={withMemberTicks(rankGroups(user), muMates, total)}
-        members={{ count: muMates.length, noun: 'MU mate', players: total }}
+        groups={rankGroups(user)}
+        members={{ rows: muMates, noun: 'MU mate', players: total }}
       />
 
       <Suspense

@@ -1,12 +1,11 @@
 import type { RankMapGroup, RankMapRow } from '@/components/detail/rank-map'
 import type { PlayerStat } from '@/lib/rank-scale'
-import type { GroupPointsStats, GroupPremiumStats, PointSources, UserRow } from '@/lib/rows'
+import type { GroupPointsStats, GroupPremiumStats, PointSources } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/cells/compact-number'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { WAR_COLOR } from '@/components/war-eco-colors'
 import { formatDecimal, percentOf } from '@/lib/format'
-import { memberTicks } from '@/lib/rank-scale'
 
 // Its own file because Fast Refresh needs component files to export only components.
 
@@ -119,14 +118,4 @@ export function pointsGroup(r: GroupPointsStats, perLabel: string): RankMapGroup
     r,
     rankRow(perLabel, r.avgPoints, r.avgPointsRank, false, 'points'),
   )
-}
-
-/**
- * Places `members` (ranked among `players`) on every row that names a player stat.
- */
-export function withMemberTicks(groups: RankMapGroup[], members: UserRow[], players: number): RankMapGroup[] {
-  return groups.map(g => ({
-    ...g,
-    rows: g.rows.map(row => (row.stat ? { ...row, ticks: memberTicks(members, row.stat, players) } : row)),
-  }))
 }

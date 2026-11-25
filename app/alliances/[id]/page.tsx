@@ -18,7 +18,6 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-  withMemberTicks,
 } from '@/components/detail/rank-row'
 import { PageSection } from '@/components/layout/page-section'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -93,8 +92,8 @@ export default async function AllianceDetailPage({ params }: PageProps) {
         name={a.name}
         total={total}
         unit="alliances"
-        groups={withMemberTicks(rankGroups(a), citizens, players)}
-        members={{ count: citizens.length, noun: 'citizen', players }}
+        groups={rankGroups(a)}
+        members={{ rows: citizens, noun: 'citizen', players }}
       />
 
       <PageSection title="Member countries">

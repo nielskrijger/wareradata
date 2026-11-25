@@ -9,7 +9,7 @@ import { use, useState } from 'react'
 
 import { UserHoverCard } from '@/components/user-hover-card'
 import { formatRank, topPercent } from '@/lib/format'
-import { memberPosition, memberTicks, rankPosition } from '@/lib/rank-scale'
+import { memberTicks, rankPosition } from '@/lib/rank-scale'
 
 import { HighlightedPlayerContext } from './highlighted-player-context'
 
@@ -65,7 +65,6 @@ export function HighlightedPlayerName() {
  */
 export function MemberTicks({ stat, members, players, color }: MemberTicksProps) {
   const { row, pinned, set, pin } = use(HighlightedPlayerContext)
-  const [pointing, setPointing] = useState(false)
   const shown = row && members.find(m => m.id === row.id)
   const rank = shown?.ranks[stat]
   const at = rank == null ? null : rankPosition(rank, players)
@@ -79,7 +78,7 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
     let found: MemberRanks | null = null
     let distance = (PICK_RADIUS / box.width) * 100
     for (const m of members) {
-      const pos = memberPosition(m, stat, players)
+      const pos = m.ranks[stat] == null ? null : rankPosition(m.ranks[stat], players)
       if (pos != null && Math.abs(pos - pointer) <= distance) {
         found = m
         distance = Math.abs(pos - pointer)
@@ -90,16 +89,10 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
   }
 
   function hover(e: PointerEvent<HTMLDivElement>) {
-    setPointing(true)
     const m = nearest(e)
     if (m?.id !== row?.id) {
       set(m)
     }
-  }
-
-  function leave() {
-    setPointing(false)
-    set(null)
   }
 
   function click(e: MouseEvent<HTMLDivElement>) {
@@ -110,7 +103,7 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
   }
 
   return (
-    <>
+    <div className="group absolute inset-0">
       <svg
         className={`absolute inset-0 size-full transition-opacity duration-150 ${row ? 'opacity-25' : ''}`}
         viewBox="0 0 100 16"
@@ -136,11 +129,12 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
           style={{ left: `${at}%` }}
         />
       )}
-      {pointing && shown && rank != null && (
+      {/* Only on the track under the pointer. */}
+      {shown && rank != null && (
         <div
-          className={`bg-card pointer-events-none absolute bottom-full z-30 mb-1 -translate-x-1/2 rounded border
-            px-1.5 py-0.5 text-[10px] whitespace-nowrap shadow`}
-          style={{ left: `${rankPosition(rank, players)}%` }}
+          className={`bg-card pointer-events-none absolute bottom-full z-30 mb-1 hidden -translate-x-1/2 rounded
+            border px-1.5 py-0.5 text-[10px] whitespace-nowrap shadow group-hover:block`}
+          style={{ left: `${at}%` }}
         >
           {shown.username}
           <span className="text-muted-foreground">
@@ -154,10 +148,10 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
       <div
         className="absolute inset-0 z-20 cursor-pointer"
         onPointerMove={hover}
-        onPointerLeave={leave}
+        onPointerLeave={() => set(null)}
         onClick={click}
       />
-    </>
+    </div>
   )
 }
 

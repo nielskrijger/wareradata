@@ -31,19 +31,8 @@ export type PlayerStat = {
 }[keyof UserRow]
 
 /**
- * Where a player sits on `stat`, or null when unranked or at zero (everyone
- * at zero shares the last rank, which would place them for nothing).
- */
-export function playerPosition(player: UserRow, stat: PlayerStat, players: number): number | null {
-  const value = player[stat]
-  const rank = player[`${stat}Rank`] as number | null
-
-  return rank == null || value == null || value === 0 ? null : rankPosition(rank, players)
-}
-
-/**
- * A member's ranks on the stats a rank map shows, leaving out those that
- * place nowhere; much lighter for the page to ship than their {@link UserRow}.
+ * A member's ranks on the stats a rank map shows, leaving out those where
+ * they're unranked or at zero; much lighter for the page to ship than their {@link UserRow}.
  */
 export interface MemberRanks {
   id: string
@@ -54,22 +43,15 @@ export interface MemberRanks {
 export function memberRanks(member: UserRow, stats: PlayerStat[]): MemberRanks {
   const ranks: MemberRanks['ranks'] = {}
   for (const stat of stats) {
-    // Any player count will do: it only tells whether they place.
-    if (playerPosition(member, stat, 1) != null) {
-      ranks[stat] = member[`${stat}Rank`] as number
+    const value = member[stat]
+    const rank = member[`${stat}Rank`] as number | null
+    // Everyone at zero shares the last rank, which would place them for nothing.
+    if (rank != null && value != null && value !== 0) {
+      ranks[stat] = rank
     }
   }
 
   return { id: member.id, username: member.username, ranks }
-}
-
-/**
- * Where a member sits on `stat`, or null when they place nowhere.
- */
-export function memberPosition(member: MemberRanks, stat: PlayerStat, players: number): number | null {
-  const rank = member.ranks[stat]
-
-  return rank == null ? null : rankPosition(rank, players)
 }
 
 /**
@@ -79,9 +61,9 @@ export function memberPosition(member: MemberRanks, stat: PlayerStat, players: n
 export function memberTicks(members: MemberRanks[], stat: PlayerStat, players: number): Map<number, number> {
   const counts = new Map<number, number>()
   for (const m of members) {
-    const at = memberPosition(m, stat, players)
-    if (at != null) {
-      const key = Math.round(at * 4) / 4
+    const rank = m.ranks[stat]
+    if (rank != null) {
+      const key = Math.round(rankPosition(rank, players) * 4) / 4
       counts.set(key, (counts.get(key) ?? 0) + 1)
     }
   }

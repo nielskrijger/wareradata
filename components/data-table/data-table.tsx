@@ -53,16 +53,11 @@ export interface PageResult<TData extends RowData> {
 
 /**
  * Props of an entity table wrapper (UsersTable, MUsTable, …), so a detail
- * page can scope and trim it.
+ * page can scope and trim it and give it its own Overview.
  */
 export type EntityTableProps<TData extends RowData> = {
   initial: PageResult<TData>
-} & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns'>
-
-/**
- * A detail page's own Overview tab content.
- */
-export type OverviewProps = Pick<DataTableProps<RowData>, 'overview'>
+} & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns' | 'overview'>
 
 interface DataTableProps<TData extends RowData> {
   /**

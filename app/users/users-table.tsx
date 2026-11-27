@@ -1,6 +1,6 @@
 'use client'
 
-import type { EntityTableProps, OverviewProps } from '@/components/data-table/data-table'
+import type { EntityTableProps } from '@/components/data-table/data-table'
 import type { UserRow } from '@/lib/rows'
 
 import { use } from 'react'
@@ -11,12 +11,7 @@ import { HighlightedPlayerContext } from '@/components/detail/highlighted-player
 
 import { userColumns } from './columns'
 
-export function UsersTable({
-  initial,
-  baseFilter,
-  omitColumns,
-  overview,
-}: EntityTableProps<UserRow> & OverviewProps) {
+export function UsersTable({ initial, ...scope }: EntityTableProps<UserRow>) {
   // Highlights the hovered player on the page's rank map, if there is one.
   const { set: highlight } = use(HighlightedPlayerContext)
 
@@ -27,10 +22,8 @@ export function UsersTable({
       initialData={initial}
       initialSort={{ id: 'points', desc: true }}
       endpoint="/api/users"
-      baseFilter={baseFilter}
-      omitColumns={omitColumns}
+      {...scope}
       onRowHover={highlight}
-      overview={overview}
       searchPlaceholder="Filter by username, country, MU, or party…"
       searchHint={(
         <AdvancedSearchHint

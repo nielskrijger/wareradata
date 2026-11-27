@@ -8,7 +8,7 @@ import { DataTable } from '@/components/data-table/data-table'
 
 import { muColumns } from './columns'
 
-export function MUsTable({ initial, baseFilter, omitColumns }: EntityTableProps<MURow>) {
+export function MUsTable({ initial, ...scope }: EntityTableProps<MURow>) {
   return (
     <DataTable
       tableId="mus"
@@ -16,8 +16,7 @@ export function MUsTable({ initial, baseFilter, omitColumns }: EntityTableProps<
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}
       endpoint="/api/mus"
-      baseFilter={baseFilter}
-      omitColumns={omitColumns}
+      {...scope}
       searchPlaceholder="Filter by MU name or country…"
       searchHint={(
         <AdvancedSearchHint

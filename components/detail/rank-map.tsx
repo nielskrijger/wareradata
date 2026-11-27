@@ -89,7 +89,7 @@ interface Members {
  */
 export function RankMap({ name, groups, total, unit, members }: Props) {
   const stats = groups.flatMap(g => g.rows.flatMap(r => (r.stat ? [r.stat] : [])))
-  const ranked = members && { rows: members.rows.map(m => memberRanks(m, stats)), players: members.players }
+  const memberSet = members && { rows: members.rows.map(m => memberRanks(m, stats)), players: members.players }
 
   return (
     <Panel as="section">
@@ -102,7 +102,7 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
             {formatNumber(members.rows.length)} {members.noun}{members.rows.length === 1 ? '' : 's'},
             {' '}
             among {formatNumber(members.players)} players
-            <HighlightedPlayerName />
+            <HighlightedPlayerName members={memberSet?.rows ?? []} />
           </span>
         )}
       </div>
@@ -120,7 +120,7 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
         <div key={g.title} className="mt-2 border-t pt-2">
           <h3 className="text-xs font-medium tracking-wide uppercase" style={{ color: g.color }}>{g.title}</h3>
           {g.rows.map(row => (
-            <Row key={row.label} row={row} color={g.color} total={total} members={ranked} />
+            <Row key={row.label} row={row} color={g.color} total={total} members={memberSet} />
           ))}
         </div>
       ))}

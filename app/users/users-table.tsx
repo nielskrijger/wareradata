@@ -13,7 +13,7 @@ import { userColumns } from './columns'
 
 export function UsersTable({ initial, ...scope }: EntityTableProps<UserRow>) {
   // Highlights the hovered player on the page's rank map, if there is one.
-  const { set: highlight } = use(HighlightedPlayerContext)
+  const { hover } = use(HighlightedPlayerContext)
 
   return (
     <DataTable
@@ -23,7 +23,7 @@ export function UsersTable({ initial, ...scope }: EntityTableProps<UserRow>) {
       initialSort={{ id: 'points', desc: true }}
       endpoint="/api/users"
       {...scope}
-      onRowHover={highlight}
+      onRowHover={row => hover(row?.id ?? null)}
       searchPlaceholder="Filter by username, country, MU, or party…"
       searchHint={(
         <AdvancedSearchHint

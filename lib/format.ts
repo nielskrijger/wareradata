@@ -8,13 +8,18 @@ export const EMPTY = '—'
  * Reads the clock here so components calling it stay pure for the linter.
  */
 export function isOlderThan(iso: string | null, ms: number): boolean {
-  if (!iso) {
-    return false
-  }
+  const then = parseIso(iso)
 
-  const then = Date.parse(iso)
+  return then != null && Date.now() - then > ms
+}
 
-  return !Number.isNaN(then) && Date.now() - then > ms
+/**
+ * Epoch ms of an ISO timestamp, or null when it's missing or unparseable.
+ */
+export function parseIso(iso: string | null | undefined): number | null {
+  const ms = iso ? Date.parse(iso) : Number.NaN
+
+  return Number.isNaN(ms) ? null : ms
 }
 
 /**
@@ -63,12 +68,8 @@ const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto', style: 'narrow'
  * "1mo ago", "2y ago") via Intl.RelativeTimeFormat in narrow style.
  */
 export function formatRelativeTime(iso: string | null): string {
-  if (!iso) {
-    return EMPTY
-  }
-
-  const then = Date.parse(iso)
-  if (Number.isNaN(then)) {
+  const then = parseIso(iso)
+  if (then == null) {
     return EMPTY
   }
 
@@ -106,16 +107,9 @@ export function formatRelativeTime(iso: string | null): string {
  * Returns the empty placeholder for a null or unparseable input.
  */
 export function formatCountdown(iso: string | null): string {
-  if (!iso) {
-    return EMPTY
-  }
+  const then = parseIso(iso)
 
-  const then = Date.parse(iso)
-  if (Number.isNaN(then)) {
-    return EMPTY
-  }
-
-  return formatDuration(then - Date.now())
+  return then == null ? EMPTY : formatDuration(then - Date.now())
 }
 
 /**

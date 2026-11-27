@@ -47,7 +47,7 @@ export const RARITY_COLOR = [COLOR.grey, COLOR.green, COLOR.blue, COLOR.purple, 
  * Hues for series with no meaning of their own (items, parties), most separable
  * first. Grey stays out: it marks "none" (independents, the factory engine).
  */
-export const SERIES_COLORS = [
+const SERIES_COLORS = [
   COLOR.blue,
   COLOR.red,
   COLOR.green,

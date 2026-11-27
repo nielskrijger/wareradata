@@ -116,12 +116,12 @@ function movePenaltyApplies(input: AdvisorInput): boolean {
  * Everything a worker's bonus gets from one place and team on one day, apart
  * from what goes along with them.
  */
-export interface DayParts {
+interface DayParts {
   stat: number
   pct: number
 }
 
-export function ruleContext(
+function ruleContext(
   world: World,
   w: SimWorker,
   item: string,
@@ -140,7 +140,7 @@ export function ruleContext(
   }
 }
 
-export function toolPctOn(tool: SimTool | null, item: string): number {
+function toolPctOn(tool: SimTool | null, item: string): number {
   return tool && toolFits(tool.code, item) ? tool.pct : 0
 }
 
@@ -149,7 +149,7 @@ export function toolPctOn(tool: SimTool | null, item: string): number {
  * given what the trait rules give them next to that day's team. `managerPct`
  * can stand in for the company's.
  */
-export function dayParts(
+function dayParts(
   world: World,
   w: SimWorker,
   k: number,

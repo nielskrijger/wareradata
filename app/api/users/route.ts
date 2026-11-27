@@ -2,6 +2,7 @@ import type { CustomSorts, FieldAliases } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
+import { parseIso } from '@/lib/format'
 import { createTableRoute } from '@/lib/query'
 import {
   CASE_FIELD_ALIASES,
@@ -52,8 +53,7 @@ function buffSortValue(row: UserRow): number | null {
     return 0
   }
 
-  const endsAt = row.buffEndsAt ? Date.parse(row.buffEndsAt) : Number.NaN
-  const magnitude = Number.isNaN(endsAt) ? 1 : endsAt
+  const magnitude = parseIso(row.buffEndsAt) ?? 1
 
   return row.buffStatus === 'buff' ? magnitude : -magnitude
 }

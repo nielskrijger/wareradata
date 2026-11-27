@@ -1,9 +1,8 @@
 import type { BuffMix } from '@/lib/rows'
 
+import { StackedBarCell } from '@/components/cells/stacked-bar-cell'
 import { COLOR } from '@/components/colors'
 import { EmptyDash } from '@/components/empty-dash'
-import { StackedBar } from '@/components/stacked-bar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { percentOf } from '@/lib/format'
 
 interface Props {
@@ -46,30 +45,20 @@ export function BuffBar({ mix, width = 96 }: Props) {
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={(
-          // Pad the trigger vertically so the hover/hit area covers the full
-          // row height, not just the 1.5px-tall bar (which is hard to target).
-          <div className="flex cursor-default items-center py-2" style={{ width }}>
-            <StackedBar
-              className="h-1.5 w-full"
-              segments={[
-                { key: 'buff', value: mix.buff, color: COLOR.green },
-                { key: 'ready', value: mix.ready, color: COLOR.grey },
-                { key: 'debuff', value: mix.debuff, color: COLOR.red },
-              ]}
-            />
-          </div>
-        )}
-      />
-      <TooltipContent side="top" className="w-max">
-        <div className="flex flex-col gap-1">
-          <BreakdownRow label="Buff" n={mix.buff} total={total} color={COLOR.green} />
-          <BreakdownRow label="Ready" n={mix.ready} total={total} color={COLOR.grey} />
-          <BreakdownRow label="Debuff" n={mix.debuff} total={total} color={COLOR.red} />
-        </div>
-      </TooltipContent>
-    </Tooltip>
+    <StackedBarCell
+      width={width}
+      tooltipClassName="w-max"
+      segments={[
+        { key: 'buff', value: mix.buff, color: COLOR.green },
+        { key: 'ready', value: mix.ready, color: COLOR.grey },
+        { key: 'debuff', value: mix.debuff, color: COLOR.red },
+      ]}
+    >
+      <div className="flex flex-col gap-1">
+        <BreakdownRow label="Buff" n={mix.buff} total={total} color={COLOR.green} />
+        <BreakdownRow label="Ready" n={mix.ready} total={total} color={COLOR.grey} />
+        <BreakdownRow label="Debuff" n={mix.debuff} total={total} color={COLOR.red} />
+      </div>
+    </StackedBarCell>
   )
 }

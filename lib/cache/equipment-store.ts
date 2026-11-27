@@ -81,8 +81,8 @@ function* equipmentLines(userIds: string[], equipmentList: Equipment[]): Generat
  */
 export async function appendEquipmentLines(userIds: string[], equipmentList: Equipment[]): Promise<void> {
   let buf = ''
-  for (let i = 0; i < userIds.length; i++) {
-    buf += `${JSON.stringify({ userId: userIds[i], equipment: equipmentList[i] })}\n`
+  for (const line of equipmentLines(userIds, equipmentList)) {
+    buf += `${JSON.stringify(line)}\n`
   }
 
   await appendFile(equipmentNdjsonPath(), buf, 'utf8')

@@ -5,6 +5,7 @@ import type { Lookups } from '@/lib/rows/lookups'
 import type { Equipment, GameConfig, User } from '@/lib/warera/api'
 
 import { caseLuckScores, luckPercent } from '@/lib/cases'
+import { parseIso } from '@/lib/format'
 import { computeGearScore, deriveSlotSpecs } from '@/lib/gear/score'
 import { rankAll, toTier } from '@/lib/rows/lookups'
 import { computePoints } from '@/lib/scoring'
@@ -327,12 +328,8 @@ const MIN_AGE_DAYS = 7
  * the `0000-01-01` sentinel some accounts return.
  */
 function daysSinceJoin(createdAt: string | null | undefined, nowMs: number): number | null {
-  if (!createdAt) {
-    return null
-  }
-
-  const t = Date.parse(createdAt)
-  if (Number.isNaN(t) || new Date(t).getUTCFullYear() < 2020) {
+  const t = parseIso(createdAt)
+  if (t == null || new Date(t).getUTCFullYear() < 2020) {
     return null
   }
 

@@ -4,11 +4,10 @@ import type { CombatMode } from '@/lib/skills/classify'
 
 import { Coins, Swords } from 'lucide-react'
 
+import { StackedBarCell } from '@/components/cells/stacked-bar-cell'
 import { TooltipHeading } from '@/components/cells/tooltip-ledger'
 import { ECO_COLOR, WAR_COLOR } from '@/components/colors'
 import { EmptyDash } from '@/components/empty-dash'
-import { StackedBar } from '@/components/stacked-bar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatRank, percentOf } from '@/lib/format'
 
 interface Props {
@@ -39,43 +38,33 @@ export function CombatModeCell({ mode, warPoints, ecoPoints, warPointsRank, ecoP
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={(
-          // Pad vertically so the hover/hit area covers the row height, not just
-          // the 1.5px-tall bar (matching BuffBar / the aggregate cell).
-          <div className="flex cursor-default items-center py-2" style={{ width }}>
-            <StackedBar
-              className="h-1.5 w-full bg-white/10"
-              segments={[
-                { key: 'war', value: warPoints, color: WAR_COLOR },
-                { key: 'eco', value: ecoPoints, color: ECO_COLOR },
-              ]}
-            />
-          </div>
-        )}
-      />
-      <TooltipContent align="end" side="top" className="w-56 px-3 py-2">
-        <TooltipHeading label="Skill investment">{total} pts</TooltipHeading>
-        <dl className="space-y-2">
-          <BreakdownRow
-            label="War"
-            value={warPoints}
-            total={total}
-            color={WAR_COLOR}
-            icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
-          />
-          <BreakdownRow
-            label="Eco"
-            value={ecoPoints}
-            total={total}
-            color={ECO_COLOR}
-            icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
-          />
-        </dl>
-        <Footer mode={mode} warPointsRank={warPointsRank} ecoPointsRank={ecoPointsRank} />
-      </TooltipContent>
-    </Tooltip>
+    <StackedBarCell
+      width={width}
+      tooltipClassName="w-56 px-3 py-2"
+      segments={[
+        { key: 'war', value: warPoints, color: WAR_COLOR },
+        { key: 'eco', value: ecoPoints, color: ECO_COLOR },
+      ]}
+    >
+      <TooltipHeading label="Skill investment">{total} pts</TooltipHeading>
+      <dl className="space-y-2">
+        <BreakdownRow
+          label="War"
+          value={warPoints}
+          total={total}
+          color={WAR_COLOR}
+          icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
+        />
+        <BreakdownRow
+          label="Eco"
+          value={ecoPoints}
+          total={total}
+          color={ECO_COLOR}
+          icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
+        />
+      </dl>
+      <Footer mode={mode} warPointsRank={warPointsRank} ecoPointsRank={ecoPointsRank} />
+    </StackedBarCell>
   )
 }
 

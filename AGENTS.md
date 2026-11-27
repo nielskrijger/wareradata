@@ -6,6 +6,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 <!-- END:nextjs-agent-rules -->
 
+## You maintain this codebase
+
+Act as its long-term maintainer, not a visitor passing through. You will live with every line you add, so optimise for the next person reading it: small, clear, consistent code over clever or quick fixes. If something nearby makes the code harder to work with, fix it now rather than leaving it for later.
+
 ## Comments describe the present
 
 Code comments and docs in the repo describe what the code does now. Don't reference past state, earlier choices or decisions ("used to", "was switched from", "instead of the old", "since X changed"). That history belongs in commit messages and PRs.

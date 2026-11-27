@@ -14,7 +14,14 @@ import {
   leaderColumn,
   localeNumberColumn,
 } from '@/components/data-table/column-factories'
-import { casesColumns, pointsColumns, premiumColumns, wealthColumns } from '@/components/data-table/column-groups'
+import {
+  casesColumns,
+  employeesColumns,
+  factoriesColumns,
+  pointsColumns,
+  premiumColumns,
+  wealthColumns,
+} from '@/components/data-table/column-groups'
 
 export type { PartyRow }
 
@@ -47,6 +54,8 @@ export const partyColumns: ColumnDef<PartyRow>[] = buildColumns<PartyRow>(
       dateColumn<PartyRow>('createdAt', 'Founded'),
     ],
     wealth: wealthColumns<PartyRow>('memberWealth', 'members'),
+    factories: factoriesColumns<PartyRow>('members'),
+    employees: employeesColumns<PartyRow>('members'),
     premium: premiumColumns<PartyRow>(),
     cases: casesColumns<PartyRow>(),
   },

@@ -797,7 +797,13 @@ export interface BattleDetail {
 /**
  * Projected political-party row used by /parties and /api/parties.
  */
-export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, LeaderFields {
+export interface PartyRow extends
+  GroupCaseStats,
+  GroupFactoryStats,
+  GroupWealthParts,
+  GroupPointsStats,
+  GroupPremiumStats,
+  LeaderFields {
   avatarUrl: string | null
   avgLevel: number | null
   avgLevelRank: number | null

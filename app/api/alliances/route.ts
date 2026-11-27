@@ -4,7 +4,7 @@ import type { AllianceRow } from '@/lib/rows'
 import { getSnapshot } from '@/lib/cache/memory'
 import { createTableRoute } from '@/lib/query'
 import { buffScore } from '@/lib/rows'
-import { FACTORY_FIELD_ALIASES, GROUP_FIELD_ALIASES } from '@/lib/rows/field-bundles'
+import { GROUP_FIELD_ALIASES } from '@/lib/rows/field-bundles'
 import { tierIndex } from '@/lib/warera/api'
 
 /**
@@ -13,7 +13,6 @@ import { tierIndex } from '@/lib/warera/api'
  */
 const allianceFieldAliases: FieldAliases = {
   ...GROUP_FIELD_ALIASES,
-  ...FACTORY_FIELD_ALIASES,
   country: 'memberNames',
   dev: 'development',
   founded: 'createdAt',

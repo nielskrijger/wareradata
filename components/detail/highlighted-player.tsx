@@ -116,7 +116,7 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
   // Overlapping ticks add up, so dense spots read brighter; big groups get
   // fainter ticks so they don't turn into a solid bar.
   const alpha = members.length > 60 ? 0.12 : 0.7
-  const fade = hovered || pinned ? 'opacity-25' : ''
+  const fade = hovered || pinned ? 'opacity-60' : ''
 
   function nearest(e: MouseEvent<HTMLDivElement>) {
     const box = e.currentTarget.getBoundingClientRect()

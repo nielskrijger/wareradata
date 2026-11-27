@@ -28,7 +28,7 @@ export interface TraitRule {
   amount: (c: RuleContext) => number
 }
 
-export function owns(e: EmployeeLike, code: string): boolean {
+function owns(e: EmployeeLike, code: string): boolean {
   return (e.traits ?? []).some(t => t.code === code)
 }
 
@@ -66,7 +66,7 @@ function partner(trait: string, pct: number): TraitRule {
  * employees across 2,835 companies; `check-advisor` re-checks them on the
  * owner's roster.
  */
-export const TRAIT_RULES: TraitRule[] = [
+const TRAIT_RULES: TraitRule[] = [
   // Production stat points raise base output but not the wage.
   held('stat', 'craftsman', c => (c.rawGood ? -1 : 3)),
   held('stat', 'laborer', c => (c.rawGood ? 3 : -1)),

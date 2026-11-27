@@ -2,11 +2,10 @@
 
 import { Coins, Swords } from 'lucide-react'
 
+import { StackedBarCell } from '@/components/cells/stacked-bar-cell'
 import { TooltipHeading } from '@/components/cells/tooltip-ledger'
 import { ECO_COLOR, WAR_COLOR } from '@/components/colors'
 import { EmptyDash } from '@/components/empty-dash'
-import { StackedBar } from '@/components/stacked-bar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface Props {
   /**
@@ -36,40 +35,30 @@ export function CombatModeShareCell({ avgWarShare, width = 84 }: Props) {
   const ecoPct = 100 - warPct
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={(
-          // Pad vertically so the hover/hit area covers the row height, not just
-          // the 1.5px-tall bar (matching BuffBar).
-          <div className="flex cursor-default items-center py-2" style={{ width }}>
-            <StackedBar
-              className="h-1.5 w-full bg-white/10"
-              segments={[
-                { key: 'war', value: warPct, color: WAR_COLOR },
-                { key: 'eco', value: ecoPct, color: ECO_COLOR },
-              ]}
-            />
-          </div>
-        )}
-      />
-      <TooltipContent side="top" className="w-48 px-3 py-2">
-        <TooltipHeading label="Avg member lean" />
-        <dl className="space-y-1.5">
-          <LeanRow
-            label="War"
-            pct={warPct}
-            color={WAR_COLOR}
-            icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
-          />
-          <LeanRow
-            label="Eco"
-            pct={ecoPct}
-            color={ECO_COLOR}
-            icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
-          />
-        </dl>
-      </TooltipContent>
-    </Tooltip>
+    <StackedBarCell
+      width={width}
+      tooltipClassName="w-48 px-3 py-2"
+      segments={[
+        { key: 'war', value: warPct, color: WAR_COLOR },
+        { key: 'eco', value: ecoPct, color: ECO_COLOR },
+      ]}
+    >
+      <TooltipHeading label="Avg member lean" />
+      <dl className="space-y-1.5">
+        <LeanRow
+          label="War"
+          pct={warPct}
+          color={WAR_COLOR}
+          icon={<Swords className="size-3 shrink-0" style={{ color: WAR_COLOR }} />}
+        />
+        <LeanRow
+          label="Eco"
+          pct={ecoPct}
+          color={ECO_COLOR}
+          icon={<Coins className="size-3 shrink-0" style={{ color: ECO_COLOR }} />}
+        />
+      </dl>
+    </StackedBarCell>
   )
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import type { SortingState } from '@tanstack/react-table'
+import type { ColumnSort, SortingState } from '@tanstack/react-table'
 
 import { parseAsInteger, parseAsString, parseAsStringEnum, useQueryState, useQueryStates } from 'nuqs'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -21,13 +21,8 @@ const VIEW_KEY = 'wareradata:column-view'
  */
 export const PAGE_SIZES = [25, 50, 100] as const
 
-interface Sort {
-  id: string
-  desc: boolean
-}
-
 interface Args<V extends string> {
-  initialSort: Sort
+  initialSort: ColumnSort
   defaultPageSize: number
 
   /**
@@ -38,7 +33,7 @@ interface Args<V extends string> {
   /**
    * Default sort per view tab, replacing `initialSort` while that tab is open.
    */
-  viewSorts?: Partial<Record<string, Sort>>
+  viewSorts?: Partial<Record<string, ColumnSort>>
 }
 
 interface State<V extends string> {
@@ -100,7 +95,7 @@ export function useTableUrlState<V extends string>({
     parseAsString.withDefault(defaultSort.id).withOptions(urlOpts),
   )
 
-  const defaultDir: 'asc' | 'desc' = defaultSort.desc ? 'desc' : 'asc'
+  const defaultDir = sortDir(defaultSort)
   const [dirParam, setDirParam] = useQueryState(
     'dir',
     parseAsStringEnum(['asc', 'desc']).withDefault(defaultDir).withOptions(urlOpts),
@@ -166,7 +161,7 @@ export function useTableUrlState<V extends string>({
     (updater: SortingState | ((prev: SortingState) => SortingState)) => {
       const next = typeof updater === 'function' ? updater(sorting) : updater
       const first = next[0] ?? defaultSort
-      const nextDir: 'asc' | 'desc' = first.desc ? 'desc' : 'asc'
+      const nextDir = sortDir(first)
       setSortParam(first.id === defaultSort.id ? null : first.id)
       setDirParam(nextDir === defaultDir ? null : nextDir)
     },
@@ -188,7 +183,7 @@ export function useTableUrlState<V extends string>({
     = pageIndex === 0
       && q === ''
       && sortParam === initialSort.id
-      && dirParam === (initialSort.desc ? 'desc' : 'asc')
+      && dirParam === sortDir(initialSort)
       && pageSize === defaultPageSize
 
   return {
@@ -212,6 +207,10 @@ export function useTableUrlState<V extends string>({
     },
     isAtInitialState,
   }
+}
+
+function sortDir(sort: ColumnSort): 'asc' | 'desc' {
+  return sort.desc ? 'desc' : 'asc'
 }
 
 /**

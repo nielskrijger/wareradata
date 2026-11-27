@@ -1,6 +1,6 @@
 'use client'
 
-import type { RowData } from '@tanstack/react-table'
+import type { ColumnSort, RowData } from '@tanstack/react-table'
 import type { ReactNode } from 'react'
 
 import type { ColumnView } from './column-views'
@@ -68,7 +68,7 @@ interface DataTableProps<TData extends RowData> {
   tableId: string
   columns: ColumnDef<TData>[]
   initialData: PageResult<TData>
-  initialSort: { id: string, desc: boolean }
+  initialSort: ColumnSort
 
   /**
    * Must match the size of `initialData` and be one of PAGE_SIZES.

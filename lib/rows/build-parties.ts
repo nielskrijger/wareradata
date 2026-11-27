@@ -5,11 +5,13 @@ import type { Party } from '@/lib/warera/api'
 import { leaderFields, rankAll } from '@/lib/rows/lookups'
 import {
   aggCases,
+  aggFactories,
   aggMean,
   aggPoints,
   aggPremium,
   aggregateMembers,
   aggWealthParts,
+  FACTORY_RANK_KEYS,
   POINTS_RANK_KEYS,
   PREMIUM_KEYS,
   WEALTH_PART_KEYS,
@@ -36,6 +38,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
         createdAt: p.createdAt ?? null,
         description: p.description ?? null,
         ...aggCases(agg),
+        ...aggFactories(agg),
         ...aggPoints(agg),
         ...aggPremium(agg),
         ...aggWealthParts(agg),
@@ -59,6 +62,7 @@ export function buildPartyRows(parties: Party[], userRows: UserRow[], lookups: L
     'memberCount',
     'memberWealth',
     ...WEALTH_PART_KEYS,
+    ...FACTORY_RANK_KEYS,
     ...PREMIUM_KEYS,
   ])
 

@@ -7,15 +7,11 @@ import { ImageResponse } from 'next/og'
 import { getLiveActiveBattles } from '@/lib/cache/live-battles'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { EMPTY, formatCompact } from '@/lib/format'
+import { EMPTY, formatCompact, formatDecimal } from '@/lib/format'
 import { avatarSrc, flagSrc, loadFonts } from './assets'
 import { CardFrame, EmblemImage, EntityCard, MUTED, ORANGE } from './layout'
 
 import 'server-only'
-
-function avgLevel(n: number | null): string {
-  return n == null ? EMPTY : n.toFixed(1)
-}
 
 async function CountryLine({ code, name }: { code: string | null, name: string | null }) {
   if (!name) {
@@ -80,7 +76,7 @@ async function countryCard(id: string): Promise<ReactElement | null> {
         { label: 'Players', value: formatCompact(c.activePopulation), rank: c.activePopulationRank },
         { label: 'Damage', value: formatCompact(c.damage), rank: c.damageRank },
         { label: 'Wealth', value: formatCompact(c.citizenWealth), rank: c.citizenWealthRank },
-        { label: 'Avg level', value: avgLevel(c.avgLevel), rank: c.avgLevelRank },
+        { label: 'Avg level', value: formatDecimal(c.avgLevel), rank: c.avgLevelRank },
       ]}
     />
   )
@@ -103,7 +99,7 @@ async function muCard(id: string): Promise<ReactElement | null> {
         { label: 'Members', value: String(m.memberCount), rank: m.memberCountRank },
         { label: 'Damage', value: formatCompact(m.damage), rank: m.damageRank },
         { label: 'Wealth', value: formatCompact(m.memberWealth), rank: m.memberWealthRank },
-        { label: 'Avg level', value: avgLevel(m.avgLevel), rank: m.avgLevelRank },
+        { label: 'Avg level', value: formatDecimal(m.avgLevel), rank: m.avgLevelRank },
       ]}
     />
   )
@@ -126,7 +122,7 @@ async function partyCard(id: string): Promise<ReactElement | null> {
         { label: 'Members', value: String(p.memberCount), rank: p.memberCountRank },
         { label: 'Points', value: formatCompact(p.totalPoints), rank: p.totalPointsRank },
         { label: 'Wealth', value: formatCompact(p.memberWealth) },
-        { label: 'Avg level', value: avgLevel(p.avgLevel), rank: p.avgLevelRank },
+        { label: 'Avg level', value: formatDecimal(p.avgLevel), rank: p.avgLevelRank },
       ]}
     />
   )

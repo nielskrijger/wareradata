@@ -97,7 +97,7 @@ export function computeRanges<T extends object>(rows: T[]): Record<string, Range
 function sortAndPaginate<T extends object>(
   filtered: T[],
   query: QueryParams,
-  sortValue: (row: T, sort: string) => number | string | null,
+  sortValue: SortValueFn<T>,
 ): PagedResult<T> {
   const ranges = computeRanges(filtered)
 
@@ -215,8 +215,8 @@ function runLiqeFilter<T extends object>(rows: T[], expr: string, aliases: Field
 function applyStructuredQuery<T extends object>(
   rows: T[],
   query: QueryParams,
-  sortValue: (row: T, sort: string) => number | string | null,
-  aliases: FieldAliases = {},
+  sortValue: SortValueFn<T>,
+  aliases: FieldAliases,
 ): PagedResult<T> {
   // Base scope first, then the user's filter over the scoped rows: the same as
   // `base AND (user)`, but a broken or OR-ed user filter can never reach rows
@@ -228,15 +228,18 @@ function applyStructuredQuery<T extends object>(
 }
 
 type SortValue = number | string | null
+type SortValueFn<T> = (row: T, sort: string) => SortValue
 
 /**
- * Sorts any column by its own row value; `custom` covers columns whose value
- * doesn't order naturally (tiers, buffs). Strings compare lowercased so
- * names sort case-insensitively.
+ * Sort keys for columns whose value doesn't order naturally (tiers, buffs).
  */
-export function makeSortValue<T>(
-  custom: Record<string, (row: T) => SortValue> = {},
-): (row: T, sort: string) => SortValue {
+export type CustomSorts<T> = Record<string, (row: T) => SortValue>
+
+/**
+ * Sorts any column by its own row value; `custom` covers the rest. Strings
+ * compare lowercased so names sort case-insensitively.
+ */
+function makeSortValue<T>(custom: CustomSorts<T> = {}): SortValueFn<T> {
   return (row, sort) => {
     if (Object.hasOwn(custom, sort)) {
       return custom[sort](row)
@@ -260,9 +263,10 @@ export function makeSortValue<T>(
  */
 export function createTableRoute<T extends object>(
   loadRows: () => Promise<T[]>,
-  sortValue: (row: T, sort: string) => number | string | null,
-  aliases?: FieldAliases,
+  { aliases = {}, sorts }: { aliases?: FieldAliases, sorts?: CustomSorts<T> } = {},
 ): (req: Request) => Promise<Response> {
+  const sortValue = makeSortValue(sorts)
+
   return async (req) => {
     const query = parseQuery(new URL(req.url).searchParams)
     const rows = await loadRows()

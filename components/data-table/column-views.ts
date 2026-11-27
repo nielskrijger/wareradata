@@ -1,4 +1,4 @@
-import type { ColumnVisibilityState, RowData } from '@tanstack/react-table'
+import type { ColumnSort, ColumnVisibilityState, RowData } from '@tanstack/react-table'
 
 import type { Category } from './column-categories'
 import type { ColumnDef } from './features'
@@ -87,19 +87,14 @@ export function columnViewCount<TData extends RowData>(columns: ColumnDef<TData>
   return counts
 }
 
-export interface SortSpec {
-  id: string
-  desc: boolean
-}
-
 /**
  * The sort each category tab opens with, so rows are ordered by a column the
  * tab shows. Overview and All use the table's own default sort.
  */
 export function columnViewSorts<TData extends RowData>(
   columns: ColumnDef<TData>[],
-): Partial<Record<Category, SortSpec>> {
-  const sorts: Partial<Record<Category, SortSpec>> = {}
+): Partial<Record<Category, ColumnSort>> {
+  const sorts: Partial<Record<Category, ColumnSort>> = {}
   for (const category of CATEGORIES) {
     const inCategory = columns.filter(c => columnCategory(c) === category && c.enableSorting !== false)
     const preferred = CATEGORY_META[category].sortBy

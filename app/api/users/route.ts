@@ -1,14 +1,15 @@
-import type { FieldAliases } from '@/lib/query'
+import type { CustomSorts, FieldAliases } from '@/lib/query'
 import type { UserRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { createTableRoute, makeSortValue } from '@/lib/query'
+import { parseIso } from '@/lib/format'
+import { createTableRoute } from '@/lib/query'
 import {
   CASE_FIELD_ALIASES,
   FACTORY_FIELD_ALIASES,
   WEALTH_FIELD_ALIASES,
 } from '@/lib/rows/field-bundles'
-import { TIER_INDEX } from '@/lib/warera/api'
+import { tierIndex } from '@/lib/warera/api'
 
 /**
  * Friendly field names for the advanced filter. Underlying row keys still
@@ -31,10 +32,10 @@ const userFieldAliases: FieldAliases = {
   buff: 'buffStatus',
 }
 
-const userSortValue = makeSortValue<UserRow>({
-  levelTier: row => (row.levelTier ? TIER_INDEX[row.levelTier] : null),
+const userSorts: CustomSorts<UserRow> = {
+  levelTier: row => tierIndex(row.levelTier),
   buffStatus: buffSortValue,
-})
+}
 
 /**
  * Buff column order: buffs positive, ready 0, debuffs negative, each scaled by
@@ -52,14 +53,12 @@ function buffSortValue(row: UserRow): number | null {
     return 0
   }
 
-  const endsAt = row.buffEndsAt ? Date.parse(row.buffEndsAt) : Number.NaN
-  const magnitude = Number.isNaN(endsAt) ? 1 : endsAt
+  const magnitude = parseIso(row.buffEndsAt) ?? 1
 
   return row.buffStatus === 'buff' ? magnitude : -magnitude
 }
 
 export const GET = createTableRoute<UserRow>(
   async () => (await getSnapshot()).users,
-  userSortValue,
-  userFieldAliases,
+  { aliases: userFieldAliases, sorts: userSorts },
 )

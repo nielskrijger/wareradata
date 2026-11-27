@@ -4,6 +4,7 @@ import type { LedgerEmployee } from '@/lib/factories/ledger'
 import { TooltipRow, TooltipSection } from '@/components/cells/tooltip-ledger'
 import { ItemIcon } from '@/components/item-icon'
 import { signed, STAT_NAMES } from '@/lib/factories/employee-stats'
+import { formatNumber } from '@/lib/format'
 
 import { goldSigned, humanizeCode, netClass } from './format'
 
@@ -13,7 +14,7 @@ import { goldSigned, humanizeCode, netClass } from './format'
  * the money behind Net/day.
  */
 export function EmployeeBreakdown({ e, factory }: { e: LedgerEmployee, factory?: ReactNode }) {
-  const wageRate = e.wagePerHour.toLocaleString('en', { maximumFractionDigits: 3 })
+  const wageRate = formatNumber(e.wagePerHour)
 
   return (
     <div className="w-64 space-y-2.5">

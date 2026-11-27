@@ -1,5 +1,7 @@
 import type { Snapshot } from '@/lib/cache/memory'
 
+import { formatNumber } from '@/lib/format'
+
 import 'server-only'
 
 export type SearchKind = 'country' | 'mu' | 'user'
@@ -83,7 +85,7 @@ export function search(snapshot: Snapshot, rawQuery: string): SearchHit[] {
       avatarUrl: null,
       colorScheme: null,
       countryCode: c.code,
-      detail: detail(c.activePopulation != null && `${c.activePopulation.toLocaleString('en')} active`),
+      detail: detail(c.activePopulation != null && `${formatNumber(c.activePopulation)} active`),
     })),
     ...mus.map(m => ({
       kind: 'mu' as const,

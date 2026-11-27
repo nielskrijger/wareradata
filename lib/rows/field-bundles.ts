@@ -33,7 +33,7 @@ export const WEALTH_FIELD_ALIASES: FieldAliases = {
 }
 
 /**
- * Premium-spend filter aliases shared by the country / MU / party tables.
+ * Premium-spend filter aliases shared by the group tables.
  */
 export const PREMIUM_FIELD_ALIASES: FieldAliases = {
   gems: 'gemsPurchasedTotal',
@@ -42,7 +42,7 @@ export const PREMIUM_FIELD_ALIASES: FieldAliases = {
 }
 
 /**
- * Factories filter aliases shared by the country / MU / alliance tables.
+ * Factories filter aliases shared by every table.
  */
 export const FACTORY_FIELD_ALIASES: FieldAliases = {
   factories: 'factoryCount',
@@ -61,4 +61,17 @@ export const FACTORY_FIELD_ALIASES: FieldAliases = {
   avgNet: 'employeeAvgNetPerDay',
   happiness: 'employeeAvgHappiness',
   retiring: 'employeeRetiringSoon',
+}
+
+/**
+ * Aliases every group table (alliance / country / MU / party) shares.
+ */
+export const GROUP_FIELD_ALIASES: FieldAliases = {
+  ...CASE_FIELD_ALIASES,
+  ...WEALTH_FIELD_ALIASES,
+  ...PREMIUM_FIELD_ALIASES,
+  ...FACTORY_FIELD_ALIASES,
+  cases: 'casesOpenedTotal',
+  points: 'totalPoints',
+  ppd: 'avgPointsPerDay',
 }

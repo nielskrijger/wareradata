@@ -1,7 +1,8 @@
 'use client'
 
-import type { PageResult } from '@/components/data-table/data-table'
+import type { ColumnSort } from '@tanstack/react-table'
 
+import type { PageResult } from '@/components/data-table/data-table'
 import type { ColumnDef } from '@/components/data-table/features'
 import type { BattleRow } from '@/lib/rows'
 
@@ -20,7 +21,7 @@ interface Props {
    * Locked filter scoping the table to active or finished battles.
    */
   baseFilter: string
-  initialSort: { id: string, desc: boolean }
+  initialSort: ColumnSort
 }
 
 export function BattlesTable({ tableId, initial, columns, baseFilter, initialSort }: Props) {

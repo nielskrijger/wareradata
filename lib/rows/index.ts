@@ -2,11 +2,6 @@ import type { CombatMode } from '@/lib/skills/classify'
 import type { CaseRarityCounts, RankingTier } from '@/lib/warera/api'
 
 /**
- * Projected user row used by both the /users page and /api/users.
- * Kept narrow on purpose: client only renders these fields, so the wire
- * payload stays small.
- */
-/**
  * Where a row's points come from, each source ranked on its own.
  */
 export interface PointSources {
@@ -18,6 +13,11 @@ export interface PointSources {
   wealthPointsRank: number | null
 }
 
+/**
+ * Projected user row used by both the /users page and /api/users.
+ * Kept narrow on purpose: client only renders these fields, so the wire
+ * payload stays small.
+ */
 export interface UserRow extends PointSources {
   avatarUrl: string | null
   bounty: number | null
@@ -797,7 +797,13 @@ export interface BattleDetail {
 /**
  * Projected political-party row used by /parties and /api/parties.
  */
-export interface PartyRow extends GroupCaseStats, GroupWealthParts, GroupPointsStats, GroupPremiumStats, LeaderFields {
+export interface PartyRow extends
+  GroupCaseStats,
+  GroupFactoryStats,
+  GroupWealthParts,
+  GroupPointsStats,
+  GroupPremiumStats,
+  LeaderFields {
   avatarUrl: string | null
   avgLevel: number | null
   avgLevelRank: number | null

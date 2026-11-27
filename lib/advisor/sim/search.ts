@@ -7,7 +7,7 @@ import { companyGold } from './world'
  * effort: a drag in Reorganize, a tool hand-off, or a product switch, which
  * also bets on prices holding.
  */
-export const EFFORT = {
+const EFFORT = {
   move: 10,
   tool: 3,
   switch: 30,
@@ -30,7 +30,7 @@ export function companyOf(plan: Plan): number[] {
  * Effort of a plan against today's: workers away from home, tools away from
  * their owner, companies on another item.
  */
-export function effort(world: World, plan: Plan): number {
+function effort(world: World, plan: Plan): number {
   const at = companyOf(plan)
   const moved = world.workers.filter((w, i) => at[i] !== w.home).length
   const tools = world.tools.filter((t, ti) => plan.toolOf[t.owner] !== ti).length

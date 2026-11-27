@@ -143,7 +143,7 @@ function store(): SnapshotStore {
  * builders never mutate their input), so the result is a new immutable snapshot
  * safe to publish while readers still hold an older one.
  */
-export async function buildSnapshot(
+async function buildSnapshot(
   raw: RawSnapshot,
   nowMs: number,
   streamUsersForBuild: (onUser: (user: User) => void) => Promise<void>,

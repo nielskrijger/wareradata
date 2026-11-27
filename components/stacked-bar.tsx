@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils'
+
 export interface BarSegment {
   key: string
   value: number
@@ -39,7 +41,7 @@ export function StackedBar({ segments, total, className }: Props) {
   const hasGap = sum > valuesSum
 
   return (
-    <div className={`flex overflow-hidden rounded-full ${className ?? ''}`}>
+    <div className={cn('flex overflow-hidden rounded-full', className)}>
       {sum > 0 && visible.map((seg, i) => (
         <div
           key={seg.key}

@@ -44,6 +44,13 @@ export const VARIANTS = {
   p5: '5 · Ranks move into the sidebar',
   w1: 'Wildcard A · Report card',
   w2: 'Wildcard B · Every member on the rank track',
+  p6: '6 · Overview is the graph',
+  p7: '7 · Overview: graph, then the overview table',
+  p8: '8 · Overview: graph beside top members',
+  p9: '9 · Overview: folded graph, then the table',
+  p10: '10 · Overview is the graph, other tabs get a rank line',
+  w3: 'Wildcard C · The graph rows are the tabs',
+  w4: 'Wildcard D · Column headers carry the ranks',
 } as const
 
 export type Variant = keyof typeof VARIANTS
@@ -184,6 +191,12 @@ const COLUMNS: Partial<Record<Tab, Column[]>> = {
     { label: 'Wealth', cell: m => <CompactNumber value={m.wealth} /> },
     { label: 'Level', cell: m => <CompactNumber value={m.points - m.damage - m.wealth} /> },
   ],
+  wealth: [
+    { label: 'Wealth', cell: m => <CompactNumber value={m.wealth * 9} /> },
+    { label: 'Companies', cell: m => <CompactNumber value={m.wealth * 5.6} /> },
+    { label: 'Items', cell: m => <CompactNumber value={m.wealth * 1.5} /> },
+    { label: 'Cash', cell: m => <CompactNumber value={m.wealth * 0.9} /> },
+  ],
   factories: [
     { label: '# Factories', cell: m => num(m.factories) },
     { label: 'Total / day', cell: m => dec(m.perDay) },
@@ -269,7 +282,8 @@ function Search() {
 /**
  * The members table, static. `track` adds a rank-track column for that stat.
  */
-function MembersTable({ tab, rows = 10, track, partyRow }: {
+function MembersTable({ tab, rows = 10, track, partyRow, rankHeaders }: {
+  rankHeaders?: Record<string, { value: number, rank: number, color: string }>
   tab: Tab
   rows?: number
   track?: { stat: PlayerStat, color: string }
@@ -298,7 +312,22 @@ function MembersTable({ tab, rows = 10, track, partyRow }: {
                   </div>
                 </TableHead>
               )}
-              {columns.map(c => <TableHead key={c.label} className={cn('w-24 text-right', !track && 'sm:w-28')}>{c.label}</TableHead>)}
+              {columns.map((c) => {
+                const r = rankHeaders?.[c.label]
+
+                return (
+                  <TableHead key={c.label} className={cn('w-24 text-right', !track && 'sm:w-28', r && 'h-auto py-2 align-top')}>
+                    {c.label}
+                    {r && (
+                      <div className="mt-1 space-y-1 font-normal">
+                        <div className="text-xs tabular-nums"><CompactNumber value={r.value} /></div>
+                        <StemTrack className="h-3"><Stem pct={rankPosition(r.rank, PARTIES)} color={r.color} /></StemTrack>
+                        <div className="text-muted-foreground text-[10px] tabular-nums">{formatRank(r.rank)} · {topPercent(r.rank, PARTIES)}</div>
+                      </div>
+                    )}
+                  </TableHead>
+                )
+              })}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -629,6 +658,165 @@ function W2() {
   )
 }
 
+/* ── Round 2: the graph lives in Overview ─────────────────────────── */
+
+const TAB_RANK: Partial<Record<Tab, { label: string, rank: number, color: string }>> = {
+  points: { label: 'total points', rank: P.totalPointsRank, color: GROUP_COLOR.points },
+  combat: { label: 'damage points', rank: P.damagePointsRank, color: GROUP_COLOR.combat },
+  wealth: { label: 'member wealth', rank: P.memberWealthRank, color: GROUP_COLOR.economy },
+  premium: { label: 'gems bought', rank: P.gemsPurchasedTotalRank, color: GROUP_COLOR.premium },
+}
+
+function RankLine({ tab }: { tab: Tab }) {
+  const r = TAB_RANK[tab]
+
+  return (
+    <Panel padding="sm" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+      <span className="inline-flex items-center gap-1.5">
+        <CategoryIcon category={tab as Category} />
+        {r
+          ? <>{NAME} ranks <span className="font-medium">{formatRank(r.rank)}</span> of 887 parties on {r.label}</>
+          : <span className="text-muted-foreground">Parties aren&apos;t ranked on {CATEGORY_META[tab as Category].label.toLowerCase()} yet</span>}
+      </span>
+      {r && (
+        <>
+          <StemTrack className="h-4 min-w-32 flex-1">
+            {RANK_MARKS.map(m => <div key={m.label} className="bg-muted-foreground/45 absolute top-0.5 h-3 w-px -translate-x-1/2" style={{ left: `${m.at}%` }} />)}
+            <Stem pct={rankPosition(r.rank, PARTIES)} color={r.color} />
+          </StemTrack>
+          <span className="text-muted-foreground text-xs tabular-nums">{topPercent(r.rank, PARTIES)}</span>
+        </>
+      )}
+    </Panel>
+  )
+}
+
+function OverviewVariant({ overview, strip, initial = 'overview' }: { overview: () => ReactNode, strip?: boolean, initial?: Tab }) {
+  const [tab, setTab] = useState<Tab>(initial)
+
+  return (
+    <PageSection title="Members">
+      <TabRow tabs={DEFAULT_TABS} value={tab} onChange={setTab} />
+      {tab === 'overview'
+        ? overview()
+        : (
+            <>
+              {strip && <RankLine tab={tab} />}
+              <Search />
+              <MembersTable tab={tab} />
+            </>
+          )}
+    </PageSection>
+  )
+}
+
+function Folded() {
+  const [open, setOpen] = useState(false)
+  const groups = open ? GROUPS : GROUPS.map(g => ({ ...g, rows: g.rows.slice(0, 1) }))
+
+  return (
+    <div className="relative mb-3">
+      <FullRankMap groups={groups} />
+      <Button variant="outline" size="sm" className="bg-card text-muted-foreground absolute -bottom-3.5 left-1/2 -translate-x-1/2 rounded-full" onClick={() => setOpen(!open)}>
+        {open ? 'Show less' : 'All 16 ranks'}
+        <ChevronDown className={cn(open && 'rotate-180')} />
+      </Button>
+    </div>
+  )
+}
+
+function GraphWithTop() {
+  return (
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
+      <FullRankMap />
+      <Panel padding="sm" className="self-start">
+        <h3 className="mb-2 text-sm font-medium">Top members</h3>
+        <ol className="space-y-1.5 text-sm">
+          {MEMBERS.slice(0, 10).map((m, i) => (
+            <li key={m.name} className="flex items-center gap-2">
+              <span className="text-muted-foreground w-4 text-right text-xs tabular-nums">{i + 1}</span>
+              <TableAvatar src={null} name={m.name} countryCode="nl" />
+              <InternalLink href="#" bold className="min-w-0 flex-1 truncate">{m.name}</InternalLink>
+              <span className="text-muted-foreground text-xs tabular-nums"><CompactNumber value={m.points} /></span>
+            </li>
+          ))}
+        </ol>
+        <button type="button" className="text-muted-foreground hover:text-foreground mt-3 text-xs">All 79 members →</button>
+      </Panel>
+    </div>
+  )
+}
+
+/* ── Wildcard C · The graph rows are the tabs ──────────────────────── */
+
+function W3() {
+  const [active, setActive] = useState('Companies')
+
+  return (
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[17rem_minmax(0,1fr)]">
+      <Panel padding="sm" className="self-start">
+        <div className="text-muted-foreground mb-2 text-xs">Ranks among 887 parties · pick one to list members by it</div>
+        {GROUPS.map(g => (
+          <div key={g.title} className="mb-2">
+            <h3 className="mb-1 text-xs font-medium tracking-wide uppercase" style={{ color: g.color }}>{g.title}</h3>
+            {g.rows.map(r => (
+              <button
+                key={r.label}
+                type="button"
+                onClick={() => setActive(r.label)}
+                className={cn(
+                  'grid w-full grid-cols-[minmax(0,1fr)_3rem_3rem] items-center gap-2 rounded px-1.5 py-0.5 text-left text-sm',
+                  active === r.label ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/50',
+                )}
+              >
+                <span className="truncate">{r.label}</span>
+                <StemTrack className="h-3">{r.rank && <Stem pct={rankPosition(r.rank, PARTIES)} color={g.color} />}</StemTrack>
+                <span className="text-right text-xs tabular-nums">{formatRank(r.rank)}</span>
+              </button>
+            ))}
+          </div>
+        ))}
+      </Panel>
+      <section className="min-w-0 space-y-3">
+        <h2 className="font-brand text-lg tracking-wide">Members by {active.toLowerCase()}</h2>
+        <Search />
+        <MembersTable tab="wealth" />
+      </section>
+    </div>
+  )
+}
+
+/* ── Wildcard D · Column headers carry the ranks ──────────────────── */
+
+function W4() {
+  const [tab, setTab] = useState<Tab>('wealth')
+  const c = GROUP_COLOR.economy
+
+  return (
+    <PageSection title="Members">
+      <Search />
+      <TabRow
+        tabs={DEFAULT_TABS}
+        value={tab}
+        onChange={setTab}
+        badge={(t) => {
+          const rank = TAB_RANK[t]?.rank
+          return rank && <span className="text-muted-foreground/70 hidden text-xs tabular-nums sm:inline">#{rank}</span>
+        }}
+      />
+      <MembersTable
+        tab="wealth"
+        rankHeaders={{
+          Wealth: { value: P.memberWealth, rank: P.memberWealthRank, color: c },
+          Companies: { value: P.companiesWealth, rank: P.companiesWealthRank, color: c },
+          Items: { value: P.itemsWealth, rank: P.itemsWealthRank, color: c },
+          Cash: { value: P.cashWealth, rank: P.cashWealthRank, color: c },
+        }}
+      />
+    </PageSection>
+  )
+}
+
 /* ── Page ─────────────────────────────────────────────────────────── */
 
 export function Mockup({ v }: { v: Variant }) {
@@ -641,6 +829,13 @@ export function Mockup({ v }: { v: Variant }) {
     p5: <Members />,
     w1: <W1 />,
     w2: <W2 />,
+    p6: <OverviewVariant overview={() => <FullRankMap />} />,
+    p7: <OverviewVariant overview={() => <><FullRankMap /><Search /><MembersTable tab="overview" /></>} />,
+    p8: <OverviewVariant overview={() => <GraphWithTop />} />,
+    p9: <OverviewVariant overview={() => <><Folded /><Search /><MembersTable tab="overview" /></>} />,
+    p10: <OverviewVariant overview={() => <FullRankMap />} strip initial="wealth" />,
+    w3: <W3 />,
+    w4: <W4 />,
   }[v]
 
   return (

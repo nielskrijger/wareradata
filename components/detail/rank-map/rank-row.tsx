@@ -1,5 +1,5 @@
-import type { RankMapGroup, RankMapRow } from '@/components/detail/rank-map'
-import type { PlayerStat } from '@/lib/rank-scale'
+import type { PlayerStat } from './members'
+import type { RankMapGroup, RankMapRow } from './rank-map'
 import type { GroupPointsStats, GroupPremiumStats, PointSources } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/cells/compact-number'
@@ -21,15 +21,14 @@ export const GROUP_COLOR = {
 }
 
 /**
- * A row, compact for the big skewed stats (damage, gold) and plain for small
- * counts. `stat` names the player stat members are placed by, if any.
+ * A row, `compact` for the big skewed stats (damage, gold) and plain for
+ * small counts. `stat` names the player stat members are placed by, if any.
  */
 export function rankRow(
   label: string,
   value: number | null,
   rank: number | null,
-  compact = false,
-  stat?: PlayerStat,
+  { compact = false, stat }: { compact?: boolean, stat?: PlayerStat } = {},
 ): RankMapRow {
   return { label, value, rank, stat, display: compact ? <CompactNumber value={value} /> : undefined }
 }
@@ -50,11 +49,11 @@ type WealthParts = Record<`${WealthPart}Wealth` | `${WealthPart}WealthRank`, num
  */
 export function wealthPartRows(r: WealthParts): RankMapRow[] {
   return [
-    rankRow('Companies', r.companiesWealth, r.companiesWealthRank, true, 'companiesWealth'),
-    rankRow('Items', r.itemsWealth, r.itemsWealthRank, true, 'itemsWealth'),
-    rankRow('Cash', r.cashWealth, r.cashWealthRank, true, 'cashWealth'),
-    rankRow('Equipment', r.equipmentWealth, r.equipmentWealthRank, true, 'equipmentWealth'),
-    rankRow('Weapons', r.weaponsWealth, r.weaponsWealthRank, true, 'weaponsWealth'),
+    rankRow('Companies', r.companiesWealth, r.companiesWealthRank, { compact: true, stat: 'companiesWealth' }),
+    rankRow('Items', r.itemsWealth, r.itemsWealthRank, { compact: true, stat: 'itemsWealth' }),
+    rankRow('Cash', r.cashWealth, r.cashWealthRank, { compact: true, stat: 'cashWealth' }),
+    rankRow('Equipment', r.equipmentWealth, r.equipmentWealthRank, { compact: true, stat: 'equipmentWealth' }),
+    rankRow('Weapons', r.weaponsWealth, r.weaponsWealthRank, { compact: true, stat: 'weaponsWealth' }),
   ]
 }
 
@@ -66,9 +65,9 @@ export function premiumGroup(r: GroupPremiumStats): RankMapGroup {
     title: 'Premium',
     color: GROUP_COLOR.premium,
     rows: [
-      rankRow('Gems bought', r.gemsPurchasedTotal, r.gemsPurchasedTotalRank, true, 'gemsPurchased'),
-      rankRow('Premium months', r.premiumMonthsTotal, r.premiumMonthsTotalRank, false, 'premiumMonths'),
-      rankRow('Gifts', r.premiumGiftsTotal, r.premiumGiftsTotalRank, false, 'premiumGifts'),
+      rankRow('Gems bought', r.gemsPurchasedTotal, r.gemsPurchasedTotalRank, { compact: true, stat: 'gemsPurchased' }),
+      rankRow('Premium months', r.premiumMonthsTotal, r.premiumMonthsTotalRank, { stat: 'premiumMonths' }),
+      rankRow('Gifts', r.premiumGiftsTotal, r.premiumGiftsTotalRank, { stat: 'premiumGifts' }),
     ],
   }
 }
@@ -114,8 +113,8 @@ export function pointsGroupOf(total: RankMapRow, r: PointSources, rate: RankMapR
  */
 export function pointsGroup(r: GroupPointsStats, perLabel: string): RankMapGroup {
   return pointsGroupOf(
-    rankRow('Total', r.totalPoints, r.totalPointsRank, false, 'points'),
+    rankRow('Total', r.totalPoints, r.totalPointsRank, { stat: 'points' }),
     r,
-    rankRow(perLabel, r.avgPoints, r.avgPointsRank, false, 'points'),
+    rankRow(perLabel, r.avgPoints, r.avgPointsRank, { stat: 'points' }),
   )
 }

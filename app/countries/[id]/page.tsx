@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { RankMapGroup } from '@/components/detail/rank-map/rank-map'
 import type { CountryRow } from '@/lib/rows'
 
 import { notFound } from 'next/navigation'
@@ -10,7 +10,7 @@ import { cache } from 'react'
 import { CountrySidebar } from '@/components/country/country-sidebar'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { GovernmentSection } from '@/components/detail/government-section'
-import { RankMap } from '@/components/detail/rank-map'
+import { RankMap } from '@/components/detail/rank-map/rank-map'
 import {
   decimalRankRow,
   GROUP_COLOR,
@@ -18,7 +18,7 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-} from '@/components/detail/rank-row'
+} from '@/components/detail/rank-map/rank-row'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
@@ -54,7 +54,6 @@ const getCountry = cache(async (id: string) => {
   // Ranges over the full set, same as the /countries table, so each stat can
   // show where this country sits.
   const ranges = computeRanges(countries)
-  const total = countries.length
 
   const code = country.code
   const citizens = groupMembers(users, u => u.countryCode === code)
@@ -68,11 +67,11 @@ const getCountry = cache(async (id: string) => {
   const activeBattlesList = activeBattlesByCountry.get(id) ?? []
 
   return {
+    countries,
     country,
     government,
     strategicBonus,
     ranges,
-    total,
     citizens,
     citizenPage,
     muPage,
@@ -106,11 +105,11 @@ export default async function CountryDetailPage({ params }: PageProps) {
   }
 
   const {
+    countries,
     country: c,
     government,
     strategicBonus,
     ranges,
-    total,
     citizens,
     citizenPage,
     muPage,
@@ -133,9 +132,13 @@ export default async function CountryDetailPage({ params }: PageProps) {
     >
       <RankMap
         name={c.name}
-        total={total}
+        total={countries.length}
         unit="countries"
         groups={rankGroups(c)}
+        peers={{
+          selfId: c.id,
+          all: countries.map(p => ({ id: p.id, name: p.name, code: p.code, groups: rankGroups(p) })),
+        }}
         members={{ ...citizens, noun: 'citizen' }}
       />
 
@@ -162,21 +165,24 @@ function rankGroups(c: CountryRow): RankMapGroup[] {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', c.damage, c.damageRank, true, 'damage'),
-        rankRow('Weekly damage', c.weeklyDamage, c.weeklyDamageRank, true, 'weeklyDamage'),
-        rankRow('Per citizen', c.weeklyDamagePerCitizen, c.weeklyDamagePerCitizenRank, true, 'weeklyDamage'),
-        rankRow('Avg gear', c.avgGearScore, c.avgGearScoreRank, false, 'gearScore'),
-        rankRow('Bounty', c.bounty, c.bountyRank, true, 'bounty'),
+        rankRow('Damage', c.damage, c.damageRank, { compact: true, stat: 'damage' }),
+        rankRow('Weekly damage', c.weeklyDamage, c.weeklyDamageRank, { compact: true, stat: 'weeklyDamage' }),
+        rankRow('Per citizen', c.weeklyDamagePerCitizen, c.weeklyDamagePerCitizenRank, {
+          compact: true,
+          stat: 'weeklyDamage',
+        }),
+        rankRow('Avg gear', c.avgGearScore, c.avgGearScoreRank, { stat: 'gearScore' }),
+        rankRow('Bounty', c.bounty, c.bountyRank, { compact: true, stat: 'bounty' }),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Treasury', c.money, c.moneyRank, true),
-        rankRow('Country wealth', c.wealth, c.wealthRank, true),
-        rankRow('Citizen wealth', c.citizenWealth, c.citizenWealthRank, true, 'wealth'),
-        rankRow('Daily income', c.dailyIncome, c.dailyIncomeRank, true),
+        rankRow('Treasury', c.money, c.moneyRank, { compact: true }),
+        rankRow('Country wealth', c.wealth, c.wealthRank, { compact: true }),
+        rankRow('Citizen wealth', c.citizenWealth, c.citizenWealthRank, { compact: true, stat: 'wealth' }),
+        rankRow('Daily income', c.dailyIncome, c.dailyIncomeRank, { compact: true }),
         decimalRankRow('Development', c.development, c.developmentRank),
         ...wealthPartRows(c),
       ],
@@ -186,7 +192,7 @@ function rankGroups(c: CountryRow): RankMapGroup[] {
       color: GROUP_COLOR.society,
       rows: [
         rankRow('Active pop.', c.activePopulation, c.activePopulationRank),
-        rankRow('Avg level', c.avgLevel, c.avgLevelRank, false, 'level'),
+        rankRow('Avg level', c.avgLevel, c.avgLevelRank, { stat: 'level' }),
         rankRow('MUs', c.musCount, c.musCountRank),
         rankRow('Parties', c.partyCount, c.partyCountRank),
         rankRow('Allies', c.alliesCount, c.alliesCountRank),

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { RankMapGroup } from '@/components/detail/rank-map/rank-map'
 import type { AllianceRow } from '@/lib/rows'
 
 import { Flag } from 'lucide-react'
@@ -18,7 +18,7 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-} from '@/components/detail/rank-row'
+} from '@/components/detail/rank-map/rank-row'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
 import { groupMembers } from '@/lib/rows'
@@ -51,7 +51,7 @@ const getAlliance = cache(async (id: string) => {
 
   const strategicBonus = strategicBonuses.byAlliance[id] ?? null
 
-  return { alliance, total: alliances.length, citizens, citizensFilter, strategicBonus }
+  return { alliance, alliances, citizens, citizensFilter, strategicBonus }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -77,7 +77,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { alliance: a, total, citizens, citizensFilter, strategicBonus } = result
+  const { alliance: a, alliances, citizens, citizensFilter, strategicBonus } = result
 
   return (
     <DetailLayout
@@ -87,9 +87,13 @@ export default async function AllianceDetailPage({ params }: PageProps) {
         members={citizens}
         noun="citizen"
         name={a.name}
-        total={total}
+        total={alliances.length}
         unit="alliances"
         groups={rankGroups(a)}
+        peers={{
+          selfId: a.id,
+          all: alliances.map(p => ({ id: p.id, name: p.name, code: null, groups: rankGroups(p) })),
+        }}
         baseFilter={citizensFilter}
         extraTab={{ id: 'countries', label: 'Countries', icon: <Flag />, content: <MembersTable alliance={a} /> }}
       />
@@ -107,17 +111,20 @@ function rankGroups(a: AllianceRow): RankMapGroup[] {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', a.damage, a.damageRank, true, 'damage'),
-        rankRow('Weekly damage', a.weeklyDamage, a.weeklyDamageRank, true, 'weeklyDamage'),
-        rankRow('Per citizen', a.weeklyDamagePerCitizen, a.weeklyDamagePerCitizenRank, true, 'weeklyDamage'),
-        rankRow('Avg gear', a.avgGearScore, a.avgGearScoreRank, false, 'gearScore'),
+        rankRow('Damage', a.damage, a.damageRank, { compact: true, stat: 'damage' }),
+        rankRow('Weekly damage', a.weeklyDamage, a.weeklyDamageRank, { compact: true, stat: 'weeklyDamage' }),
+        rankRow('Per citizen', a.weeklyDamagePerCitizen, a.weeklyDamagePerCitizenRank, {
+          compact: true,
+          stat: 'weeklyDamage',
+        }),
+        rankRow('Avg gear', a.avgGearScore, a.avgGearScoreRank, { stat: 'gearScore' }),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Citizen wealth', a.citizenWealth, a.citizenWealthRank, true, 'wealth'),
+        rankRow('Citizen wealth', a.citizenWealth, a.citizenWealthRank, { compact: true, stat: 'wealth' }),
         ...wealthPartRows(a),
       ],
     },

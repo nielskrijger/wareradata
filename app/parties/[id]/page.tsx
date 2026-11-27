@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { RankMapGroup } from '@/components/detail/rank-map/rank-map'
 import type { PartyRow } from '@/lib/rows'
 
 import { notFound } from 'next/navigation'
@@ -15,7 +15,7 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-} from '@/components/detail/rank-row'
+} from '@/components/detail/rank-map/rank-row'
 import { PartySidebar } from '@/components/party/party-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
@@ -36,7 +36,7 @@ const getParty = cache(async (id: string) => {
     return null
   }
 
-  return { party, total: parties.length, members: groupMembers(users, u => u.partyId === id) }
+  return { party, parties, members: groupMembers(users, u => u.partyId === id) }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -62,7 +62,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { party: p, total, members } = result
+  const { party: p, parties, members } = result
 
   return (
     <DetailLayout sidebar={<PartySidebar party={p} />}>
@@ -71,9 +71,13 @@ export default async function PartyDetailPage({ params }: PageProps) {
         members={members}
         noun="member"
         name={p.name}
-        total={total}
+        total={parties.length}
         unit="parties"
         groups={rankGroups(p)}
+        peers={{
+          selfId: p.id,
+          all: parties.map(o => ({ id: o.id, name: o.name, code: o.countryCode, groups: rankGroups(o) })),
+        }}
         baseFilter={`partyId:${p.id}`}
         omitColumns={['partyName', 'countryCode']}
       />
@@ -92,14 +96,14 @@ function rankGroups(p: PartyRow): RankMapGroup[] {
       color: GROUP_COLOR.society,
       rows: [
         rankRow('Members', p.memberCount, p.memberCountRank),
-        rankRow('Avg level', p.avgLevel, p.avgLevelRank, false, 'level'),
+        rankRow('Avg level', p.avgLevel, p.avgLevelRank, { stat: 'level' }),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Member wealth', p.memberWealth, p.memberWealthRank, true, 'wealth'),
+        rankRow('Member wealth', p.memberWealth, p.memberWealthRank, { compact: true, stat: 'wealth' }),
         ...wealthPartRows(p),
       ],
     },

@@ -1,27 +1,6 @@
 import type { UserRow } from '@/lib/rows'
 
-/**
- * Where a rank sits on a rank track, 0 (last) to 100 (#1).
- *
- * Square root of the share of the set ranked above: the top quarter gets half
- * the track, so the best spread out without the top 1% swallowing it. Being a
- * share, groups and players of different set sizes line up.
- */
-export function rankPosition(rank: number, total: number): number {
-  return sharePosition((rank - 1) / Math.max(total - 1, 1))
-}
-
-function sharePosition(share: number): number {
-  return 100 * (1 - Math.sqrt(share))
-}
-
-export const RANK_MARKS = [
-  { label: 'last', at: 0 },
-  { label: 'top 25%', at: sharePosition(0.25) },
-  { label: 'top 6%', at: sharePosition(0.0625) },
-  { label: 'top 1%', at: sharePosition(0.01) },
-  { label: '#1', at: 100 },
-]
+import { rankPosition } from './scale'
 
 /**
  * A player stat that has a rank among all players (`damage` → `damageRank`).

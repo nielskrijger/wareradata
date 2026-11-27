@@ -7,7 +7,7 @@ import { use } from 'react'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
 import { DataTable } from '@/components/data-table/data-table'
-import { HighlightedPlayerContext } from '@/components/detail/highlighted-player-context'
+import { HighlightedPlayerContext } from '@/components/detail/rank-map/highlighted-player-context'
 
 import { userColumns } from './columns'
 

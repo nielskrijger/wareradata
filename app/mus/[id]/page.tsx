@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { RankMapGroup } from '@/components/detail/rank-map/rank-map'
 import type { MURow } from '@/lib/rows'
 
 import { notFound } from 'next/navigation'
@@ -15,7 +15,7 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-} from '@/components/detail/rank-row'
+} from '@/components/detail/rank-map/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { MUSidebar } from '@/components/mu/mu-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
@@ -39,7 +39,7 @@ const getMU = cache(async (id: string) => {
     return null
   }
 
-  return { mu, total: mus.length, members: groupMembers(users, u => u.muId === id) }
+  return { mu, mus, members: groupMembers(users, u => u.muId === id) }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -68,7 +68,7 @@ export default async function MUDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { mu, total, members } = result
+  const { mu, mus, members } = result
 
   return (
     <DetailLayout
@@ -83,9 +83,13 @@ export default async function MUDetailPage({ params }: PageProps) {
         members={members}
         noun="member"
         name={mu.name}
-        total={total}
+        total={mus.length}
         unit="MUs"
         groups={rankGroups(mu)}
+        peers={{
+          selfId: mu.id,
+          all: mus.map(m => ({ id: m.id, name: m.name, code: m.countryCode, groups: rankGroups(m) })),
+        }}
         baseFilter={`muId:${mu.id}`}
         omitColumns={['muName']}
       />
@@ -103,21 +107,21 @@ function rankGroups(mu: MURow): RankMapGroup[] {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', mu.damage, mu.damageRank, true, 'damage'),
-        rankRow('Weekly damage', mu.weeklyDamage, mu.weeklyDamageRank, true, 'weeklyDamage'),
-        rankRow('Avg gear', mu.avgGearScore, mu.avgGearScoreRank, false, 'gearScore'),
-        rankRow('Terrain', mu.terrain, mu.terrainRank, false, 'terrain'),
-        rankRow('Bounty', mu.bounty, mu.bountyRank, true, 'bounty'),
+        rankRow('Damage', mu.damage, mu.damageRank, { compact: true, stat: 'damage' }),
+        rankRow('Weekly damage', mu.weeklyDamage, mu.weeklyDamageRank, { compact: true, stat: 'weeklyDamage' }),
+        rankRow('Avg gear', mu.avgGearScore, mu.avgGearScoreRank, { stat: 'gearScore' }),
+        rankRow('Terrain', mu.terrain, mu.terrainRank, { stat: 'terrain' }),
+        rankRow('Bounty', mu.bounty, mu.bountyRank, { compact: true, stat: 'bounty' }),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('MU wealth', mu.wealth, mu.wealthRank, true),
-        rankRow('Member wealth', mu.memberWealth, mu.memberWealthRank, true, 'wealth'),
+        rankRow('MU wealth', mu.wealth, mu.wealthRank, { compact: true }),
+        rankRow('Member wealth', mu.memberWealth, mu.memberWealthRank, { compact: true, stat: 'wealth' }),
         ...wealthPartRows(mu),
-        rankRow('Invested', mu.investedMoney, mu.investedMoneyRank, true),
+        rankRow('Invested', mu.investedMoney, mu.investedMoneyRank, { compact: true }),
       ],
     },
     {
@@ -125,7 +129,7 @@ function rankGroups(mu: MURow): RankMapGroup[] {
       color: GROUP_COLOR.society,
       rows: [
         rankRow('Members', mu.memberCount, mu.memberCountRank),
-        rankRow('Avg level', mu.avgLevel, mu.avgLevelRank, false, 'level'),
+        rankRow('Avg level', mu.avgLevel, mu.avgLevelRank, { stat: 'level' }),
         rankRow('Reputation', mu.reputation, mu.reputationRank),
         rankRow('Headquarters', mu.headquartersLevel, mu.headquartersLevelRank),
         rankRow('Dormitories', mu.dormitoriesLevel, mu.dormitoriesLevelRank),

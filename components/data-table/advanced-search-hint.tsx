@@ -4,7 +4,7 @@ import { Info } from 'lucide-react'
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
-export interface SearchExample {
+interface SearchExample {
   q: string
   desc: string
 }

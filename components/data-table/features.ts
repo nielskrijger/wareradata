@@ -67,7 +67,7 @@ export interface DataColumnMeta {
   hiddenByDefault?: boolean
 }
 
-export interface DataTableMeta {
+interface DataTableMeta {
   ranges?: Record<string, Range>
 }
 

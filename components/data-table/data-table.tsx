@@ -3,10 +3,11 @@
 import type { ColumnSort, RowData } from '@tanstack/react-table'
 import type { ReactNode } from 'react'
 
+import type { ExtraTab } from './column-view-tabs'
 import type { ColumnView } from './column-views'
 import type { ColumnDef } from './features'
 
-import type { Range } from '@/lib/query'
+import type { PagedResult, QueryParams } from '@/lib/query'
 import { useTable } from '@tanstack/react-table'
 import { RotateCw } from 'lucide-react'
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react'
@@ -30,34 +31,17 @@ import { DataTableRow } from './data-table-row'
 import { dataTableFeatures } from './features'
 import { fetchPaginated } from './fetch-paginated'
 import { Pagination } from './pagination'
+import { TableFrame } from './table-frame'
 import { usePersistedColumnVisibility } from './use-persisted-column-visibility'
 import { useTableUrlState } from './use-table-url-state'
-
-export interface PageRequest {
-  page: number
-  pageSize: number
-  sort: string | null
-  dir: 'asc' | 'desc'
-  filter: string
-}
-
-export interface PageResult<TData extends RowData> {
-  rows: TData[]
-  total: number
-
-  /**
-   * Per-column [min, max, median] over the full filtered set, for heat coloring.
-   */
-  ranges?: Record<string, Range>
-}
 
 /**
  * Props of an entity table wrapper (UsersTable, MUsTable, …), so a detail
  * page can scope and trim it and give it its own Overview.
  */
 export type EntityTableProps<TData extends RowData> = {
-  initial: PageResult<TData>
-} & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns' | 'overview'>
+  initial: PagedResult<TData>
+} & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns' | 'overview' | 'extraTab'>
 
 interface DataTableProps<TData extends RowData> {
   /**
@@ -67,7 +51,7 @@ interface DataTableProps<TData extends RowData> {
    */
   tableId: string
   columns: ColumnDef<TData>[]
-  initialData: PageResult<TData>
+  initialData: PagedResult<TData>
   initialSort: ColumnSort
 
   /**
@@ -109,6 +93,12 @@ interface DataTableProps<TData extends RowData> {
    * of the group the rows belong to.
    */
   overview?: ReactNode
+
+  /**
+   * A tab after Overview showing a detail page's other content instead of the
+   * rows (an alliance's member countries).
+   */
+  extraTab?: ExtraTab
 }
 
 /**
@@ -137,12 +127,15 @@ function DataTableInner<TData extends RowData>({
   omitColumns,
   onRowHover,
   overview,
+  extraTab,
 }: DataTableProps<TData>) {
   const columns = omitColumns
     ? allColumns.filter(c => !omitColumns.includes(columnId(c)))
     : allColumns
 
   const views = columnViews(columns)
+  const [firstView, ...restViews] = views
+  const tabIds: string[] = extraTab && firstView ? [firstView, extraTab.id, ...restViews] : views
 
   const {
     q,
@@ -157,7 +150,7 @@ function DataTableInner<TData extends RowData>({
     view: tab,
     setView,
     isAtInitialState,
-  } = useTableUrlState({ initialSort, defaultPageSize, views, viewSorts: columnViewSorts(columns) })
+  } = useTableUrlState({ initialSort, defaultPageSize, views: tabIds, viewSorts: columnViewSorts(columns) })
 
   // From all columns, so stored choices for omitted ones match the full table's.
   const hiddenByDefault = allColumns
@@ -166,10 +159,11 @@ function DataTableInner<TData extends RowData>({
 
   const [columnVisibility, setColumnVisibility] = usePersistedColumnVisibility(tableId, hiddenByDefault)
 
-  // Tables without view tabs show every column.
-  const view: ColumnView = tab || 'all'
+  // Tables without view tabs show every column; so does the extra tab, which shows no rows.
+  const onExtraTab = extraTab !== undefined && tab === extraTab.id
+  const view = (onExtraTab ? 'all' : tab || 'all') as ColumnView
   const shownColumns = viewVisibility(columns, view) ?? columnVisibility
-  const [data, setData] = useState<PageResult<TData>>(initialData)
+  const [data, setData] = useState<PagedResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
   const [loadFailed, setLoadFailed] = useState(false)
 
@@ -199,19 +193,20 @@ function DataTableInner<TData extends RowData>({
     }
 
     const first = sorting[0]
-    const req: PageRequest = {
+    const query: QueryParams = {
       page: pageIndex,
       pageSize,
       sort: first?.id ?? null,
       dir: first?.desc ? 'desc' : 'asc',
       filter: q,
+      baseFilter,
     }
 
     // Responses can arrive out of order; a stale one must not overwrite a newer result.
     let superseded = false
     startTransition(async () => {
       try {
-        const result = await fetchPaginated<TData>(endpoint, req, baseFilter)
+        const result = await fetchPaginated<TData>(endpoint, query)
         if (!superseded) {
           setData(result)
           setLoadFailed(false)
@@ -250,17 +245,19 @@ function DataTableInner<TData extends RowData>({
   const tabs = views.length > 0 && (
     <ColumnViewTabs
       views={views}
-      value={view}
+      value={onExtraTab ? extraTab.id : view}
       onChange={setView}
       counts={columnViewCount(columns)}
+      extraTab={extraTab}
     />
   )
 
-  if (overview && view === 'overview') {
+  const content = onExtraTab ? extraTab.content : view === 'overview' ? overview : null
+  if (content) {
     return (
       <div className="space-y-3">
         {tabs}
-        {overview}
+        {content}
       </div>
     )
   }
@@ -301,14 +298,7 @@ function DataTableInner<TData extends RowData>({
         </div>
       )}
 
-      <div className={cn(
-        // Full-bleed on mobile so the scrolling table gets the whole width; the
-        // side borders and rounding come back from sm up.
-        'border-input bg-card overflow-hidden border dark:bg-input/50',
-        '-mx-6 rounded-none border-x-0 sm:mx-0 sm:rounded-md sm:border-x',
-        isPending && 'opacity-60',
-      )}
-      >
+      <TableFrame className={cn(isPending && 'opacity-60')}>
         <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map(hg => (
@@ -330,7 +320,7 @@ function DataTableInner<TData extends RowData>({
             )}
           </TableBody>
         </Table>
-      </div>
+      </TableFrame>
 
       <Pagination
         pageIndex={pageIndex}

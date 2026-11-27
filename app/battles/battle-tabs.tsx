@@ -1,6 +1,6 @@
 'use client'
 
-import type { PageResult } from '@/components/data-table/data-table'
+import type { PagedResult } from '@/lib/query'
 import type { BattleRow } from '@/lib/rows'
 
 import { parseAsStringEnum, useQueryState } from 'nuqs'
@@ -16,8 +16,8 @@ const TABS = ['active', 'finished'] as const
 type Tab = (typeof TABS)[number]
 
 interface Props {
-  active: PageResult<BattleRow>
-  finished: PageResult<BattleRow>
+  active: PagedResult<BattleRow>
+  finished: PagedResult<BattleRow>
 }
 
 /**

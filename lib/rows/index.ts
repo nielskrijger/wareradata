@@ -905,3 +905,19 @@ export interface AllianceRow extends
   weeklyDamagePerCitizen: number | null
   weeklyDamagePerCitizenRank: number | null
 }
+
+export interface GroupMembers {
+  rows: UserRow[]
+
+  /**
+   * All players, the set each member is ranked in.
+   */
+  players: number
+}
+
+/**
+ * The players in a group, for a group page's members section.
+ */
+export function groupMembers(users: UserRow[], belongs: (user: UserRow) => boolean): GroupMembers {
+  return { rows: users.filter(belongs), players: users.length }
+}

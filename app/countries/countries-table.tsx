@@ -1,6 +1,6 @@
 'use client'
 
-import type { PageResult } from '@/components/data-table/data-table'
+import type { PagedResult } from '@/lib/query'
 import type { CountryRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
@@ -9,7 +9,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { countryColumns } from './columns'
 
 interface Props {
-  initial: PageResult<CountryRow>
+  initial: PagedResult<CountryRow>
 }
 
 export function CountriesTable({ initial }: Props) {

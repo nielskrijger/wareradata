@@ -3,14 +3,14 @@ import type { Metadata } from 'next'
 import type { RankMapGroup } from '@/components/detail/rank-map/rank-map'
 import type { AllianceRow } from '@/lib/rows'
 
+import { Flag } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
 
-import { UsersTable } from '@/app/users/users-table'
 import { AllianceSidebar } from '@/components/alliance/alliance-sidebar'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { RankMap } from '@/components/detail/rank-map/rank-map'
+import { MembersSection } from '@/components/detail/members-section'
 import {
   decimalRankRow,
   GROUP_COLOR,
@@ -19,10 +19,9 @@ import {
   rankRow,
   wealthPartRows,
 } from '@/components/detail/rank-map/rank-row'
-import { PageSection } from '@/components/layout/page-section'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
-import { firstPage } from '@/lib/query'
+import { groupMembers } from '@/lib/rows'
 
 import { MembersTable } from './members-table'
 
@@ -43,13 +42,16 @@ const getAlliance = cache(async (id: string) => {
 
   // Citizens of all member countries, the alliance-wide equivalent of the
   // country page's citizens tab.
-  const memberCodes = new Set(alliance.members.map(m => m.code).filter(Boolean))
-  const citizens = users.filter(u => u.countryCode !== null && memberCodes.has(u.countryCode))
-  const citizenPage = firstPage(citizens, 'points')
+  const memberCodes = alliance.members.map(m => m.code).filter((code): code is string => code !== null)
+  const citizens = groupMembers(users, u => u.countryCode !== null && memberCodes.includes(u.countryCode))
+
+  // The user's filter on the citizens table is applied within this scope, so a
+  // search can never widen past the alliance's member countries.
+  const citizensFilter = `(${memberCodes.map(code => `countryCode:${code}`).join(' OR ')})`
 
   const strategicBonus = strategicBonuses.byAlliance[id] ?? null
 
-  return { alliance, alliances, citizens, players: users.length, citizenPage, strategicBonus }
+  return { alliance, alliances, citizens, citizensFilter, strategicBonus }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -75,18 +77,15 @@ export default async function AllianceDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { alliance: a, alliances, citizens, players, citizenPage, strategicBonus } = result
-
-  // The user's filter on the citizens table is applied within this scope, so a
-  // search can never widen past the alliance's member countries.
-  const memberCodes = a.members.map(m => m.code).filter((code): code is string => code !== null)
-  const citizensBaseFilter = `(${memberCodes.map(code => `countryCode:${code}`).join(' OR ')})`
+  const { alliance: a, alliances, citizens, citizensFilter, strategicBonus } = result
 
   return (
     <DetailLayout
-      sidebar={<AllianceSidebar alliance={a} citizenCount={citizenPage.total} strategicBonus={strategicBonus} />}
+      sidebar={<AllianceSidebar alliance={a} citizenCount={citizens.rows.length} strategicBonus={strategicBonus} />}
     >
-      <RankMap
+      <MembersSection
+        members={citizens}
+        noun="citizen"
         name={a.name}
         total={alliances.length}
         unit="alliances"
@@ -95,16 +94,9 @@ export default async function AllianceDetailPage({ params }: PageProps) {
           selfId: a.id,
           all: alliances.map(p => ({ id: p.id, name: p.name, code: null, groups: rankGroups(p) })),
         }}
-        members={{ rows: citizens, noun: 'citizen', players }}
+        baseFilter={citizensFilter}
+        extraTab={{ id: 'countries', label: 'Countries', icon: <Flag />, content: <MembersTable alliance={a} /> }}
       />
-
-      <PageSection title="Member countries">
-        <MembersTable alliance={a} />
-      </PageSection>
-
-      <PageSection title="Citizens">
-        <UsersTable initial={citizenPage} baseFilter={citizensBaseFilter} />
-      </PageSection>
     </DetailLayout>
   )
 }

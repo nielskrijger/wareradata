@@ -121,17 +121,20 @@ function rankGroups(a: AllianceRow): RankMapGroup[] {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', a.damage, a.damageRank, true, 'damage'),
-        rankRow('Weekly damage', a.weeklyDamage, a.weeklyDamageRank, true, 'weeklyDamage'),
-        rankRow('Per citizen', a.weeklyDamagePerCitizen, a.weeklyDamagePerCitizenRank, true, 'weeklyDamage'),
-        rankRow('Avg gear', a.avgGearScore, a.avgGearScoreRank, false, 'gearScore'),
+        rankRow('Damage', a.damage, a.damageRank, { compact: true, stat: 'damage' }),
+        rankRow('Weekly damage', a.weeklyDamage, a.weeklyDamageRank, { compact: true, stat: 'weeklyDamage' }),
+        rankRow('Per citizen', a.weeklyDamagePerCitizen, a.weeklyDamagePerCitizenRank, {
+          compact: true,
+          stat: 'weeklyDamage',
+        }),
+        rankRow('Avg gear', a.avgGearScore, a.avgGearScoreRank, { stat: 'gearScore' }),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Citizen wealth', a.citizenWealth, a.citizenWealthRank, true, 'wealth'),
+        rankRow('Citizen wealth', a.citizenWealth, a.citizenWealthRank, { compact: true, stat: 'wealth' }),
         ...wealthPartRows(a),
       ],
     },

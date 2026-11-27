@@ -81,6 +81,13 @@ export function valuePosition(value: number, max: number): number {
   return max > 0 ? 100 * Math.sqrt(Math.max(value, 0) / max) : 0
 }
 
+/**
+ * The share of #1's value at a spot on a value track; {@link valuePosition} undone.
+ */
+export function valueShare(at: number): number {
+  return (at / 100) ** 2
+}
+
 export const VALUE_MARKS = [
   { label: '0', at: 0 },
   { label: '10% of #1', at: valuePosition(0.1, 1) },

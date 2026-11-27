@@ -123,21 +123,21 @@ function rankGroups(mu: MURow): RankMapGroup[] {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', mu.damage, mu.damageRank, true, 'damage'),
-        rankRow('Weekly damage', mu.weeklyDamage, mu.weeklyDamageRank, true, 'weeklyDamage'),
-        rankRow('Avg gear', mu.avgGearScore, mu.avgGearScoreRank, false, 'gearScore'),
-        rankRow('Terrain', mu.terrain, mu.terrainRank, false, 'terrain'),
-        rankRow('Bounty', mu.bounty, mu.bountyRank, true, 'bounty'),
+        rankRow('Damage', mu.damage, mu.damageRank, { compact: true, stat: 'damage' }),
+        rankRow('Weekly damage', mu.weeklyDamage, mu.weeklyDamageRank, { compact: true, stat: 'weeklyDamage' }),
+        rankRow('Avg gear', mu.avgGearScore, mu.avgGearScoreRank, { stat: 'gearScore' }),
+        rankRow('Terrain', mu.terrain, mu.terrainRank, { stat: 'terrain' }),
+        rankRow('Bounty', mu.bounty, mu.bountyRank, { compact: true, stat: 'bounty' }),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('MU wealth', mu.wealth, mu.wealthRank, true),
-        rankRow('Member wealth', mu.memberWealth, mu.memberWealthRank, true, 'wealth'),
+        rankRow('MU wealth', mu.wealth, mu.wealthRank, { compact: true }),
+        rankRow('Member wealth', mu.memberWealth, mu.memberWealthRank, { compact: true, stat: 'wealth' }),
         ...wealthPartRows(mu),
-        rankRow('Invested', mu.investedMoney, mu.investedMoneyRank, true),
+        rankRow('Invested', mu.investedMoney, mu.investedMoneyRank, { compact: true }),
       ],
     },
     {
@@ -145,7 +145,7 @@ function rankGroups(mu: MURow): RankMapGroup[] {
       color: GROUP_COLOR.society,
       rows: [
         rankRow('Members', mu.memberCount, mu.memberCountRank),
-        rankRow('Avg level', mu.avgLevel, mu.avgLevelRank, false, 'level'),
+        rankRow('Avg level', mu.avgLevel, mu.avgLevelRank, { stat: 'level' }),
         rankRow('Reputation', mu.reputation, mu.reputationRank),
         rankRow('Headquarters', mu.headquartersLevel, mu.headquartersLevelRank),
         rankRow('Dormitories', mu.dormitoriesLevel, mu.dormitoriesLevelRank),

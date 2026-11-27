@@ -138,42 +138,42 @@ export default async function UserDetailPage({ params }: PageProps) {
 function rankGroups(user: UserRow): RankMapGroup[] {
   return [
     pointsGroupOf(
-      rankRow('Total', user.points, user.pointsRank, false, 'points'),
+      rankRow('Total', user.points, user.pointsRank, { stat: 'points' }),
       user,
-      rankRow('Per day', user.pointsPerDay, user.pointsPerDayRank, false, 'pointsPerDay'),
+      rankRow('Per day', user.pointsPerDay, user.pointsPerDayRank, { stat: 'pointsPerDay' }),
     ),
     {
       title: 'Combat',
       color: GROUP_COLOR.combat,
       rows: [
-        rankRow('Damage', user.damage, user.damageRank, true, 'damage'),
-        rankRow('Weekly damage', user.weeklyDamage, user.weeklyDamageRank, true, 'weeklyDamage'),
+        rankRow('Damage', user.damage, user.damageRank, { compact: true, stat: 'damage' }),
+        rankRow('Weekly damage', user.weeklyDamage, user.weeklyDamageRank, { compact: true, stat: 'weeklyDamage' }),
         rankRow('Military rank', user.militaryRank, user.militaryRankPos),
-        rankRow('Terrain', user.terrain, user.terrainRank, false, 'terrain'),
-        rankRow('Gear score', user.gearScore, user.gearScoreRank, false, 'gearScore'),
-        rankRow('War skills', user.warPoints, user.warPointsRank, false, 'warPoints'),
-        rankRow('Bounty', user.bounty, user.bountyRank, true, 'bounty'),
+        rankRow('Terrain', user.terrain, user.terrainRank, { stat: 'terrain' }),
+        rankRow('Gear score', user.gearScore, user.gearScoreRank, { stat: 'gearScore' }),
+        rankRow('War skills', user.warPoints, user.warPointsRank, { stat: 'warPoints' }),
+        rankRow('Bounty', user.bounty, user.bountyRank, { compact: true, stat: 'bounty' }),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Wealth', user.wealth, user.wealthRank, true, 'wealth'),
+        rankRow('Wealth', user.wealth, user.wealthRank, { compact: true, stat: 'wealth' }),
         ...wealthPartRows(user),
-        rankRow('Eco skills', user.ecoPoints, user.ecoPointsRank, false, 'ecoPoints'),
+        rankRow('Eco skills', user.ecoPoints, user.ecoPointsRank, { stat: 'ecoPoints' }),
       ],
     },
     {
       title: 'Account',
       color: GROUP_COLOR.premium,
       rows: [
-        rankRow('Level', user.level, user.levelRank, false, 'level'),
-        rankRow('Cases opened', user.casesOpened, user.casesOpenedRank, false, 'casesOpened'),
-        rankRow('Gems bought', user.gemsPurchased, user.gemsPurchasedRank, true, 'gemsPurchased'),
-        rankRow('Premium months', user.premiumMonths, user.premiumMonthsRank, false, 'premiumMonths'),
-        rankRow('Gifts', user.premiumGifts, user.premiumGiftsRank, false, 'premiumGifts'),
-        rankRow('Referrals', user.referrals, user.referralsRank, false, 'referrals'),
+        rankRow('Level', user.level, user.levelRank, { stat: 'level' }),
+        rankRow('Cases opened', user.casesOpened, user.casesOpenedRank, { stat: 'casesOpened' }),
+        rankRow('Gems bought', user.gemsPurchased, user.gemsPurchasedRank, { compact: true, stat: 'gemsPurchased' }),
+        rankRow('Premium months', user.premiumMonths, user.premiumMonthsRank, { stat: 'premiumMonths' }),
+        rankRow('Gifts', user.premiumGifts, user.premiumGiftsRank, { stat: 'premiumGifts' }),
+        rankRow('Referrals', user.referrals, user.referralsRank, { stat: 'referrals' }),
       ],
     },
   ]

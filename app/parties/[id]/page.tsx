@@ -108,14 +108,14 @@ function rankGroups(p: PartyRow): RankMapGroup[] {
       color: GROUP_COLOR.society,
       rows: [
         rankRow('Members', p.memberCount, p.memberCountRank),
-        rankRow('Avg level', p.avgLevel, p.avgLevelRank, false, 'level'),
+        rankRow('Avg level', p.avgLevel, p.avgLevelRank, { stat: 'level' }),
       ],
     },
     {
       title: 'Economy',
       color: GROUP_COLOR.economy,
       rows: [
-        rankRow('Member wealth', p.memberWealth, p.memberWealthRank, true, 'wealth'),
+        rankRow('Member wealth', p.memberWealth, p.memberWealthRank, { compact: true, stat: 'wealth' }),
         ...wealthPartRows(p),
       ],
     },

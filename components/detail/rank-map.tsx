@@ -117,10 +117,10 @@ const rowKey = (g: RankMapGroup, r: RankMapRow) => `${g.title}/${r.label}`
  */
 export function RankMap({ name, groups, total, unit, peers, members }: Props) {
   const stats = groups.flatMap(g => g.rows.flatMap(r => (r.stat ? [r.stat] : [])))
-  const memberSet = members && { rows: members.rows.map(m => memberRanks(m, stats)), players: members.players }
+  const memberSet = members && { ...members, rows: members.rows.map(m => memberRanks(m, stats)) }
   const peerSet = peers && peerRows(peers, groups)
   // Without peers, the rank view shows even with no members to tick.
-  const views = [...(peers ? ['peers' as const] : []), ...(members || !peers ? ['members' as const] : [])]
+  const views = [...(peers ? ['peers' as const] : []), ...(memberSet || !peers ? ['members' as const] : [])]
   const hide = (view: RankMapView) => (views.length > 1 ? HIDE[view] : '')
 
   return (
@@ -131,8 +131,8 @@ export function RankMap({ name, groups, total, unit, peers, members }: Props) {
             Where {name} ranks among {formatNumber(total)} {unit}
           </h2>
           <span className="text-muted-foreground inline-flex items-center gap-3 text-xs">
-            {members && views.length > 1 && (
-              <ViewSwitch labels={{ peers: capitalize(unit), members: `${capitalize(members.noun)}s` }} />
+            {memberSet && views.length > 1 && (
+              <ViewSwitch labels={{ peers: capitalize(unit), members: `${capitalize(memberSet.noun)}s` }} />
             )}
             {peerSet && (
               <span className={cn('inline-flex items-center', hide('peers'))}>
@@ -140,11 +140,11 @@ export function RankMap({ name, groups, total, unit, peers, members }: Props) {
                 <HoveredPeerName peers={peerSet.names} />
               </span>
             )}
-            {members && memberSet && members.rows.length > 0 && (
+            {memberSet && memberSet.rows.length > 0 && (
               <span className={cn('inline-flex items-center gap-1.5', hide('members'))}>
-                {formatNumber(members.rows.length)} {members.noun}{members.rows.length === 1 ? '' : 's'},
+                {formatNumber(memberSet.rows.length)} {memberSet.noun}{memberSet.rows.length === 1 ? '' : 's'},
                 {' '}
-                among {formatNumber(members.players)} players
+                among {formatNumber(memberSet.players)} players
                 <HighlightedPlayerName members={memberSet.rows} />
               </span>
             )}
@@ -204,7 +204,8 @@ function peerRows({ selfId, all }: Peers, groups: RankMapGroup[]) {
       for (const r of g.rows) {
         if (r.rank != null && r.value != null && r.value !== 0) {
           const key = rowKey(g, r)
-          values.set(key, [...(values.get(key) ?? []), { peer, value: r.value, rank: r.rank }])
+          const row = values.get(key) ?? values.set(key, []).get(key)!
+          row.push({ peer, value: r.value, rank: r.rank })
         }
       }
     }
@@ -278,14 +279,14 @@ function Row({ row, color, total, hide, members, peers }: RowProps) {
       <StemTrack className="order-last col-span-3 h-4 sm:order-none sm:col-span-1">
         {peers && (
           <div className={cn('absolute inset-0', hide('peers'))}>
-            <Marks marks={VALUE_MARKS} />
+            <Marks marks={MARKS.peers} />
             <PeerTicks ticks={peers.ticks} peers={peers.names} color={color} />
             {ranked && <Stem pct={valuePosition(value, peers.max)} color={color} />}
           </div>
         )}
         {(members || !peers) && (
           <div className={cn('absolute inset-0', hide('members'))}>
-            <Marks marks={RANK_MARKS} />
+            <Marks marks={MARKS.members} />
             {stat && members && (
               <MemberTicks stat={stat} members={members.rows} players={members.players} color={color} />
             )}

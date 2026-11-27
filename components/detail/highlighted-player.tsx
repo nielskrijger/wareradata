@@ -1,6 +1,6 @@
 'use client'
 
-import type { MouseEvent, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 import type { MemberRanks, PlayerStat } from '@/lib/rank-scale'
 
@@ -12,19 +12,9 @@ import { formatRank, topPercent } from '@/lib/format'
 import { memberTicks, rankPosition } from '@/lib/rank-scale'
 
 import { HighlightedPlayerContext } from './highlighted-player-context'
+import { LegendMarker, TickLabel, TickMarker, TickTrack } from './tick-track'
 
 const DOT = 'ring-card rounded-full bg-white ring-2'
-
-/**
- * A white tick, so a hovered player reads as one of the member ticks and the
- * dot stays the pinned player's.
- */
-const MARKER = 'w-0.5 rounded-full bg-white'
-
-/**
- * How far from a tick, in pixels, the pointer still picks it.
- */
-const PICK_RADIUS = 8
 
 export function HighlightedPlayerProvider({ children }: { children: ReactNode }) {
   const [hovered, setHovered] = useState<string | null>(null)
@@ -88,7 +78,7 @@ export function HighlightedPlayerName({ members }: { members: MemberRanks[] }) {
       )}
       {hoveredMember && (
         <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
-          <span className={`h-3 ${MARKER}`} />
+          <LegendMarker />
           {hoveredMember.username}
         </span>
       )}
@@ -103,75 +93,39 @@ export function HighlightedPlayerName({ members }: { members: MemberRanks[] }) {
  */
 export function MemberTicks({ stat, members, players, color }: MemberTicksProps) {
   const { hovered, pinned, hover, pin } = use(HighlightedPlayerContext)
-  const at = (id: string | null) => {
-    const rank = members.find(m => m.id === id)?.ranks[stat]
+  const spots = members.flatMap((m): [number, string][] => {
+    const rank = m.ranks[stat]
 
-    return rank == null ? null : rankPosition(rank, players)
-  }
+    return rank == null ? [] : [[rankPosition(rank, players), m.id]]
+  })
 
+  const at = (id: string | null) => spots.find(([, m]) => m === id)?.[0]
   const pinnedAt = at(pinned)
-  const hoveredAt = hovered === pinned ? null : at(hovered)
+  const hoveredAt = hovered === pinned ? undefined : at(hovered)
   const labelled = members.find(m => m.id === (hoveredAt == null ? pinned : hovered))
   const rank = labelled?.ranks[stat]
-  // Overlapping ticks add up, so dense spots read brighter; big groups get
-  // fainter ticks so they don't turn into a solid bar.
-  const alpha = members.length > 60 ? 0.12 : 0.7
-  const fade = hovered || pinned ? 'opacity-60' : ''
-
-  function nearest(e: MouseEvent<HTMLDivElement>) {
-    const box = e.currentTarget.getBoundingClientRect()
-    const pointer = ((e.clientX - box.left) / box.width) * 100
-    let found: string | null = null
-    let distance = (PICK_RADIUS / box.width) * 100
-    for (const m of members) {
-      const rank = m.ranks[stat]
-      const d = rank == null ? Infinity : Math.abs(rankPosition(rank, players) - pointer)
-      if (d <= distance) {
-        found = m.id
-        distance = d
-      }
-    }
-
-    return found
-  }
 
   return (
-    <div className="group absolute inset-0">
-      <svg
-        className={`absolute inset-0 size-full transition-opacity duration-150 ${fade}`}
-        viewBox="0 0 100 16"
-        preserveAspectRatio="none"
-        aria-hidden
-      >
-        {[...memberTicks(members, stat, players)].map(([tick, n]) => (
-          <line
-            key={tick}
-            x1={tick}
-            x2={tick}
-            y1={2}
-            y2={14}
-            stroke={color}
-            strokeOpacity={1 - (1 - alpha) ** n}
-            vectorEffect="non-scaling-stroke"
-          />
-        ))}
-      </svg>
+    <TickTrack
+      ticks={memberTicks(members, stat, players)}
+      // Big groups get fainter ticks so they don't turn into a solid bar.
+      alpha={members.length > 60 ? 0.12 : 0.7}
+      color={color}
+      faded={hovered != null || pinned != null}
+      spots={spots}
+      hovered={hovered}
+      hover={hover}
+      pick={pin}
+    >
       {pinnedAt != null && (
         <div
           className={`absolute top-1/2 z-10 size-3 -translate-x-1/2 -translate-y-1/2 ${DOT}`}
           style={{ left: `${pinnedAt}%` }}
         />
       )}
-      {hoveredAt != null && (
-        <div className={`absolute top-0 z-10 h-4 -translate-x-1/2 ${MARKER}`} style={{ left: `${hoveredAt}%` }} />
-      )}
-      {/* Only on the track under the pointer. */}
+      {hoveredAt != null && <TickMarker at={hoveredAt} />}
       {labelled && rank != null && (
-        <div
-          className={`bg-card pointer-events-none absolute bottom-full z-30 mb-1 hidden -translate-x-1/2 rounded
-            border px-1.5 py-0.5 text-[10px] whitespace-nowrap shadow group-hover:block`}
-          style={{ left: `${rankPosition(rank, players)}%` }}
-        >
+        <TickLabel at={rankPosition(rank, players)}>
           {labelled.username}
           <span className="text-muted-foreground">
             {' · '}
@@ -179,21 +133,9 @@ export function MemberTicks({ stat, members, players, color }: MemberTicksProps)
             {' · '}
             {topPercent(rank, players)}
           </span>
-        </div>
+        </TickLabel>
       )}
-      <div
-        className="absolute inset-0 z-20 cursor-pointer"
-        data-keeps-pin
-        onPointerMove={(e) => {
-          const id = nearest(e)
-          if (id !== hovered) {
-            hover(id)
-          }
-        }}
-        onPointerLeave={() => hover(null)}
-        onClick={e => pin(nearest(e))}
-      />
-    </div>
+    </TickTrack>
   )
 }
 

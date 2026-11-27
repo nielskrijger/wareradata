@@ -20,9 +20,11 @@ A comment longer than three lines covers more than one point: split it into para
 
 Prefer simple code. Don't add complexity for performance (caching, memoization, batching, clever data structures) without first measuring that it makes a real difference.
 
-## Leave it cleaner than you found it
+## Clean up aggressively
 
-In every change, clean up nearby: dead code, duplication, and pieces that should be a shared utility or component. Reuse what exists before writing something new. Prefer reuse and consistency over pixel-perfect or bespoke results.
+In every change, clean up the code around it aggressively and destructively. Delete dead code, unused exports, props and options, and one-use helpers that only add indirection. Collapse duplication into a shared utility or component, and rename anything whose name no longer fits. Don't keep anything "just in case".
+
+Reuse what exists before writing something new. Prefer reuse and consistency over pixel-perfect or bespoke results. Fewer lines and fewer concepts win over flexibility nobody uses.
 
 ## Fix the cause, not the case
 

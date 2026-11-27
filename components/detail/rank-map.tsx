@@ -97,12 +97,12 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
         <h2 className="font-medium">
           Where {name} ranks among {formatNumber(total)} {unit}
         </h2>
-        {members && members.rows.length > 0 && (
+        {members && memberSet && members.rows.length > 0 && (
           <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
             {formatNumber(members.rows.length)} {members.noun}{members.rows.length === 1 ? '' : 's'},
             {' '}
             among {formatNumber(members.players)} players
-            <HighlightedPlayerName members={memberSet?.rows ?? []} />
+            <HighlightedPlayerName members={memberSet.rows} />
           </span>
         )}
       </div>
@@ -128,9 +128,6 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
   )
 }
 
-/**
- * On phones the track drops under the label so it keeps the full width.
- */
 interface RowProps {
   row: RankMapRow
   color: string
@@ -138,11 +135,13 @@ interface RowProps {
   members?: { rows: MemberRanks[], players: number }
 }
 
+/**
+ * On phones the track drops under the label so it keeps the full width.
+ */
 function Row({ row, color, total, members }: RowProps) {
   const { label, icon: Icon, value, display, rank, stat } = row
   // Everyone at zero shares one rank, which would read as "top 12%" for nothing.
   const ranked = rank != null && value != null && value !== 0
-  const pos = ranked ? rankPosition(rank, total) : 0
 
   return (
     <div className={cn('grid items-center gap-x-3 gap-y-0.5 py-1 text-sm sm:gap-x-4', ROW_COLUMNS)}>
@@ -162,7 +161,7 @@ function Row({ row, color, total, members }: RowProps) {
           />
         ))}
         {stat && members && <MemberTicks stat={stat} members={members.rows} players={members.players} color={color} />}
-        {ranked && <Stem pct={pos} color={color} />}
+        {ranked && <Stem pct={rankPosition(rank, total)} color={color} />}
       </StemTrack>
       <span className="text-muted-foreground text-right text-xs tabular-nums">
         {ranked

@@ -168,8 +168,9 @@ function Row({ row, color, total, members }: RowProps) {
         {ranked
           ? (
               <>
-                {formatRank(rank)}
-                <span className="text-muted-foreground/60"> · {topPercent(rank, total)}</span>
+                <span className="text-foreground">{formatRank(rank)}</span>
+                {' · '}
+                {topPercent(rank, total)}
               </>
             )
           : 'unranked'}

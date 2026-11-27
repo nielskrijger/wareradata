@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { formatRank } from '@/lib/format'
 import { SITE_URL } from '@/lib/metadata'
 
 /**
@@ -104,7 +105,7 @@ function StatTile({ stat }: { stat: Stat }) {
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
       <div style={{ ...LABEL_STYLE, gap: 10, color: MUTED, letterSpacing: 1 }}>
         <span>{stat.label}</span>
-        {stat.rank ? <span style={{ color: ORANGE }}>#{stat.rank.toLocaleString('en')}</span> : null}
+        {stat.rank ? <span style={{ color: ORANGE }}>{formatRank(stat.rank)}</span> : null}
       </div>
       <div style={{ display: 'flex', fontFamily: 'Bebas', fontSize: 76, lineHeight: 1, marginTop: 8 }}>
         {stat.value}

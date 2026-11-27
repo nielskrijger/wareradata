@@ -14,6 +14,7 @@ import {
   GROUP_COLOR,
   pointsGroup,
   premiumGroup,
+  rankLines,
   rankRow,
   wealthPartRows,
 } from '@/components/detail/rank-row'
@@ -69,23 +70,24 @@ export default async function PartyDetailPage({ params }: PageProps) {
   }
 
   const { party: p, total, members, players, memberPage } = result
+  const groups = rankGroups(p)
+  const ranks = { total, unit: 'parties', members: { rows: members, noun: 'member', players } }
 
   return (
     <DetailLayout sidebar={<PartySidebar party={p} />}>
-      <RankMap
-        name={p.name}
-        total={total}
-        unit="parties"
-        groups={rankGroups(p)}
-        members={{ rows: members, noun: 'member', players }}
-      />
-
       {/* Party members are citizens of the party's country. */}
       <PageSection title="Members">
         <UsersTable
           initial={memberPage}
           baseFilter={`partyId:${p.id}`}
           omitColumns={['partyName', 'countryCode']}
+          overview={<RankMap name={p.name} groups={groups} {...ranks} />}
+          viewHeaders={rankLines(groups, {
+            points: ['Points', 'Total'],
+            combat: ['Points', 'Damage'],
+            wealth: ['Economy', 'Member wealth'],
+            premium: ['Premium', 'Gems bought'],
+          }, ranks)}
         />
       </PageSection>
     </DetailLayout>

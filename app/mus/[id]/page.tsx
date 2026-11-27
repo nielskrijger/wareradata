@@ -14,6 +14,7 @@ import {
   GROUP_COLOR,
   pointsGroup,
   premiumGroup,
+  rankLines,
   rankRow,
   wealthPartRows,
 } from '@/components/detail/rank-row'
@@ -79,6 +80,8 @@ export default async function MUDetailPage({ params }: PageProps) {
   }
 
   const { mu, total, members, players, memberPage } = result
+  const groups = rankGroups(mu)
+  const ranks = { total, unit: 'MUs', members: { rows: members, noun: 'member', players } }
 
   return (
     <DetailLayout
@@ -89,16 +92,19 @@ export default async function MUDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <RankMap
-        name={mu.name}
-        total={total}
-        unit="MUs"
-        groups={rankGroups(mu)}
-        members={{ rows: members, noun: 'member', players }}
-      />
-
       <PageSection title="Members">
-        <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} omitColumns={['muName']} />
+        <UsersTable
+          initial={memberPage}
+          baseFilter={`muId:${mu.id}`}
+          omitColumns={['muName']}
+          overview={<RankMap name={mu.name} groups={groups} {...ranks} />}
+          viewHeaders={rankLines(groups, {
+            points: ['Points', 'Total'],
+            combat: ['Combat', 'Weekly damage'],
+            wealth: ['Economy', 'Member wealth'],
+            premium: ['Premium', 'Gems bought'],
+          }, ranks)}
+        />
       </PageSection>
     </DetailLayout>
   )

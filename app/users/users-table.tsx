@@ -1,6 +1,6 @@
 'use client'
 
-import type { EntityTableProps } from '@/components/data-table/data-table'
+import type { EntityTableProps, ViewSlotProps } from '@/components/data-table/data-table'
 import type { UserRow } from '@/lib/rows'
 
 import { use } from 'react'
@@ -11,8 +11,14 @@ import { HighlightedPlayerContext } from '@/components/detail/highlighted-player
 
 import { userColumns } from './columns'
 
-export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProps<UserRow>) {
-  // Highlights the hovered player on the page's rank map, if there is one.
+export function UsersTable({
+  initial,
+  baseFilter,
+  omitColumns,
+  overview,
+  viewHeaders,
+}: EntityTableProps<UserRow> & ViewSlotProps) {
+  // Highlights the hovered player on the page's rank lines, if there are any.
   const { set: highlight } = use(HighlightedPlayerContext)
 
   return (
@@ -25,6 +31,8 @@ export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProp
       baseFilter={baseFilter}
       omitColumns={omitColumns}
       onRowHover={highlight}
+      overview={overview}
+      viewHeaders={viewHeaders}
       searchPlaceholder="Filter by username, country, MU, or party…"
       searchHint={(
         <AdvancedSearchHint

@@ -59,6 +59,11 @@ export type EntityTableProps<TData extends RowData> = {
   initial: PageResult<TData>
 } & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns'>
 
+/**
+ * What a detail page puts in a table's view tabs: its own Overview and a line above each category view.
+ */
+export type ViewSlotProps = Pick<DataTableProps<RowData>, 'overview' | 'viewHeaders'>
+
 interface DataTableProps<TData extends RowData> {
   /**
    * Names the table's remembered column visibility. Tables sharing a column
@@ -103,6 +108,17 @@ interface DataTableProps<TData extends RowData> {
    * Called with the row under the pointer, and null when it leaves.
    */
   onRowHover?: (row: TData | null) => void
+
+  /**
+   * Shown in place of the rows on the Overview tab, for a detail page's summary
+   * of the group the rows belong to.
+   */
+  overview?: ReactNode
+
+  /**
+   * Shown above the rows on a view tab (e.g. the group's rank on that category).
+   */
+  viewHeaders?: Partial<Record<ColumnView, ReactNode>>
 }
 
 /**
@@ -130,6 +146,8 @@ function DataTableInner<TData extends RowData>({
   searchHint,
   omitColumns,
   onRowHover,
+  overview,
+  viewHeaders,
 }: DataTableProps<TData>) {
   const columns = omitColumns
     ? allColumns.filter(c => !omitColumns.includes(columnId(c)))
@@ -240,8 +258,30 @@ function DataTableInner<TData extends RowData>({
 
   const rows = table.getRowModel().rows
 
+  const tabs = views.length > 0 && (
+    <ColumnViewTabs
+      views={views}
+      value={view}
+      onChange={setView}
+      counts={columnViewCount(columns)}
+    />
+  )
+
+  if (overview && view === 'overview') {
+    return (
+      <div className="space-y-3">
+        {tabs}
+        {overview}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-3" data-pending={isPending ? 'true' : 'false'}>
+      {/* Tabs first, so switching to an Overview without a search leaves them in place. */}
+      {tabs}
+      {viewHeaders?.[view]}
+
       <div className="flex items-center gap-2">
         <SearchInput
           value={filterInput}
@@ -254,15 +294,6 @@ function DataTableInner<TData extends RowData>({
         {searchHint}
         {view === 'all' && <ColumnsMenu table={table} />}
       </div>
-
-      {views.length > 0 && (
-        <ColumnViewTabs
-          views={views}
-          value={view}
-          onChange={setView}
-          counts={columnViewCount(columns)}
-        />
-      )}
 
       {loadFailed && (
         <div

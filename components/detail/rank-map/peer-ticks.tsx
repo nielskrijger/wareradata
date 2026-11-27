@@ -2,14 +2,14 @@
 
 import type { ReactNode } from 'react'
 
-import type { PeerTick } from '@/lib/rank-scale'
+import type { PeerTick } from './peers'
 
 import { createContext, use, useState } from 'react'
 
 import { Flag } from '@/components/flag'
 import { formatRank, ofFirst } from '@/lib/format'
-import { valueShare } from '@/lib/rank-scale'
 import { cn } from '@/lib/utils'
+import { valueShare } from './scale'
 
 import { LegendMarker, TickLabel, TickMarker, TickTrack } from './tick-track'
 

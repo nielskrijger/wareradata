@@ -1,5 +1,5 @@
-import type { RankMapGroup, RankMapRow } from '@/components/detail/rank-map'
-import type { PlayerStat } from '@/lib/rank-scale'
+import type { PlayerStat } from './members'
+import type { RankMapGroup, RankMapRow } from './rank-map'
 import type { GroupPointsStats, GroupPremiumStats, PointSources } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/cells/compact-number'

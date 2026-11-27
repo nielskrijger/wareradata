@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { RankMapGroup } from '@/components/detail/rank-map/rank-map'
 import type { CountryRow } from '@/lib/rows'
 
 import { notFound } from 'next/navigation'
@@ -10,7 +10,7 @@ import { cache } from 'react'
 import { CountrySidebar } from '@/components/country/country-sidebar'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
 import { GovernmentSection } from '@/components/detail/government-section'
-import { RankMap } from '@/components/detail/rank-map'
+import { RankMap } from '@/components/detail/rank-map/rank-map'
 import {
   decimalRankRow,
   GROUP_COLOR,
@@ -18,7 +18,7 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-} from '@/components/detail/rank-row'
+} from '@/components/detail/rank-map/rank-row'
 import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/live-battles'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'

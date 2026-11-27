@@ -2,16 +2,17 @@
 
 import type { ReactNode } from 'react'
 
-import type { MemberRanks, PlayerStat } from '@/lib/rank-scale'
+import type { MemberRanks, PlayerStat } from './members'
 
 import { useQueryState } from 'nuqs'
 import { use, useEffect, useState } from 'react'
 
 import { UserHoverCard } from '@/components/user-hover-card'
 import { formatRank, topPercent } from '@/lib/format'
-import { memberTicks, rankPosition } from '@/lib/rank-scale'
-
 import { HighlightedPlayerContext } from './highlighted-player-context'
+import { memberTicks } from './members'
+
+import { rankPosition } from './scale'
 import { LegendMarker, TickLabel, TickMarker, TickTrack } from './tick-track'
 
 const DOT = 'ring-card rounded-full bg-white ring-2'

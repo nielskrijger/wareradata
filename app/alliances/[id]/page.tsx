@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { RankMapGroup } from '@/components/detail/rank-map/rank-map'
 import type { AllianceRow } from '@/lib/rows'
 
 import { notFound } from 'next/navigation'
@@ -10,7 +10,7 @@ import { cache } from 'react'
 import { UsersTable } from '@/app/users/users-table'
 import { AllianceSidebar } from '@/components/alliance/alliance-sidebar'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { RankMap } from '@/components/detail/rank-map'
+import { RankMap } from '@/components/detail/rank-map/rank-map'
 import {
   decimalRankRow,
   GROUP_COLOR,
@@ -18,7 +18,7 @@ import {
   premiumGroup,
   rankRow,
   wealthPartRows,
-} from '@/components/detail/rank-row'
+} from '@/components/detail/rank-map/rank-row'
 import { PageSection } from '@/components/layout/page-section'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'

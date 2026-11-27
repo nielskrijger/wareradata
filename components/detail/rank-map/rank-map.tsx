@@ -1,17 +1,20 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import type { Peer, RankMapView } from '@/components/detail/peer-ticks'
-import type { MemberRanks, PeerTick, PeerValue, PlayerStat } from '@/lib/rank-scale'
+import type { MemberRanks, PlayerStat } from './members'
+import type { Peer, RankMapView } from './peer-ticks'
+import type { PeerRow, Peers } from './peers'
 import type { UserRow } from '@/lib/rows'
 
-import { HighlightedPlayerName, MemberTicks } from '@/components/detail/highlighted-player'
-import { HoveredPeerName, PeerTicks, RankMapViews, ViewSwitch } from '@/components/detail/peer-ticks'
 import { Stem, StemTrack } from '@/components/detail/stem'
 import { Panel } from '@/components/panel'
 import { formatNumber, formatRank, ofFirst, topPercent } from '@/lib/format'
-import { memberRanks, peerTicks, RANK_MARKS, rankPosition, VALUE_MARKS, valuePosition } from '@/lib/rank-scale'
 import { cn } from '@/lib/utils'
+import { HighlightedPlayerName, MemberTicks } from './member-ticks'
+import { memberRanks } from './members'
+import { HoveredPeerName, PeerTicks, RankMapViews, ViewSwitch } from './peer-ticks'
+import { peerRows, rowKey } from './peers'
+import { RANK_MARKS, rankPosition, VALUE_MARKS, valuePosition } from './scale'
 
 /**
  * The tick header's insets must match the row columns either side of the track.
@@ -76,11 +79,6 @@ interface Props {
   members?: Members
 }
 
-interface Peers {
-  selfId: string
-  all: { id: string, name: string, code: string | null, groups: RankMapGroup[] }[]
-}
-
 interface Members {
   rows: UserRow[]
 
@@ -106,8 +104,6 @@ const HIDE: Record<RankMapView, string> = {
 const MARKS: Record<RankMapView, typeof RANK_MARKS> = { peers: VALUE_MARKS, members: RANK_MARKS }
 
 const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1)
-
-const rowKey = (g: RankMapGroup, r: RankMapRow) => `${g.title}/${r.label}`
 
 /**
  * Every stat as a dot on one shared track, so strong and weak spots read at a
@@ -187,67 +183,6 @@ export function RankMap({ name, groups, total, unit, peers, members }: Props) {
       </RankMapViews>
     </Panel>
   )
-}
-
-/**
- * Every row's peer ticks, keyed by {@link rowKey}, leaving out the unranked
- * and those at zero; with the names of only the peers a tick names.
- */
-function peerRows({ selfId, all }: Peers, groups: RankMapGroup[]) {
-  const values = new Map<string, PeerValue[]>()
-  all.forEach((p, peer) => {
-    if (p.id === selfId) {
-      return
-    }
-
-    for (const g of p.groups) {
-      for (const r of g.rows) {
-        if (r.rank != null && r.value != null && r.value !== 0) {
-          const key = rowKey(g, r)
-          const row = values.get(key) ?? values.set(key, []).get(key)!
-          row.push({ peer, value: r.value, rank: r.rank })
-        }
-      }
-    }
-  })
-
-  const names: Peer[] = []
-  const named = new Map<number, number>()
-  const name = (peer: number) => {
-    if (!named.has(peer)) {
-      named.set(peer, names.push({ name: all[peer].name, code: all[peer].code }) - 1)
-    }
-
-    return named.get(peer)!
-  }
-
-  const rows = new Map<string, PeerRow>()
-  for (const g of groups) {
-    for (const r of g.rows) {
-      const key = rowKey(g, r)
-      const others = values.get(key) ?? []
-      const best = Math.max(0, ...others.map(p => p.value))
-      const max = Math.max(best, r.value ?? 0)
-      const ticks = peerTicks(others, max).map(([at, peer, rank, count]): PeerTick => [at, name(peer), rank, count])
-      rows.set(key, { ticks, max, best })
-    }
-  }
-
-  return { names, rows, count: all.length - 1 }
-}
-
-interface PeerRow {
-  ticks: PeerTick[]
-
-  /**
-   * The #1's value, the end of the track.
-   */
-  max: number
-
-  /**
-   * The best of the others, for how far the #1 leads.
-   */
-  best: number
 }
 
 interface RowProps {

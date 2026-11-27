@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import type { RankMapGroup } from '@/components/detail/rank-map'
+import type { RankMapGroup } from '@/components/detail/rank-map/rank-map'
 import type { UserRow } from '@/lib/rows'
 import type { CasesByType } from '@/lib/warera/api'
 
@@ -9,8 +9,8 @@ import { connection } from 'next/server'
 import { cache, Suspense } from 'react'
 
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { RankMap } from '@/components/detail/rank-map'
-import { GROUP_COLOR, pointsGroupOf, rankRow, wealthPartRows } from '@/components/detail/rank-row'
+import { RankMap } from '@/components/detail/rank-map/rank-map'
+import { GROUP_COLOR, pointsGroupOf, rankRow, wealthPartRows } from '@/components/detail/rank-map/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
 import { FactoriesSection } from '@/components/factories/factories-section'
 import { Panel } from '@/components/panel'

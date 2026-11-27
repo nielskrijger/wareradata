@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import type { WareraEntityKind } from '@/lib/warera/urls'
 
-import { HighlightedPlayerProvider } from '@/components/detail/highlighted-player'
+import { HighlightedPlayerProvider } from '@/components/detail/rank-map/member-ticks'
 import { PageMain } from '@/components/layout/page-main'
 import { ExternalLink } from '@/components/links'
 import { Panel } from '@/components/panel'

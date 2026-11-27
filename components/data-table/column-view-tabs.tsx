@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import type { ColumnView } from './column-views'
 
 import { Columns3, LayoutGrid } from 'lucide-react'
-import { Fragment } from 'react'
+import { Fragment, useLayoutEffect, useRef } from 'react'
 
 import { Tabs, TabsList, TabsTab } from '@/components/ui/tabs'
 
@@ -38,25 +38,66 @@ interface Props {
   extraTab?: Pick<ExtraTab, 'id' | 'label' | 'icon'>
 }
 
-const TAB_CLASS = 'inline-flex flex-1 items-center justify-center gap-1.5 px-2 md:flex-none md:px-4 xl:px-3'
-const ICON_CLASS = 'size-4 xl:size-3.5'
+const TAB_CLASS = 'inline-flex flex-1 items-center justify-center gap-1.5 px-2 md:flex-none md:px-4 tab-labels:px-3'
+const ICON_CLASS = 'size-4 tab-labels:size-3.5'
+
+/**
+ * What the tabs show, most first. Matched by the `tab-labels` and `tab-counts`
+ * variants in globals.css.
+ */
+const FITS = ['counts', 'labels', 'icons'] as const
 
 function viewLabel(view: ColumnView): string {
   return view === 'overview' ? 'Overview' : view === 'all' ? 'All columns' : CATEGORY_META[view].label
 }
 
 /**
+ * Sets `data-fit` on the list to the most the row shows without scrolling,
+ * whenever its width, its tabs or the font change. Written to the DOM rather
+ * than to state, so trying each level costs a layout, not a render.
+ */
+function useFit(tabs: string) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const list = ref.current
+    if (!list) {
+      return
+    }
+
+    const fit = () => {
+      for (const level of FITS) {
+        list.dataset.fit = level
+        if (list.scrollWidth <= list.clientWidth) {
+          return
+        }
+      }
+    }
+
+    const observer = new ResizeObserver(fit)
+    observer.observe(list)
+    void document.fonts.ready.then(fit)
+
+    return () => observer.disconnect()
+  }, [tabs])
+
+  return ref
+}
+
+/**
  * One tab per column category, so a wide table shows one group at a time.
  *
- * Below xl the tabs are icons only (spread evenly on phones), since the widest
- * tables' labels don't fit before that; the label stays for screen readers and
- * as a hover title. Counts wait for 2xl for the same reason.
+ * The tabs show labels, and then counts, only while the whole row fits them;
+ * otherwise just icons (spread evenly on phones). The label stays for screen
+ * readers and as a hover title.
  */
 export function ColumnViewTabs({ views, value, onChange, counts, extraTab }: Props) {
+  const ref = useFit([...views, extraTab?.id].join())
+
   return (
     <Tabs value={value} onValueChange={next => onChange(next as string)}>
-      {/* Scrolls sideways if the labels still don't fit. */}
-      <TabsList className="-mx-6 overflow-x-auto px-6 [scrollbar-width:none] sm:mx-0 sm:px-0">
+      {/* Scrolls sideways only if even the icons don't fit. */}
+      <TabsList ref={ref} className="-mx-6 overflow-x-auto px-6 [scrollbar-width:none] sm:mx-0 sm:px-0">
         {views.map((view, index) => {
           const label = viewLabel(view)
 
@@ -66,9 +107,9 @@ export function ColumnViewTabs({ views, value, onChange, counts, extraTab }: Pro
                 {view === 'overview' && <LayoutGrid className={ICON_CLASS} />}
                 {view === 'all' && <Columns3 className={ICON_CLASS} />}
                 {view !== 'overview' && view !== 'all' && <CategoryIcon category={view} className={ICON_CLASS} />}
-                <span className="sr-only xl:not-sr-only">{label}</span>
+                <span className="sr-only tab-labels:not-sr-only">{label}</span>
                 {counts[view] != null && (
-                  <span className="text-muted-foreground/70 hidden text-xs tabular-nums 2xl:inline">
+                  <span className="text-muted-foreground/70 hidden text-xs tabular-nums tab-counts:inline">
                     {counts[view]}
                   </span>
                 )}

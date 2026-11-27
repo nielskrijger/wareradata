@@ -4,6 +4,31 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Column view tabs: what the measured `data-fit` allows, or a breakpoint guess
+ * before it's measured.
+ */
+@custom-variant tab-labels {
+  &:where([data-fit='labels'] *, [data-fit='counts'] *) {
+    @slot;
+  }
+  @media (width >= 80rem) {
+    &:where([data-slot='tabs-list']:not([data-fit]) *) {
+      @slot;
+    }
+  }
+}
+@custom-variant tab-counts {
+  &:where([data-fit='counts'] *) {
+    @slot;
+  }
+  @media (width >= 96rem) {
+    &:where([data-slot='tabs-list']:not([data-fit]) *) {
+      @slot;
+    }
+  }
+}
+
 @theme inline {
   /* Page width cap shared by the nav and the content (`max-w-site`). */
   --container-site: 1760px;

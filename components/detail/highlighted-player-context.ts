@@ -8,16 +8,21 @@ export type HighlightedPlayer = Pick<UserRow, 'id' | 'username'>
 
 /**
  * The player shown on a page's rank map: the one under the pointer, in its
- * users table or on its ticks, else the one pinned by clicking a tick.
- * Without a provider, setting it does nothing.
+ * users table or on its ticks, else the one pinned by clicking a tick (kept
+ * in the URL). Without a provider, setting either does nothing.
  */
 export const HighlightedPlayerContext = createContext<{
-  row: HighlightedPlayer | null
-  pinned: HighlightedPlayer | null
+  /**
+   * The shown player's id.
+   */
+  id: string | null
+  hovered: HighlightedPlayer | null
+  pinned: string | null
   set: (row: HighlightedPlayer | null) => void
-  pin: (row: HighlightedPlayer | null) => void
+  pin: (id: string | null) => void
 }>({
-  row: null,
+  id: null,
+  hovered: null,
   pinned: null,
   set: () => {
   },

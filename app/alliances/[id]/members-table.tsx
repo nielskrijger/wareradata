@@ -3,6 +3,7 @@ import type { AllianceRow } from '@/lib/rows'
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { HeatCell } from '@/components/data-table/heat-cell'
+import { TableFrame } from '@/components/data-table/table-frame'
 import { EmptyDash } from '@/components/empty-dash'
 import { Flag } from '@/components/flag'
 import { InfoTooltip } from '@/components/info-tooltip'
@@ -26,7 +27,7 @@ interface Props {
 /**
  * The alliance's member countries with the stats the in-game view lacks.
  *
- * At most ten rows, so a plain table instead of DataTable.
+ * A few dozen rows at most, so a plain table instead of DataTable.
  */
 export function MembersTable({ alliance: a }: Props) {
   // Heat ranges within this alliance's members, so the tints compare the bloc's
@@ -38,7 +39,7 @@ export function MembersTable({ alliance: a }: Props) {
   const coreTotal = a.coreDevelopment ?? a.members.reduce((sum, m) => sum + m.coreDevelopment, 0)
 
   return (
-    <div className="border-input bg-card overflow-x-auto rounded-md border dark:bg-input/50">
+    <TableFrame>
       <Table className="min-w-[860px]">
         <TableHeader>
           <TableRow>
@@ -119,6 +120,6 @@ export function MembersTable({ alliance: a }: Props) {
           })}
         </TableBody>
       </Table>
-    </div>
+    </TableFrame>
   )
 }

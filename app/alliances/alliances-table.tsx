@@ -1,6 +1,6 @@
 'use client'
 
-import type { PageResult } from '@/components/data-table/data-table'
+import type { PagedResult } from '@/lib/query'
 import type { AllianceRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
@@ -9,7 +9,7 @@ import { DataTable } from '@/components/data-table/data-table'
 import { allianceColumns } from './columns'
 
 interface Props {
-  initial: PageResult<AllianceRow>
+  initial: PagedResult<AllianceRow>
 }
 
 export function AlliancesTable({ initial }: Props) {

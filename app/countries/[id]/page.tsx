@@ -23,6 +23,7 @@ import { getActiveBattlesByCountry, getLiveActiveBattles } from '@/lib/cache/liv
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
+import { groupMembers } from '@/lib/rows'
 
 import { CountryTables } from './country-tables'
 
@@ -56,8 +57,8 @@ const getCountry = cache(async (id: string) => {
   const total = countries.length
 
   const code = country.code
-  const citizens = users.filter(u => u.countryCode === code)
-  const citizenPage = firstPage(citizens, 'points')
+  const citizens = groupMembers(users, u => u.countryCode === code)
+  const citizenPage = firstPage(citizens.rows, 'points')
   const muPage = firstPage(mus.filter(m => m.countryCode === code), 'totalPoints')
   const partyPage = firstPage(parties.filter(p => p.countryCode === code), 'totalPoints')
   const battlePage = firstPage(liveActive.filter(b => b.attacker.id === id || b.defender.id === id), 'totalDamage')
@@ -73,7 +74,6 @@ const getCountry = cache(async (id: string) => {
     ranges,
     total,
     citizens,
-    players: users.length,
     citizenPage,
     muPage,
     partyPage,
@@ -112,7 +112,6 @@ export default async function CountryDetailPage({ params }: PageProps) {
     ranges,
     total,
     citizens,
-    players,
     citizenPage,
     muPage,
     partyPage,
@@ -137,7 +136,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
         total={total}
         unit="countries"
         groups={rankGroups(c)}
-        members={{ rows: citizens, noun: 'citizen', players }}
+        members={{ ...citizens, noun: 'citizen' }}
       />
 
       <GovernmentSection government={government} />

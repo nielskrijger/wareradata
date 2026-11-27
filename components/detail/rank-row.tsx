@@ -1,13 +1,9 @@
-import type { ComponentProps, ReactNode } from 'react'
-
-import type { Category } from '@/components/data-table/column-categories'
 import type { RankMapGroup, RankMapRow } from '@/components/detail/rank-map'
 import type { PlayerStat } from '@/lib/rank-scale'
 import type { GroupPointsStats, GroupPremiumStats, PointSources } from '@/lib/rows'
 
 import { CompactNumber } from '@/components/cells/compact-number'
 import { CATEGORY_COLOR, COLOR } from '@/components/colors'
-import { RankLine } from '@/components/detail/rank-map'
 import { POINTS_LEGEND } from '@/components/points-breakdown-legend'
 import { formatDecimal, percentOf } from '@/lib/format'
 
@@ -122,25 +118,4 @@ export function pointsGroup(r: GroupPointsStats, perLabel: string): RankMapGroup
     r,
     rankRow(perLabel, r.avgPoints, r.avgPointsRank, false, 'points'),
   )
-}
-
-/**
- * A rank line per table category, each the row of `groups` named by `picks`
- * as [group title, row label], for a members table's view tabs.
- */
-export function rankLines(
-  groups: RankMapGroup[],
-  picks: Partial<Record<Category, [string, string]>>,
-  props: Omit<ComponentProps<typeof RankLine>, 'group' | 'row'>,
-): Partial<Record<Category, ReactNode>> {
-  const lines: Partial<Record<Category, ReactNode>> = {}
-  for (const [category, [title, label]] of Object.entries(picks) as [Category, [string, string]][]) {
-    const group = groups.find(g => g.title === title)
-    const row = group?.rows.find(r => r.label === label)
-    if (group && row) {
-      lines[category] = <RankLine group={group} row={row} {...props} />
-    }
-  }
-
-  return lines
 }

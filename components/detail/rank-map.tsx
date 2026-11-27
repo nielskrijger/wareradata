@@ -88,7 +88,8 @@ interface Members {
  * member is a tick on the same track, ranked among all players.
  */
 export function RankMap({ name, groups, total, unit, members }: Props) {
-  const ranked = rankMembers(members, groups.flatMap(g => g.rows))
+  const stats = groups.flatMap(g => g.rows.flatMap(r => (r.stat ? [r.stat] : [])))
+  const ranked = members && { rows: members.rows.map(m => memberRanks(m, stats)), players: members.players }
 
   return (
     <Panel as="section">
@@ -125,39 +126,6 @@ export function RankMap({ name, groups, total, unit, members }: Props) {
       ))}
     </Panel>
   )
-}
-
-/**
- * One stat of the rank map on its own, for the table tab it belongs to.
- */
-export function RankLine({ group, row, total, unit, members }: Omit<Props, 'name' | 'groups'> & {
-  group: RankMapGroup
-  row: RankMapRow
-}) {
-  return (
-    <Panel padding="sm">
-      <div className="flex items-baseline gap-2 text-xs">
-        <span className="font-medium tracking-wide uppercase" style={{ color: group.color }}>{group.title}</span>
-        <span className="text-muted-foreground">
-          among
-          {' '}
-          {formatNumber(total)}
-          {' '}
-          {unit}
-        </span>
-      </div>
-      <Row row={row} color={group.color} total={total} members={rankMembers(members, [row])} />
-    </Panel>
-  )
-}
-
-/**
- * The members' ranks on the rows' player stats, for their ticks.
- */
-function rankMembers(members: Members | undefined, rows: RankMapRow[]) {
-  const stats = rows.flatMap(r => (r.stat ? [r.stat] : []))
-
-  return members && { rows: members.rows.map(m => memberRanks(m, stats)), players: members.players }
 }
 
 /**

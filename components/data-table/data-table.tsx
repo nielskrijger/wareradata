@@ -60,9 +60,9 @@ export type EntityTableProps<TData extends RowData> = {
 } & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns'>
 
 /**
- * What a detail page puts in a table's view tabs: its own Overview and a line above each category view.
+ * A detail page's own Overview tab content.
  */
-export type ViewSlotProps = Pick<DataTableProps<RowData>, 'overview' | 'viewHeaders'>
+export type OverviewProps = Pick<DataTableProps<RowData>, 'overview'>
 
 interface DataTableProps<TData extends RowData> {
   /**
@@ -114,11 +114,6 @@ interface DataTableProps<TData extends RowData> {
    * of the group the rows belong to.
    */
   overview?: ReactNode
-
-  /**
-   * Shown above the rows on a view tab (e.g. the group's rank on that category).
-   */
-  viewHeaders?: Partial<Record<ColumnView, ReactNode>>
 }
 
 /**
@@ -147,7 +142,6 @@ function DataTableInner<TData extends RowData>({
   omitColumns,
   onRowHover,
   overview,
-  viewHeaders,
 }: DataTableProps<TData>) {
   const columns = omitColumns
     ? allColumns.filter(c => !omitColumns.includes(columnId(c)))
@@ -280,7 +274,6 @@ function DataTableInner<TData extends RowData>({
     <div className="space-y-3" data-pending={isPending ? 'true' : 'false'}>
       {/* Tabs first, so switching to an Overview without a search leaves them in place. */}
       {tabs}
-      {viewHeaders?.[view]}
 
       <div className="flex items-center gap-2">
         <SearchInput

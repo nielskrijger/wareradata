@@ -77,24 +77,26 @@ export function BattleMatchup({ battle: b }: { battle: BattleRow }) {
     <div className="flex w-full flex-col gap-3">
       <div className="flex items-start gap-2">
         <SideEmblem side={b.attacker} won={b.wonBy === 'attacker'} />
-        <div className="flex shrink-0 flex-col items-center gap-1">
-          <div className="flex items-baseline gap-2 tabular-nums">
-            <Score value={b.attackerWonRounds} leads={b.attackerWonRounds >= b.defenderWonRounds} />
-            <span className="text-muted-foreground text-xl">–</span>
-            <Score value={b.defenderWonRounds} leads={b.defenderWonRounds >= b.attackerWonRounds} />
-          </div>
-          <BattleTypeBadge
-            isTournament={b.isTournament}
-            isResistance={b.isResistance}
-            tournamentName={b.tournamentName}
-            tournamentRound={b.tournamentRound}
-          />
+        <div className="flex shrink-0 items-baseline gap-2 tabular-nums">
+          <Score value={b.attackerWonRounds} leads={b.attackerWonRounds >= b.defenderWonRounds} />
+          <span className="text-muted-foreground text-xl">–</span>
+          <Score value={b.defenderWonRounds} leads={b.defenderWonRounds >= b.attackerWonRounds} />
         </div>
         <SideEmblem side={b.defender} won={b.wonBy === 'defender'} />
       </div>
-      <span className="text-muted-foreground text-center text-xs tracking-widest uppercase">
-        {`${battleVerb(b)} · first to ${b.roundsToWin}`}
-      </span>
+      {/* The type badge sits here rather than under the score so the score
+          row can break out of the sidebar's top edge on its own. */}
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <BattleTypeBadge
+          isTournament={b.isTournament}
+          isResistance={b.isResistance}
+          tournamentName={b.tournamentName}
+          tournamentRound={b.tournamentRound}
+        />
+        <span className="text-muted-foreground text-xs tracking-widest uppercase">
+          {`${battleVerb(b)} · first to ${b.roundsToWin}`}
+        </span>
+      </div>
       <div className="space-y-1">
         <StackedBar
           className="h-2.5 bg-muted"

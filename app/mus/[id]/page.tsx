@@ -7,9 +7,8 @@ import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
 
-import { UsersTable } from '@/app/users/users-table'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { RankMap } from '@/components/detail/rank-map'
+import { MembersSection } from '@/components/detail/members-section'
 import {
   GROUP_COLOR,
   pointsGroup,
@@ -18,11 +17,10 @@ import {
   wealthPartRows,
 } from '@/components/detail/rank-row'
 import { RefreshButton } from '@/components/detail/refresh-button'
-import { PageSection } from '@/components/layout/page-section'
 import { MUSidebar } from '@/components/mu/mu-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
-import { firstPage } from '@/lib/query'
+import { groupMembers } from '@/lib/rows'
 
 import { requestMuRefresh } from './actions'
 
@@ -41,15 +39,7 @@ const getMU = cache(async (id: string) => {
     return null
   }
 
-  const total = mus.length
-
-  // First page of this MU's members, sorted like /users (points desc). The
-  // embedded UsersTable takes over client-side, re-fetching with the same
-  // muId scope applied as a base filter.
-  const members = users.filter(u => u.muId === id)
-  const memberPage = firstPage(members, 'points')
-
-  return { mu, total, members, players: users.length, memberPage }
+  return { mu, total: mus.length, members: groupMembers(users, u => u.muId === id) }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -78,7 +68,7 @@ export default async function MUDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { mu, total, members, players, memberPage } = result
+  const { mu, total, members } = result
 
   return (
     <DetailLayout
@@ -89,22 +79,16 @@ export default async function MUDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <PageSection title="Members">
-        <UsersTable
-          initial={memberPage}
-          baseFilter={`muId:${mu.id}`}
-          omitColumns={['muName']}
-          overview={(
-            <RankMap
-              name={mu.name}
-              total={total}
-              unit="MUs"
-              groups={rankGroups(mu)}
-              members={{ rows: members, noun: 'member', players }}
-            />
-          )}
-        />
-      </PageSection>
+      <MembersSection
+        members={members}
+        noun="member"
+        name={mu.name}
+        total={total}
+        unit="MUs"
+        groups={rankGroups(mu)}
+        baseFilter={`muId:${mu.id}`}
+        omitColumns={['muName']}
+      />
     </DetailLayout>
   )
 }

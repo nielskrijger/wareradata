@@ -1,6 +1,6 @@
 'use client'
 
-import type { PageResult } from '@/components/data-table/data-table'
+import type { PagedResult } from '@/lib/query'
 import type { BattleRow, MURow, PartyRow, UserRow } from '@/lib/rows'
 
 import { parseAsStringEnum, useQueryState } from 'nuqs'
@@ -20,10 +20,10 @@ type Tab = (typeof TABS)[number]
 
 interface Props {
   code: string
-  citizens: PageResult<UserRow>
-  mus: PageResult<MURow>
-  parties: PageResult<PartyRow>
-  battles: PageResult<BattleRow>
+  citizens: PagedResult<UserRow>
+  mus: PagedResult<MURow>
+  parties: PagedResult<PartyRow>
+  battles: PagedResult<BattleRow>
 }
 
 /**

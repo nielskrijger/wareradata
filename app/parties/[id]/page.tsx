@@ -7,9 +7,8 @@ import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
 
-import { UsersTable } from '@/app/users/users-table'
 import { DetailLayout } from '@/components/detail/detail-sidebar'
-import { RankMap } from '@/components/detail/rank-map'
+import { MembersSection } from '@/components/detail/members-section'
 import {
   GROUP_COLOR,
   pointsGroup,
@@ -17,11 +16,10 @@ import {
   rankRow,
   wealthPartRows,
 } from '@/components/detail/rank-row'
-import { PageSection } from '@/components/layout/page-section'
 import { PartySidebar } from '@/components/party/party-sidebar'
 import { getSnapshot } from '@/lib/cache/memory'
 import { pageMetadata } from '@/lib/metadata'
-import { firstPage } from '@/lib/query'
+import { groupMembers } from '@/lib/rows'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -38,11 +36,7 @@ const getParty = cache(async (id: string) => {
     return null
   }
 
-  const total = parties.length
-  const members = users.filter(u => u.partyId === id)
-  const memberPage = firstPage(members, 'points')
-
-  return { party, total, members, players: users.length, memberPage }
+  return { party, total: parties.length, members: groupMembers(users, u => u.partyId === id) }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -68,27 +62,21 @@ export default async function PartyDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { party: p, total, members, players, memberPage } = result
+  const { party: p, total, members } = result
 
   return (
     <DetailLayout sidebar={<PartySidebar party={p} />}>
       {/* Party members are citizens of the party's country. */}
-      <PageSection title="Members">
-        <UsersTable
-          initial={memberPage}
-          baseFilter={`partyId:${p.id}`}
-          omitColumns={['partyName', 'countryCode']}
-          overview={(
-            <RankMap
-              name={p.name}
-              total={total}
-              unit="parties"
-              groups={rankGroups(p)}
-              members={{ rows: members, noun: 'member', players }}
-            />
-          )}
-        />
-      </PageSection>
+      <MembersSection
+        members={members}
+        noun="member"
+        name={p.name}
+        total={total}
+        unit="parties"
+        groups={rankGroups(p)}
+        baseFilter={`partyId:${p.id}`}
+        omitColumns={['partyName', 'countryCode']}
+      />
     </DetailLayout>
   )
 }

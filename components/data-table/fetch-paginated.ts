@@ -1,6 +1,6 @@
 import type { RowData } from '@tanstack/react-table'
 
-import type { PageRequest, PageResult } from './data-table'
+import type { PagedResult, QueryParams } from '@/lib/query'
 
 /**
  * Fetches one page from a DataTable `/api/*` route.
@@ -10,21 +10,20 @@ import type { PageRequest, PageResult } from './data-table'
  */
 export async function fetchPaginated<T extends RowData>(
   endpoint: string,
-  req: PageRequest,
-  baseFilter?: string,
-): Promise<PageResult<T>> {
+  { page, pageSize, sort, dir, filter, baseFilter }: QueryParams,
+): Promise<PagedResult<T>> {
   const params = new URLSearchParams({
-    page: String(req.page),
-    pageSize: String(req.pageSize),
-    dir: req.dir,
+    page: String(page),
+    pageSize: String(pageSize),
+    dir,
   })
 
-  if (req.sort) {
-    params.set('sort', req.sort)
+  if (sort) {
+    params.set('sort', sort)
   }
 
-  if (req.filter) {
-    params.set('filter', req.filter)
+  if (filter) {
+    params.set('filter', filter)
   }
 
   if (baseFilter) {
@@ -36,5 +35,5 @@ export async function fetchPaginated<T extends RowData>(
     throw new Error(`Fetch failed: ${endpoint} returned ${res.status}`)
   }
 
-  return res.json() as Promise<PageResult<T>>
+  return res.json() as Promise<PagedResult<T>>
 }

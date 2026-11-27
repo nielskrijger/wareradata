@@ -2,8 +2,8 @@
 
 import type { ColumnSort } from '@tanstack/react-table'
 
-import type { PageResult } from '@/components/data-table/data-table'
 import type { ColumnDef } from '@/components/data-table/features'
+import type { PagedResult } from '@/lib/query'
 import type { BattleRow } from '@/lib/rows'
 
 import { AdvancedSearchHint } from '@/components/data-table/advanced-search-hint'
@@ -14,7 +14,7 @@ interface Props {
    * See DataTable's `tableId`; active and finished battles have different columns.
    */
   tableId: 'battles-active' | 'battles-finished'
-  initial: PageResult<BattleRow>
+  initial: PagedResult<BattleRow>
   columns: ColumnDef<BattleRow>[]
 
   /**

@@ -7,7 +7,7 @@ import type { ExtraTab } from './column-view-tabs'
 import type { ColumnView } from './column-views'
 import type { ColumnDef } from './features'
 
-import type { Range } from '@/lib/query'
+import type { PagedResult, QueryParams } from '@/lib/query'
 import { useTable } from '@tanstack/react-table'
 import { RotateCw } from 'lucide-react'
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react'
@@ -35,30 +35,12 @@ import { TableFrame } from './table-frame'
 import { usePersistedColumnVisibility } from './use-persisted-column-visibility'
 import { useTableUrlState } from './use-table-url-state'
 
-export interface PageRequest {
-  page: number
-  pageSize: number
-  sort: string | null
-  dir: 'asc' | 'desc'
-  filter: string
-}
-
-export interface PageResult<TData extends RowData> {
-  rows: TData[]
-  total: number
-
-  /**
-   * Per-column [min, max, median] over the full filtered set, for heat coloring.
-   */
-  ranges?: Record<string, Range>
-}
-
 /**
  * Props of an entity table wrapper (UsersTable, MUsTable, …), so a detail
  * page can scope and trim it and give it its own Overview.
  */
 export type EntityTableProps<TData extends RowData> = {
-  initial: PageResult<TData>
+  initial: PagedResult<TData>
 } & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns' | 'overview' | 'extraTab'>
 
 interface DataTableProps<TData extends RowData> {
@@ -69,7 +51,7 @@ interface DataTableProps<TData extends RowData> {
    */
   tableId: string
   columns: ColumnDef<TData>[]
-  initialData: PageResult<TData>
+  initialData: PagedResult<TData>
   initialSort: ColumnSort
 
   /**
@@ -181,7 +163,7 @@ function DataTableInner<TData extends RowData>({
   const onExtraTab = extraTab !== undefined && tab === extraTab.id
   const view = (onExtraTab ? 'all' : tab || 'all') as ColumnView
   const shownColumns = viewVisibility(columns, view) ?? columnVisibility
-  const [data, setData] = useState<PageResult<TData>>(initialData)
+  const [data, setData] = useState<PagedResult<TData>>(initialData)
   const [isPending, startTransition] = useTransition()
   const [loadFailed, setLoadFailed] = useState(false)
 
@@ -211,19 +193,20 @@ function DataTableInner<TData extends RowData>({
     }
 
     const first = sorting[0]
-    const req: PageRequest = {
+    const query: QueryParams = {
       page: pageIndex,
       pageSize,
       sort: first?.id ?? null,
       dir: first?.desc ? 'desc' : 'asc',
       filter: q,
+      baseFilter,
     }
 
     // Responses can arrive out of order; a stale one must not overwrite a newer result.
     let superseded = false
     startTransition(async () => {
       try {
-        const result = await fetchPaginated<TData>(endpoint, req, baseFilter)
+        const result = await fetchPaginated<TData>(endpoint, query)
         if (!superseded) {
           setData(result)
           setLoadFailed(false)

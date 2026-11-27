@@ -41,8 +41,6 @@ const getAlliance = cache(async (id: string) => {
     return null
   }
 
-  const total = alliances.length
-
   // Citizens of all member countries, the alliance-wide equivalent of the
   // country page's citizens tab.
   const memberCodes = new Set(alliance.members.map(m => m.code).filter(Boolean))
@@ -51,7 +49,7 @@ const getAlliance = cache(async (id: string) => {
 
   const strategicBonus = strategicBonuses.byAlliance[id] ?? null
 
-  return { alliance, alliances, total, citizens, players: users.length, citizenPage, strategicBonus }
+  return { alliance, alliances, citizens, players: users.length, citizenPage, strategicBonus }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -77,7 +75,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { alliance: a, alliances, total, citizens, players, citizenPage, strategicBonus } = result
+  const { alliance: a, alliances, citizens, players, citizenPage, strategicBonus } = result
 
   // The user's filter on the citizens table is applied within this scope, so a
   // search can never widen past the alliance's member countries.
@@ -90,7 +88,7 @@ export default async function AllianceDetailPage({ params }: PageProps) {
     >
       <RankMap
         name={a.name}
-        total={total}
+        total={alliances.length}
         unit="alliances"
         groups={rankGroups(a)}
         peers={{

@@ -38,11 +38,10 @@ const getParty = cache(async (id: string) => {
     return null
   }
 
-  const total = parties.length
   const members = users.filter(u => u.partyId === id)
   const memberPage = firstPage(members, 'points')
 
-  return { party, parties, total, members, players: users.length, memberPage }
+  return { party, parties, members, players: users.length, memberPage }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -68,7 +67,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { party: p, parties, total, members, players, memberPage } = result
+  const { party: p, parties, members, players, memberPage } = result
 
   return (
     <DetailLayout sidebar={<PartySidebar party={p} />}>
@@ -81,7 +80,7 @@ export default async function PartyDetailPage({ params }: PageProps) {
           overview={(
             <RankMap
               name={p.name}
-              total={total}
+              total={parties.length}
               unit="parties"
               groups={rankGroups(p)}
               peers={{

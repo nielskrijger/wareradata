@@ -53,7 +53,6 @@ const getCountry = cache(async (id: string) => {
   // Ranges over the full set, same as the /countries table, so each stat can
   // show where this country sits.
   const ranges = computeRanges(countries)
-  const total = countries.length
 
   const code = country.code
   const citizens = users.filter(u => u.countryCode === code)
@@ -72,7 +71,6 @@ const getCountry = cache(async (id: string) => {
     government,
     strategicBonus,
     ranges,
-    total,
     citizens,
     players: users.length,
     citizenPage,
@@ -112,7 +110,6 @@ export default async function CountryDetailPage({ params }: PageProps) {
     government,
     strategicBonus,
     ranges,
-    total,
     citizens,
     players,
     citizenPage,
@@ -136,7 +133,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
     >
       <RankMap
         name={c.name}
-        total={total}
+        total={countries.length}
         unit="countries"
         groups={rankGroups(c)}
         peers={{

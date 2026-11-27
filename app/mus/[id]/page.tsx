@@ -41,15 +41,13 @@ const getMU = cache(async (id: string) => {
     return null
   }
 
-  const total = mus.length
-
   // First page of this MU's members, sorted like /users (points desc). The
   // embedded UsersTable takes over client-side, re-fetching with the same
   // muId scope applied as a base filter.
   const members = users.filter(u => u.muId === id)
   const memberPage = firstPage(members, 'points')
 
-  return { mu, mus, total, members, players: users.length, memberPage }
+  return { mu, mus, members, players: users.length, memberPage }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -78,7 +76,7 @@ export default async function MUDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { mu, mus, total, members, players, memberPage } = result
+  const { mu, mus, members, players, memberPage } = result
 
   return (
     <DetailLayout
@@ -97,7 +95,7 @@ export default async function MUDetailPage({ params }: PageProps) {
           overview={(
             <RankMap
               name={mu.name}
-              total={total}
+              total={mus.length}
               unit="MUs"
               groups={rankGroups(mu)}
               peers={{

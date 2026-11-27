@@ -1,27 +1,19 @@
-import type { FieldAliases } from '@/lib/query'
+import type { CustomSorts, FieldAliases } from '@/lib/query'
 import type { MURow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { createTableRoute, makeSortValue } from '@/lib/query'
+import { createTableRoute } from '@/lib/query'
 import { buffScore } from '@/lib/rows'
-import {
-  CASE_FIELD_ALIASES,
-  FACTORY_FIELD_ALIASES,
-  PREMIUM_FIELD_ALIASES,
-  WEALTH_FIELD_ALIASES,
-} from '@/lib/rows/field-bundles'
-import { TIER_INDEX } from '@/lib/warera/api'
+import { FACTORY_FIELD_ALIASES, GROUP_FIELD_ALIASES } from '@/lib/rows/field-bundles'
+import { tierIndex } from '@/lib/warera/api'
 
 /**
  * Friendly field names for the advanced filter. Keep in sync with the
  * popover cheatsheet in `mus-table.tsx`.
  */
 const muFieldAliases: FieldAliases = {
-  ...CASE_FIELD_ALIASES,
-  ...WEALTH_FIELD_ALIASES,
-  ...PREMIUM_FIELD_ALIASES,
+  ...GROUP_FIELD_ALIASES,
   ...FACTORY_FIELD_ALIASES,
-  cases: 'casesOpenedTotal',
   country: 'countryCode',
   region: 'regionName',
   members: 'memberCount',
@@ -31,17 +23,14 @@ const muFieldAliases: FieldAliases = {
   health: 'avgHealth',
   hunger: 'avgHunger',
   level: 'avgLevel',
-  points: 'totalPoints',
-  ppd: 'avgPointsPerDay',
 }
 
-const muSortValue = makeSortValue<MURow>({
-  damageTier: row => (row.damageTier ? TIER_INDEX[row.damageTier] : null),
+const muSorts: CustomSorts<MURow> = {
+  damageTier: row => tierIndex(row.damageTier),
   buffScore: row => buffScore(row.buffMix),
-})
+}
 
 export const GET = createTableRoute<MURow>(
   async () => (await getSnapshot()).mus,
-  muSortValue,
-  muFieldAliases,
+  { aliases: muFieldAliases, sorts: muSorts },
 )

@@ -2,11 +2,8 @@
 
 import type { ReactNode } from 'react'
 
-import type { HoverStatus } from '@/components/hover-card/use-entity-hover'
-import type { GearLookup } from '@/lib/gear/score'
+import type { UserDetails } from '@/lib/cache/users'
 import type { Range } from '@/lib/query'
-import type { UserRow } from '@/lib/rows'
-import type { Equipment } from '@/lib/warera/api'
 
 import { Clock, Coins, Drumstick, Heart, Swords, Trophy } from 'lucide-react'
 
@@ -17,10 +14,9 @@ import { PrestigeSkull } from '@/components/cells/prestige-skull'
 import { HeatCell } from '@/components/data-table/heat-cell'
 import { GearStrip } from '@/components/detail/gear-strip'
 import { Flag } from '@/components/flag'
+import { EntityHoverCard } from '@/components/hover-card/entity-hover-card'
 import { FillBar } from '@/components/hover-card/fill-bar'
-import { HoverCardError, HoverLabel } from '@/components/hover-card/hover-card-parts'
-import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
-import { useEntityHover } from '@/components/hover-card/use-entity-hover'
+import { HoverLabel } from '@/components/hover-card/hover-card-parts'
 import { EMPTY, formatNumber, formatRelativeTime } from '@/lib/format'
 import { computeGearTier } from '@/lib/gear/score'
 
@@ -37,37 +33,25 @@ interface Props {
   children: ReactNode
 }
 
-interface FetchedData {
-  user: UserRow
-  ranges: Record<string, Range>
-  total: number
-  equipment: Equipment
-  gearLookup: GearLookup
-}
-
 /**
  * A tooltip of the user's stats, heat-tinted against all users. Fetched on
  * first open; with no `userId` the children render bare.
  */
 export function UserHoverCard({ userId, children }: Props) {
-  const { status, data, onOpenChange } = useEntityHover<FetchedData>(userId ? `/api/users/${userId}` : null)
-
   return (
-    <HoverCardShell
-      enabled={!!userId}
-      triggerClassName="block min-w-0"
-      contentClassName="w-80 p-0"
-      onOpenChange={onOpenChange}
-      content={status === 'ready' && data ? <Body data={data} /> : <Placeholder status={status} />}
+    <EntityHoverCard<UserDetails>
+      url={userId ? `/api/users/${userId}` : null}
+      renderBody={data => <Body data={data} />}
+      skeleton={<Skeleton />}
     >
       {children}
-    </HoverCardShell>
+    </EntityHoverCard>
   )
 }
 
-const ICON_CLS = 'size-3 text-neutral-50/70'
+const ICON = 'size-3 text-neutral-50/70'
 
-function Body({ data }: { data: FetchedData }) {
+function Body({ data }: { data: UserDetails }) {
   const { user, ranges, equipment, gearLookup } = data
 
   return (
@@ -97,7 +81,7 @@ function Body({ data }: { data: FetchedData }) {
         <div className="mt-0.5 flex items-center gap-2 text-[11px] text-neutral-50/60">
           <span className="min-w-0 flex-1 truncate">{user.muName ?? EMPTY}</span>
           <span className="inline-flex shrink-0 items-center gap-1">
-            <Clock className={ICON_CLS} />
+            <Clock className={ICON} />
             {formatRelativeTime(user.lastConnectionAt)}
           </span>
         </div>
@@ -109,8 +93,8 @@ function Body({ data }: { data: FetchedData }) {
           <BuffBadge status={user.buffStatus} endsAt={user.buffEndsAt} withTooltip={false} />
         </div>
         <div className="space-y-1">
-          <FillBar icon={<Heart className={ICON_CLS} />} pct={user.health} />
-          <FillBar icon={<Drumstick className={ICON_CLS} />} pct={user.hunger} />
+          <FillBar icon={<Heart className={ICON} />} pct={user.health} />
+          <FillBar icon={<Drumstick className={ICON} />} pct={user.hunger} />
         </div>
       </div>
 
@@ -133,14 +117,14 @@ function Body({ data }: { data: FetchedData }) {
       <div className="px-3 py-2">
         <HoverLabel className="mb-1 block">Performance</HoverLabel>
         <div className="space-y-0.5 text-[11px]">
-          <StatRow icon={<Trophy className={ICON_CLS} />} label="Points" value={user.points} range={ranges.points} />
+          <StatRow icon={<Trophy className={ICON} />} label="Points" value={user.points} range={ranges.points} />
           <StatRow
-            icon={<Swords className={ICON_CLS} />}
+            icon={<Swords className={ICON} />}
             label="Damage"
             value={user.weeklyDamage}
             range={ranges.weeklyDamage}
           />
-          <StatRow icon={<Coins className={ICON_CLS} />} label="Wealth" value={user.wealth} range={ranges.wealth} />
+          <StatRow icon={<Coins className={ICON} />} label="Wealth" value={user.wealth} range={ranges.wealth} />
         </div>
       </div>
     </>
@@ -168,15 +152,9 @@ function StatRow({ icon, label, value, range }: {
 }
 
 /**
- * Fixed-size placeholder matching the loaded layout's footprint so the popover
- * doesn't jump when data arrives. Loading uses subtle pulses; error swaps in
- * a one-line message.
+ * Pulses in the loaded layout's footprint.
  */
-function Placeholder({ status }: { status: HoverStatus }) {
-  if (status === 'error') {
-    return <HoverCardError />
-  }
-
+function Skeleton() {
   return (
     <div className="animate-pulse">
       <div className="flex items-center gap-2 px-3 py-2">

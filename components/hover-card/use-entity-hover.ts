@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export type HoverStatus = 'idle' | 'loading' | 'ready' | 'error'
+type HoverStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 /**
  * Fetches shared across every hover card for the session, keyed by URL, so two

@@ -2,35 +2,23 @@ import type { FieldAliases } from '@/lib/query'
 import type { PartyRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { createTableRoute, makeSortValue } from '@/lib/query'
-import {
-  CASE_FIELD_ALIASES,
-  PREMIUM_FIELD_ALIASES,
-  WEALTH_FIELD_ALIASES,
-} from '@/lib/rows/field-bundles'
+import { createTableRoute } from '@/lib/query'
+import { GROUP_FIELD_ALIASES } from '@/lib/rows/field-bundles'
 
 /**
  * Friendly field names for the advanced filter. Keep in sync with the
  * popover cheatsheet in `parties-table.tsx`.
  */
 const partyFieldAliases: FieldAliases = {
-  ...CASE_FIELD_ALIASES,
-  ...WEALTH_FIELD_ALIASES,
-  ...PREMIUM_FIELD_ALIASES,
-  cases: 'casesOpenedTotal',
+  ...GROUP_FIELD_ALIASES,
   country: 'countryCode',
   leader: 'leaderName',
   members: 'memberCount',
-  points: 'totalPoints',
   avg: 'avgPoints',
   level: 'avgLevel',
-  ppd: 'avgPointsPerDay',
 }
-
-const partySortValue = makeSortValue<PartyRow>()
 
 export const GET = createTableRoute<PartyRow>(
   async () => (await getSnapshot()).parties,
-  partySortValue,
-  partyFieldAliases,
+  { aliases: partyFieldAliases },
 )

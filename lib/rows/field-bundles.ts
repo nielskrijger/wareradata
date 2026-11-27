@@ -62,3 +62,15 @@ export const FACTORY_FIELD_ALIASES: FieldAliases = {
   happiness: 'employeeAvgHappiness',
   retiring: 'employeeRetiringSoon',
 }
+
+/**
+ * Aliases every group table (alliance / country / MU / party) shares.
+ */
+export const GROUP_FIELD_ALIASES: FieldAliases = {
+  ...CASE_FIELD_ALIASES,
+  ...WEALTH_FIELD_ALIASES,
+  ...PREMIUM_FIELD_ALIASES,
+  cases: 'casesOpenedTotal',
+  points: 'totalPoints',
+  ppd: 'avgPointsPerDay',
+}

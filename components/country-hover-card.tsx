@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react'
 
-import type { HoverStatus } from '@/components/hover-card/use-entity-hover'
 import type { CountryDetails } from '@/lib/cache/countries'
 import type { Range } from '@/lib/query'
 
@@ -11,10 +10,9 @@ import { Building2, Drumstick, Flame, Heart, Shield, Swords, Trophy, Users } fro
 import { TierBadge } from '@/components/badges/tier-badge'
 import { CompactNumber } from '@/components/cells/compact-number'
 import { Flag } from '@/components/flag'
+import { EntityHoverCard } from '@/components/hover-card/entity-hover-card'
 import { FillBar } from '@/components/hover-card/fill-bar'
-import { HoverCardError, HoverLabel } from '@/components/hover-card/hover-card-parts'
-import { HoverCardShell } from '@/components/hover-card/hover-card-shell'
-import { useEntityHover } from '@/components/hover-card/use-entity-hover'
+import { HoverLabel } from '@/components/hover-card/hover-card-parts'
 import { EMPTY, formatNumber, formatRank } from '@/lib/format'
 import { heatColor } from '@/lib/utils'
 
@@ -62,23 +60,16 @@ function pctInRange(value: number, range: Range | undefined): number {
  * A tooltip of the country's stats, heat-tinted against all countries. Fetched
  * on first open; with no `countryId` the children render bare.
  */
-export function CountryHoverCard({ countryId, children, triggerClassName = 'block min-w-0' }: Props) {
-  const {
-    status,
-    data,
-    onOpenChange,
-  } = useEntityHover<CountryDetails>(countryId ? `/api/countries/${countryId}` : null)
-
+export function CountryHoverCard({ countryId, children, triggerClassName }: Props) {
   return (
-    <HoverCardShell
-      enabled={!!countryId}
+    <EntityHoverCard<CountryDetails>
+      url={countryId ? `/api/countries/${countryId}` : null}
       triggerClassName={triggerClassName}
-      contentClassName="w-80 p-0"
-      onOpenChange={onOpenChange}
-      content={status === 'ready' && data ? <Body data={data} /> : <Placeholder status={status} />}
+      renderBody={data => <Body data={data} />}
+      skeleton={<Skeleton />}
     >
       {children}
-    </HoverCardShell>
+    </EntityHoverCard>
   )
 }
 
@@ -188,15 +179,9 @@ function Tile({ icon, label, value, rank, range, display }: TileProps) {
 }
 
 /**
- * Fixed-size placeholder matching the loaded layout's footprint so the popover
- * doesn't jump when data arrives. Loading uses subtle pulses; error swaps in a
- * one-line message.
+ * Pulses in the loaded layout's footprint.
  */
-function Placeholder({ status }: { status: HoverStatus }) {
-  if (status === 'error') {
-    return <HoverCardError />
-  }
-
+function Skeleton() {
   return (
     <div className="animate-pulse">
       <div className="flex items-center gap-2 px-3 py-2">

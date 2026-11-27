@@ -2,7 +2,7 @@ import type { FieldAliases } from '@/lib/query'
 import type { RegionRow } from '@/lib/rows'
 
 import { getSnapshot } from '@/lib/cache/memory'
-import { createTableRoute, makeSortValue } from '@/lib/query'
+import { createTableRoute } from '@/lib/query'
 
 /**
  * Friendly field names for the advanced filter. Keep in sync with the
@@ -22,10 +22,7 @@ const regionFieldAliases: FieldAliases = {
   income: 'dailyIncome',
 }
 
-const regionSortValue = makeSortValue<RegionRow>()
-
 export const GET = createTableRoute<RegionRow>(
   async () => (await getSnapshot()).regions,
-  regionSortValue,
-  regionFieldAliases,
+  { aliases: regionFieldAliases },
 )

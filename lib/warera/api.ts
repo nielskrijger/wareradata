@@ -182,13 +182,12 @@ export const RANKING_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond',
 export type RankingTier = (typeof RANKING_TIERS)[number]
 
 /**
- * Progression index of each ranking tier (bronze = 0 … master = 5), so tier
- * columns sort by strength instead of alphabetically. Derived once from
- * {@link RANKING_TIERS}; shared by the table sort specs.
+ * Progression index of a ranking tier (bronze = 0 … master = 5), so tier
+ * columns sort by strength instead of alphabetically.
  */
-export const TIER_INDEX: Record<string, number> = Object.fromEntries(
-  RANKING_TIERS.map((t, i) => [t, i]),
-)
+export function tierIndex(tier: RankingTier | null): number | null {
+  return tier ? RANKING_TIERS.indexOf(tier) : null
+}
 
 export interface SnapshotMeta {
   entityCounts?: Record<string, number>

@@ -67,6 +67,7 @@ const getCountry = cache(async (id: string) => {
   const activeBattlesList = activeBattlesByCountry.get(id) ?? []
 
   return {
+    countries,
     country,
     government,
     strategicBonus,
@@ -106,6 +107,7 @@ export default async function CountryDetailPage({ params }: PageProps) {
   }
 
   const {
+    countries,
     country: c,
     government,
     strategicBonus,
@@ -137,6 +139,10 @@ export default async function CountryDetailPage({ params }: PageProps) {
         total={total}
         unit="countries"
         groups={rankGroups(c)}
+        peers={{
+          selfId: c.id,
+          all: countries.map(p => ({ id: p.id, name: p.name, code: p.code, groups: rankGroups(p) })),
+        }}
         members={{ rows: citizens, noun: 'citizen', players }}
       />
 

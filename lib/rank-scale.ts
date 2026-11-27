@@ -70,3 +70,57 @@ export function memberTicks(members: MemberRanks[], stat: PlayerStat, players: n
 
   return counts
 }
+
+/**
+ * Where a value sits on a value track, 0 (none) to 100 (`max`, the #1's).
+ *
+ * Square root of the share of #1's value, like {@link rankPosition}: the
+ * leaders spread out without the long tail of small ones collapsing to a dot.
+ */
+export function valuePosition(value: number, max: number): number {
+  return max > 0 ? 100 * Math.sqrt(Math.max(value, 0) / max) : 0
+}
+
+export const VALUE_MARKS = [
+  { label: '0', at: 0 },
+  { label: '10% of #1', at: valuePosition(0.1, 1) },
+  { label: '25%', at: valuePosition(0.25, 1) },
+  { label: '50%', at: valuePosition(0.5, 1) },
+  { label: '#1', at: 100 },
+]
+
+/**
+ * The peers in one half percent of a value track, named by the best of
+ * them (an index into the rank map's peer list). A tuple, as a big set ships
+ * thousands of them.
+ */
+export type PeerTick = [at: number, peer: number, rank: number, count: number]
+
+export interface PeerValue {
+  peer: number
+  value: number
+  rank: number
+}
+
+/**
+ * Peers per half percent of the value track, so a set of thousands stays
+ * under two hundred ticks that each still name someone.
+ */
+export function peerTicks(values: PeerValue[], max: number): PeerTick[] {
+  const ticks = new Map<number, PeerTick>()
+  for (const { peer, value, rank } of values) {
+    const at = Math.round(valuePosition(value, max) * 2) / 2
+    const tick = ticks.get(at)
+    if (!tick) {
+      ticks.set(at, [at, peer, rank, 1])
+    } else {
+      tick[3]++
+      if (rank < tick[2]) {
+        tick[1] = peer
+        tick[2] = rank
+      }
+    }
+  }
+
+  return [...ticks.values()]
+}

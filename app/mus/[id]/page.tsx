@@ -49,7 +49,7 @@ const getMU = cache(async (id: string) => {
   const members = users.filter(u => u.muId === id)
   const memberPage = firstPage(members, 'points')
 
-  return { mu, total, members, players: users.length, memberPage }
+  return { mu, mus, total, members, players: users.length, memberPage }
 })
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -78,7 +78,7 @@ export default async function MUDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { mu, total, members, players, memberPage } = result
+  const { mu, mus, total, members, players, memberPage } = result
 
   return (
     <DetailLayout
@@ -100,6 +100,10 @@ export default async function MUDetailPage({ params }: PageProps) {
               total={total}
               unit="MUs"
               groups={rankGroups(mu)}
+              peers={{
+                selfId: mu.id,
+                all: mus.map(m => ({ id: m.id, name: m.name, code: m.countryCode, groups: rankGroups(m) })),
+              }}
               members={{ rows: members, noun: 'member', players }}
             />
           )}

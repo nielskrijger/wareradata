@@ -156,3 +156,12 @@ export function topPercent(rank: number, total: number): string {
 
   return pct < 1 ? `top ${Math.max(pct, 0.1).toFixed(1)}%` : `top ${Math.round(pct)}%`
 }
+
+/**
+ * A share of the #1's value: "84% of #1", "0.4% of #1".
+ */
+export function ofFirst(share: number): string {
+  const pct = share * 100
+
+  return `${pct < 1 ? pct.toFixed(1) : Math.round(pct)}% of #1`
+}

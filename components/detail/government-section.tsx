@@ -4,7 +4,6 @@ import Link from 'next/link'
 
 import { Avatar } from '@/components/avatar'
 import { COLOR, seriesColor, tint } from '@/components/colors'
-import { PageSection } from '@/components/layout/page-section'
 import { InternalLink } from '@/components/links'
 import { Panel } from '@/components/panel'
 import { UserHoverCard } from '@/components/user-hover-card'
@@ -150,7 +149,8 @@ export function GovernmentSection({ government }: Props) {
   const benches = congressBenches(congress, colors)
 
   return (
-    <PageSection title="Government">
+    <section className="min-w-0 space-y-3">
+      <h2 className="font-brand text-lg tracking-wide">Government</h2>
       <Panel className="space-y-4">
         {seats.length > 0 && (
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:gap-x-6">
@@ -222,7 +222,7 @@ export function GovernmentSection({ government }: Props) {
           </div>
         )}
       </Panel>
-    </PageSection>
+    </section>
   )
 }
 

@@ -16,7 +16,7 @@ interface Props {
   avatar: ReactNode
 
   /**
-   * The refresh control, pinned top-right next to the avatar, for entities
+   * The refresh control, pinned to the card's top-right corner, for entities
    * that can be re-fetched on demand.
    */
   refresh?: ReactNode
@@ -26,18 +26,20 @@ interface Props {
 /**
  * The left column of a detail page: avatar and refresh on top, then
  * the identity and sections the caller passes in.
+ *
+ * From xl up the card drops by the height of a tab row plus its gap, so it
+ * lines up with the first card under a page's tabs, and the avatar breaks out
+ * of its top edge into that space.
  */
 export function DetailSidebar({ wash, avatar, refresh, children }: Props) {
   return (
     <Panel
       as="aside"
-      className="flex flex-col gap-4 self-start"
+      className="relative flex flex-col gap-4 self-start xl:mt-[50px]"
       style={{ backgroundImage: `linear-gradient(180deg, ${wash}, transparent 9rem)` }}
     >
-      <div className="flex items-start justify-between gap-2">
-        {avatar}
-        {refresh}
-      </div>
+      <div className="xl:-mt-[70px]">{avatar}</div>
+      {refresh && <div className="absolute top-4 right-4 sm:top-5 sm:right-5">{refresh}</div>}
       {children}
     </Panel>
   )

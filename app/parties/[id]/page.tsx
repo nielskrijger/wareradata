@@ -72,20 +72,21 @@ export default async function PartyDetailPage({ params }: PageProps) {
 
   return (
     <DetailLayout sidebar={<PartySidebar party={p} />}>
-      <RankMap
-        name={p.name}
-        total={total}
-        unit="parties"
-        groups={rankGroups(p)}
-        members={{ rows: members, noun: 'member', players }}
-      />
-
       {/* Party members are citizens of the party's country. */}
       <PageSection title="Members">
         <UsersTable
           initial={memberPage}
           baseFilter={`partyId:${p.id}`}
           omitColumns={['partyName', 'countryCode']}
+          overview={(
+            <RankMap
+              name={p.name}
+              total={total}
+              unit="parties"
+              groups={rankGroups(p)}
+              members={{ rows: members, noun: 'member', players }}
+            />
+          )}
         />
       </PageSection>
     </DetailLayout>

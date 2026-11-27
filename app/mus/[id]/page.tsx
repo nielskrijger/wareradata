@@ -89,16 +89,21 @@ export default async function MUDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <RankMap
-        name={mu.name}
-        total={total}
-        unit="MUs"
-        groups={rankGroups(mu)}
-        members={{ rows: members, noun: 'member', players }}
-      />
-
       <PageSection title="Members">
-        <UsersTable initial={memberPage} baseFilter={`muId:${mu.id}`} omitColumns={['muName']} />
+        <UsersTable
+          initial={memberPage}
+          baseFilter={`muId:${mu.id}`}
+          omitColumns={['muName']}
+          overview={(
+            <RankMap
+              name={mu.name}
+              total={total}
+              unit="MUs"
+              groups={rankGroups(mu)}
+              members={{ rows: members, noun: 'member', players }}
+            />
+          )}
+        />
       </PageSection>
     </DetailLayout>
   )

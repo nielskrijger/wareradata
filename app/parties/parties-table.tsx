@@ -8,7 +8,7 @@ import { DataTable } from '@/components/data-table/data-table'
 
 import { partyColumns } from './columns'
 
-export function PartiesTable({ initial, baseFilter, omitColumns }: EntityTableProps<PartyRow>) {
+export function PartiesTable({ initial, ...scope }: EntityTableProps<PartyRow>) {
   return (
     <DataTable
       tableId="parties"
@@ -16,8 +16,7 @@ export function PartiesTable({ initial, baseFilter, omitColumns }: EntityTablePr
       initialData={initial}
       initialSort={{ id: 'totalPoints', desc: true }}
       endpoint="/api/parties"
-      baseFilter={baseFilter}
-      omitColumns={omitColumns}
+      {...scope}
       searchPlaceholder="Filter by party, country, or leader…"
       searchHint={(
         <AdvancedSearchHint

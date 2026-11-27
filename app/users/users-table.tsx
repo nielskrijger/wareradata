@@ -11,7 +11,7 @@ import { HighlightedPlayerContext } from '@/components/detail/highlighted-player
 
 import { userColumns } from './columns'
 
-export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProps<UserRow>) {
+export function UsersTable({ initial, ...scope }: EntityTableProps<UserRow>) {
   // Highlights the hovered player on the page's rank map, if there is one.
   const { hover } = use(HighlightedPlayerContext)
 
@@ -22,8 +22,7 @@ export function UsersTable({ initial, baseFilter, omitColumns }: EntityTableProp
       initialData={initial}
       initialSort={{ id: 'points', desc: true }}
       endpoint="/api/users"
-      baseFilter={baseFilter}
-      omitColumns={omitColumns}
+      {...scope}
       onRowHover={row => hover(row?.id ?? null)}
       searchPlaceholder="Filter by username, country, MU, or party…"
       searchHint={(

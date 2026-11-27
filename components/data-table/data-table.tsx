@@ -53,11 +53,11 @@ export interface PageResult<TData extends RowData> {
 
 /**
  * Props of an entity table wrapper (UsersTable, MUsTable, …), so a detail
- * page can scope and trim it.
+ * page can scope and trim it and give it its own Overview.
  */
 export type EntityTableProps<TData extends RowData> = {
   initial: PageResult<TData>
-} & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns'>
+} & Pick<DataTableProps<TData>, 'baseFilter' | 'omitColumns' | 'overview'>
 
 interface DataTableProps<TData extends RowData> {
   /**
@@ -103,6 +103,12 @@ interface DataTableProps<TData extends RowData> {
    * Called with the row under the pointer, and null when it leaves.
    */
   onRowHover?: (row: TData | null) => void
+
+  /**
+   * Shown in place of the rows on the Overview tab, for a detail page's summary
+   * of the group the rows belong to.
+   */
+  overview?: ReactNode
 }
 
 /**
@@ -130,6 +136,7 @@ function DataTableInner<TData extends RowData>({
   searchHint,
   omitColumns,
   onRowHover,
+  overview,
 }: DataTableProps<TData>) {
   const columns = omitColumns
     ? allColumns.filter(c => !omitColumns.includes(columnId(c)))
@@ -240,8 +247,29 @@ function DataTableInner<TData extends RowData>({
 
   const rows = table.getRowModel().rows
 
+  const tabs = views.length > 0 && (
+    <ColumnViewTabs
+      views={views}
+      value={view}
+      onChange={setView}
+      counts={columnViewCount(columns)}
+    />
+  )
+
+  if (overview && view === 'overview') {
+    return (
+      <div className="space-y-3">
+        {tabs}
+        {overview}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-3" data-pending={isPending ? 'true' : 'false'}>
+      {/* Tabs first, so switching to an Overview without a search leaves them in place. */}
+      {tabs}
+
       <div className="flex items-center gap-2">
         <SearchInput
           value={filterInput}
@@ -254,15 +282,6 @@ function DataTableInner<TData extends RowData>({
         {searchHint}
         {view === 'all' && <ColumnsMenu table={table} />}
       </div>
-
-      {views.length > 0 && (
-        <ColumnViewTabs
-          views={views}
-          value={view}
-          onChange={setView}
-          counts={columnViewCount(columns)}
-        />
-      )}
 
       {loadFailed && (
         <div

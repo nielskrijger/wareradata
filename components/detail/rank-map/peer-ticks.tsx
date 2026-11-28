@@ -11,7 +11,7 @@ import { formatRank, ofFirst } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { valueShare } from './scale'
 
-import { LegendMarker, TickLabel, TickMarker, TickTrack } from './tick-track'
+import { TickLabel, TickMarker, TickTrack } from './tick-track'
 
 export interface Peer {
   name: string
@@ -82,24 +82,8 @@ export function ViewSwitch({ labels }: { labels: Record<RankMapView, string> }) 
 }
 
 /**
- * The peer under the pointer, for the rank map legend.
- */
-export function HoveredPeerName({ peers }: { peers: Peer[] }) {
-  const { hovered } = usePeers()
-  const peer = hovered == null ? undefined : peers[hovered]
-
-  return peer && (
-    <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
-      <LegendMarker />
-      <Flag code={peer.code} />
-      {peer.name}
-    </span>
-  )
-}
-
-/**
  * The other groups as ticks on a value track. Pointing at a tick marks that
- * peer with a white tick on every row and labels it here.
+ * peer with a white tick on every row.
  */
 export function PeerTicks({ ticks, peers, color }: { ticks: PeerTick[], peers: Peer[], color: string }) {
   const { hovered, hover } = usePeers()

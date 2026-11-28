@@ -12,7 +12,7 @@ import { formatNumber, formatRank, ofFirst, topPercent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { HighlightedPlayerName, MemberTicks } from './member-ticks'
 import { memberRanks } from './members'
-import { HoveredPeerName, PeerTicks, RankMapViews, ViewSwitch } from './peer-ticks'
+import { PeerTicks, RankMapViews, ViewSwitch } from './peer-ticks'
 import { peerRows, rowKey } from './peers'
 import { RANK_MARKS, rankPosition, VALUE_MARKS, valuePosition } from './scale'
 
@@ -126,14 +126,11 @@ export function RankMap({ name, groups, total, unit, peers, members }: Props) {
           <h2 className="font-medium">
             Where {name} ranks among {formatNumber(total)} {unit}
           </h2>
-          <span className="text-muted-foreground inline-flex items-center gap-3 text-xs">
-            {memberSet && views.length > 1 && (
-              <ViewSwitch labels={{ peers: capitalize(unit), members: `${capitalize(memberSet.noun)}s` }} />
-            )}
+          {/* The switch sits last so a changing caption can't push it around. */}
+          <span className="text-muted-foreground ml-auto inline-flex items-center gap-3 text-xs">
             {peerSet && (
-              <span className={cn('inline-flex items-center', hide('peers'))}>
+              <span className={hide('peers')}>
                 {formatNumber(peerSet.count)} other {unit}
-                <HoveredPeerName peers={peerSet.names} />
               </span>
             )}
             {memberSet && memberSet.rows.length > 0 && (
@@ -143,6 +140,9 @@ export function RankMap({ name, groups, total, unit, peers, members }: Props) {
                 among {formatNumber(memberSet.players)} players
                 <HighlightedPlayerName members={memberSet.rows} />
               </span>
+            )}
+            {memberSet && views.length > 1 && (
+              <ViewSwitch labels={{ peers: capitalize(unit), members: `${capitalize(memberSet.noun)}s` }} />
             )}
           </span>
         </div>

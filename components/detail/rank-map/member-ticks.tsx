@@ -13,7 +13,7 @@ import { HighlightedPlayerContext } from './highlighted-player-context'
 import { memberTicks } from './members'
 
 import { rankPosition } from './scale'
-import { LegendMarker, TickLabel, TickMarker, TickTrack } from './tick-track'
+import { TickLabel, TickMarker, TickTrack } from './tick-track'
 
 const DOT = 'ring-card rounded-full bg-white ring-2'
 
@@ -49,41 +49,30 @@ export function HighlightedPlayerProvider({ children }: { children: ReactNode })
 }
 
 /**
- * The pinned player, with their player card and a button to unpin, then the
- * hovered one; for the rank map legend.
+ * The pinned player, with their player card and a button to unpin; for the
+ * rank map legend.
  */
 export function HighlightedPlayerName({ members }: { members: MemberRanks[] }) {
-  const { hovered, pinned, pin } = use(HighlightedPlayerContext)
+  const { pinned, pin } = use(HighlightedPlayerContext)
   const pinnedMember = members.find(m => m.id === pinned)
-  const hoveredMember = hovered === pinned ? undefined : members.find(m => m.id === hovered)
 
-  return (
-    <>
-      {pinnedMember && (
-        <span className="text-foreground ml-2 inline-flex items-center gap-1.5" data-keeps-pin>
-          <span className={`size-2.5 ${DOT}`} />
-          <UserHoverCard userId={pinnedMember.id}>
-            <span className="cursor-default underline decoration-dotted underline-offset-2">
-              {pinnedMember.username}
-            </span>
-          </UserHoverCard>
-          <button
-            type="button"
-            aria-label="Unpin"
-            className="text-muted-foreground hover:text-foreground -my-1 px-1"
-            onClick={() => pin(null)}
-          >
-            ×
-          </button>
+  return pinnedMember && (
+    <span className="text-foreground ml-2 inline-flex items-center gap-1.5" data-keeps-pin>
+      <span className={`size-2.5 ${DOT}`} />
+      <UserHoverCard userId={pinnedMember.id}>
+        <span className="cursor-default underline decoration-dotted underline-offset-2">
+          {pinnedMember.username}
         </span>
-      )}
-      {hoveredMember && (
-        <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
-          <LegendMarker />
-          {hoveredMember.username}
-        </span>
-      )}
-    </>
+      </UserHoverCard>
+      <button
+        type="button"
+        aria-label="Unpin"
+        className="text-muted-foreground hover:text-foreground -my-1 px-1"
+        onClick={() => pin(null)}
+      >
+        ×
+      </button>
+    </span>
   )
 }
 

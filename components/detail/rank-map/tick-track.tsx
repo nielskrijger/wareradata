@@ -111,13 +111,6 @@ export function TickTrack<Id>({ ticks, alpha, color, faded, spots, hovered, hove
   )
 }
 
-/**
- * The {@link TickMarker} beside a name in the legend.
- */
-export function LegendMarker() {
-  return <span className={`h-3 ${MARKER}`} />
-}
-
 export function TickMarker({ at }: { at: number }) {
   return <div className={`absolute top-0 z-10 h-4 -translate-x-1/2 ${MARKER}`} style={{ left: `${at}%` }} />
 }

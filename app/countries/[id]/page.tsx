@@ -25,7 +25,7 @@ import { pageMetadata } from '@/lib/metadata'
 import { computeRanges, firstPage } from '@/lib/query'
 import { groupMembers } from '@/lib/rows'
 
-import { CountryTables } from './country-tables'
+import { CountryTabs } from './country-tabs'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -130,22 +130,22 @@ export default async function CountryDetailPage({ params }: PageProps) {
         />
       )}
     >
-      <RankMap
-        name={c.name}
-        total={countries.length}
-        unit="countries"
-        groups={rankGroups(c)}
-        peers={{
-          selfId: c.id,
-          all: countries.map(p => ({ id: p.id, name: p.name, code: p.code, groups: rankGroups(p) })),
-        }}
-        members={{ ...citizens, noun: 'citizen' }}
-      />
-
-      <GovernmentSection government={government} />
-
-      <CountryTables
+      <CountryTabs
         code={c.code}
+        overview={(
+          <RankMap
+            name={c.name}
+            total={countries.length}
+            unit="countries"
+            groups={rankGroups(c)}
+            peers={{
+              selfId: c.id,
+              all: countries.map(p => ({ id: p.id, name: p.name, code: p.code, groups: rankGroups(p) })),
+            }}
+            members={{ ...citizens, noun: 'citizen' }}
+          />
+        )}
+        government={government && <GovernmentSection government={government} />}
         citizens={citizenPage}
         mus={muPage}
         parties={partyPage}

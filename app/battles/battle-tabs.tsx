@@ -24,7 +24,7 @@ interface Props {
  * Active and finished battles behind tabs.
  *
  * Both tables read the same URL keys, so only the active one is mounted and a
- * tab switch clears the keys (see CountryTables).
+ * tab switch clears the keys (see CountryTabs).
  */
 export function BattleTabs({ active, finished }: Props) {
   const [tab, setTab] = useQueryState(

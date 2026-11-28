@@ -6,7 +6,6 @@ import type { PagedResult } from '@/lib/query'
 import type { BattleRow, MURow, PartyRow, UserRow } from '@/lib/rows'
 
 import { Landmark, LayoutGrid, Shield, Swords, Users, Vote } from 'lucide-react'
-import { parseAsStringEnum, useQueryState } from 'nuqs'
 import { useEffect, useRef } from 'react'
 
 import { BattlesTable } from '@/app/battles/battles-table'
@@ -14,11 +13,10 @@ import { activeBattleColumns } from '@/app/battles/columns'
 import { MUsTable } from '@/app/mus/mus-table'
 import { PartiesTable } from '@/app/parties/parties-table'
 import { UsersTable } from '@/app/users/users-table'
-import { useClearTableUrlState } from '@/components/data-table/use-table-url-state'
+import { useTableTabs } from '@/components/data-table/use-table-url-state'
 import { FitTab, FitTabs } from '@/components/fit-tabs'
 
 const TABS = ['overview', 'government', 'citizens', 'mus', 'parties', 'battles'] as const
-type Tab = (typeof TABS)[number]
 
 interface Props {
   code: string
@@ -37,18 +35,9 @@ interface Props {
 /**
  * The country page's main tabs: the rank map, the government, and the scoped
  * tables, one at a time.
- *
- * Every DataTable reads the same `q`/`sort`/`dir`/`page` URL keys, so only the
- * active one is mounted, and a tab switch clears the keys so `?page=2` from one
- * table doesn't carry into another.
  */
 export function CountryTabs({ code, overview, government, citizens, mus, parties, battles }: Props) {
-  const [tab, setTab] = useQueryState(
-    'tab',
-    parseAsStringEnum([...TABS]).withDefault('overview').withOptions({ shallow: true, history: 'replace' }),
-  )
-
-  const clearTableState = useClearTableUrlState()
+  const [tab, setTab] = useTableTabs(TABS)
 
   // Scroll to the tabs only when a non-default tab arrives via the URL (a deep
   // link or the header's ⚔ pill); a click on a tab here sets skipScrollRef so
@@ -72,8 +61,7 @@ export function CountryTabs({ code, overview, government, citizens, mus, parties
 
   function selectTab(next: string) {
     skipScrollRef.current = true
-    clearTableState()
-    void setTab(next as Tab)
+    setTab(next)
   }
 
   const scope = `countryCode:${code}`

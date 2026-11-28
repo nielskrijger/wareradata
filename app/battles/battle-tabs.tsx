@@ -3,17 +3,15 @@
 import type { PagedResult } from '@/lib/query'
 import type { BattleRow } from '@/lib/rows'
 
-import { parseAsStringEnum, useQueryState } from 'nuqs'
+import { History, Swords } from 'lucide-react'
 
-import { useClearTableUrlState } from '@/components/data-table/use-table-url-state'
-import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
+import { useTableTabs } from '@/components/data-table/use-table-url-state'
+import { FitTab, FitTabs } from '@/components/fit-tabs'
 
-import { formatNumber } from '@/lib/format'
 import { BattlesTable } from './battles-table'
 import { activeBattleColumns, finishedBattleColumns } from './columns'
 
 const TABS = ['active', 'finished'] as const
-type Tab = (typeof TABS)[number]
 
 interface Props {
   active: PagedResult<BattleRow>
@@ -22,31 +20,18 @@ interface Props {
 
 /**
  * Active and finished battles behind tabs.
- *
- * Both tables read the same URL keys, so only the active one is mounted and a
- * tab switch clears the keys (see CountryTables).
  */
 export function BattleTabs({ active, finished }: Props) {
-  const [tab, setTab] = useQueryState(
-    'tab',
-    parseAsStringEnum([...TABS]).withDefault('active').withOptions({ shallow: true, history: 'replace' }),
-  )
-
-  const clearTableState = useClearTableUrlState()
-
-  function selectTab(next: Tab) {
-    clearTableState()
-    setTab(next)
-  }
+  const [tab, setTab] = useTableTabs(TABS)
 
   return (
-    <Tabs value={tab} onValueChange={value => selectTab(value as Tab)}>
-      <TabsList>
-        <TabsTab value="active">{`Active (${formatNumber(active.total)})`}</TabsTab>
-        <TabsTab value="finished">Finished</TabsTab>
-      </TabsList>
+    <div className="space-y-4">
+      <FitTabs value={tab} onChange={setTab} ids={[...TABS]}>
+        <FitTab value="active" label="Active" icon={<Swords />} count={active.total} />
+        <FitTab value="finished" label="Finished" icon={<History />} />
+      </FitTabs>
 
-      <TabsPanel value="active" className="pt-4">
+      {tab === 'active' && (
         <BattlesTable
           tableId="battles-active"
           initial={active}
@@ -54,8 +39,8 @@ export function BattleTabs({ active, finished }: Props) {
           baseFilter="isActive:true"
           initialSort={{ id: 'totalDamage', desc: true }}
         />
-      </TabsPanel>
-      <TabsPanel value="finished" className="pt-4">
+      )}
+      {tab === 'finished' && (
         <BattlesTable
           tableId="battles-finished"
           initial={finished}
@@ -63,7 +48,7 @@ export function BattleTabs({ active, finished }: Props) {
           baseFilter="isActive:false"
           initialSort={{ id: 'endedAt', desc: true }}
         />
-      </TabsPanel>
-    </Tabs>
+      )}
+    </div>
   )
 }

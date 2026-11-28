@@ -214,17 +214,26 @@ function sortDir(sort: ColumnSort): 'asc' | 'desc' {
 }
 
 /**
- * Clears the table URL keys, for pages that swap one DataTable for another
- * behind tabs: every table reads the same keys, so `?page=2` from one would
- * otherwise carry into the next.
+ * The `tab` URL key for pages that swap one DataTable for another behind tabs.
+ * Every table reads the same keys, so a tab switch clears them; `?page=2` from
+ * one table would otherwise carry into the next.
  */
-export function useClearTableUrlState(): () => void {
-  const [, setTableState] = useQueryStates(
-    { q: parseAsString, sort: parseAsString, dir: parseAsString, page: parseAsString, view: parseAsString },
+export function useTableTabs<T extends string>(tabs: readonly T[]): [T, (next: string) => void] {
+  const [{ tab }, setState] = useQueryStates(
+    {
+      tab: parseAsStringEnum([...tabs]).withDefault(tabs[0]),
+      q: parseAsString,
+      sort: parseAsString,
+      dir: parseAsString,
+      page: parseAsString,
+      view: parseAsString,
+    },
     urlOpts,
   )
 
-  return useCallback(() => {
-    setTableState({ q: null, sort: null, dir: null, page: null, view: null })
-  }, [setTableState])
+  const select = useCallback((next: string) => {
+    void setState({ tab: next as T, q: null, sort: null, dir: null, page: null, view: null })
+  }, [setState])
+
+  return [tab as T, select]
 }

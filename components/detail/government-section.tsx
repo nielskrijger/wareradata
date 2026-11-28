@@ -11,10 +11,9 @@ import { cn } from '@/lib/utils'
 
 interface Props {
   /**
-   * Resolved government for the country, or null when none was captured (a
-   * dormant or unoccupied country). The section renders nothing in that case.
+   * Resolved government for the country.
    */
-  government: GovernmentRow | null
+  government: GovernmentRow
 }
 
 /**
@@ -123,10 +122,6 @@ function congressBenches(congress: GovernmentOfficial[], colors: Map<string, str
  * card on hover. Renders nothing when every seat is vacant.
  */
 export function GovernmentSection({ government }: Props) {
-  if (!government) {
-    return null
-  }
-
   // The executive bench: president and VP, then every appointed minister
   // under their title. Titles can repeat (two Defense ministers), so seats are
   // keyed by user and title.
@@ -149,80 +144,77 @@ export function GovernmentSection({ government }: Props) {
   const benches = congressBenches(congress, colors)
 
   return (
-    <section className="min-w-0 space-y-3">
-      <h2 className="font-brand text-lg tracking-wide">Government</h2>
-      <Panel className="space-y-4">
-        {seats.length > 0 && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:gap-x-6">
-            <span className="text-muted-foreground text-[10px] uppercase tracking-wide sm:w-20 sm:shrink-0 sm:pt-1">
-              Executive
-            </span>
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 sm:justify-start">
-              {seats.map(seat => (
-                <div key={seat.key} className="flex w-20 flex-col items-center gap-1 text-center">
-                  <GovFace official={seat.official} size={48} color={colorFor(seat.official.partyId, colors)} />
-                  <span
-                    className="text-muted-foreground block w-full truncate text-[10px] uppercase"
-                    title={seat.label}
-                  >
-                    {seat.label}
-                  </span>
-                  <InternalLink
-                    href={`/users/${seat.official.id}`}
-                    bold
-                    title={seat.official.name}
-                    className="block w-full truncate text-xs"
-                  >
-                    {seat.official.name}
-                  </InternalLink>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {congress.length > 0 && (
-          <div className={cn('space-y-2', seats.length > 0 && 'border-border/60 border-t pt-4')}>
-            {benches.map(bench => (
-              <div
-                key={bench.id}
-                className="flex flex-col gap-2 overflow-hidden rounded-md p-3 sm:flex-row sm:items-center sm:gap-3 sm:py-2"
-                style={{ backgroundColor: tint(bench.color, 8), borderLeft: `3px solid ${bench.color}` }}
-              >
-                <div className="flex items-center gap-2 sm:w-48 sm:shrink-0">
-                  {bench.avatarUrl ? <Avatar src={bench.avatarUrl} name={bench.name} size={20} /> : (
-                    <span
-                      className="size-3 shrink-0 rounded-full"
-                      style={{ backgroundColor: bench.color }}
-                    />
-                  )}
-                  {bench.id === INDEPENDENT_KEY
-                    ? <span className="truncate text-xs font-medium" title={bench.name}>{bench.name}</span>
-                    : (
-                        <InternalLink
-                          href={`/parties/${bench.id}`}
-                          bold
-                          title={bench.name}
-                          className="min-w-0 truncate text-xs"
-                        >
-                          {bench.name}
-                        </InternalLink>
-                      )}
-                  <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
-                    {bench.members.length}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {bench.members.map(member => (
-                    <GovFace key={member.id} official={member} size={30} color={bench.color} />
-                  ))}
-                </div>
+    <Panel className="space-y-4">
+      {seats.length > 0 && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:gap-x-6">
+          <span className="text-muted-foreground text-[10px] uppercase tracking-wide sm:w-20 sm:shrink-0 sm:pt-1">
+            Executive
+          </span>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 sm:justify-start">
+            {seats.map(seat => (
+              <div key={seat.key} className="flex w-20 flex-col items-center gap-1 text-center">
+                <GovFace official={seat.official} size={48} color={colorFor(seat.official.partyId, colors)} />
+                <span
+                  className="text-muted-foreground block w-full truncate text-[10px] uppercase"
+                  title={seat.label}
+                >
+                  {seat.label}
+                </span>
+                <InternalLink
+                  href={`/users/${seat.official.id}`}
+                  bold
+                  title={seat.official.name}
+                  className="block w-full truncate text-xs"
+                >
+                  {seat.official.name}
+                </InternalLink>
               </div>
             ))}
           </div>
-        )}
-      </Panel>
-    </section>
+        </div>
+      )}
+
+      {congress.length > 0 && (
+        <div className={cn('space-y-2', seats.length > 0 && 'border-border/60 border-t pt-4')}>
+          {benches.map(bench => (
+            <div
+              key={bench.id}
+              className="flex flex-col gap-2 overflow-hidden rounded-md p-3 sm:flex-row sm:items-center sm:gap-3 sm:py-2"
+              style={{ backgroundColor: tint(bench.color, 8), borderLeft: `3px solid ${bench.color}` }}
+            >
+              <div className="flex items-center gap-2 sm:w-48 sm:shrink-0">
+                {bench.avatarUrl ? <Avatar src={bench.avatarUrl} name={bench.name} size={20} /> : (
+                  <span
+                    className="size-3 shrink-0 rounded-full"
+                    style={{ backgroundColor: bench.color }}
+                  />
+                )}
+                {bench.id === INDEPENDENT_KEY
+                  ? <span className="truncate text-xs font-medium" title={bench.name}>{bench.name}</span>
+                  : (
+                      <InternalLink
+                        href={`/parties/${bench.id}`}
+                        bold
+                        title={bench.name}
+                        className="min-w-0 truncate text-xs"
+                      >
+                        {bench.name}
+                      </InternalLink>
+                    )}
+                <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
+                  {bench.members.length}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {bench.members.map(member => (
+                  <GovFace key={member.id} official={member} size={30} color={bench.color} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panel>
   )
 }
 
